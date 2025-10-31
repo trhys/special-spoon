@@ -1,13 +1,22 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 
-class Application
-{
-public:
-	Application() {};
-	~Application() {};
+#include <Core.h>
+//#include <SFML/Graphics.hpp>
 
+namespace Spoon { 
 
-private:
+	class SPOON_API Application
+	{
+	public:
+		Application() {};
+		virtual ~Application() {};
+
+		void Run();
+
+	private:
 	
-};
+	};
+
+	Application* CreateApp();
+
+}

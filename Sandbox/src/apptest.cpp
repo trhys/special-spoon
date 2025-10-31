@@ -1,9 +1,15 @@
+#include <Spoon.h>
 
-namespace Spoon {
-	__declspec(dllimport) void test();
+class Sandbox : public Spoon::Application
+{
+public:
+
+	Sandbox() {};
+	~Sandbox() {};
+
 }
 
-int main() {
-	Spoon::test();
+Spoon::Application* CreateApp()
+{
+	return new Sandbox();
 }
-
