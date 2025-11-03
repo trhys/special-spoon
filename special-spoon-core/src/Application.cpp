@@ -2,40 +2,59 @@
 
 namespace Spoon {    
     
-    Application::Application()
+    Application::Application(AppSpecifications& specs)
+        : m_Specs (specs)
     {
-        // PLACEHOLDER
+        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
     }
 
-    Layer* Application::CreateLayer()
-    {
-        return new Layer();
-    }
-
-    std::vector<Layer*> Application::GetLayerStack()
-    {
-        return LayerStack;
-    } 
-    
     void Application::PushLayer(Layer* layer)
     {
-        LayerStack.emplace_back(layer);
+        m_LayerStack.PushLayer(layer);
+        layer->OnAttach();
+    }
+
+    void Application::Close()
+    {
+        m_IsRunning = false;
     }
 
     void Application::Run()
     {
-        LayerStack[0]->OnAttach(); // INIT TEST LAYER
-        sf::CircleShape shape(100.f); ///////////////
-        shape.setFillColor(sf::Color::Green); ///////
-
         while (m_IsRunning)
         {
-            for (Layer* layer : LayerStack)
+            // CHECK FOR EVENTS
+            m_Window.handleEvents
+            (
+                [&](const auto& event)
+                {
+                    if(event->is<sf::Event::Closed>())
+                    {
+                        m_Window.close();
+                        Application::Close();
+                    }
+                    else
+                    {
+                        // EVENT HANDLERS
+                        m_LayerStack.PushEvent(event);                        
+                    }
+
+                }
+            );
+
+            // BEGIN RENDERING LOOP
+            
+            m_Window.clear();
+
+            for (Layer* layer : m_LayerStack)
             {
-                layer->GetWindow().clear();
-                layer->GetWindow().draw(shape);
-                layer->GetWindow().display();
+                for (auto entity : layer.GetEntities())
+                {
+                    m_Window.draw(entity.m_Sprite);
+                }
             }
+
+            m_Window.display();
         }
     }
 }

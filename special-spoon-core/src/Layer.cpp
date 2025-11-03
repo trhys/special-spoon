@@ -1,6 +1,16 @@
 #include "Layer.h"
 
-void Layer::OnAttach()
+namespace Spoon
 {
-	m_Window.create(sf::VideoMode({ 600, 600 }), "Sandbox Test"); // CURRENTLY A TEST LAYER
+	void Layer::AddEntity(Entity* entity)
+	{
+		entity->OnAdd();
+		m_Entities.emplace_back(entity);
+	}
+
+	void Layer::KillEntity(Entity* entity)
+	{
+		entity->OnKill();
+		m_Entities.erase(std::remove(m_Entities.begin(), m_Entities.end(), entity), m_Entities.end());
+	}
 }
