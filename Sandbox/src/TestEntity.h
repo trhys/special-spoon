@@ -1,10 +1,11 @@
 #include "Spoon.h"
 
-class TestEntity : public Entity
+class TestEntity : public Spoon::Entity
 {
 public:
     TestEntity() 
     {
+        m_Sprite.setTexture(m_Texture);
         m_Sprite.setColor(sf::Color::Green);
     }
 

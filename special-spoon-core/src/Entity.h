@@ -14,5 +14,6 @@ namespace Spoon
 
     private:
         sf::Sprite m_Sprite;
+        sf::Texture m_Texture({300,300});
     }
 }
