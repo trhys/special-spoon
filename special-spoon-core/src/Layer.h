@@ -14,7 +14,7 @@ namespace Spoon {
 		virtual void OnUpdate() {}
 		virtual void OnEvent(sf::Event& e) {}
 
-		void std::vector<Entity*> GetEntities() { return m_Entities; }
+		std::vector<Entity*>& GetEntities() { return m_Entities; }
 		void AddEntity(Entity* entity);
 		void KillEntity(Entity* entity);
 

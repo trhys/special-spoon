@@ -14,7 +14,7 @@ namespace Spoon {
 	class SPOON_API Application
 	{
 	public:
-		Application(AppSpecifications& specs);
+		Application(const AppSpecifications& specs);
 		virtual ~Application() {}
 
 		// CONTROLS RENDERWINDOW SETTINGS

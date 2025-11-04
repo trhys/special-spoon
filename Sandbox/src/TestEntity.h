@@ -1,21 +1,22 @@
 #include "Spoon.h"
+#include <iostream>
 
 class TestEntity : public Spoon::Entity
 {
 public:
-    TestEntity() 
+    TestEntity()
     {
-        m_Sprite.setTexture(m_Texture);
-        m_Sprite.setColor(sf::Color::Green);
+        //m_Sprite.setTexture(m_Texture);
+        //m_Sprite.setColor(sf::Color::Green);
     }
 
-    virtual TestEntity::OnAdd() override
+    virtual void OnAdd() override
     {
         std::cout << "added entity";
     }
 
-    virtual TestEntity::OnKill() override
+    virtual void OnKill() override
     {
         std::cout << "entity killed";
     }
-}
+};

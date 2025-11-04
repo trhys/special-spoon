@@ -8,13 +8,13 @@ namespace Spoon
         m_LayerIndex++;
     }
 
-    void LayerStack::PushEvent(sf::Event& event);
+    void LayerStack::PushEvent(sf::Event& event)
     {
-        auto index = LayerStack::rend();
-        while (index > 0)
-        {
-            m_Layers[index]->OnEvent(event);
-            index--;
-        }
+        //int index = LayerStack::rend();
+        //while (index > 0)
+        //{
+        //    m_Layers[index]->OnEvent(event);
+        //    index--;
+        //}
     }
 }

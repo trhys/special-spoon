@@ -2,7 +2,7 @@
 
 namespace Spoon {    
     
-    Application::Application(AppSpecifications& specs)
+    Application::Application(const AppSpecifications& specs)
         : m_Specs (specs)
     {
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
@@ -28,16 +28,16 @@ namespace Spoon {
             (
                 [&](const auto& event)
                 {
-                    if(event->is<sf::Event::Closed>())
-                    {
-                        m_Window.close();
-                        Application::Close();
-                    }
-                    else
-                    {
-                        // EVENT HANDLERS
-                        m_LayerStack.PushEvent(event);                        
-                    }
+                    //if(event.is<sf::Event::Closed>())
+                    //{
+                    //    m_Window.close();
+                    //    Application::Close();
+                    //}
+                    //else
+                    //{
+                    //    // EVENT HANDLERS
+                    //    m_LayerStack.PushEvent(event);                        
+                    //}
 
                 }
             );
@@ -48,9 +48,9 @@ namespace Spoon {
 
             for (Layer* layer : m_LayerStack)
             {
-                for (auto entity : layer.GetEntities())
+                for (auto entity : layer->GetEntities())
                 {
-                    m_Window.draw(entity.m_Sprite);
+                    //m_Window.draw(entity.m_Sprite);
                 }
             }
 

@@ -6,14 +6,15 @@ namespace Spoon
     {
     public:
         Entity() {}
-        Entity(sf::Texture texture) { m_Sprite.setTexture(texture); }
+        //Entity(sf::Texture texture) { m_Sprite.setTexture(texture); }
         virtual ~Entity() {}
 
-        virtual void OnAdd() {};
-        virtual void OnKill() {};
+        virtual void OnAdd() {}
+        virtual void OnKill() {}
 
     private:
-        sf::Sprite m_Sprite;
-        sf::Texture m_Texture({300,300});
-    }
-}
+        //sf::Texture m_Texture;
+        //sf::Sprite m_Sprite;// (const sf::Texture m_Texture());
+
+    };
+};

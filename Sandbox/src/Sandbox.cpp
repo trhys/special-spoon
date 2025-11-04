@@ -5,15 +5,15 @@ class Sandbox : public Spoon::Application
 {
 public:
 
-	Sandbox();
+	Sandbox(const Spoon::AppSpecifications& specs);
 	~Sandbox() {}
 
 };
 
-Sandbox::Sandbox(AppSpecifications& specs)
-	: m_Specs (specs)
+Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
+	: Spoon::Application(specs)
 {
-	Sandbox::PushLayer(new TestLayer())
+	//Sandbox::PushLayer(new TestLayer());
 }
 
 Spoon::Application* Spoon::CreateApp()
