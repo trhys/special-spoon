@@ -1,21 +1,19 @@
+#pragma once
+
 #include "Spoon.h"
 #include <iostream>
 
 class TestEntity : public Spoon::Entity
 {
 public:
-    TestEntity()
-    {
-        //m_Sprite.setTexture(m_Texture);
-        //m_Sprite.setColor(sf::Color::Green);
-    }
+    TestEntity() : m_Texture({300, 300}), m_Sprite(m_Texture) {}
 
-    virtual void OnAdd() override
+    void OnAdd() override
     {
         std::cout << "added entity";
     }
 
-    virtual void OnKill() override
+    void OnKill() override
     {
         std::cout << "entity killed";
     }

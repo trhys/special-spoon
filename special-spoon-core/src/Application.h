@@ -40,15 +40,4 @@ namespace Spoon {
 	//SHOULD SET WINDOW SIZE AND WINDOW NAME IN APPSPECIFICATIONS
 
 	Application* CreateApp();
-
-	//	EXAMPLE FROM SANDBOX
-	// Application* CreateApp();
-	// {
-	// 		AppSpecifications spec;
-	// 		spec.m_WindowSize = {600, 600};
-	// 		spec.m_WindowName = "Sandbox";	
-	// 		return new Sandbox(spec);
-	// }
-
-
 }

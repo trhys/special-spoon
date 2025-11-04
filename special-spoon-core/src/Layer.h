@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Entity.h"
 
 namespace Spoon { 
@@ -12,7 +13,7 @@ namespace Spoon {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate() {}
-		virtual void OnEvent(sf::Event& e) {}
+		virtual bool OnEvent(const sf::Event& e) {}
 
 		std::vector<Entity*>& GetEntities() { return m_Entities; }
 		void AddEntity(Entity* entity);

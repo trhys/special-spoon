@@ -13,7 +13,7 @@ public:
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	: Spoon::Application(specs)
 {
-	//Sandbox::PushLayer(new TestLayer());
+	Sandbox::PushLayer(new TestLayer());
 }
 
 Spoon::Application* Spoon::CreateApp()

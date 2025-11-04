@@ -3,7 +3,7 @@
 namespace Spoon {    
     
     Application::Application(const AppSpecifications& specs)
-        : m_Specs (specs)
+        : m_Specs(specs)
     {
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
     }
@@ -26,19 +26,24 @@ namespace Spoon {
             // CHECK FOR EVENTS
             m_Window.handleEvents
             (
+                [&](const sf::Event::KeyPressed& keyPress)
+                {
+                    m_LayerStack.PushEvent(keyPress);
+                }
+
                 [&](const auto& event)
                 {
-                    //if(event.is<sf::Event::Closed>())
-                    //{
-                    //    m_Window.close();
-                    //    Application::Close();
-                    //}
-                    //else
-                    //{
-                    //    // EVENT HANDLERS
-                    //    m_LayerStack.PushEvent(event);                        
-                    //}
+                    using T = std::decay_t<decltype(event)>;
 
+                    if constexpr (std::is_same_v<T, sf::Event::Closed>)
+                    {
+                       m_Window.close();
+                       Application::Close();
+                    }
+                    else
+                    {
+                       m_LayerStack.PushEvent(event);                        
+                    }
                 }
             );
 
@@ -50,7 +55,7 @@ namespace Spoon {
             {
                 for (auto entity : layer->GetEntities())
                 {
-                    //m_Window.draw(entity.m_Sprite);
+                    entity.draw(m_Window);
                 }
             }
 

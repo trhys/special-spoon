@@ -1,3 +1,5 @@
+#pragma once
+
 #include "SFML/Graphics.hpp"
 
 namespace Spoon
@@ -6,15 +8,18 @@ namespace Spoon
     {
     public:
         Entity() {}
-        //Entity(sf::Texture texture) { m_Sprite.setTexture(texture); }
         virtual ~Entity() {}
 
         virtual void OnAdd() {}
         virtual void OnKill() {}
 
-    private:
-        //sf::Texture m_Texture;
-        //sf::Sprite m_Sprite;// (const sf::Texture m_Texture());
+        void draw(sf::RenderTarget& target) const override
+        {
+            target.draw(m_Sprite);
+        }
 
+    private:
+        sf::Texture m_Texture;
+        sf::Sprite m_Sprite;
     };
 };
