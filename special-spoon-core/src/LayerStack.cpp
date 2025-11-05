@@ -14,9 +14,11 @@ namespace Spoon
         auto it = LayerStack::rend();
         while(!Handled)
         {
-            if(m_Layers[it]->OnEvent(event)) { break; }
-            else if(it = LayerStack::begin()) { break; }
-            else { it--; }
+            for (Layer* layer : m_Layers)
+            {
+                if(layer->OnEvent(event)) { break; }
+            }
+            Handled = true;
         }
     }
 }

@@ -5,6 +5,6 @@ extern Spoon::Application* Spoon::CreateApp();
 int main(int argc, char** argv)
 {
     auto app = Spoon::CreateApp();
-    app->Spoon::Application::Run();
+    app->Run();
     delete app;
 }

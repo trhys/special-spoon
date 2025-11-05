@@ -3,9 +3,9 @@
 namespace Spoon {    
     
     Application::Application(const AppSpecifications& specs)
-        : m_Specs(specs)
+        : m_Specs(specs) 
     {
-        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
+        m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
     }
 
     void Application::PushLayer(Layer* layer)
@@ -29,7 +29,7 @@ namespace Spoon {
                 [&](const sf::Event::KeyPressed& keyPress)
                 {
                     m_LayerStack.PushEvent(keyPress);
-                }
+                },
 
                 [&](const auto& event)
                 {
@@ -55,7 +55,7 @@ namespace Spoon {
             {
                 for (auto entity : layer->GetEntities())
                 {
-                    entity.draw(m_Window);
+                    entity->draw(m_Window, sf::RenderStates::Default);
                 }
             }
 

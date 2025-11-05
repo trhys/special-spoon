@@ -6,7 +6,10 @@
 class TestEntity : public Spoon::Entity
 {
 public:
-    TestEntity() : m_Texture({300, 300}), m_Sprite(m_Texture) {}
+    TestEntity() 
+        : Spoon::Entity(sf::Texture::Texture(sf::Vector2u{ 300, 300 }))
+    {
+    }
 
     void OnAdd() override
     {
