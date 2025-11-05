@@ -1,4 +1,3 @@
-//Preprocessor definitions
 #pragma once
 
 #include <iostream>
@@ -38,3 +37,10 @@
 
 #ifdef SS_ASSERTS_ENABLED
     #define SS_INSTANCE_ASSERT(s_Instance) assert(!s_Instance && "Application already exists!");
+#else 
+    #define SS_INSTANCE_ASSERT(s_Instance)
+
+// Memory utils
+
+#ifdef SS_DEBUG_ENABLED
+    #define SS_MUTILS_ON

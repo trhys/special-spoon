@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "LayerStack.h"
+#include "MemoryUtils.h"
 
 namespace Spoon {    
     
@@ -10,7 +11,7 @@ namespace Spoon {
     {
         SS_INSTANCE_ASSERT
         s_Instance = this;
-        
+
         m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
     }
 
