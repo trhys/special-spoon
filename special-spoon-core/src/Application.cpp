@@ -8,7 +8,9 @@ namespace Spoon {
     Application::Application(const AppSpecifications& specs)
         : m_Specs(specs) 
     {
+        SS_INSTANCE_ASSERT
         s_Instance = this;
+        
         m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
     }
 

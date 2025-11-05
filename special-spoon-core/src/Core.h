@@ -35,3 +35,6 @@
 #else
     #define SS_TRY
     #define SS_CATCH_BAD_ALLOC(ss_catch_prof)
+
+#ifdef SS_ASSERTS_ENABLED
+    #define SS_INSTANCE_ASSERT(s_Instance) assert(!s_Instance && "Application already exists!");
