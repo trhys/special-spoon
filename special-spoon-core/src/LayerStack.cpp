@@ -1,3 +1,4 @@
+#include "Layer.h"
 #include "LayerStack.h"
 
 namespace Spoon

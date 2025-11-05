@@ -3,6 +3,8 @@
 #include "Core.h"
 #include "LayerStack.h"
 
+#include "SFML/Graphics.hpp"
+
 namespace Spoon { 
 
 	struct AppSpecifications
@@ -28,8 +30,11 @@ namespace Spoon {
 		void Close();
 
 	private:
+		static Application* s_Instance;
+
 		AppSpecifications m_Specs;
 		sf::RenderWindow m_Window;
+
 		bool m_IsRunning = true;
 
 		LayerStack m_LayerStack;

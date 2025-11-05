@@ -1,10 +1,14 @@
 #include "Application.h"
+#include "LayerStack.h"
 
 namespace Spoon {    
     
+    Application* Application::s_Instance = nullptr;
+
     Application::Application(const AppSpecifications& specs)
         : m_Specs(specs) 
     {
+        s_Instance = this;
         m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
     }
 

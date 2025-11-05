@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Spoon.h"
+
 #include <iostream>
 
 class TestEntity : public Spoon::Entity

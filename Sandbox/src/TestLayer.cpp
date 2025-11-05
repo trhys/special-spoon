@@ -1,9 +1,10 @@
+#include "TestEntity.h"
 #include "TestLayer.h"
 
-//void TestLayer::OnAttach()
-//{
-//   AddEntity(new TestEntity());
-//}
+void TestLayer::OnAttach()
+{
+  AddEntity(new TestEntity());
+}
 
 bool TestLayer::OnEvent(const sf::Event& event)
 {

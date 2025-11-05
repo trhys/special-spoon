@@ -2,6 +2,7 @@
 
 // Includes for client application only
 
+#include "Core.h"
 #include "Application.h"
-
-//#include "EntryPoint.h"
+#include "Layer.h"
+#include "Entity.h"

@@ -1,3 +1,4 @@
+#include "Entity.h"
 #include "Layer.h"
 
 namespace Spoon
@@ -12,5 +13,6 @@ namespace Spoon
 	{
 		entity->OnKill();
 		m_Entities.erase(std::remove(m_Entities.begin(), m_Entities.end(), entity), m_Entities.end());
+		delete entity;
 	}
 }
