@@ -6,3 +6,4 @@ bin-int/
 *.vcxproj.user
 *.vcxproj.filters
 *.dll
+Sandbox/resources

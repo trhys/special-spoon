@@ -10,9 +10,9 @@ int main(int argc, char** argv)
     SS_TRY
 
     auto app = Spoon::CreateApp();
-    app->Run();
+    app->Spoon::Application::Run();
 
-    SS_CATCH(SS_CPROF_STARTUP)
+    SS_CATCH
 
     delete app;
 }

@@ -18,29 +18,32 @@
 
 #ifdef SS_DEBUG_ENABLED
     #define SS_TRY try {
-    #define SS_CATCH(ss_catch_prof) } \
+    #define SS_CATCH } \
         catch (const std::bad_alloc& e) \
             { \
-                std::cerr << "Fatal error: Bad memory allocation at: " << ss_catch_prof << " --- Details: " << e.what() << std::endl \
+                std::cerr << "Fatal error: Bad memory allocation during startup --- Details: " << e.what() << std::endl \
                 delete app; \
                 return EXIT_FAILURE; \
             } \
         catch (const std::exception& e) \
             { \
-                std::cerr << "Fatal error: An unexpected error occured at: " << ss_catch_prof << " --- Details: " << e.what() << std::endl \
+                std::cerr << "Fatal error: An unexpected error occured during startup --- Details: " << e.what() << std::endl \
                 delete app; \
                 return EXIT_FAILURE; \
             }
 #else
     #define SS_TRY
-    #define SS_CATCH_BAD_ALLOC(ss_catch_prof)
+    #define SS_CATCH
+#endif
 
 #ifdef SS_ASSERTS_ENABLED
     #define SS_INSTANCE_ASSERT(s_Instance) assert(!s_Instance && "Application already exists!");
 #else 
     #define SS_INSTANCE_ASSERT(s_Instance)
+#endif
 
 // Memory utils
 
 #ifdef SS_DEBUG_ENABLED
     #define SS_MUTILS_ON
+#endif

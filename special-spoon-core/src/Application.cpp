@@ -7,12 +7,12 @@ namespace Spoon {
     Application* Application::s_Instance = nullptr;
 
     Application::Application(const AppSpecifications& specs)
-        : m_Specs(specs) 
+        : m_Specs(specs)
     {
-        SS_INSTANCE_ASSERT
+        SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
 
-        m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
+        //m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
     }
 
     void Application::PushLayer(Layer* layer)
@@ -28,15 +28,18 @@ namespace Spoon {
 
     void Application::Run()
     {
+        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
+        
         while (m_IsRunning)
         {
+            
             // CHECK FOR EVENTS
             m_Window.handleEvents
             (
-                [&](const sf::Event::KeyPressed& keyPress)
-                {
-                    m_LayerStack.PushEvent(keyPress);
-                },
+                //[&](const sf::Event::KeyPressed& keyPress)
+                //{
+                //    m_LayerStack.PushEvent(keyPress);
+                //},
 
                 [&](const auto& event)
                 {
@@ -46,6 +49,10 @@ namespace Spoon {
                     {
                        m_Window.close();
                        Application::Close();
+                    }
+                    else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
+                    {
+                        m_LayerStack.PushEvent(event);
                     }
                     else
                     {

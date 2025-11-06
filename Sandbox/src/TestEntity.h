@@ -4,11 +4,13 @@
 
 #include <iostream>
 
+sf::Texture texture("resources/logo.png");
+
 class TestEntity : public Spoon::Entity
 {
 public:
-    TestEntity() 
-        : Spoon::Entity(sf::Texture::Texture(sf::Vector2u{ 300, 300 }))
+    TestEntity()
+        : Spoon::Entity(texture)
     {
     }
 

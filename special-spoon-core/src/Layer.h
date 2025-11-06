@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Core.h"
 #include "Entity.h"
 
 namespace Spoon { 
 
-	class Layer
+	class SPOON_API Layer
 	{
 	public:
 		Layer() {}

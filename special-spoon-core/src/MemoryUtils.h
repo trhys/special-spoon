@@ -16,7 +16,7 @@ static AllocationTool s_AT;
 
 static void PrintMemoryUsage()
 {
-    std::cout << "Total memory usage: " << s_AT.Memory_Usage() << " bytes\n";
+    std::cout << "Total memory usage: " << s_AT.Memory_Usage() << " bytes" << std::endl;
 }
 
 void* operator new(size_t size)
@@ -27,7 +27,7 @@ void* operator new(size_t size)
     return malloc(size);
 }
 
-void* operator delete(void* memory, size_t size)
+void operator delete(void* memory, size_t size)
 {
     s_AT.Freed += size;
     PrintMemoryUsage();

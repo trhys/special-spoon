@@ -21,7 +21,7 @@ namespace Spoon {
 
 		// CONTROLS RENDERWINDOW SETTINGS
 		AppSpecifications GetSpecs() { return m_Specs; }
-
+		
 		// LAYER CONTROL
 		void PushLayer(Layer* layer);
 
