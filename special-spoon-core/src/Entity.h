@@ -7,7 +7,7 @@ namespace Spoon
     class Entity : public sf::Drawable
     {
     public:
-        Entity(sf::Texture texture) : m_Texture(texture), m_Sprite(m_Texture) {}
+        Entity(sf::Texture texture) : m_Sprite(m_Texture) {}
         virtual ~Entity() {}
 
         virtual void OnAdd() {}
@@ -21,7 +21,7 @@ namespace Spoon
         sf::Sprite& GetSprite() { return m_Sprite; }
 
     private:
-        sf::Texture m_Texture;
+        //sf::Texture m_Texture;
         sf::Sprite m_Sprite;
     };
 };

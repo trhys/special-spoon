@@ -36,10 +36,10 @@ namespace Spoon {
             // CHECK FOR EVENTS
             m_Window.handleEvents
             (
-                //[&](const sf::Event::KeyPressed& keyPress)
-                //{
-                //    m_LayerStack.PushEvent(keyPress);
-                //},
+                [&](const sf::Event::KeyPressed& keyPress)
+                {
+                   m_LayerStack.PushEvent(keyPress);
+                },
 
                 [&](const auto& event)
                 {
@@ -49,10 +49,6 @@ namespace Spoon {
                     {
                        m_Window.close();
                        Application::Close();
-                    }
-                    else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
-                    {
-                        m_LayerStack.PushEvent(event);
                     }
                     else
                     {
