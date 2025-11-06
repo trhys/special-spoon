@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "Scene.h"
 #include "Entity.h"
 
 namespace Spoon { 
@@ -16,12 +17,10 @@ namespace Spoon {
 		virtual void OnUpdate() {}
 		virtual bool OnEvent(const sf::Event& e) { return false; }
 
-		std::vector<Entity*>& GetEntities() { return m_Entities; }
-		void AddEntity(Entity* entity);
-		void KillEntity(Entity* entity);
+		void DrawScene(sf::RenderTarget& target, sf::Transform& scene_transform) { m_Scene.draw(target, scene_transform) }
 
 	private:
-		std::vector<Entity*> m_Entities;
+		Scene* m_Scene;
 
 	};
 }

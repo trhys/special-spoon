@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Scene.h"
 #include "SFML/Graphics.hpp"
 
 namespace Spoon
 {
-    class Entity : public sf::Drawable
+    class Entity : public Spoon::Scene
     {
     public:
         Entity(sf::Texture texture) : m_Sprite(m_Texture) {}
@@ -13,15 +14,15 @@ namespace Spoon
         virtual void OnAdd() {}
         virtual void OnKill() {}
 
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-        {
-            target.draw(m_Sprite, states);
-        }
-
-        sf::Sprite& GetSprite() { return m_Sprite; }
+        //sf::Sprite& GetSprite() { return m_Sprite; }
 
     private:
         //sf::Texture m_Texture;
         sf::Sprite m_Sprite;
+
+        void OnDraw(sf::RenderTarget& target, sf::Transform transform) const override
+        {
+            target.draw(m_Sprite, transform);
+        }
     };
 };

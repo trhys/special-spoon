@@ -63,10 +63,7 @@ namespace Spoon {
 
             for (Layer* layer : m_LayerStack)
             {
-                for (auto entity : layer->GetEntities())
-                {
-                    entity->draw(m_Window, sf::RenderStates::Default);
-                }
+                layer->DrawScene(m_Window, sf::Transform::Transform());
             }
 
             m_Window.display();
