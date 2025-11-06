@@ -11,8 +11,6 @@ namespace Spoon {
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
-
-        //m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
     }
 
     void Application::PushLayer(Layer* layer)

@@ -16,7 +16,7 @@ public:
 
     void OnAdd() override
     {
-        std::cout << "added entity";
+        std::cout << "added entity (also testing post build commands)";
     }
 
     void OnKill() override
