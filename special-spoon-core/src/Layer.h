@@ -17,10 +17,10 @@ namespace Spoon {
 		virtual void OnUpdate() {}
 		virtual bool OnEvent(const sf::Event& e) { return false; }
 
-		void DrawScene(sf::RenderTarget& target, sf::Transform& scene_transform) { m_Scene.draw(target, scene_transform) }
+		void DrawScene(sf::RenderTarget& target, sf::Transform& scene_transform) { m_Scene.draw(target, scene_transform); }
 
 	private:
-		Scene* m_Scene;
+		Scene m_Scene(sf::Texture texture);
 
 	};
 }

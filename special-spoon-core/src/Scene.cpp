@@ -4,16 +4,11 @@
 namespace Spoon
 {
 
-    void Scene::CreateEntity()
-    {
-
-    }
-    
-    void Scene::draw(sf::RenderTarget& target, sf::Transform& scene_transform) const
+    void Node::draw(sf::RenderTarget& target, sf::Transform& transform)
             {
-                sf::Transform combined_transform = scene_transform * m_Transform; 
+                sf::Transform combined_transform = transform * m_Transform; 
                 
-                // For the top of the graph - scene_transform is identity transform -> sf::Transform::Transform()
+                // For the top of the graph - transform is identity transform -> sf::Transform::Transform()
                 // This gives the combined_transform the same value as m_Transform
 
                 OnDraw(target, combined_transform);
@@ -23,4 +18,14 @@ namespace Spoon
                     child->draw(target, combined_transform);
                 }
             }
+
+    void Scene::CreateEntity()
+    {
+        m_Children.emplace_back(Entity());
+    }
+
+    void Scene::OnDraw(sf::RenderTarget& target, const sf::Transform& transform)
+    {
+        target.draw(m_Sprite, transform);
+    }
 }

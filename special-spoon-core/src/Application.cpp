@@ -29,6 +29,7 @@ namespace Spoon {
     void Application::Run()
     {
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
+        sf::Transform World_Transform = sf::Transform::Transform();
         
         while (m_IsRunning)
         {
@@ -63,7 +64,7 @@ namespace Spoon {
 
             for (Layer* layer : m_LayerStack)
             {
-                layer->DrawScene(m_Window, sf::Transform::Transform());
+                layer->DrawScene(m_Window, World_Transform);
             }
 
             m_Window.display();

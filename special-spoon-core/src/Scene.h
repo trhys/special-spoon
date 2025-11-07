@@ -6,20 +6,35 @@ namespace Spoon
 {    
     class Entity;
 
-    class Scene : public sf::Drawable, public sf::Transformable
+    class Node : public sf::Drawable, public sf::Transformable
     {
     public:
-        Scene() {}
+        Node() {}
+        virtual ~Node() {}
+
+        void CreateEntity();
+
+        void draw(sf::RenderTarget& target, sf::Transform& transform);
+
+    private:
+        sf::Transform m_Transform;
+        std::vector<Node*> m_Children;
+
+        virtual void OnDraw(sf::RenderTarget& target, const sf::Transform& transform) const = 0;
+    };
+
+    class Scene : public Node
+    {
+    public:
+        Scene(sf::Texture texture) : m_Texture(texture), m_Sprite(texture){}
         virtual ~Scene() {}
 
         void CreateEntity();
 
-        void draw(sf::RenderTarget& target, sf::Transform& scene_transform) const;
-
     private:
-        sf::Transform m_Transform;
-        std::vector<Scene*> m_Children;
+        sf::Texture m_Texture;
+        sf::Sprite m_Sprite;
 
-        virtual void OnDraw(sf::RenderTarget& target, const sf::Transform transform) = 0;
+        void OnDraw(sf::RenderTarget& target, const sf::Transform& transform) const override;
     };
 }
