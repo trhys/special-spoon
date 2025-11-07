@@ -1,6 +1,8 @@
 #include "Application.h"
 #include "LayerStack.h"
+#include "ResourceManager.h"
 #include "MemoryUtils.h"
+
 
 namespace Spoon {    
     
@@ -11,14 +13,20 @@ namespace Spoon {
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
-
-        //m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
     }
 
     void Application::PushLayer(Layer* layer)
     {
         m_LayerStack.PushLayer(layer);
-        layer->OnAttach();
+        layer->OnAttach(m_RSM);
+    }
+
+    void Application::LoadScenes()
+    {
+        for (Layer* layer : m_LayerStack)
+        {
+            layer->LoadScene();
+        }
     }
 
     void Application::Close()

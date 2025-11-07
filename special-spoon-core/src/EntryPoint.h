@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     auto app = Spoon::CreateApp();
     app->Spoon::Application::Run();
 
-    SS_CATCH
+    SS_CATCH("STARTUP")
 
     delete app;
 }

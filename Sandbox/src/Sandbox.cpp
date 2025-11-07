@@ -1,5 +1,5 @@
 #include "Spoon.h"
-#include "TestLayer.h"
+#include "DemoLayer.h"
 #include "EntryPoint.h"
 
 
@@ -15,7 +15,8 @@ public:
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	: Spoon::Application(specs)
 {
-	PushLayer(new TestLayer());
+	PushLayer(new DemoLayer());
+	LoadScenes();
 }
 
 Spoon::Application* Spoon::CreateApp()

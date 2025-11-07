@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "LayerStack.h"
+#include "ResourceManager.h"
 
 #include "SFML/Graphics.hpp"
 
@@ -22,8 +23,9 @@ namespace Spoon {
 		// CONTROLS RENDERWINDOW SETTINGS
 		AppSpecifications GetSpecs() { return m_Specs; }
 		
-		// LAYER CONTROL
+		// LAYER/SCENE CONTROL
 		void PushLayer(Layer* layer);
+		void LoadScenes();
 
 		// GAME LOOP CONTROL
 		void Run();
@@ -38,7 +40,7 @@ namespace Spoon {
 		bool m_IsRunning = true;
 
 		LayerStack m_LayerStack;
-
+		ResourceManager m_RSM;
 	};
 
 	//APPLICATION ENTRY POINT ---- DEFINE IN CLIENT APPLICATION
