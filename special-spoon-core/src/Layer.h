@@ -1,21 +1,27 @@
 #pragma once
 
-#include "SFML\Graphics.hpp"
+#include "Core.h"
+#include "Entity.h"
 
-class Layer
-{
-public:
-	Layer() {}
-	~Layer() {}
+namespace Spoon { 
 
-	void OnAttach();
-	//void OnDetach();
-	//void OnUpdate();
-	//void OnEvent(sf::Event& e);
+	class SPOON_API Layer
+	{
+	public:
+		Layer() {}
+		virtual ~Layer() {}
 
-	sf::RenderWindow& GetWindow() { return m_Window; }
+		virtual void OnAttach() {}
+		virtual void OnDetach() {}
+		virtual void OnUpdate() {}
+		virtual bool OnEvent(const sf::Event& e) { return false; }
 
-private:
-	sf::RenderWindow m_Window;
+		std::vector<Entity*>& GetEntities() { return m_Entities; }
+		void AddEntity(Entity* entity);
+		void KillEntity(Entity* entity);
 
-};
+	private:
+		std::vector<Entity*> m_Entities;
+
+	};
+}

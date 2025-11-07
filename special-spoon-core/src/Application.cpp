@@ -1,41 +1,73 @@
 #include "Application.h"
+#include "LayerStack.h"
+#include "MemoryUtils.h"
 
 namespace Spoon {    
     
-    Application::Application()
+    Application* Application::s_Instance = nullptr;
+
+    Application::Application(const AppSpecifications& specs)
+        : m_Specs(specs)
     {
-        // PLACEHOLDER
+        SS_INSTANCE_ASSERT(s_Instance)
+        s_Instance = this;
     }
 
-    Layer* Application::CreateLayer()
-    {
-        return new Layer();
-    }
-
-    std::vector<Layer*> Application::GetLayerStack()
-    {
-        return LayerStack;
-    } 
-    
     void Application::PushLayer(Layer* layer)
     {
-        LayerStack.emplace_back(layer);
+        m_LayerStack.PushLayer(layer);
+        layer->OnAttach();
+    }
+
+    void Application::Close()
+    {
+        m_IsRunning = false;
     }
 
     void Application::Run()
     {
-        LayerStack[0]->OnAttach(); // INIT TEST LAYER
-        sf::CircleShape shape(100.f); ///////////////
-        shape.setFillColor(sf::Color::Green); ///////
-
+        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
+        
         while (m_IsRunning)
         {
-            for (Layer* layer : LayerStack)
+            
+            // CHECK FOR EVENTS
+            m_Window.handleEvents
+            (
+                [&](const sf::Event::KeyPressed& keyPress)
+                {
+                   m_LayerStack.PushEvent(keyPress);
+                },
+
+                [&](const auto& event)
+                {
+                    using T = std::decay_t<decltype(event)>;
+
+                    if constexpr (std::is_same_v<T, sf::Event::Closed>)
+                    {
+                       m_Window.close();
+                       Application::Close();
+                    }
+                    else
+                    {
+                       m_LayerStack.PushEvent(event);                        
+                    }
+                }
+            );
+
+            // BEGIN RENDERING LOOP
+            
+            m_Window.clear();
+
+            for (Layer* layer : m_LayerStack)
             {
-                layer->GetWindow().clear();
-                layer->GetWindow().draw(shape);
-                layer->GetWindow().display();
+                for (auto entity : layer->GetEntities())
+                {
+                    entity->draw(m_Window, sf::RenderStates::Default);
+                }
             }
+
+            m_Window.display();
         }
     }
 }

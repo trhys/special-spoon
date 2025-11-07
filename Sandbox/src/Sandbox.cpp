@@ -1,20 +1,27 @@
 #include "Spoon.h"
+#include "TestLayer.h"
+#include "EntryPoint.h"
+
 
 class Sandbox : public Spoon::Application
 {
 public:
 
-	Sandbox();
+	Sandbox(const Spoon::AppSpecifications& specs);
 	~Sandbox() {}
 
 };
 
-Sandbox::Sandbox()
+Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
+	: Spoon::Application(specs)
 {
-	PushLayer(new Layer());
+	PushLayer(new TestLayer());
 }
 
 Spoon::Application* Spoon::CreateApp()
 {
-	return new Sandbox();
+	AppSpecifications spec;
+	spec.m_WindowSize = {600, 600};
+	spec.m_WindowName = "Sandbox";	
+	return new Sandbox(spec);
 }
