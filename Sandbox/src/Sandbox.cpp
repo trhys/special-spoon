@@ -1,7 +1,14 @@
 #include "Spoon.h"
-#include "TestLayer.h"
+#include "DemoLayer.h"
 #include "EntryPoint.h"
 
+
+//std::unordered_map<std::string, std::filesystem::path> resources =
+//{
+//	{"demoscene-top", "resources/TD-Scene.png" },
+//	{"demoscene-side", "resources/SV-Scene.png" },
+//	{"demosprite", "resources/DemoSprite.png" }
+//};
 
 class Sandbox : public Spoon::Application
 {
@@ -13,9 +20,10 @@ public:
 };
 
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
-	: Spoon::Application(specs)
+	: Spoon::Application(specs)//, resources)
 {
-	PushLayer(new TestLayer());
+	PushLayer(new DemoLayer());
+	LoadScenes();
 }
 
 Spoon::Application* Spoon::CreateApp()

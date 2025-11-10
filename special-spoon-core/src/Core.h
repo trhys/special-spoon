@@ -14,26 +14,24 @@
 
 //Debug Utils
 
-#define SS_CPROF_STARTUP "**STARTUP**"
-
 #ifdef SS_DEBUG_ENABLED
     #define SS_TRY try {
-    #define SS_CATCH } \
+    #define SS_CATCH(string) } \
         catch (const std::bad_alloc& e) \
             { \
-                std::cerr << "Fatal error: Bad memory allocation during startup --- Details: " << e.what() << std::endl \
+                std::cerr << "Fatal error: Bad memory allocation during " << string << "--- Details: " << e.what() << std::endl \
                 delete app; \
                 return EXIT_FAILURE; \
             } \
         catch (const std::exception& e) \
             { \
-                std::cerr << "Fatal error: An unexpected error occured during startup --- Details: " << e.what() << std::endl \
+                std::cerr << "Fatal error: An unexpected error occured during " << string << " --- Details: " << e.what() << std::endl \
                 delete app; \
                 return EXIT_FAILURE; \
-            }
+            };
 #else
     #define SS_TRY
-    #define SS_CATCH
+    #define SS_CATCH(string)
 #endif
 
 #ifdef SS_ASSERTS_ENABLED

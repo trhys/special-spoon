@@ -1,24 +1,33 @@
 #include "Application.h"
 #include "LayerStack.h"
+#include "ResourceManager.h"
 #include "MemoryUtils.h"
+
 
 namespace Spoon {    
     
     Application* Application::s_Instance = nullptr;
 
-    Application::Application(const AppSpecifications& specs)
+    Application::Application(const AppSpecifications& specs)//, std::unordered_map<std::string, std::filesystem::path> resources)
         : m_Specs(specs)
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
-
-        //m_Window.create(sf::VideoMode(specs.m_WindowSize), specs.m_WindowName);
+        //m_RSM.Init(resources);
     }
 
     void Application::PushLayer(Layer* layer)
     {
         m_LayerStack.PushLayer(layer);
-        layer->OnAttach();
+        layer->OnAttach(&m_RSM);
+    }
+
+    void Application::LoadScenes()
+    {
+        for (Layer* layer : m_LayerStack)
+        {
+            layer->LoadScene();
+        }
     }
 
     void Application::Close()
@@ -29,7 +38,7 @@ namespace Spoon {
     void Application::Run()
     {
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
-        sf::Transform World_Transform = sf::Transform::Transform();
+        sf::Transform identity_transform = sf::Transform::Transform();
         
         while (m_IsRunning)
         {
@@ -64,7 +73,7 @@ namespace Spoon {
 
             for (Layer* layer : m_LayerStack)
             {
-                layer->DrawScene(m_Window, World_Transform);
+                layer->DrawScene(m_Window, identity_transform);
             }
 
             m_Window.display();
