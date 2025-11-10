@@ -17,7 +17,7 @@ namespace Spoon {
 	class SPOON_API Application
 	{
 	public:
-		Application(const AppSpecifications& specs);//, std::unordered_map<std::string, std::filesystem::path> resources);
+		Application(const AppSpecifications& specs);
 		virtual ~Application() {}
 
 		// CONTROLS RENDERWINDOW SETTINGS
@@ -25,7 +25,6 @@ namespace Spoon {
 		
 		// LAYER/SCENE CONTROL
 		void PushLayer(Layer* layer);
-		void LoadScenes();
 
 		// GAME LOOP CONTROL
 		void Run();

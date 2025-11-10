@@ -1,32 +1,32 @@
 #pragma once
 
 #include "Core.h"
-#include "Scene/Scene.h"
 
 namespace Spoon 
 {
-	class ResourceManager;
-	 
 	class SPOON_API Layer
 	{
 	public:
 		Layer() {}
 		virtual ~Layer() {}
 
-		virtual void OnAttach(ResourceManager* rsm) { m_RSM = rsm; }
+		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(sf::Time tick) {}
 		virtual bool OnEvent(const sf::Event& e) { return false; }
+		
+		// Get rsm pointer to pass to scene when loading assets - > SetScene()
+		// Gets called when pushed to stack
+		void GetRSM(ResourceManager* rsm) { p_RSM = rsm; }
 
-		void LoadScene();
-		void UnloadScene() { m_Scene = nullptr; }
-		void SetScene(Scene* scene) { m_Scene = scene; }
+		sf::Texture& GetTexture(const std::string id, const std::filesystem::path file_path)
+		{
+			p_RSM->AqcuireTexture(const std::string id, const std::filesystem::path file_path);
+		}
 
-		void DrawScene(sf::RenderTarget& target, const sf::Transform& scene_transform);
-
+		virtual void DrawScene(sf::RenderTarget& target, sf::RenderStates states) {}
+		
 	private:
-		Scene* m_Scene = nullptr;
-		ResourceManager* m_RSM = nullptr;
-
+		ResourceManager* p_RSM;
 	};
 }

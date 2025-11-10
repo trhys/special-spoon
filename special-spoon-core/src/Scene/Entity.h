@@ -8,19 +8,20 @@ namespace Spoon
     class Entity : public Node
     {
     public:
-        Entity() {}
+        Entity(sf::Texture& texture) : m_Sprite(texture) {}
         virtual ~Entity() {}
 
-        sf::Sprite GetSprite() { return *m_Sprite; }
         virtual void OnAdd() {}
         virtual void OnKill() {}
-
+        
     private:
-        sf::Sprite* m_Sprite = nullptr;
+        sf::Sprite m_Sprite;
 
         void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
         {
-            target.draw(*m_Sprite, states);
+            target.draw(m_Sprite, states);
         }
+
+        virtual void OnUpdate(sf::Time tick, Layer* context) override {}
     };
-};
+}

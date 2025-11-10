@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <algorithm>
+
 #include "SFML/Graphics.hpp"
 
 namespace Spoon 
@@ -10,6 +12,21 @@ namespace Spoon
     public:
         Node() {}
         virtual ~Node() {}
+
+        template <typename T>
+        void AddChildNode(T* child)
+        {
+            m_Children.emplace_back(child);
+        }
+
+        template <typename T>
+        void KillChildNode(T* child)
+        {
+            std::erase(m_Children, child);
+            delete child;
+        }
+
+        std::vector<Node*> GetChildren() { return m_Children; }
 
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override
         {
@@ -23,10 +40,19 @@ namespace Spoon
             }
         }
 
+        void Update(sf::Time tick, Layer* context)
+        {
+            OnUpdate(sf::Time tick, Layer* context);
+            for (auto& child : m_Children)
+            {
+                child->Update(sf::Time tick, Layer* context);
+            }
+        }
+
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
+        virtual void OnUpdate(sf::Time tick, Layer* context) {}
 
-        sf::Transform m_Transform;
         std::vector<Node*> m_Children;
     };
 }

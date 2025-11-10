@@ -8,26 +8,18 @@ namespace Spoon {
     
     Application* Application::s_Instance = nullptr;
 
-    Application::Application(const AppSpecifications& specs)//, std::unordered_map<std::string, std::filesystem::path> resources)
+    Application::Application(const AppSpecifications& specs)
         : m_Specs(specs)
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
-        //m_RSM.Init(resources);
     }
 
     void Application::PushLayer(Layer* layer)
     {
+        layer->GetRSM(m_RSM);
         m_LayerStack.PushLayer(layer);
-        layer->OnAttach(&m_RSM);
-    }
-
-    void Application::LoadScenes()
-    {
-        for (Layer* layer : m_LayerStack)
-        {
-            layer->LoadScene();
-        }
+        layer->OnAttach();
     }
 
     void Application::Close()
@@ -38,12 +30,13 @@ namespace Spoon {
     void Application::Run()
     {
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
-        sf::Transform identity_transform = sf::Transform::Transform();
-        
+        sf::RenderStates states = sf::RenderStates::RenderStates();
+        sf::Clock clock;
+
         while (m_IsRunning)
         {
             
-            // CHECK FOR EVENTS
+            // EVENT HANDLING
             m_Window.handleEvents
             (
                 [&](const sf::Event::KeyPressed& keyPress)
@@ -67,13 +60,19 @@ namespace Spoon {
                 }
             );
 
-            // BEGIN RENDERING LOOP
-            
+            // UPDATE LAYER STACK
+            sf::Time tick = clock.restart();
+            for (Layer* layer : m_LayerStack)
+            {
+                layer->OnUpdate(tick);
+            }
+
+            // RENDER
             m_Window.clear();
 
             for (Layer* layer : m_LayerStack)
             {
-                layer->DrawScene(m_Window, identity_transform);
+                layer->DrawScene(m_Window, states);
             }
 
             m_Window.display();

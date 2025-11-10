@@ -11,14 +11,15 @@ namespace Spoon
         ResourceManager() {}
         ~ResourceManager() {}
 
-        void Init(std::unordered_map<std::string, std::filesystem::path> texture_files)
+        sf::Texture& AqcuireTexture(const std::string id, const std::filesystem::path file_path)
         {
-            for (auto const& [key, value] : texture_files)
+            auto found = m_Textures.find(id);
+            if(found = m_Textures.end())
             {
-                m_Textures.emplace(key, sf::Texture::Texture(value));
+                m_Textures.emplace(id, file_path);
             }
+            return m_Textures[id];
         }
-        void LoadTexture(const std::string texture_name, const std::filesystem::path file_path) { m_Textures.emplace(texture_name, sf::Texture::Texture(file_path)); }
 
     private:
         std::unordered_map<std::string, sf::Texture> m_Textures;
