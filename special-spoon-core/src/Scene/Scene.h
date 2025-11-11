@@ -11,8 +11,15 @@ namespace Spoon
         Scene() {}
         virtual ~Scene() {}
 
+        void SetBounds(sf::Vector2f position, sf::Vector2f size)
+        {
+            m_Bounds.position = position;
+            m_Bounds.size = size;
+        }
+
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
-        //virtual void OnUpdate(sf::Time tick, Layer* context) override {}
+
+        sf::FloatRect m_Bounds;
     };
 }

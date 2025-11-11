@@ -2,6 +2,12 @@
 
 namespace Spoon
 {
+	void Layer::Init(ResourceManager* rsm, PhysicsManager* pm)
+	{
+		p_RSM = rsm;
+		p_PM = pm;
+	}
+
 	void Layer::OnUpdate(sf::Time tick)
 	{
 		ProcessBuffer();
@@ -18,15 +24,21 @@ namespace Spoon
 		m_SceneRoot.draw(target, states);
 	}
 
+	void Layer::Physics()
+	{
+		p_PM->CheckCollision(&m_SceneRoot);
+	}
+
 	void Layer::ProcessBuffer()
 	{
 		for (auto& func : m_CreationBuffer)
 		{
-			Node* new_node = func();
-			if (new_node)
-			{
-				AddSceneNode(std::move(new_node));
-			}
+			func();
+			//Node* new_node = func();
+			// if (new_node)
+			// {
+			// 	AddSceneNode(std::move(new_node));
+			// }
 		}
 
 		m_CreationBuffer.clear();

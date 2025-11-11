@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "LayerStack.h"
+#include "Physics/PhysicsManager.h"
 #include "ResourceManager.h"
 #include "MemoryUtils.h"
 
@@ -13,13 +14,26 @@ namespace Spoon {
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
+
+        if(m_Specs.PhysicsEnabled)
+        {
+            #define SS_PHYSICS_ENABLED
+        }
     }
 
     void Application::PushLayer(Layer* layer)
     {
-        layer->GetRSM(&m_RSM);
+        layer->Init(&m_RSM, &m_PM);
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
+    }
+
+    void Application::UpdatePhysics()
+    {
+        for (Layer* layer : m_LayerStack)
+        {
+            layer->Physics();
+        }
     }
 
     void Application::Close()
@@ -35,7 +49,6 @@ namespace Spoon {
 
         while (m_IsRunning)
         {
-            
             // EVENT HANDLING
             m_Window.handleEvents
             (
@@ -60,13 +73,18 @@ namespace Spoon {
                 }
             );
 
-            // UPDATE LAYER STACK
+            // UPDATE
             sf::Time tick = clock.restart();
             for (Layer* layer : m_LayerStack)
             {
                 layer->OnUpdate(tick);
             }
 
+            // PHYSICS
+            #ifdef SS_PHYSICS_ENABLED
+                UpdatePhysics();
+            #endif
+            
             // RENDER
             m_Window.clear();
 

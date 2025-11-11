@@ -1,17 +1,20 @@
 #pragma once
 
 #include "Core.h"
-#include "LayerStack.h"
-#include "ResourceManager.h"
-
 #include "SFML/Graphics.hpp"
 
 namespace Spoon { 
+
+	class PhysicsManager;
+	class ResourceManager;
+	class LayerStack;
+	class Layer;
 
 	struct AppSpecifications
 	{
 		sf::Vector2u m_WindowSize = {600, 600};
 		std::string m_WindowName = "Special Spoon";
+		bool PhysicsEnabled = false;
 	};
 
 	class SPOON_API Application
@@ -20,30 +23,26 @@ namespace Spoon {
 		Application(const AppSpecifications& specs);
 		virtual ~Application() {}
 
-		// CONTROLS RENDERWINDOW SETTINGS
 		AppSpecifications GetSpecs() { return m_Specs; }
-		
-		// LAYER/SCENE CONTROL
-		void PushLayer(Layer* layer);
 
-		// GAME LOOP CONTROL
+		void PushLayer(Layer* layer);
+		void UpdatePhysics();
 		void Run();
 		void Close();
 
 	private:
 		static Application* s_Instance;
-
-		AppSpecifications m_Specs;
-		sf::RenderWindow m_Window;
-
 		bool m_IsRunning = true;
 
-		LayerStack m_LayerStack;
-		ResourceManager m_RSM;
+		AppSpecifications m_Specs;
+		sf::RenderWindow  m_Window;
+		LayerStack 		  m_LayerStack;
+		ResourceManager   m_RSM;
+		PhysicsManager    m_PM;
 	};
 
-	//APPLICATION ENTRY POINT ---- DEFINE IN CLIENT APPLICATION
-	//SHOULD SET WINDOW SIZE AND WINDOW NAME IN APPSPECIFICATIONS
+	//DEFINE IN CLIENT APPLICATION
+	//SET APPSPECIFICATIONS
 
 	Application* CreateApp();
 }

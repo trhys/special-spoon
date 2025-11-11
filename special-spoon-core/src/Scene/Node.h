@@ -16,7 +16,7 @@ namespace Spoon
         virtual ~Node() {}
 
         template <typename T>
-        void AddChildNode(T* child)
+        void AddChildNode(T child)
         {
             m_Children.emplace_back(child);
         }
