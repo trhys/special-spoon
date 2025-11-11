@@ -17,7 +17,7 @@ namespace Spoon {
 
     void Application::PushLayer(Layer* layer)
     {
-        layer->GetRSM(m_RSM);
+        layer->GetRSM(&m_RSM);
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
     }

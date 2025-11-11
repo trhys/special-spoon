@@ -14,7 +14,7 @@ namespace Spoon
         sf::Texture& AqcuireTexture(const std::string id, const std::filesystem::path file_path)
         {
             auto found = m_Textures.find(id);
-            if(found = m_Textures.end())
+            if(found == m_Textures.end())
             {
                 m_Textures.emplace(id, file_path);
             }

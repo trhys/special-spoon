@@ -6,6 +6,7 @@
 #include "Application.h"
 #include "Layer.h"
 #include "ResourceManager.h"
-#include "Node.h"
-#include "Scene.h"
-#include "Entity.h"
+
+#include "Scene/Node.h"
+#include "Scene/Scene.h"
+#include "Scene/Entity.h"

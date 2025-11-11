@@ -3,6 +3,7 @@
 #include "Node.h"
 #include "SFML/Graphics.hpp"
 
+
 namespace Spoon
 {
     class Entity : public Node
@@ -22,6 +23,6 @@ namespace Spoon
             target.draw(m_Sprite, states);
         }
 
-        virtual void OnUpdate(sf::Time tick, Layer* context) override {}
+        //virtual void OnUpdate(sf::Time tick, Layer* context) override {}
     };
 }

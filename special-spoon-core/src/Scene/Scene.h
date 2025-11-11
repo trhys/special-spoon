@@ -5,7 +5,7 @@
 
 namespace Spoon 
 {
-    class SPOON_API Scene : public Node
+    class Scene : public Node
     {
     public:
         Scene() {}
@@ -13,6 +13,6 @@ namespace Spoon
 
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
-        virtual void OnUpdate(sf::Time tick, Layer* context) override {}
+        //virtual void OnUpdate(sf::Time tick, Layer* context) override {}
     };
 }

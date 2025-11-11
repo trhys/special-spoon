@@ -2,11 +2,13 @@
 
 #include <vector>
 #include <algorithm>
-
 #include "SFML/Graphics.hpp"
 
-namespace Spoon 
-{    
+
+namespace Spoon
+{   
+    class Layer;
+
     class Node : public sf::Drawable, public sf::Transformable
     {
     public:
@@ -22,7 +24,7 @@ namespace Spoon
         template <typename T>
         void KillChildNode(T* child)
         {
-            std::erase(m_Children, child);
+            erase(m_Children, child);
             delete child;
         }
 
@@ -42,10 +44,10 @@ namespace Spoon
 
         void Update(sf::Time tick, Layer* context)
         {
-            OnUpdate(sf::Time tick, Layer* context);
+            OnUpdate(tick, context);
             for (auto& child : m_Children)
             {
-                child->Update(sf::Time tick, Layer* context);
+                child->Update(tick, context);
             }
         }
 

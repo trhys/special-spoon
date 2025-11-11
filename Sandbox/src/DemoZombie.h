@@ -5,15 +5,15 @@
 class DemoZombie : public Spoon::Entity
 {
 public:
-    DemoZombie(sf::Texture& texture) {}
+    DemoZombie(sf::Texture& texture) : Entity::Entity(texture) {}
     ~DemoZombie() {}
 
     void OnAdd() override {}
     void OnKill() override {}
 
 private:
-    int speed = 1;
-    void OnUpdate(sf::Time tick, Layer* context) override;
+    sf::Vector2f speed = { 1, 0 };
+    void OnUpdate(sf::Time tick, Spoon::Layer* context) override;
 };
 
 class ZombieSpawner : public Spoon::Node
@@ -22,11 +22,11 @@ public:
     ZombieSpawner(sf::Vector2f point) { setPosition(point); }
     ~ZombieSpawner() {}
 
-    void SpawnZombie(Layer* context);
+    void SpawnZombie(Spoon::Layer* context);
 
 private:
     sf::Time timer;
     void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
-    void OnUpdate(sf::Time tick, Layer* context) override;
+    void OnUpdate(sf::Time tick, Spoon::Layer* context) override;
 };
 
