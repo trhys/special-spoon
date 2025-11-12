@@ -12,11 +12,10 @@ namespace Spoon
         CollisionDetector() {}
         ~CollisionDetector() {}
 
-        void BuildQT();
         void Detect(const Scene& sceneroot);
 
     private:
         Quadtree m_Quadtree;
-
+        bool tree_IsBuilt = false;
     };
 }

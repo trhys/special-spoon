@@ -17,6 +17,8 @@ namespace Spoon
             m_Bounds.size = size;
         }
 
+        sf::FloatRect GetBounds() { return m_Bounds; }
+
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
 

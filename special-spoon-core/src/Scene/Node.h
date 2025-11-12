@@ -15,6 +15,12 @@ namespace Spoon
         Node() {}
         virtual ~Node() {}
 
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+        void Update(sf::Time tick, Layer* context)
+        std::vector<Node*> GetChildren() const { return m_Children; }       
+        virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
+        virtual void CollisionDetected() {}
+        
         template <typename T>
         void AddChildNode(T* child)
         {
@@ -27,31 +33,6 @@ namespace Spoon
             erase(m_Children, child);
             delete child;
         }
-
-        std::vector<Node*> GetChildren() const { return m_Children; }
-
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-        {
-            states.transform *= getTransform();
-
-            OnDraw(target, states);
-
-            for (auto& child : m_Children)
-            {
-                child->draw(target, states);
-            }
-        }
-
-        void Update(sf::Time tick, Layer* context)
-        {
-            OnUpdate(tick, context);
-            for (auto& child : m_Children)
-            {
-                child->Update(tick, context);
-            }
-        }
-
-        virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
 
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;

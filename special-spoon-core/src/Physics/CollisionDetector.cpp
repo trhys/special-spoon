@@ -1,28 +1,19 @@
+#include "Core.h"
 #include "CollisionDetector.h"
-#include "Scene/Scene.h"
-#include <optional>
 
 namespace Spoon
 {
-    void CollisionDetector::BuildQT()
-    {
-        // TODO - BUILD QUADTREE
-    }
     void CollisionDetector::Detect(const Scene& sceneroot)
     {
-        // TODO - BROAD PHASE
-
-        // Check for bounding box intersection
-        for(auto a = 0; a < sceneroot.GetChildren().size(); a++)
+        // Broad phase
+        if(!tree_IsBuilt)
         {
-            for(auto b = a + 1; b < sceneroot.GetChildren().size(); b++)
-            {
-                if (const std::optional collision = sceneroot.GetChildren()[a]->GetBoundingBox().findIntersection(sceneroot.GetChildren()[b]->GetBoundingBox()))
-                {
-                    // Handle collision
-                    std::cout << "COLLISION DETECTED" << std::endl;
-                }
-            }
+            m_Quadtree.BuildTree(sceneroot.GetBounds());
+            tree_IsBuilt = true;
         }
+        m_Quadtree.GetCollisionBodies(sceneroot);
+
+        // Collision check
+        m_Quadtree.ProcessCollisionBuffer();
     }
 }

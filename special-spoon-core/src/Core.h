@@ -29,9 +29,11 @@
                 delete app; \
                 return EXIT_FAILURE; \
             };
+    #define SS_COLLISION_TEST std::cout << "COLLISION DETECTED" << std::endl;
 #else
     #define SS_TRY
     #define SS_CATCH(string)
+    #define SS_COLLISION_TEST
 #endif
 
 #ifdef SS_ASSERTS_ENABLED

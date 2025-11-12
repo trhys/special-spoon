@@ -16,7 +16,7 @@ namespace Spoon
             auto found = m_Textures.find(id);
             if(found == m_Textures.end())
             {
-                m_Textures.emplace(id, file_path);
+                m_Textures.emplace(id, sf::Texture(file_path));
             }
             return m_Textures[id];
         }
