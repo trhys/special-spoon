@@ -13,12 +13,17 @@ namespace Spoon
 	void Layer::OnUpdate(sf::Time tick)
 	{
 		ProcessBuffer();
-		m_SceneRoot.Update(tick, this);
+		UpdateScene(tick, this);
 	}
 
 	sf::Texture& Layer::GetTexture(const std::string id, const std::filesystem::path file_path)
 	{
 		return p_RSM->AqcuireTexture(id, file_path);
+	}
+
+	void Layer::UpdateScene(sf::Time tick, Layer* context)
+	{
+		m_SceneRoot.Update(tick, this);
 	}
 
 	void Layer::DrawScene(sf::RenderTarget& target, sf::RenderStates states)

@@ -29,6 +29,7 @@ namespace Spoon
 
 		// Scene controls
 		sf::Texture& GetTexture(const std::string id, const std::filesystem::path file_path);
+		void UpdateScene(sf::Time tick, Layer* context);
 		void DrawScene(sf::RenderTarget& target, sf::RenderStates states);
 		void ShowScene() { scene_IsActive = true; }
 		void HideScene() { scene_IsActive = false; }

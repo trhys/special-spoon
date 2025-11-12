@@ -17,7 +17,8 @@ void DemoLayer::OnAttach()
 
 void DemoLayer::OnUpdate(sf::Time tick)
 {
-
+    ProcessBuffer();
+    UpdateScene(tick, this);
 }
 
 bool DemoLayer::OnEvent(const sf::Event& e)
