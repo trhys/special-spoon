@@ -14,7 +14,7 @@ namespace Spoon
 	class ResourceManager;
 	class PhysicsManager;
 
-	class Layer
+	class SPOON_API Layer
 	{
 	public:
 		Layer() {}
@@ -41,9 +41,9 @@ namespace Spoon
 		template <typename node_type, typename... Args>
 		void CreateNode(Args&&...args)
 		{
-			m_CreationBuffer.push_back([=]() mutable
+			m_CreationBuffer.emplace_back([=]() mutable
 				{
-					m.SceneRoot.AddChildNode(new node_type(std::forward<Args>(args)));
+					m_SceneRoot.AddChildNode(new node_type(std::forward<Args>(args)...));
 				});
 		}
 		void ProcessBuffer();
@@ -55,6 +55,6 @@ namespace Spoon
 		Scene m_SceneRoot;
 		bool scene_IsActive = false;
 
-		std::vector<std::function<void*()>> m_CreationBuffer;
+		std::vector<std::function<void()>> m_CreationBuffer;
 	};
 }

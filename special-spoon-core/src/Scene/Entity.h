@@ -14,6 +14,8 @@ namespace Spoon
 
         virtual void OnAdd() {}
         virtual void OnKill() {}
+
+        sf::FloatRect GetBoundingBox() override { return m_Sprite.getGlobalBounds(); }
         
     private:
         sf::Sprite m_Sprite;

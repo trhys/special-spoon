@@ -16,9 +16,9 @@ namespace Spoon
         virtual ~Node() {}
 
         template <typename T>
-        void AddChildNode(T child)
+        void AddChildNode(T* child)
         {
-            m_Children.emplace_back(child);
+            m_Children.push_back(child);
         }
 
         template <typename T>
@@ -28,7 +28,7 @@ namespace Spoon
             delete child;
         }
 
-        std::vector<Node*> GetChildren() { return m_Children; }
+        std::vector<Node*> GetChildren() const { return m_Children; }
 
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override
         {
@@ -50,6 +50,8 @@ namespace Spoon
                 child->Update(tick, context);
             }
         }
+
+        virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
 
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;

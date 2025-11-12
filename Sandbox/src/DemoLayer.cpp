@@ -6,11 +6,16 @@
 DemoLayer::DemoLayer()
 {
     SetSceneBounds({0, 0}, {600, 600});
-    AddSceneNode(new Background(Spoon::Layer::GetTexture("background", "resources/TD-Scene,png")));
-    AddSceneNode(new ZombieSpawner({200, 200}));
+
 }
 
 void DemoLayer::OnAttach()
+{
+    CreateNode<Background>(Spoon::Layer::GetTexture("background", "resources/TD-Scene.png"));
+    CreateNode<ZombieSpawner>(sf::Vector2f{ 200, 200 });
+}
+
+void DemoLayer::OnUpdate(sf::Time tick)
 {
 
 }

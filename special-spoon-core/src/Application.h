@@ -1,14 +1,12 @@
 #pragma once
 
 #include "Core.h"
+#include "LayerStack.h"
+#include "ResourceManager.h"
+#include "Physics/PhysicsManager.h"
 #include "SFML/Graphics.hpp"
 
 namespace Spoon { 
-
-	class PhysicsManager;
-	class ResourceManager;
-	class LayerStack;
-	class Layer;
 
 	struct AppSpecifications
 	{

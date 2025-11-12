@@ -1,4 +1,6 @@
 #include "Layer.h"
+#include "ResourceManager.h"
+#include "Physics/PhysicsManager.h"
 
 namespace Spoon
 {
@@ -26,7 +28,7 @@ namespace Spoon
 
 	void Layer::Physics()
 	{
-		p_PM->CheckCollision(&m_SceneRoot);
+		p_PM->CheckCollision(m_SceneRoot);
 	}
 
 	void Layer::ProcessBuffer()
@@ -34,13 +36,7 @@ namespace Spoon
 		for (auto& func : m_CreationBuffer)
 		{
 			func();
-			//Node* new_node = func();
-			// if (new_node)
-			// {
-			// 	AddSceneNode(std::move(new_node));
-			// }
 		}
-
 		m_CreationBuffer.clear();
 	}
 }

@@ -7,7 +7,7 @@ namespace Spoon
     class Quadtree
     {
     public:
-        Quadtree(sf::Vector2f bounds, int quads);
+        Quadtree() {}//sf::Vector2f bounds, int quads) {}
         ~Quadtree() {}
 
     private:

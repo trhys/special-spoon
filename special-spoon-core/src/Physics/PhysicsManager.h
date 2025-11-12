@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CollisionDetector.h"
+
 namespace Spoon
 {
     class Scene;
@@ -10,7 +12,7 @@ namespace Spoon
         PhysicsManager() {}
         ~PhysicsManager() {}
 
-        void CheckCollision(Scene& sceneroot) { m_CD.Detect(sceneroot); }
+        void CheckCollision(const Scene& sceneroot) { m_CD.Detect(sceneroot); }
 
     private:
         CollisionDetector m_CD;
