@@ -5,51 +5,27 @@ project(special-spoon
     LANGUAGE CXX
 )
 
-add_executable(Sandbox)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-target_sources(Sandbox
-    PRIVATE
-        Sandbox.cpp
-        DemoLayer.cpp
-        DemoZombie.cpp
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_definitions(-DSS_PLATFORM_WINDOWS)
+endif()
 
-    PUBLIC
-        FILE_SET sandbox_headers
-        TYPE HEADERS
-        FILES
-            Background.h
-            DemoLayer.h
-            DemoZombie.h
+add_subdirectory(special-spoon-core)
+
+include(GNUInstallDirs)
+install(
+    FILES
+        cmake/special-spoonConfig.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
 )
 
-add_library(special-spoon-core)
+if(BUILD_SANDBOX)
+    add_subdirectory(Sandbox)
+    target_link_libraries(Sandbox PRIVATE special-spoon-core)
+endif()
 
-target_sources(special-spoon-core)
-    PRIVATE
-        Application.cpp
-        Layer.cpp
-        LayerStack.cpp
-        Scene/Node.cpp
-        Physics/CollisionDetector.cpp
-        Physics/QuadTree.cpp
-
-    PUBLIC
-        FILE_SET ssc_headers
-        TYPE HEADERS
-        FILES
-            Application.h
-            Core.h
-            EntryPoint.h
-            Layer.h
-            LayerStack.h
-            MemoryUtils.h
-            ResourceManager.h
-            Spoon.h
-            Scene/Entity.h
-            Scene/Node.h
-            Scene/Scene.h
-            Physics/CollisionDetector.h
-            Physics/PhysicsManager.h
-            Physics/QuadTree.h
-
-target_link_libraries(Sandbox PRIVATE special-spoon-core)
+if(DEBUG_MODE)
+    add_definitions(-DSS_DEBUG_ENABLED -DSS_ASSERTS_ENABLED)
+endif()
