@@ -1,6 +1,7 @@
 #include "QuadTree.h"
 #include "Scene/Scene.h"
 #include <optional>
+#include <iterator>
 
 namespace Spoon
 {
@@ -14,28 +15,28 @@ namespace Spoon
         }
         for(auto it = m_GridNodes.begin(); it < m_GridNodes.end(); it++)
         {
-            if(it < m_GridNodes[3])
+            if(std::distance(m_GridNodes.begin(), it) < 4)
             {
-                float top = static_cast<float>*it
-                m_GridNodes[it].position.x = node_size.x * top;
-                m_GridNodes[it].position.y = 0;
+                int top = std::distance(m_GridNodes.begin(), it);
+                m_GridNodes[top].body.position.x = node_size.x * top;
+                m_GridNodes[top].body.position.y = 0;
             }
             else 
             {
-                float bottom = static_cast<float>*it - 4.0;
-                m_GridNodes[it].position.x = node_size.x * bottom;
-                m_GridNodes[it].position.y = node_size.y;
+                int bottom = std::distance(m_GridNodes.begin(), it) - 4.0;
+                m_GridNodes[bottom].body.position.x = node_size.x * bottom;
+                m_GridNodes[bottom].body.position.y = node_size.y;
             }
         }
     }
 
-    void CollisionDetector::GetCollisionBodies(const Scene& sceneroot)
+    void Quadtree::GetCollisionBodies(const Scene& sceneroot)
     {
         for(auto& leaf : m_GridNodes)
         {
             for(auto& child : sceneroot.GetChildren())
             {
-                if(const std::optional intersect = leaf.body.findIntersection(child.GetBoundingBox()))
+                if(const std::optional intersect = leaf.body.findIntersection(child->GetBoundingBox()))
                 {
                     leaf.collision_buffer.push_back(child);
                 }
@@ -43,7 +44,7 @@ namespace Spoon
         }
     }
 
-    void CollisionDetector::ProcessCollisionBuffer() // TODO : Collision handling needs some kind of callback to help respond (where collision occured for example)
+    void Quadtree::ProcessCollisionBuffer() // TODO : Collision handling needs some kind of callback to help respond (where collision occured for example)
     {
         for(auto& leaf : m_GridNodes)
         {
@@ -60,7 +61,7 @@ namespace Spoon
                     }
                 }
             }
+            leaf.collision_buffer.clear();
         }
-        collision_buffer.clear();
     }
 }

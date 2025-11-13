@@ -26,7 +26,7 @@ namespace Spoon
         void ProcessCollisionBuffer();
 
     private:
-        std::vector<QT_GridNode> m_GridNodes(8);
+        std::vector<QT_GridNode> m_GridNodes{8};
 
     };
 }

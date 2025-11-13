@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core.h"
 #include <vector>
 #include <algorithm>
 #include "SFML/Graphics.hpp"
@@ -9,14 +10,14 @@ namespace Spoon
 {   
     class Layer;
 
-    class Node : public sf::Drawable, public sf::Transformable
+    class SPOON_API Node : public sf::Drawable, public sf::Transformable
     {
     public:
         Node() {}
         virtual ~Node() {}
 
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-        void Update(sf::Time tick, Layer* context)
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+        void Update(sf::Time tick, Layer* context);
         std::vector<Node*> GetChildren() const { return m_Children; }       
         virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
         virtual void CollisionDetected() {}

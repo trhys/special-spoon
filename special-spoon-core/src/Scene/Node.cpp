@@ -3,7 +3,7 @@
 
 namespace Spoon
 {
-    void Node::draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void Node::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.transform *= getTransform();
 

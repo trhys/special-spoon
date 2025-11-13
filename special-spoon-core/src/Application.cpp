@@ -89,12 +89,10 @@ namespace Spoon {
             // RENDER
             m_Window.clear();
 
-            SS_TRY
             for (Layer* layer : m_LayerStack)
             {
                 layer->DrawScene(m_Window, states);
             }
-            SS_CATCH("RENDERING")
             
             m_Window.display();
         }
