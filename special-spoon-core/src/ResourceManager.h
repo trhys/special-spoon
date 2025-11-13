@@ -16,12 +16,18 @@ namespace Spoon
             auto found = m_Textures.find(id);
             if(found == m_Textures.end())
             {
-                m_Textures.emplace(id, sf::Texture::Texture(file_path));
+                sf::Texture* newTexture = new sf::Texture();
+                if(!newTexture->loadFromFile(file_path))
+                {
+                    throw std::runtime_error("Failed to load texture from file path: " + file_path);
+                }
+
+                m_Textures.emplace(id, std::move(newTexture));
             }
-            return m_Textures[id];
+            return *m_Textures[id];
         }
 
     private:
-        std::unordered_map<std::string, sf::Texture> m_Textures;
+        std::unordered_map<std::string, sf::Texture*> m_Textures;
     };
 }
