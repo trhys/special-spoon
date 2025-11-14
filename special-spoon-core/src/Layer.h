@@ -8,9 +8,16 @@
 
 #include <functional>
 #include <vector>
-
+class SPOON_API test : public Spoon::Entity
+{
+public:
+	test(sf::Texture& texture) : Entity::Entity(texture) {}
+	~test() {}
+};
 namespace Spoon 
 {
+
+
 	class ResourceManager;
 	class PhysicsManager;
 
@@ -48,6 +55,11 @@ namespace Spoon
 				});
 		}
 		void ProcessBuffer();
+		
+		void testt()
+		{
+			m_SceneRoot.AddChildNode(new test(Layer::GetTexture("background", "resources/TD-Scene.png")));
+		}
 		
 	private:
 		ResourceManager* p_RSM = nullptr;

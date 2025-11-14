@@ -19,7 +19,7 @@ namespace Spoon
                 sf::Texture* newTexture = new sf::Texture();
                 if(!newTexture->loadFromFile(file_path))
                 {
-                    throw std::runtime_error("Failed to load texture from file path: " + file_path);
+                    throw std::runtime_error("Failed to load texture from file path: " + file_path.string());
                 }
 
                 m_Textures.emplace(id, std::move(newTexture));

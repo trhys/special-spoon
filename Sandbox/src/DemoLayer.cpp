@@ -11,8 +11,7 @@ DemoLayer::DemoLayer()
 
 void DemoLayer::OnAttach()
 {
-    CreateNode<Background>(Spoon::Layer::GetTexture("background", "resources/TD-Scene.png"));
-    CreateNode<ZombieSpawner>(sf::Vector2f{ 200, 200 });
+
 }
 
 void DemoLayer::OnUpdate(sf::Time tick)
@@ -28,9 +27,16 @@ bool DemoLayer::OnEvent(const sf::Event& e)
         if (keypress->code == sf::Keyboard::Key::Enter)
         {
             if(GetIsActive()) { HideScene(); }
-            else if(!GetIsActive()) { ShowScene(); }
+            else if (!GetIsActive()) { ShowScene(); StartDemo(); }
         }
     }
 
     return false;
+}
+
+void DemoLayer::StartDemo()
+{
+    //CreateNode<Background>(Spoon::Layer::GetTexture("background", "resources/TD-Scene.png"));
+    //CreateNode<ZombieSpawner>(sf::Vector2f{ 200, 200 });
+    Spoon::Layer::testt();
 }

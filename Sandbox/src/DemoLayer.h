@@ -12,6 +12,8 @@ public:
     void OnUpdate(sf::Time tick) override;
     bool OnEvent(const sf::Event& e) override;
 
+    void StartDemo();
+
 private:
     
 };

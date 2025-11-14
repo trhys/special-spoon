@@ -28,7 +28,10 @@ namespace Spoon
 
 	void Layer::DrawScene(sf::RenderTarget& target, sf::RenderStates states)
 	{
-		m_SceneRoot.draw(target, states);
+		if (scene_IsActive)
+		{
+			m_SceneRoot.draw(target, states);
+		}
 	}
 
 	void Layer::Physics()

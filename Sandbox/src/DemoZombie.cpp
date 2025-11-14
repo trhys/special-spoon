@@ -12,10 +12,10 @@ void ZombieSpawner::SpawnZombie(Spoon::Layer* context)
 
 void ZombieSpawner::OnUpdate(sf::Time tick, Spoon::Layer* context)
 {
-    timer = timer + tick;
-    if(timer.asSeconds() > 5)
-    {
-        SpawnZombie(context);
-        timer = timer.Zero;
-    }
+    //timer = timer + tick;
+    //if(timer.asSeconds() > 5)
+    //{
+    //    SpawnZombie(context);
+    //    timer = timer.Zero;
+    //}
 }

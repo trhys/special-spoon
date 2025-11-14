@@ -20,6 +20,8 @@ namespace Spoon {
         {
             #define SS_PHYSICS_ENABLED
         }
+
+        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
     }
 
     void Application::PushLayer(Layer* layer)
@@ -44,7 +46,6 @@ namespace Spoon {
 
     void Application::Run()
     {
-        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
         sf::RenderStates states = sf::RenderStates::RenderStates();
         sf::Clock clock;
 
