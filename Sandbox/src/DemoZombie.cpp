@@ -7,7 +7,7 @@ void DemoZombie::OnUpdate(sf::Time tick, Spoon::Layer* context)
 
 void ZombieSpawner::SpawnZombie(Spoon::Layer* context)
 {
-    context->CreateNode<DemoZombie>(context->GetTexture("demozombie", "resources/DemoSprite.png"));
+    //context->CreateNode<DemoZombie>(context->GetTexture("demozombie", "resources/DemoSprite.png"));
 }
 
 void ZombieSpawner::OnUpdate(sf::Time tick, Spoon::Layer* context)

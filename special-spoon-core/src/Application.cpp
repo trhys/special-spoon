@@ -16,6 +16,9 @@ namespace Spoon {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
 
+        m_ResourceManager.Init(this);
+        m_SceneManager.Init(this);
+
         if(m_Specs.PhysicsEnabled)
         {
             #define SS_PHYSICS_ENABLED
@@ -26,17 +29,30 @@ namespace Spoon {
 
     void Application::PushLayer(Layer* layer)
     {
-        layer->Init(&m_RSM, &m_PM);
+        layer->Init(this);
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
     }
 
+    void Application::PopLayer(Layer* layer)
+    {
+        m_LayerStack.PopLayer(layer);
+    }
+
+    void Application::CreateScene(std::string name, sf::Vector2f size)
+    {
+        Scene scene(name, size);
+        m_SceneManager.CacheScene(scene);
+    }
+
+    // sf::Texture& Application::GetTexture(std::string id, std::filesystem::path file_path)
+    // {
+    //     return m_ResourceManager.LoadTexture(id, file_path);
+    // }
+
     void Application::UpdatePhysics()
     {
-        for (Layer* layer : m_LayerStack)
-        {
-            layer->Physics();
-        }
+        m_PhysicsManager.CheckCollision(m_SceneManager.GetActiveScene());
     }
 
     void Application::Close()
@@ -90,10 +106,7 @@ namespace Spoon {
             // RENDER
             m_Window.clear();
 
-            for (Layer* layer : m_LayerStack)
-            {
-                layer->DrawScene(m_Window, states);
-            }
+            m_SceneManager.DrawScene(m_Window, states);
             
             m_Window.display();
         }

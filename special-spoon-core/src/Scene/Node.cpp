@@ -3,6 +3,17 @@
 
 namespace Spoon
 {
+    void Node::AddChild(Node* child)
+    {
+        m_Children.emplace_back(std::move(child));
+    }
+
+    void Node::KillChild(Node* child)
+    {
+        erase(m_Children, child);
+        delete child;
+    }
+
     void Node::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.transform *= getTransform();

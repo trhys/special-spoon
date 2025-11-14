@@ -12,6 +12,7 @@ namespace Spoon {
         ~LayerStack() {}
 
         void PushLayer(Layer* layer);
+        void PopLayer(Layer* layer);
         void PushEvent(const sf::Event& event);
 
         std::vector<Layer*>::iterator begin() { return m_Layers.begin(); }
@@ -21,7 +22,5 @@ namespace Spoon {
 
     private:
         std::vector<Layer*> m_Layers;
-        int m_LayerIndex = 0;
-
     };
 }

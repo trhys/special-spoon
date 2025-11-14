@@ -18,22 +18,14 @@ namespace Spoon
 
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void Update(sf::Time tick, Layer* context);
-        std::vector<Node*> GetChildren() const { return m_Children; }       
-        virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
-        virtual void CollisionDetected() {}
-        
-        template <typename T>
-        void AddChildNode(T* child)
-        {
-            m_Children.push_back(child);
-        }
 
-        template <typename T>
-        void KillChildNode(T* child)
-        {
-            erase(m_Children, child);
-            delete child;
-        }
+        std::vector<Node*> GetChildren() const { return m_Children; }       
+        sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
+
+        virtual void CollisionDetected() {}
+
+        void AddChild(Node* child);
+        void KillChild(Node* child);
 
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;

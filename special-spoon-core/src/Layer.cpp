@@ -1,50 +1,36 @@
 #include "Layer.h"
-#include "ResourceManager.h"
-#include "Physics/PhysicsManager.h"
+#include "Scene.h"
 
 namespace Spoon
 {
-	void Layer::Init(ResourceManager* rsm, PhysicsManager* pm)
+	void Layer::Init(Application* app)
 	{
-		p_RSM = rsm;
-		p_PM = pm;
+		p_App = app;
 	}
 
-	void Layer::OnUpdate(sf::Time tick)
+	void Layer::RequestScene(std::string name, sf::Vector2f size)
 	{
-		ProcessBuffer();
-		UpdateScene(tick, this);
+		Scene scene(name, size);
+		p_App->GetSM()->CacheScene(scene);
 	}
+	
+	// void Layer::BeginScene(std::string name)
+	// {
+	// 	p_App->GetSM()->ActivateScene(name);
+	// }
 
-	sf::Texture& Layer::GetTexture(const std::string id, const std::filesystem::path file_path)
-	{
-		return p_RSM->AqcuireTexture(id, file_path);
-	}
+	// void Layer::EndScene()
+	// {
+	// 	p_App->GetSM()->DeactivateScene();
+	// }
 
-	void Layer::UpdateScene(sf::Time tick, Layer* context)
-	{
-		m_SceneRoot.Update(tick, this);
-	}
+	// void Layer::PushOverlay(std::string name)
+	// {
+	// 	p_App->GetSM()->ActivateOverlay(name);
+	// }
 
-	void Layer::DrawScene(sf::RenderTarget& target, sf::RenderStates states)
-	{
-		if (scene_IsActive)
-		{
-			m_SceneRoot.draw(target, states);
-		}
-	}
-
-	void Layer::Physics()
-	{
-		p_PM->CheckCollision(m_SceneRoot);
-	}
-
-	void Layer::ProcessBuffer()
-	{
-		for (auto& func : m_CreationBuffer)
-		{
-			func();
-		}
-		m_CreationBuffer.clear();
-	}
+	// void Layer::PopOverlay()
+	// {
+	// 	p_App->GetSM()->DeactivateOverlay();
+	// }
 }
