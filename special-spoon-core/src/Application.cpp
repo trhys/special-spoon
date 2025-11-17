@@ -16,8 +16,8 @@ namespace Spoon {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
 
-        m_ResourceManager.Init(this);
-        m_SceneManager.Init(this);
+        //m_ResourceManager.Init(this);
+        //m_SceneManager.Init(this);
 
         if(m_Specs.PhysicsEnabled)
         {
@@ -29,7 +29,7 @@ namespace Spoon {
 
     void Application::PushLayer(Layer* layer)
     {
-        layer->Init(this);
+        layer->Init(&m_SceneManager, &m_ResourceManager);
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
     }

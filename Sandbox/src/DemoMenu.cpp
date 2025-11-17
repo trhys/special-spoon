@@ -1,8 +1,10 @@
 #include "DemoMenu.h"
+#include "Background.h"
 
 void DemoMenu::OnAttach()
 {
     RequestScene("main_menu", {1080, 1080});
+    BeginScene("main_menu");
     RequestEntity<Background>("background", "resources/SV-Scene.png");
 }
 

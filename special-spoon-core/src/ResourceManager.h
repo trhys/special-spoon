@@ -11,7 +11,7 @@ namespace Spoon
         ResourceManager() {}
         ~ResourceManager() {}
 
-        void Init(Application* app) { p_App = app; }
+        //void Init(Application* app) { p_App = app; }
 
         sf::Texture& LoadTexture(const std::string id, const std::filesystem::path file_path)
         {
@@ -19,7 +19,7 @@ namespace Spoon
             if(found == m_Textures.end())
             {
                 sf::Texture texture;
-                if(!texture->loadFromFile(file_path))
+                if(!texture.loadFromFile(file_path))
                 {
                     throw std::runtime_error("Failed to load texture from file path: " + file_path.string());
                 }
@@ -34,7 +34,7 @@ namespace Spoon
         }
 
     private:
-        Application* p_App = nullptr;
+        //Application* p_App = nullptr;
         std::unordered_map<std::string, sf::Texture> m_Textures;
     };
 }

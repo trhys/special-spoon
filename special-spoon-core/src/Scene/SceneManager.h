@@ -3,16 +3,19 @@
 #include "Scene.h"
 
 #include "SFML/Graphics.hpp"
+#include <functional>
 
 namespace Spoon
 {
+    //class Application;
+
     class SceneManager
     {
     public:
         SceneManager() {}
         ~SceneManager() {}
 
-        void Init(Application* app) { p_App = app; }
+        //void Init(Application* app) { p_App = app; }
 
         void CacheScene(Scene scene);
         void ActivateScene(std::string id);
@@ -22,13 +25,13 @@ namespace Spoon
         void DrawScene(sf::RenderTarget& target, sf::RenderStates states);
         void UpdateScene(sf::Time tick);
 
-        Scene& GetActiveScene() { return m_ActiveScene; }
-        Scene& GetOverlay() { return m_Overlay; }
+        Scene GetActiveScene() { return *m_ActiveScene; }
+        Scene GetOverlay() { return *m_Overlay; }
 
         template <typename T>
-		void CreateSceneEntity(std::string name, std::filesystem::path file_path)
+		void CreateSceneEntity(T entity)
 		{
-            m_ActiveScene->AddChild(new T(p_App->GetRM()->LoadTexture(name, file_path)));
+            m_ActiveScene->AddChild(entity);
 		}
 
         template <typename T>
@@ -38,11 +41,11 @@ namespace Spoon
 		}
 
     private:
-        Application* p_App = nullptr;
+        //Application* p_App = nullptr;
         Scene* m_ActiveScene = nullptr;
         Scene* m_Overlay = nullptr;
 
-        std::unordered_map<std::string id, Scene scene> m_SceneCache;
-        std::vector<std::function<void()>> m_Creationbuffer;
+        std::unordered_map<std::string, Scene> m_SceneCache;
+        //std::vector<std::function<void()>> m_Creationbuffer;
     };
 }

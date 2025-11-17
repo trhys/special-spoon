@@ -17,10 +17,10 @@ namespace Spoon
         virtual ~Node() {}
 
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        void Update(sf::Time tick, Layer* context);
+        void Update(sf::Time tick);
 
         std::vector<Node*> GetChildren() const { return m_Children; }       
-        sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
+        virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
 
         virtual void CollisionDetected() {}
 
@@ -29,7 +29,7 @@ namespace Spoon
 
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
-        virtual void OnUpdate(sf::Time tick, Layer* context) {}
+        virtual void OnUpdate(sf::Time tick) {}
 
         std::vector<Node*> m_Children;
     };

@@ -1,16 +1,17 @@
 #include "Node.h"
 #include "Layer.h"
 
+
 namespace Spoon
 {
     void Node::AddChild(Node* child)
     {
-        m_Children.emplace_back(std::move(child));
+        m_Children.push_back(child);
     }
 
     void Node::KillChild(Node* child)
     {
-        erase(m_Children, child);
+        m_Children.erase(remove(m_Children.begin(), m_Children.end(), child), m_Children.end());
         delete child;
     }
 
@@ -26,12 +27,12 @@ namespace Spoon
         }
     }
 
-    void Node::Update(sf::Time tick, Layer* context)
+    void Node::Update(sf::Time tick)
     {
-        OnUpdate(tick, context);
+        OnUpdate(tick);
         for (auto& child : m_Children)
         {
-            child->Update(tick, context);
+            child->Update(tick);
         }
     }
 }

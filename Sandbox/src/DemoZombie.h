@@ -13,7 +13,7 @@ public:
 
 private:
     sf::Vector2f speed = { 1, 0 };
-    void OnUpdate(sf::Time tick, Spoon::Layer* context) override;
+    void OnUpdate(sf::Time tick) override;
 };
 
 class ZombieSpawner : public Spoon::Node
@@ -27,6 +27,6 @@ public:
 private:
     sf::Time timer;
     void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
-    void OnUpdate(sf::Time tick, Spoon::Layer* context) override;
+    void OnUpdate(sf::Time tick) override;
 };
 

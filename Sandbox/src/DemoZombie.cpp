@@ -1,6 +1,6 @@
 #include "DemoZombie.h"
 
-void DemoZombie::OnUpdate(sf::Time tick, Spoon::Layer* context)
+void DemoZombie::OnUpdate(sf::Time tick)
 {
     move(speed * tick.asSeconds());
 }
@@ -10,7 +10,7 @@ void ZombieSpawner::SpawnZombie(Spoon::Layer* context)
     //context->CreateNode<DemoZombie>(context->GetTexture("demozombie", "resources/DemoSprite.png"));
 }
 
-void ZombieSpawner::OnUpdate(sf::Time tick, Spoon::Layer* context)
+void ZombieSpawner::OnUpdate(sf::Time tick)
 {
     //timer = timer + tick;
     //if(timer.asSeconds() > 5)

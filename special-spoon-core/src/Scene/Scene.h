@@ -8,7 +8,8 @@ namespace Spoon
     class Scene : public Node
     {
     public:
-        Scene(std::string name, sf::Vector2f size) : m_Name(name), m_Bounds.size(size) {}
+        Scene() {}
+        Scene(std::string name, sf::Vector2f size) : m_Name(name) { m_Bounds.size = size; }
         virtual ~Scene() {}
 
         void ShowScene() { m_IsActive = true; }
