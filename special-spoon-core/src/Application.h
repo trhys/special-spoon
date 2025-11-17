@@ -2,6 +2,9 @@
 
 #include "Core.h"
 #include "LayerStack.h"
+#include "ResourceManager.h"
+#include "Physics/PhysicsManager.h"
+#include "Scene/SceneManager.h"
 
 #include "SFML/Graphics.hpp"
 
@@ -11,6 +14,7 @@ namespace Spoon {
 	{
 		sf::Vector2u m_WindowSize = {600, 600};
 		std::string m_WindowName = "Special Spoon";
+		bool PhysicsEnabled = false;
 	};
 
 	class SPOON_API Application
@@ -19,30 +23,33 @@ namespace Spoon {
 		Application(const AppSpecifications& specs);
 		virtual ~Application() {}
 
-		// CONTROLS RENDERWINDOW SETTINGS
-		AppSpecifications GetSpecs() { return m_Specs; }
-		
-		// LAYER CONTROL
 		void PushLayer(Layer* layer);
-
-		// GAME LOOP CONTROL
+		void PopLayer(Layer* layer);		
+		void UpdatePhysics();
+		void Close();
 		void Run();
 		void Close();
 
+		void CreateScene(std::string name, sf::Vector2f size);
+		
+		AppSpecifications GetSpecs() { return m_Specs; }
+		SceneManager* GetSM() { return &m_SceneManager; }
+		ResourceManager* GetRM() { return &m_ResourceManager; }
+
 	private:
 		static Application* s_Instance;
-
-		AppSpecifications m_Specs;
-		sf::RenderWindow m_Window;
-
 		bool m_IsRunning = true;
 
-		LayerStack m_LayerStack;
-
+		AppSpecifications m_Specs;
+		sf::RenderWindow  m_Window;
+		LayerStack 		  m_LayerStack;
+		ResourceManager   m_ResourceManager;
+		PhysicsManager    m_PhysicsManager;
+		SceneManager	  m_SceneManager;
 	};
 
-	//APPLICATION ENTRY POINT ---- DEFINE IN CLIENT APPLICATION
-	//SHOULD SET WINDOW SIZE AND WINDOW NAME IN APPSPECIFICATIONS
+	//DEFINE IN CLIENT APPLICATION
+	//SET APPSPECIFICATIONS
 
 	Application* CreateApp();
 }

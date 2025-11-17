@@ -1,18 +1,40 @@
 #include "Entity.h"
 #include "Layer.h"
+#include "ResourceManager.h"
+#include "Scene/SceneManager.h"
+#include "Scene/Scene.h"
 
 namespace Spoon
 {
-	void Layer::AddEntity(Entity* entity)
+	void Layer::Init(SceneManager* sm, ResourceManager* rm)
 	{
-		entity->OnAdd();
-		m_Entities.emplace_back(entity);
+		p_SM = sm;
+		p_RM = rm;
 	}
 
-	void Layer::KillEntity(Entity* entity)
+	void Layer::RequestScene(std::string name, sf::Vector2f size)
 	{
-		entity->OnKill();
-		m_Entities.erase(std::remove(m_Entities.begin(), m_Entities.end(), entity), m_Entities.end());
-		delete entity;
+		Scene scene(name, size);
+		p_SM->CacheScene(scene);
 	}
+	
+	 void Layer::BeginScene(std::string name)
+	 {
+	 	p_SM->ActivateScene(name);
+	 }
+
+	// void Layer::EndScene()
+	// {
+	// 	p_App->GetSM()->DeactivateScene();
+	// }
+
+	// void Layer::PushOverlay(std::string name)
+	// {
+	// 	p_App->GetSM()->ActivateOverlay(name);
+	// }
+
+	// void Layer::PopOverlay()
+	// {
+	// 	p_App->GetSM()->DeactivateOverlay();
+	// }
 }

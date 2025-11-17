@@ -1,6 +1,10 @@
 #include "Application.h"
 #include "LayerStack.h"
+#include "Layer.h"
+#include "Physics/PhysicsManager.h"
+#include "ResourceManager.h"
 #include "MemoryUtils.h"
+
 
 namespace Spoon {    
     
@@ -11,12 +15,39 @@ namespace Spoon {
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
+
+        //m_ResourceManager.Init(this);
+        //m_SceneManager.Init(this);
+
+        if(m_Specs.PhysicsEnabled)
+        {
+            #define SS_PHYSICS_ENABLED
+        }
+
+        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
     }
 
     void Application::PushLayer(Layer* layer)
     {
+        layer->Init(&m_SceneManager, &m_ResourceManager);
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
+    }
+
+    void Application::PopLayer(Layer* layer)
+    {
+        m_LayerStack.PopLayer(layer);
+    }
+
+    void Application::CreateScene(std::string name, sf::Vector2f size)
+    {
+        Scene scene(name, size);
+        m_SceneManager.CacheScene(scene);
+    }
+
+    void Application::UpdatePhysics()
+    {
+        m_PhysicsManager.CheckCollision(m_SceneManager.GetActiveScene());
     }
 
     void Application::Close()
@@ -26,12 +57,12 @@ namespace Spoon {
 
     void Application::Run()
     {
-        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
-        
+        sf::RenderStates states = sf::RenderStates::RenderStates();
+        sf::Clock clock;
+
         while (m_IsRunning)
         {
-            
-            // CHECK FOR EVENTS
+            // EVENT HANDLING
             m_Window.handleEvents
             (
                 [&](const sf::Event::KeyPressed& keyPress)
@@ -55,18 +86,23 @@ namespace Spoon {
                 }
             );
 
-            // BEGIN RENDERING LOOP
-            
-            m_Window.clear();
-
+            // UPDATE
+            sf::Time tick = clock.restart();
             for (Layer* layer : m_LayerStack)
             {
-                for (auto entity : layer->GetEntities())
-                {
-                    entity->draw(m_Window, sf::RenderStates::Default);
-                }
+                layer->OnUpdate(tick);
             }
 
+            // PHYSICS
+            #ifdef SS_PHYSICS_ENABLED
+                UpdatePhysics();
+            #endif
+            
+            // RENDER
+            m_Window.clear();
+
+            m_SceneManager.DrawScene(m_Window, states);
+            
             m_Window.display();
         }
     }
