@@ -5,17 +5,17 @@ void DemoZombie::OnUpdate(sf::Time tick)
     move(speed * tick.asSeconds());
 }
 
-void ZombieSpawner::SpawnZombie(Spoon::Layer* context)
+void ZombieSpawner::SpawnZombie()
 {
-    //context->CreateNode<DemoZombie>(context->GetTexture("demozombie", "resources/DemoSprite.png"));
+    AddChild(new DemoZombie(GetParent()->GetAsset("demozombie")));
 }
 
 void ZombieSpawner::OnUpdate(sf::Time tick)
 {
-    //timer = timer + tick;
-    //if(timer.asSeconds() > 5)
-    //{
-    //    SpawnZombie(context);
-    //    timer = timer.Zero;
-    //}
+    timer = timer + tick;
+    if(timer.asSeconds() > 5)
+    {
+       SpawnZombie();
+       timer = timer.Zero;
+    }
 }

@@ -22,7 +22,7 @@ public:
     ZombieSpawner(sf::Vector2f point) { setPosition(point); }
     ~ZombieSpawner() {}
 
-    void SpawnZombie(Spoon::Layer* context);
+    void SpawnZombie();
 
 private:
     sf::Time timer;

@@ -6,6 +6,7 @@
 namespace Spoon
 {
     class Scene;
+    class ResourceManager;
 
     class SceneManager
     {
@@ -13,7 +14,7 @@ namespace Spoon
         SceneManager() {}
         ~SceneManager() {}
 
-        void CacheScene(std::string name, sf::Vector2f size);
+        void CacheScene(std::string name, Scene* scene);
         void ActivateScene(std::string id);
         void ActivateOverlay(std::string id);
         void DeactivateScene();
@@ -40,6 +41,6 @@ namespace Spoon
         Scene* m_ActiveScene = nullptr;
         Scene* m_Overlay = nullptr;
 
-        std::unordered_map<std::string, Scene> m_SceneCache;
+        std::unordered_map<std::string, Scene*> m_SceneCache;
     };
 }

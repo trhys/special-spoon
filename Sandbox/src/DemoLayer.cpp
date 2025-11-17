@@ -1,5 +1,4 @@
 #include "DemoLayer.h"
-#include "Background.h"
 #include "DemoZombie.h"
 
 

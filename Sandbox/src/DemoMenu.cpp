@@ -1,11 +1,11 @@
 #include "DemoMenu.h"
-#include "Background.h"
+#include "MainMenuScene.h"
+#include "DemoZombie.h"
 
 void DemoMenu::OnAttach()
 {
-    RequestScene("main_menu", {1080, 1080});
+    RequestScene("main_menu", new MainMenu());
     BeginScene("main_menu");
-    RequestEntity<Background>("background", "resources/SV-Scene.png");
 }
 
 void DemoMenu::OnDetach()
@@ -15,7 +15,7 @@ void DemoMenu::OnDetach()
 
 void DemoMenu::OnUpdate(sf::Time tick)
 {
-
+    p_SM->UpdateScene(tick);
 }
 
 bool DemoMenu::OnEvent(const sf::Event& e)

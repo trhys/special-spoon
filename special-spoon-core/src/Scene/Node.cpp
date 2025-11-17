@@ -2,8 +2,14 @@
 
 namespace Spoon
 {
+    void Node::MakeParent(Node* parent)
+    {
+        p_Parent = parent;
+    }
+
     void Node::AddChild(Node* child)
     {
+        child.MakeParent(this);
         m_Children.push_back(child);
     }
 

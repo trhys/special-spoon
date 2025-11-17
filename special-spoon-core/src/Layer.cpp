@@ -4,15 +4,14 @@
 
 namespace Spoon
 {
-	void Layer::Init(SceneManager* sm, ResourceManager* rm)
+	void Layer::Init(SceneManager* sm)
 	{
 		p_SM = sm;
-		p_RM = rm;
 	}
 
-	void Layer::RequestScene(std::string name, sf::Vector2f size)
+	void Layer::RequestScene(std::string name, Scene* scene)
 	{
-		p_SM->CacheScene(name, size);
+		p_SM->CacheScene(name, scene);
 	}
 	
 	 void Layer::BeginScene(std::string name)

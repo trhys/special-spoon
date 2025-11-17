@@ -28,7 +28,7 @@ namespace Spoon
 
     void Application::PushLayer(Layer* layer)
     {
-        layer->Init(&m_SceneManager, &m_ResourceManager);
+        layer->Init(&m_SceneManager);
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
     }
