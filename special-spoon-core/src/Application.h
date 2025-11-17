@@ -28,6 +28,7 @@ namespace Spoon {
 		void UpdatePhysics();
 		void Close();
 		void Run();
+		void Close();
 
 		void CreateScene(std::string name, sf::Vector2f size);
 		

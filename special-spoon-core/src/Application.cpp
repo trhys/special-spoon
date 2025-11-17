@@ -45,11 +45,6 @@ namespace Spoon {
         m_SceneManager.CacheScene(scene);
     }
 
-    // sf::Texture& Application::GetTexture(std::string id, std::filesystem::path file_path)
-    // {
-    //     return m_ResourceManager.LoadTexture(id, file_path);
-    // }
-
     void Application::UpdatePhysics()
     {
         m_PhysicsManager.CheckCollision(m_SceneManager.GetActiveScene());
