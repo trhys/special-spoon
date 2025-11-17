@@ -2,13 +2,15 @@
 
 #include "Core.h"
 #include "LayerStack.h"
-#include "ResourceManager.h"
-#include "Physics/PhysicsManager.h"
-#include "Scene/SceneManager.h"
 
 #include "SFML/Graphics.hpp"
 
-namespace Spoon { 
+namespace Spoon 
+{ 
+
+	class SceneManager;
+	class ResourceManager;
+	class PhysicsManager;
 
 	struct AppSpecifications
 	{
@@ -28,13 +30,10 @@ namespace Spoon {
 		void UpdatePhysics();
 		void Close();
 		void Run();
-		void Close();
-
-		void CreateScene(std::string name, sf::Vector2f size);
 		
 		AppSpecifications GetSpecs() { return m_Specs; }
-		SceneManager* GetSM() { return &m_SceneManager; }
-		ResourceManager* GetRM() { return &m_ResourceManager; }
+		SceneManager* GetSM();
+		ResourceManager* GetRM();
 
 	private:
 		static Application* s_Instance;

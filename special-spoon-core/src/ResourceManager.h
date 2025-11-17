@@ -11,8 +11,6 @@ namespace Spoon
         ResourceManager() {}
         ~ResourceManager() {}
 
-        //void Init(Application* app) { p_App = app; }
-
         sf::Texture& LoadTexture(const std::string id, const std::filesystem::path file_path)
         {
             auto found = m_Textures.find(id);
@@ -34,7 +32,6 @@ namespace Spoon
         }
 
     private:
-        //Application* p_App = nullptr;
         std::unordered_map<std::string, sf::Texture> m_Textures;
     };
 }

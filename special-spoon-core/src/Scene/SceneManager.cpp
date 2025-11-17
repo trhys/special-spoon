@@ -2,12 +2,13 @@
 
 namespace Spoon
 {
-    void SceneManager::CacheScene(Scene scene)
+    void SceneManager::CacheScene(std::string name, sf::Vector2f size)
     {
-        auto found = m_SceneCache.find(scene.GetName());
+        auto found = m_SceneCache.find(name);
         if(found == m_SceneCache.end())
         {
-            m_SceneCache.emplace(scene.GetName(), std::move(scene));
+            Scene scene(name, size);
+            m_SceneCache.emplace(name, std::move(scene));
         }
     }
 

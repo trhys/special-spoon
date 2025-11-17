@@ -1,15 +1,13 @@
 #pragma once
 
 #include "Core.h"
-#include <vector>
-#include <algorithm>
+
 #include "SFML/Graphics.hpp"
 
+#include <vector>
 
 namespace Spoon
 {   
-    class Layer;
-
     class SPOON_API Node : public sf::Drawable, public sf::Transformable
     {
     public:

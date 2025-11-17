@@ -1,6 +1,4 @@
 #include "Node.h"
-#include "Layer.h"
-
 
 namespace Spoon
 {

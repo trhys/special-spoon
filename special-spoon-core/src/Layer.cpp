@@ -1,8 +1,6 @@
-#include "Entity.h"
 #include "Layer.h"
 #include "ResourceManager.h"
 #include "Scene/SceneManager.h"
-#include "Scene/Scene.h"
 
 namespace Spoon
 {
@@ -14,8 +12,7 @@ namespace Spoon
 
 	void Layer::RequestScene(std::string name, sf::Vector2f size)
 	{
-		Scene scene(name, size);
-		p_SM->CacheScene(scene);
+		p_SM->CacheScene(name, size);
 	}
 	
 	 void Layer::BeginScene(std::string name)
@@ -23,18 +20,18 @@ namespace Spoon
 	 	p_SM->ActivateScene(name);
 	 }
 
-	// void Layer::EndScene()
-	// {
-	// 	p_App->GetSM()->DeactivateScene();
-	// }
+	void Layer::EndScene()
+	{
+		p_SM->DeactivateScene();
+	}
 
 	// void Layer::PushOverlay(std::string name)
 	// {
-	// 	p_App->GetSM()->ActivateOverlay(name);
+	// 	p_SM()->ActivateOverlay(name);
 	// }
 
 	// void Layer::PopOverlay()
 	// {
-	// 	p_App->GetSM()->DeactivateOverlay();
+	// 	p_SM()->DeactivateOverlay();
 	// }
 }

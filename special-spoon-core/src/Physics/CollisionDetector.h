@@ -14,8 +14,10 @@ namespace Spoon
 
         void Detect(const Scene& sceneroot);
 
+        Quadtree* GetTree() { return m_ActiveQuadtree; }
+
     private:
-        Quadtree m_Quadtree;
-        bool tree_IsBuilt = false;
+        Quadtree* m_ActiveQuadtree = nullptr;        
+        std::unordered_map<std::string, Quadtree> m_BuiltTrees;
     };
 }

@@ -11,9 +11,6 @@
 
 namespace Spoon 
 {
-	class SceneManager;
-	class ResourceManager;
-
 	class SPOON_API Layer
 	{
 	public:
@@ -37,7 +34,7 @@ namespace Spoon
 		}
 
 		void BeginScene(std::string name);
-		// void EndScene();
+		void EndScene();
 		// void PushOverlay(std::string name);
 		// void PopOverlay();
 

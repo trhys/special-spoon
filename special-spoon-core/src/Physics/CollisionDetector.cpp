@@ -7,11 +7,14 @@ namespace Spoon
     void CollisionDetector::Detect(const Scene& sceneroot)
     {
         // Broad phase
-        if(!tree_IsBuilt)
+        auto found = m_BuiltTrees.find(sceneroot.GetName());
+        if(found = m_BuiltTrees.end())
         {
-            m_Quadtree.BuildTree(sceneroot.GetBounds());
-            tree_IsBuilt = true;
+            Quadtree* quadtree = new Quadtree();
+            quadtree.BuildTree(sceneroot.GetBounds());
+            m_BuiltTrees.emplace(sceneroot.GetName(), quadtree)
         }
+        m_ActiveQuadtree = m_BuiltTrees[sceneroot.GetName()];
         m_Quadtree.GetCollisionBodies(sceneroot);
 
         // Collision check

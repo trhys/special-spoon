@@ -12,7 +12,8 @@ namespace Spoon
         PhysicsManager() {}
         ~PhysicsManager() {}
 
-        void CheckCollision(const Scene& sceneroot) { m_CD.Detect(sceneroot); }
+        void CheckCollision(const Scene& sceneroot) { m_CD.Detect(sceneroot); }   
+        void PhysTest() { m_CD.GetTree()->GetNodes(); }
 
     private:
         CollisionDetector m_CD;

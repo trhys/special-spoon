@@ -1,13 +1,15 @@
 #include "Application.h"
 #include "LayerStack.h"
-#include "Layer.h"
+
 #include "Physics/PhysicsManager.h"
+#include "Scene/SceneManager.h"
 #include "ResourceManager.h"
+
 #include "MemoryUtils.h"
 
 
-namespace Spoon {    
-    
+namespace Spoon 
+{        
     Application* Application::s_Instance = nullptr;
 
     Application::Application(const AppSpecifications& specs)
@@ -15,9 +17,6 @@ namespace Spoon {
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
-
-        //m_ResourceManager.Init(this);
-        //m_SceneManager.Init(this);
 
         if(m_Specs.PhysicsEnabled)
         {
@@ -39,16 +38,13 @@ namespace Spoon {
         m_LayerStack.PopLayer(layer);
     }
 
-    void Application::CreateScene(std::string name, sf::Vector2f size)
-    {
-        Scene scene(name, size);
-        m_SceneManager.CacheScene(scene);
-    }
-
     void Application::UpdatePhysics()
     {
         m_PhysicsManager.CheckCollision(m_SceneManager.GetActiveScene());
     }
+
+    SceneManager* Application::GetSM() { return &m_SceneManager; }
+    ResourceManager* Application::GetRM() { return &m_ResourceManager; }
 
     void Application::Close()
     {
@@ -97,7 +93,15 @@ namespace Spoon {
             #ifdef SS_PHYSICS_ENABLED
                 UpdatePhysics();
             #endif
-            
+
+            #define SS_PHYS_TEST // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
+            #ifdef SS_PHYS_TEST
+                for(auto& leaf : m_PhysicsManager.PhysTest())
+                {
+                    m_Window.draw(leaf);
+                }
+            #endif
+
             // RENDER
             m_Window.clear();
 

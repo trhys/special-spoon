@@ -1,5 +1,6 @@
 #include "QuadTree.h"
 #include "Scene/Scene.h"
+
 #include <optional>
 #include <iterator>
 
@@ -12,6 +13,12 @@ namespace Spoon
         for(auto& leaf : m_GridNodes)
         {
             leaf.body.size = node_size;
+
+            #ifdef SS_PHYS_TEST
+                leaf.rect.setSize(node_size);
+                leaf.rect.setOutlineThickness(10.0f);
+                leaf.rect.setOutlineColor(sf::Color(250, 100, 100));
+            #endif
         }
         for(auto it = m_GridNodes.begin(); it < m_GridNodes.end(); it++)
         {
