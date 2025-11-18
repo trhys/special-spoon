@@ -23,10 +23,11 @@ namespace Spoon
 
         void MakeParent(Node* parent);
         void AddChild(Node* child);
+        void AddChild(Node* child, sf::Vector2f position);
         void KillChild(Node* child);
 
         Node* GetParent() { return p_Parent; }
-        std::vector<Node*> GetChildren() const { return m_Children; } 
+        std::vector<Node*>& GetChildren() const { return m_Children; } 
 
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;

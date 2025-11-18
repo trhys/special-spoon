@@ -72,4 +72,12 @@ namespace Spoon
     {
         if(m_ActiveScene) { m_ActiveScene->Update(tick); }
     }
+
+    void SceneManager::TransitionScene()
+    {
+        if(m_ActiveScene)
+        {
+            m_ActiveScene->OnTransition();
+        }
+    }
 }

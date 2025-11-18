@@ -1,6 +1,4 @@
-#include "Entity.h"
 #include "Layer.h"
-#include "ResourceManager.h"
 #include "Scene/SceneManager.h"
 
 namespace Spoon

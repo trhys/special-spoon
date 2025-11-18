@@ -21,21 +21,10 @@ namespace Spoon
         void DeactivateOverlay();
         void DrawScene(sf::RenderTarget& target, sf::RenderStates states);
         void UpdateScene(sf::Time tick);
+        void TransitionScene();
 
         Scene GetActiveScene() { return *m_ActiveScene; }
         Scene GetOverlay() { return *m_Overlay; }
-
-        // template <typename T>
-		// void CreateSceneEntity(T entity)
-		// {
-        //     m_ActiveScene->AddChild(entity);
-		// }
-
-        // template <typename T>
-		// void CreateOverlayEntity(std::string name, std::filesystem::path file_path)
-		// {
-        //     // TODO
-		// }
 
     private:
         Scene* m_ActiveScene = nullptr;

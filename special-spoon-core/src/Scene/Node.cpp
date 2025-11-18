@@ -13,6 +13,13 @@ namespace Spoon
         m_Children.push_back(child);
     }
 
+    void Node::AddChild(Node* child, sf::Vector2f position)
+    {
+        child->MakeParent(this);
+        child->setPosition(position);
+        m_Children.push_back(child);
+    }
+
     void Node::KillChild(Node* child)
     {
         m_Children.erase(remove(m_Children.begin(), m_Children.end(), child), m_Children.end());
