@@ -13,7 +13,6 @@
 #endif
 
 //Debug Utils
-
 #ifdef SS_DEBUG_ENABLED
     #define SS_TRY try {
     #define SS_CATCH(string) } \
@@ -25,15 +24,13 @@
             } \
         catch (const std::exception& e) \
             { \
-                std::cerr << "Fatal error: An unexpected error occured during " << string << " --- Details: " << e.what() << std::endl \
+                std::cerr << "Fatal error: An unexpected error occured during startup --- Details: " << e.what() << std::endl \
                 delete app; \
                 return EXIT_FAILURE; \
-            };
-    #define SS_COLLISION_TEST std::cout << "COLLISION DETECTED" << std::endl;
+            }
 #else
     #define SS_TRY
     #define SS_CATCH(string)
-    #define SS_COLLISION_TEST
 #endif
 
 #ifdef SS_ASSERTS_ENABLED

@@ -5,6 +5,8 @@
 
 namespace Spoon 
 {
+    class ResourceManager;
+
     class Scene : public Node
     {
     public:
@@ -12,19 +14,26 @@ namespace Spoon
         Scene(std::string name, sf::Vector2f size) : m_Name(name) { m_Bounds.size = size; }
         virtual ~Scene() {}
 
-        void ShowScene() { m_IsActive = true; }
-        void HideScene() { m_IsActive = false; }
-        void SetActive(bool set) { m_IsActive = set; }
-        bool IsActive() { return m_IsActive; } 
+        virtual void OnTransition() {}
 
-        std::string GetName() { return m_Name; }
+        void ShowScene();
+        void HideScene();
+        bool IsActive();
+
+        std::string GetName() const { return m_Name; }
         sf::FloatRect GetBounds() const { return m_Bounds; }
+        sf::View& GetView() { return mainview; }
+
+        void GetRM(ResourceManager* rm);
+        sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path) override;
 
     private:
-        virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
+        void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override { target.setView(mainview); }
 
         bool m_IsActive = false;
-        
+        ResourceManager* p_RM = nullptr;
+
+        sf::View mainview;
         sf::FloatRect m_Bounds;
         std::string m_Name;
     };

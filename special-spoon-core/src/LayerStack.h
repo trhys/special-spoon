@@ -22,5 +22,7 @@ namespace Spoon {
 
     private:
         std::vector<Layer*> m_Layers;
+        int m_LayerIndex = 0;
+
     };
 }

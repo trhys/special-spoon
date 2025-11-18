@@ -1,21 +1,51 @@
 #include "DemoZombie.h"
 
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
+
+std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
 void DemoZombie::OnUpdate(sf::Time tick)
 {
-    move(speed * tick.asSeconds());
+    timer = timer + tick;
+    if(timer.asSeconds() > 10)
+    {
+        OnKill();
+    }
+
+    m_CurrentPosition = getPosition();
+
+    const float angle = (static_cast<float>(std::rand()) / RAND_MAX) * 2.0 * M_PI;
+    const float distance = (static_cast<float>(std::rand()) / RAND_MAX) * 0.9 + 0.1;
+
+    float dX = std::cos(angle) * distance * speed;
+    float dY = std::sin(angle) * distance * speed;
+
+    move({dX, dY});
 }
 
-void ZombieSpawner::SpawnZombie(Spoon::Layer* context)
+void DemoZombie::OnCollision()
 {
-    //context->CreateNode<DemoZombie>(context->GetTexture("demozombie", "resources/DemoSprite.png"));
+    setPosition(m_CurrentPosition);
+}
+
+void DemoZombie::OnKill()
+{
+    GetParent()->KillChild(this);
+}
+
+void ZombieSpawner::SpawnZombie()
+{
+    AddChild(new DemoZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
 }
 
 void ZombieSpawner::OnUpdate(sf::Time tick)
 {
-    //timer = timer + tick;
-    //if(timer.asSeconds() > 5)
-    //{
-    //    SpawnZombie(context);
-    //    timer = timer.Zero;
-    //}
+    timer = timer + tick;
+    if(timer.asSeconds() > 5)
+    {
+       SpawnZombie();
+       timer = timer.Zero;
+    }
 }

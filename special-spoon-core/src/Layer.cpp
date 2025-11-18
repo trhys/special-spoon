@@ -1,21 +1,16 @@
-#include "Entity.h"
 #include "Layer.h"
-#include "ResourceManager.h"
 #include "Scene/SceneManager.h"
-#include "Scene/Scene.h"
 
 namespace Spoon
 {
-	void Layer::Init(SceneManager* sm, ResourceManager* rm)
+	void Layer::Init(SceneManager* sm)
 	{
 		p_SM = sm;
-		p_RM = rm;
 	}
 
-	void Layer::RequestScene(std::string name, sf::Vector2f size)
+	void Layer::RequestScene(std::string name, Scene* scene)
 	{
-		Scene scene(name, size);
-		p_SM->CacheScene(scene);
+		p_SM->CacheScene(name, scene);
 	}
 	
 	 void Layer::BeginScene(std::string name)
@@ -23,18 +18,18 @@ namespace Spoon
 	 	p_SM->ActivateScene(name);
 	 }
 
-	// void Layer::EndScene()
-	// {
-	// 	p_App->GetSM()->DeactivateScene();
-	// }
+	void Layer::EndScene()
+	{
+		p_SM->DeactivateScene();
+	}
 
 	// void Layer::PushOverlay(std::string name)
 	// {
-	// 	p_App->GetSM()->ActivateOverlay(name);
+	// 	p_SM()->ActivateOverlay(name);
 	// }
 
 	// void Layer::PopOverlay()
 	// {
-	// 	p_App->GetSM()->DeactivateOverlay();
+	// 	p_SM()->DeactivateOverlay();
 	// }
 }

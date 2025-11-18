@@ -9,10 +9,14 @@ public:
     ~DemoZombie() {}
 
     void OnAdd() override {}
-    void OnKill() override {}
+    void OnKill() override;
+    void OnCollision() override;
 
 private:
-    sf::Vector2f speed = { 1, 0 };
+    sf::Vector2f m_CurrentPosition;
+    float speed = 1.0;
+    sf::Time timer;
+
     void OnUpdate(sf::Time tick) override;
 };
 
@@ -20,9 +24,9 @@ class ZombieSpawner : public Spoon::Node
 {
 public:
     ZombieSpawner(sf::Vector2f point) { setPosition(point); }
-    ~ZombieSpawner() {}
+    ~ZombieSpawner() { for(auto& child : GetChildren()) delete child; }
 
-    void SpawnZombie(Spoon::Layer* context);
+    void SpawnZombie();
 
 private:
     sf::Time timer;

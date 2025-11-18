@@ -24,7 +24,5 @@ namespace Spoon
         {
             target.draw(m_Sprite, states);
         }
-
-        //virtual void OnUpdate(sf::Time tick, Layer* context) override {}
     };
 }

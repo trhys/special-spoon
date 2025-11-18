@@ -1,11 +1,22 @@
 #include "Node.h"
-#include "Layer.h"
-
 
 namespace Spoon
 {
+    void Node::MakeParent(Node* parent)
+    {
+        p_Parent = parent;
+    }
+
     void Node::AddChild(Node* child)
     {
+        child->MakeParent(this);
+        m_Children.push_back(child);
+    }
+
+    void Node::AddChild(Node* child, sf::Vector2f position)
+    {
+        child->MakeParent(this);
+        child->setPosition(position);
         m_Children.push_back(child);
     }
 

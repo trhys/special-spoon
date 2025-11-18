@@ -1,13 +1,20 @@
 #include "SceneManager.h"
+#include "ResourceManager.h"
 
 namespace Spoon
 {
-    void SceneManager::CacheScene(Scene scene)
+    void SceneManager::Init(ResourceManager* rm)
     {
-        auto found = m_SceneCache.find(scene.GetName());
+        p_RM = rm;
+    }
+
+    void SceneManager::CacheScene(std::string name, Scene* scene)
+    {
+        auto found = m_SceneCache.find(name);
         if(found == m_SceneCache.end())
         {
-            m_SceneCache.emplace(scene.GetName(), std::move(scene));
+            scene->GetRM(p_RM);
+            m_SceneCache.emplace(name, std::move(scene));
         }
     }
 
@@ -23,7 +30,7 @@ namespace Spoon
             throw std::runtime_error("The scene you are trying to activate does not exist! : " + id);
         }
 
-        m_ActiveScene = &m_SceneCache[id];
+        m_ActiveScene = m_SceneCache[id];
         m_ActiveScene->ShowScene();
     }
 
@@ -39,7 +46,7 @@ namespace Spoon
             throw std::runtime_error("The overlay you are trying to activate does not exist! : " + id);
         }
 
-        m_Overlay = &m_SceneCache[id];
+        m_Overlay = m_SceneCache[id];
         m_Overlay->ShowScene();
     }
 
@@ -64,5 +71,13 @@ namespace Spoon
     void SceneManager::UpdateScene(sf::Time tick)
     {
         if(m_ActiveScene) { m_ActiveScene->Update(tick); }
+    }
+
+    void SceneManager::TransitionScene()
+    {
+        if(m_ActiveScene)
+        {
+            m_ActiveScene->OnTransition();
+        }
     }
 }
