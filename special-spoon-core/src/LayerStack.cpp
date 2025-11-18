@@ -5,8 +5,14 @@ namespace Spoon
 {
     void LayerStack::PushLayer(Layer* layer)
     {
-        m_Layers.emplace(m_Layers.begin() + m_LayerIndex, layer);
-        m_LayerIndex++;
+        m_Layers.push_back(layer);
+    }
+
+    void LayerStack::PopLayer(Layer* layer)
+    {
+        auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
+        layer->OnDetach();
+        m_Layers.erase(it);
     }
 
     void LayerStack::PushEvent(const sf::Event& event)

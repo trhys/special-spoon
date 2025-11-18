@@ -1,0 +1,40 @@
+{
+    "version": 1,
+    "configurePresets": [
+        {
+            "name": "sandbox-debug",
+            "displayName": "Sandbox DEBUG",
+            "description": "A demo of the special-spoon engine.(DEBUG MODE)",
+            "binaryDir": "${SourceDir}/build/debug",
+            "cacheVariables":
+            {
+                "BUILD_SANDBOX": "ON",
+                "DEBUG_MODE": "ON"
+            }
+        },
+
+        {
+            "name": "sandbox-release",
+            "displayName": "Sandbox RELEASE",
+            "description": "A demo of the special-spoon engine.(RELEASE MODE)",
+            "binaryDir": "${SourceDir}/build/release",
+            "cacheVariables":
+            {
+                "BUILD_SANDBOX": "ON",
+                "DEBUG_MODE": "OFF"
+            }
+        },
+
+        {
+            "name": "core",
+            "displayName": "Special-Spoon",
+            "description": "The core special-spoon engine.",
+            "binaryDir": "${SourceDir}/build",
+            "cacheVariables":
+            {
+                "BUILD_SANDBOX": "OFF",
+                "DEBUG_MODE": "OFF"
+            }
+        }
+    ]
+}

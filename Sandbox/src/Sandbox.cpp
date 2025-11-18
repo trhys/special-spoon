@@ -1,5 +1,6 @@
 #include "Spoon.h"
-#include "TestLayer.h"
+#include "DemoLayer.h"
+#include "DemoMenu.h"
 #include "EntryPoint.h"
 
 
@@ -9,19 +10,19 @@ public:
 
 	Sandbox(const Spoon::AppSpecifications& specs);
 	~Sandbox() {}
-
 };
 
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	: Spoon::Application(specs)
 {
-	PushLayer(new TestLayer());
+	PushLayer(new DemoMenu());
 }
 
 Spoon::Application* Spoon::CreateApp()
 {
 	AppSpecifications spec;
-	spec.m_WindowSize = {600, 600};
-	spec.m_WindowName = "Sandbox";	
+	spec.m_WindowSize = {1080, 1080};
+	spec.m_WindowName = "Sandbox";
+	spec.PhysicsEnabled = true;
 	return new Sandbox(spec);
 }

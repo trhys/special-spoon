@@ -1,9 +1,15 @@
 #include "Application.h"
 #include "LayerStack.h"
+
+#include "Physics/PhysicsManager.h"
+#include "Scene/SceneManager.h"
+#include "ResourceManager.h"
+
 #include "MemoryUtils.h"
 
-namespace Spoon {    
-    
+
+namespace Spoon 
+{        
     Application* Application::s_Instance = nullptr;
 
     Application::Application(const AppSpecifications& specs)
@@ -11,13 +17,34 @@ namespace Spoon {
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
+
+        if(m_Specs.PhysicsEnabled)
+        {
+            #define SS_PHYSICS_ENABLED
+        }
+
+        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
     }
 
     void Application::PushLayer(Layer* layer)
     {
+        layer->Init(&m_SceneManager);
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
     }
+
+    void Application::PopLayer(Layer* layer)
+    {
+        m_LayerStack.PopLayer(layer);
+    }
+
+    void Application::UpdatePhysics()
+    {
+        m_PhysicsManager.CheckCollision(m_SceneManager.GetActiveScene());
+    }
+
+    SceneManager* Application::GetSM() { return &m_SceneManager; }
+    ResourceManager* Application::GetRM() { return &m_ResourceManager; }
 
     void Application::Close()
     {
@@ -26,12 +53,12 @@ namespace Spoon {
 
     void Application::Run()
     {
-        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize),m_Specs.m_WindowName);
-        
+        sf::RenderStates states = sf::RenderStates::RenderStates();
+        sf::Clock clock;
+
         while (m_IsRunning)
         {
-            
-            // CHECK FOR EVENTS
+            // EVENT HANDLING
             m_Window.handleEvents
             (
                 [&](const sf::Event::KeyPressed& keyPress)
@@ -55,18 +82,31 @@ namespace Spoon {
                 }
             );
 
-            // BEGIN RENDERING LOOP
-            
-            m_Window.clear();
-
+            // UPDATE
+            sf::Time tick = clock.restart();
             for (Layer* layer : m_LayerStack)
             {
-                for (auto entity : layer->GetEntities())
-                {
-                    entity->draw(m_Window, sf::RenderStates::Default);
-                }
+                layer->OnUpdate(tick);
             }
 
+            // PHYSICS
+            #ifdef SS_PHYSICS_ENABLED
+                UpdatePhysics();
+            #endif
+
+            //#define SS_PHYS_TEST // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
+            //#ifdef SS_PHYS_TEST
+            //    for(auto& leaf : m_PhysicsManager.PhysTest())
+            //    {
+            //        m_Window.draw(leaf);
+            //    }
+            //#endif
+
+            // RENDER
+            m_Window.clear();
+
+            m_SceneManager.DrawScene(m_Window, states);
+            
             m_Window.display();
         }
     }
