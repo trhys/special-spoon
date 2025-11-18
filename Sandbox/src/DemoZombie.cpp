@@ -7,7 +7,7 @@ void DemoZombie::OnUpdate(sf::Time tick)
 
 void ZombieSpawner::SpawnZombie()
 {
-    AddChild(new DemoZombie(GetParent()->GetAsset("demozombie")));
+    AddChild(new DemoZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
 }
 
 void ZombieSpawner::OnUpdate(sf::Time tick)

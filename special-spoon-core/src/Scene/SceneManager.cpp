@@ -3,11 +3,17 @@
 
 namespace Spoon
 {
+    void SceneManager::Init(ResourceManager* rm)
+    {
+        p_RM = rm;
+    }
+
     void SceneManager::CacheScene(std::string name, Scene* scene)
     {
         auto found = m_SceneCache.find(name);
         if(found == m_SceneCache.end())
         {
+            scene->GetRM(p_RM);
             m_SceneCache.emplace(name, std::move(scene));
         }
     }

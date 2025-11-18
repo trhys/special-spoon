@@ -8,6 +8,8 @@ target_sources(special-spoon-core
         Layer.cpp
         LayerStack.cpp
         Scene/Node.cpp
+        Scene/Scene.cpp
+        Scene/SceneManager.cpp
         Physics/CollisionDetector.cpp
         Physics/QuadTree.cpp
 
@@ -25,6 +27,7 @@ target_sources(special-spoon-core
             Scene/Entity.h
             Scene/Node.h
             Scene/Scene.h
+            Scene/SceneManager.h
             Physics/CollisionDetector.h
             Physics/PhysicsManager.h
             Physics/QuadTree.h

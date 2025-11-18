@@ -24,6 +24,7 @@ namespace Spoon
                 m_Textures.emplace(id, std::move(texture));
                 return m_Textures[id];
             }
+            else { return m_Textures[id]; }
         }
 
         sf::Texture& GetTexture(const std::string id)
