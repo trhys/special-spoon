@@ -33,7 +33,7 @@ namespace Spoon
             if(found == m_Fonts.end())
             {
                 sf::Font font;
-                if(!font.loadFromFile(file_path))
+                if(!font.openFromFile(file_path))
                 {
                     throw std::runtime_error("Failed to load font from file path: " + file_path.string());
                 }

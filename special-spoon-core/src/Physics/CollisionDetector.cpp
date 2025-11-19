@@ -4,7 +4,7 @@
 
 namespace Spoon
 {
-    void CollisionDetector::Detect(const Scene& sceneroot)
+    void CollisionDetector::Detect(Scene& sceneroot)
     {
         // Broad phase
         auto found = m_BuiltTrees.find(sceneroot.GetName());

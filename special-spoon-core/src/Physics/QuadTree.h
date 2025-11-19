@@ -1,8 +1,8 @@
 #pragma once
 
-#ifdef SS_PHYS_TEST
-    #include "SFML/Graphics.hpp"
-#endif
+
+#include "SFML/Graphics.hpp"
+
 
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Graphics/Rect.hpp"
@@ -16,11 +16,8 @@ namespace Spoon
     struct QT_GridNode
     {
         sf::FloatRect body;
-        std::vector<Node*> collision_buffer;
-
-        #ifdef SS_PHYS_TEST
-            sf::RectangleShape rect;
-        #endif
+        std::vector<Node*> collision_buffer;      
+        sf::RectangleShape rect;
     };
 
     class Quadtree
@@ -30,7 +27,7 @@ namespace Spoon
         ~Quadtree() {}
 
         void BuildTree(sf::FloatRect bounds);
-        void GetCollisionBodies(const Scene& sceneroot);
+        void GetCollisionBodies(Scene& sceneroot);
         void ProcessCollisionBuffer();
 
         std::vector<QT_GridNode>* GetNodes() { return &m_GridNodes; }

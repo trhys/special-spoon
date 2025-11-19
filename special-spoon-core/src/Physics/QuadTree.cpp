@@ -37,7 +37,7 @@ namespace Spoon
         }
     }
 
-    void Quadtree::GetCollisionBodies(const Scene& sceneroot)
+    void Quadtree::GetCollisionBodies(Scene& sceneroot)
     {
         for(auto& leaf : m_GridNodes)
         {

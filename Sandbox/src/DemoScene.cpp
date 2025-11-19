@@ -1,4 +1,5 @@
 #include "DemoScene.h"
+#include "DemoZombie.h"
 
 DemoScene::DemoScene() : Spoon::Scene("demo_scene", {1080, 1080})
 {

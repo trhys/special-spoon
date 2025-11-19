@@ -96,13 +96,13 @@ namespace Spoon
                 UpdatePhysics();
             #endif
 
-            #define SS_PHYS_TEST // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
-            #ifdef SS_PHYS_TEST
-               for(auto& leaf : *m_PhysicsManager.PhysTest())
-               {
-                   m_Window.draw(leaf.rect);
-               }
-            #endif
+            //#define SS_PHYS_TEST // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
+            //#ifdef SS_PHYS_TEST
+            //   for(auto& leaf : m_PhysicsManager.PhysTest())
+            //   {
+            //       m_Window.draw(leaf.rect);
+            //   }
+            //#endif
 
             // RENDER
             m_Window.clear();

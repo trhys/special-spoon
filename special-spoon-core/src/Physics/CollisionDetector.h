@@ -13,9 +13,9 @@ namespace Spoon
         CollisionDetector() {}
         ~CollisionDetector() {}
 
-        void Detect(const Scene& sceneroot);
+        void Detect(Scene& sceneroot);
 
-        Quadtree* GetTree() { return m_ActiveQuadtree; }
+        Quadtree& GetTree() { return *m_ActiveQuadtree; }
 
     private:
         Quadtree* m_ActiveQuadtree = nullptr;        

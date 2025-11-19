@@ -1,10 +1,11 @@
 #include "Scene.h"
+#include "ResourceManager.h"
 
 namespace Spoon
 {
     sf::Texture& Scene::LoadTexture(std::string id, std::filesystem::path file_path)
     {
-        p_RM->LoadTexture(id, file_path);
+        return p_RM->LoadTexture(id, file_path);
     }
 
     void Scene::ShowScene() 

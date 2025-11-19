@@ -3,6 +3,7 @@
 #include "Core.h"
 #include "LayerStack.h"
 #include "Physics/PhysicsManager.h"
+#include "ResourceManager.h"
 #include "SFML/Graphics.hpp"
 
 namespace Spoon 

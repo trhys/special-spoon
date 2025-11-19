@@ -25,7 +25,7 @@ public:
 
 private:
     sf::Text text;
-    sf::Color textcolor(255, 255, 255, 255);
+    sf::Color textcolor = sf::Color(255, 255, 255, 255);
     bool flicker = false;
 
     void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -45,7 +45,7 @@ private:
             textcolor.a += 127.5 * tick.asSeconds();
             if(textcolor.a == 255) { flicker = false; }
         }
-        text.setColor(textcolor);
+        text.setFillColor(textcolor);
     }
 };
 
@@ -56,7 +56,7 @@ public:
 
 private:
     sf::RectangleShape rect;
-    sf::Color rectcolor(0, 0, 0, 0);
+    sf::Color rectcolor = sf::Color(0, 0, 0, 0);
 
     void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
