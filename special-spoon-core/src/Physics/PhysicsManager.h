@@ -14,7 +14,7 @@ namespace Spoon
         ~PhysicsManager() {}
 
         void CheckCollision(Scene& sceneroot) { m_CD.Detect(sceneroot); }   
-        //std::vector<QT_GridNode> PhysTest() { return m_CD.GetTree().GetNodes(); }
+        //std::vector<QT_GridNode>& PhysTest() { return m_CD.GetTree()->GetNodes(); }
 
     private:
         CollisionDetector m_CD;

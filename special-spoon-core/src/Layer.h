@@ -31,6 +31,5 @@ namespace Spoon
 
 	private:
 		SceneManager* p_SM = nullptr;
-		ResourceManager* p_RM = nullptr;
 	};
 }

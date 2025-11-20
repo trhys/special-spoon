@@ -28,7 +28,7 @@ namespace Spoon
         return m_IsActive; 
     }
 
-    void Scene::GetRM(ResourceManager* rm) 
+    void Scene::Init(ResourceManager* rm) 
     { 
         p_RM = rm; 
     }

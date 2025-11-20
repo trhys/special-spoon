@@ -32,7 +32,10 @@ namespace Spoon
 		void Close();
 		void Run();
 		
+		static Application& Get() { return *s_Instance; }
+
 		AppSpecifications GetSpecs() { return m_Specs; }
+		sf::RenderWindow& GetWindow() { return m_Window; }
 		SceneManager* GetSM();
 		ResourceManager* GetRM();
 

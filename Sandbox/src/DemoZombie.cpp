@@ -4,7 +4,7 @@
 #include <ctime>
 #include <cmath>
 
-//std::srand(static_cast<unsigned int>(std::time(nullptr)));
+std::srand(std::time(0));
 
 void DemoZombie::OnUpdate(sf::Time tick)
 {
@@ -35,6 +35,22 @@ void DemoZombie::OnKill()
     GetParent()->KillChild(this);
 }
 
+void MenuZombie::OnUpdate(sf::Time tick)
+{
+    timer = timer + tick;
+    if(timer.asSeconds() > 10)
+    {
+        OnKill();
+    }
+
+    move({10, 0});
+}
+
+void MenuZombie::OnKill()
+{
+    GetParent()->KillChild(this);
+}
+
 void ZombieSpawner::SpawnZombie()
 {
     AddChild(new DemoZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
@@ -46,6 +62,21 @@ void ZombieSpawner::OnUpdate(sf::Time tick)
     if(timer.asSeconds() > 5)
     {
        SpawnZombie();
+       timer = timer.Zero;
+    }
+}
+
+void MenuZombieSpawner::SpawnMenuZombie()
+{
+    AddChild(new MenuZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
+}
+
+void MenuZombieSpawner::OnUpdate(sf::Time tick)
+{
+    timer = timer + tick;
+    if(timer.asSeconds() > 5)
+    {
+       SpawnMenuZombie();
        timer = timer.Zero;
     }
 }

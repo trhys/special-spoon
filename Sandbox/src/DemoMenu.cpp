@@ -1,7 +1,7 @@
 #include "DemoMenu.h"
 #include "MainMenuScene.h"
-#include "DemoScene.h"
 #include "DemoZombie.h"
+#include "DemoLayer.h"
 
 void DemoMenu::OnAttach()
 {
@@ -26,7 +26,8 @@ void DemoMenu::OnUpdate(sf::Time tick)
             timer = timer.Zero;
             transitiontimer = false;
             EndScene();
-            StartDemo();
+            Application::Get()->PushLayer(new DemoLayer());
+            Application::Get()->PopLayer(this);
         }
     }
 }
@@ -43,10 +44,4 @@ bool DemoMenu::OnEvent(const sf::Event& e)
     }
 
     return false;
-}
-
-void DemoMenu::StartDemo()
-{
-    RequestScene("demoscene", new DemoScene());
-    BeginScene("demoscene");
 }

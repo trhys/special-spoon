@@ -8,8 +8,8 @@ public:
     DemoZombie(sf::Texture& texture) : Entity::Entity(texture) {}
     ~DemoZombie() {}
 
-    void OnAdd() override {}
     void OnKill() override;
+    void OnUpdate(sf::Time tick) override;
     void CollisionDetected() override;
 
 private:
@@ -27,6 +27,35 @@ public:
     ~ZombieSpawner() { for(auto& child : GetChildren()) delete child; }
 
     void SpawnZombie();
+
+private:
+    sf::Time timer;
+    void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
+    void OnUpdate(sf::Time tick) override;
+};
+
+class MenuZombie : public Spoon::Entity
+{
+public:
+    MenuZombie(sf::Texture& texture) : Entity::Entity(texture) {}
+    ~MenuZombie() {}
+
+    void OnKill() override;
+    void OnUpdate(sf::Time tick) override;
+
+private:
+    sf::Time timer;
+
+    void OnUpdate(sf::Time tick) override;
+};
+
+class MenuZombieSpawner : public Spoon::Node
+{
+public:
+    MenuZombieSpawner(sf::Vector2f point) { setPosition(point); }
+    ~MenuZombieSpawner() { for(auto& child : GetChildren()) delete child; }
+
+    void SpawnMenuZombie();
 
 private:
     sf::Time timer;

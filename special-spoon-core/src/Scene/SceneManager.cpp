@@ -13,9 +13,10 @@ namespace Spoon
         auto found = m_SceneCache.find(name);
         if(found == m_SceneCache.end())
         {
-            scene->GetRM(p_RM);
+            scene->Init(p_RM);
             m_SceneCache.emplace(name, std::move(scene));
         }
+        scene->OnCache();
     }
 
     void SceneManager::ActivateScene(std::string id)

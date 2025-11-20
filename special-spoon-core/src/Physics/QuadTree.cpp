@@ -14,11 +14,11 @@ namespace Spoon
         {
             leaf.body.size = node_size;
 
-            #ifdef SS_PHYS_TEST
-                leaf.rect.setSize(node_size);
-                leaf.rect.setOutlineThickness(10.0f);
-                leaf.rect.setOutlineColor(sf::Color(250, 100, 100));
-            #endif
+            // TEST
+            // leaf.rect.setSize(node_size);
+            // leaf.rect.setOutlineThickness(10.0f);
+            // leaf.rect.setOutlineColor(sf::Color(250, 100, 100));
+            // TEST
         }
         for(auto it = m_GridNodes.begin(); it < m_GridNodes.end(); it++)
         {

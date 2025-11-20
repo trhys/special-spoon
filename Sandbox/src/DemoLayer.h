@@ -13,5 +13,6 @@ public:
     bool OnEvent(const sf::Event& e) override;
 
 private:
-    
+    sf::Time timer;
+    bool transitioning = false;
 };
