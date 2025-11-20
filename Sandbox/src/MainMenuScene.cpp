@@ -6,7 +6,7 @@ MainMenu::MainMenu() : Spoon::Scene("MainMenu", {1080, 1080})
     GetView().zoom(0.85);
     AddChild(new Spoon::Entity(LoadTexture("menu_screen", "resources/SV-Scene.png")));
     AddChild(new ZombieSpawner({0, 800}));
-    AddChild(new MenuText(LoadFont("menu_text", "resources/Fonts/RoadRage/RoadRage-Regular.ttf")), {GetBounds()/2});
+    AddChild(new MenuText(LoadFont("menu_text", "resources/Fonts/RoadRage/RoadRage-Regular.ttf")), {GetBounds().size.x / 2, GetBounds().size.y / 2 });
 }
 
 void MainMenu::OnUpdate(sf::Time tick)
@@ -37,6 +37,6 @@ void MainMenu::OnTransition()
             break;
         }
     }
-    AddChild(new Transition(GetBounds()));
+    AddChild(new Transition(GetBounds().size));
     transitioning = true;
 }

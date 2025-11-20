@@ -7,7 +7,7 @@ namespace Spoon
 {
     class ResourceManager;
 
-    class Scene : public Node
+    class SPOON_API Scene : public Node
     {
     public:
         Scene() {}
@@ -26,6 +26,7 @@ namespace Spoon
 
         void GetRM(ResourceManager* rm);
         sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path) override;
+        sf::Font& LoadFont(std::string id, std::filesystem::path file_path) override;
 
     private:
         void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override { target.setView(mainview); }

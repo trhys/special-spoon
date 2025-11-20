@@ -10,7 +10,7 @@ public:
 
     void OnAdd() override {}
     void OnKill() override;
-    void OnCollision() override;
+    void CollisionDetected() override;
 
 private:
     sf::Vector2f m_CurrentPosition;

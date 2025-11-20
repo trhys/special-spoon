@@ -20,6 +20,7 @@ namespace Spoon
         virtual void CollisionDetected() {}      
         virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
         virtual sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path);
+        virtual sf::Font& LoadFont(std::string id, std::filesystem::path file_path);
 
         void MakeParent(Node* parent);
         void AddChild(Node* child);

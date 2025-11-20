@@ -7,7 +7,7 @@ namespace Spoon
 {
     class ResourceManager;
 
-    class SceneManager
+    class SPOON_API SceneManager
     {
     public:
         SceneManager() {}

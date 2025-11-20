@@ -4,7 +4,7 @@
 #include <ctime>
 #include <cmath>
 
-std::srand(static_cast<unsigned int>(std::time(nullptr)));
+//std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
 void DemoZombie::OnUpdate(sf::Time tick)
 {
@@ -16,7 +16,7 @@ void DemoZombie::OnUpdate(sf::Time tick)
 
     m_CurrentPosition = getPosition();
 
-    const float angle = (static_cast<float>(std::rand()) / RAND_MAX) * 2.0 * M_PI;
+    const float angle = (static_cast<float>(std::rand()) / RAND_MAX) * 2.0 * 3.14;
     const float distance = (static_cast<float>(std::rand()) / RAND_MAX) * 0.9 + 0.1;
 
     float dX = std::cos(angle) * distance * speed;
@@ -25,7 +25,7 @@ void DemoZombie::OnUpdate(sf::Time tick)
     move({dX, dY});
 }
 
-void DemoZombie::OnCollision()
+void DemoZombie::CollisionDetected()
 {
     setPosition(m_CurrentPosition);
 }

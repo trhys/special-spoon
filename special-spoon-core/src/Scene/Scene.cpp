@@ -8,6 +8,11 @@ namespace Spoon
         return p_RM->LoadTexture(id, file_path);
     }
 
+    sf::Font& Scene::LoadFont(std::string id, std::filesystem::path file_path)
+    {
+        return p_RM->LoadFont(id, file_path);
+    }
+
     void Scene::ShowScene() 
     { 
         m_IsActive = true; 
