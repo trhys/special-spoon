@@ -1,10 +1,11 @@
 #include "DemoScene.h"
 #include "DemoZombie.h"
 #include "Player.h"
+#include "SceneTransition.h"
 
 DemoScene::DemoScene() : Spoon::Scene("demo_scene", {1080, 1080})
 {
-    GetView().setView(Application::Get()->GetWindow().getDefaultView());
+    GetView() = (Spoon::Application::Get().GetWindow().getDefaultView());
 }
 
 void DemoScene::OnCache()

@@ -11,7 +11,7 @@ void DemoMenu::OnAttach()
 
 void DemoMenu::OnDetach()
 {
-
+    Spoon::Application::Get().PushLayer(new DemoLayer());
 }
 
 void DemoMenu::OnUpdate(sf::Time tick)
@@ -26,8 +26,8 @@ void DemoMenu::OnUpdate(sf::Time tick)
             timer = timer.Zero;
             transitiontimer = false;
             EndScene();
-            Application::Get()->PushLayer(new DemoLayer());
-            Application::Get()->PopLayer(this);
+            
+            Spoon::Application::Get().PopLayer(this);
         }
     }
 }

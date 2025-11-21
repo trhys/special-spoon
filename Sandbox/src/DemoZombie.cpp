@@ -1,10 +1,12 @@
 #include "DemoZombie.h"
 
-#include <cstdlib>
-#include <ctime>
-#include <cmath>
+#include <random>
+#include <chrono>
 
-std::srand(std::time(0));
+
+unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+std::mt19937 engine(seed);
+std::uniform_int_distribution<int> dist(1, 100);
 
 void DemoZombie::OnUpdate(sf::Time tick)
 {
@@ -16,8 +18,8 @@ void DemoZombie::OnUpdate(sf::Time tick)
 
     m_CurrentPosition = getPosition();
 
-    const float angle = (static_cast<float>(std::rand()) / RAND_MAX) * 2.0 * 3.14;
-    const float distance = (static_cast<float>(std::rand()) / RAND_MAX) * 0.9 + 0.1;
+    const float angle = (dist(engine)) * 2.0 * 3.14;
+    const float distance = (dist(engine)) * 0.9 + 0.1;
 
     float dX = std::cos(angle) * distance * speed;
     float dY = std::sin(angle) * distance * speed;
@@ -43,7 +45,7 @@ void MenuZombie::OnUpdate(sf::Time tick)
         OnKill();
     }
 
-    move({10, 0});
+    move({100 * tick.asSeconds(), 0});
 }
 
 void MenuZombie::OnKill()

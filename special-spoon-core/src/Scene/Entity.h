@@ -9,7 +9,7 @@ namespace Spoon
     class Entity : public Node
     {
     public:
-        Entity(sf::Texture& texture) : m_Sprite(texture) { m_Sprite.setOrigin(m_Sprite.getLocalBounds().width / 2.0, 0); }
+        Entity(sf::Texture& texture) : m_Sprite(texture) {} //m_Sprite.setOrigin(m_Sprite.getLocalBounds().getCenter()); }
         virtual ~Entity() {}
 
         virtual void OnAdd() {}

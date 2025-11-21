@@ -1,5 +1,6 @@
 #include "DemoLayer.h"
 #include "DemoScene.h"
+#include "DemoMenu.h"
 
 DemoLayer::DemoLayer()
 {
@@ -24,8 +25,8 @@ void DemoLayer::OnUpdate(sf::Time tick)
             timer = timer.Zero;
             transitioning = false;
             EndScene();
-            Application::Get()->PushLayer(new DemoMenu());
-            Application::Get()->PopLayer(this);
+            Spoon::Application::Get().PushLayer(new DemoMenu());
+            Spoon::Application::Get().PopLayer(this);
         }
     }
 }

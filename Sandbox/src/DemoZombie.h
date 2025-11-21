@@ -9,7 +9,6 @@ public:
     ~DemoZombie() {}
 
     void OnKill() override;
-    void OnUpdate(sf::Time tick) override;
     void CollisionDetected() override;
 
 private:
@@ -37,11 +36,10 @@ private:
 class MenuZombie : public Spoon::Entity
 {
 public:
-    MenuZombie(sf::Texture& texture) : Entity::Entity(texture) {}
+    MenuZombie(sf::Texture& texture) : Entity::Entity(texture) { ScaleSprite({ 0.25, 0.25 }); }
     ~MenuZombie() {}
 
     void OnKill() override;
-    void OnUpdate(sf::Time tick) override;
 
 private:
     sf::Time timer;
