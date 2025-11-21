@@ -18,7 +18,6 @@ void DemoScene::OnCache()
 
 void DemoScene::OnTransition()
 {
-    AddChild(new Transition(GetBounds().size));
     transitioning = true;
 }
 
@@ -31,8 +30,9 @@ void DemoScene::OnUpdate(sf::Time tick)
         {
             for(auto& child : GetChildren())
             {
-                KillChild(child);
+                child->OnKill();
             }
+            GetChildren().clear();
         }
     }
 }

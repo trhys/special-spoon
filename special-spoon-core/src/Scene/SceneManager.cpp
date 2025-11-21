@@ -11,10 +11,16 @@ namespace Spoon
     void SceneManager::CacheScene(std::string name, Scene* scene)
     {
         auto found = m_SceneCache.find(name);
-        if(found == m_SceneCache.end())
+        if(found == m_SceneCache.end()) // Initialize new scene
         {
             scene->Init(p_RM);
             m_SceneCache.emplace(name, std::move(scene));
+        }
+        else // Replace scene with new
+        {
+            delete m_SceneCache[name];
+            scene->Init(p_RM);
+            m_SceneCache[name] = std::move(scene);
         }
         scene->OnCache();
     }

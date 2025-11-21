@@ -2,10 +2,14 @@
 
 #include "Spoon.h"
 
-class Transition : public Spoon::Node
+class Transition : public Spoon::Scene
 {
 public:
-    Transition(sf::Vector2f bounds) : rect(bounds) {}
+    Transition();
+    ~Transition() {}
+
+    void OnTransition() override;
+    void OnCache() override;
 
 private:
     sf::RectangleShape rect;
@@ -22,5 +26,23 @@ private:
         {
             rectcolor.a += 127.5 * tick.asSeconds();
         }
+        else if(rectcolor.a > 255)
+        {
+            rectcolor.a = 255;
+        }
     }
+};
+
+class LoadScreen : public Spoon::Layer
+{
+public:
+    LoadScreen() {}
+    ~LoadScreen() {}
+
+    void OnAttach() override;
+	void OnDetach() override;
+	void OnUpdate(sf::Time tick) override;
+    
+private:
+    sf::Time timer;
 };

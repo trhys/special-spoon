@@ -40,7 +40,7 @@ void DemoZombie::OnKill()
 void MenuZombie::OnUpdate(sf::Time tick)
 {
     timer = timer + tick;
-    if(timer.asSeconds() > 10)
+    if(timer.asSeconds() > 20)
     {
         OnKill();
     }
@@ -61,11 +61,16 @@ void ZombieSpawner::SpawnZombie()
 void ZombieSpawner::OnUpdate(sf::Time tick)
 {
     timer = timer + tick;
-    if(timer.asSeconds() > 5)
+    if(timer.asSeconds() > 10)
     {
        SpawnZombie();
        timer = timer.Zero;
     }
+}
+
+void MenuZombieSpawner::OnAdd()
+{
+    SpawnMenuZombie();
 }
 
 void MenuZombieSpawner::SpawnMenuZombie()
@@ -76,7 +81,7 @@ void MenuZombieSpawner::SpawnMenuZombie()
 void MenuZombieSpawner::OnUpdate(sf::Time tick)
 {
     timer = timer + tick;
-    if(timer.asSeconds() > 5)
+    if(timer.asSeconds() > 15)
     {
        SpawnMenuZombie();
        timer = timer.Zero;

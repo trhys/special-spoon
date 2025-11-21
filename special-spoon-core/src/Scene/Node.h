@@ -27,7 +27,7 @@ namespace Spoon
 
         // Graph handling
         virtual void OnAdd() {}
-        virtual void OnKill() {}
+        virtual void OnKill() { delete this; }
 
         void MakeParent(Node* parent);
         void AddChild(Node* child);

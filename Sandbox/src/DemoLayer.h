@@ -9,6 +9,7 @@ public:
     ~DemoLayer() {}
 
     void OnAttach() override;
+    void OnDetach() override;
     void OnUpdate(sf::Time tick) override;
     bool OnEvent(const sf::Event& e) override;
 

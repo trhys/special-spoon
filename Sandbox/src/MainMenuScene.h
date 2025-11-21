@@ -21,7 +21,7 @@ private:
 class MenuText : public Spoon::Node
 {
 public:
-    MenuText(sf::Font font) : text(font, "Press Enter to Start") {}
+    MenuText(sf::Font& font) : text(font, "Press Enter to Start") {}
     ~MenuText() {}
 
 private:

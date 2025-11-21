@@ -5,7 +5,7 @@
 class DemoZombie : public Spoon::Entity
 {
 public:
-    DemoZombie(sf::Texture& texture) : Entity::Entity(texture) {}
+    DemoZombie(sf::Texture& texture) : Entity::Entity(texture) { ScaleSprite({ 0.25, 0.25 }); }
     ~DemoZombie() {}
 
     void OnKill() override;
@@ -53,6 +53,7 @@ public:
     MenuZombieSpawner(sf::Vector2f point) { setPosition(point); }
     ~MenuZombieSpawner() { for(auto& child : GetChildren()) delete child; }
 
+    void OnAdd() override;
     void SpawnMenuZombie();
 
 private:

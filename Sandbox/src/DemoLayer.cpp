@@ -13,6 +13,11 @@ void DemoLayer::OnAttach()
     BeginScene("demoscene");
 }
 
+void DemoLayer::OnDetach()
+{
+    delete this;
+}
+
 void DemoLayer::OnUpdate(sf::Time tick)
 {
     GetSM()->UpdateScene(tick);
@@ -39,6 +44,7 @@ bool DemoLayer::OnEvent(const sf::Event& e)
         {
             GetSM()->TransitionScene();
             transitioning = true;
+            Spoon::Application::Get().PushLayer(new LoadScreen());
         }
     }
 
