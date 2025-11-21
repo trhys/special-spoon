@@ -14,6 +14,7 @@ namespace Spoon
         Node() {}
         virtual ~Node() {}
 
+        // Scene handling
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void Update(sf::Time tick);
 
@@ -22,11 +23,20 @@ namespace Spoon
         virtual sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path);
         virtual sf::Font& LoadFont(std::string id, std::filesystem::path file_path);
 
+        // ==================================
+
+        // Graph handling
+        virtual void OnAdd() {}
+        virtual void OnKill() {}
+
         void MakeParent(Node* parent);
         void AddChild(Node* child);
         void AddChild(Node* child, sf::Vector2f position);
         void KillChild(Node* child);
 
+        // ==================================
+        
+        // Misc methods
         Node* GetParent() { return p_Parent; }
         std::vector<Node*>& GetChildren() { return m_Children; } 
 

@@ -27,7 +27,8 @@ namespace Spoon
 		virtual ~Application() {}
 
 		void PushLayer(Layer* layer);
-		void PopLayer(Layer* layer);		
+		void PopLayer(Layer* layer);	
+		void ProcessLayerQueue();	
 		void UpdatePhysics();
 		void Close();
 		void Run();
@@ -49,6 +50,8 @@ namespace Spoon
 		ResourceManager   m_ResourceManager;
 		PhysicsManager    m_PhysicsManager;
 		SceneManager	  m_SceneManager;
+
+		std::vector<std::function<void()>> m_LayerQueue;
 	};
 
 	//DEFINE IN CLIENT APPLICATION

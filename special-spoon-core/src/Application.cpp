@@ -37,7 +37,16 @@ namespace Spoon
 
     void Application::PopLayer(Layer* layer)
     {
-        m_LayerStack.PopLayer(layer);
+        m_LayerQueue.push_back(m_LayerStack.PopLayer(layer));
+    }
+
+    void Application::ProcessLayerQueue()
+    {
+        for(auto& func : m_LayerQueue)
+        {
+            func();
+        }
+        m_LayerQueue.clear();
     }
 
     void Application::UpdatePhysics()
@@ -90,6 +99,7 @@ namespace Spoon
             {
                 layer->OnUpdate(tick);
             }
+            ProcessLayerQueue();
 
             // PHYSICS
             #ifdef SS_PHYSICS_ENABLED

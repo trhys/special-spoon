@@ -11,6 +11,7 @@ namespace Spoon
     {
         child->MakeParent(this);
         m_Children.push_back(child);
+        child->OnAdd();
     }
 
     void Node::AddChild(Node* child, sf::Vector2f position)
@@ -18,12 +19,13 @@ namespace Spoon
         child->MakeParent(this);
         child->setPosition(position);
         m_Children.push_back(child);
+        child->OnAdd();
     }
 
     void Node::KillChild(Node* child)
     {
         m_Children.erase(remove(m_Children.begin(), m_Children.end(), child), m_Children.end());
-        delete child;
+        child->OnKill();
     }
 
     void Node::draw(sf::RenderTarget& target, sf::RenderStates states) const

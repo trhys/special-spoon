@@ -10,9 +10,8 @@ namespace Spoon
 
     void LayerStack::PopLayer(Layer* layer)
     {
-        auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
         layer->OnDetach();
-        m_Layers.erase(it);
+        m_Layers.erase(remove(m_Layers.begin(), m_Layers.end(), layer));
     }
 
     void LayerStack::PushEvent(const sf::Event& event)
