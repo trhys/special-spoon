@@ -5,16 +5,22 @@ target_sources(Sandbox
         Sandbox.cpp
         DemoLayer.cpp
         DemoMenu.cpp
+        DemoScene.cpp
         DemoZombie.cpp
         MainMenuScene.cpp
+        Player.cpp
+        SceneTransition.cpp
 
     PUBLIC
         FILE_SET HEADERS
         FILES
             DemoLayer.h
             DemoMenu.h
+            DemoScene.h
             DemoZombie.h
             MainMenuScene.h
+            Player.h
+            SceneTransition.h
 )
 
 include(GNUInstallDirs)
