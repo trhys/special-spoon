@@ -5,7 +5,7 @@
 class DemoZombie : public Spoon::Entity
 {
 public:
-    DemoZombie(sf::Texture& texture) : Entity::Entity(texture) { ScaleSprite({ 0.25, 0.25 }); }
+    DemoZombie(sf::Texture& texture) : Entity::Entity(texture, true) { ScaleSprite({ 0.25, 0.25 }); }
     ~DemoZombie() {}
 
     void OnKill() override;

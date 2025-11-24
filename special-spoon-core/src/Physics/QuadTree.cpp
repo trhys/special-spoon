@@ -43,9 +43,12 @@ namespace Spoon
         {
             for(auto& child : sceneroot.GetChildren())
             {
-                if(const std::optional intersect = leaf.body.findIntersection(child->GetBoundingBox()))
+                if(child->GetIsCollidable())
                 {
-                    leaf.collision_buffer.push_back(child);
+                    if(const std::optional intersect = leaf.body.findIntersection(child->GetBoundingBox()))
+                    {
+                        leaf.collision_buffer.push_back(child);
+                    }
                 }
             }
         }

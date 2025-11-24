@@ -18,7 +18,8 @@ namespace Spoon
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void Update(sf::Time tick);
 
-        virtual void CollisionDetected() {}      
+        virtual void CollisionDetected() {}   
+        virtual bool GetIsCollidable() { return false; }   
         virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
         virtual sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path);
         virtual sf::Font& LoadFont(std::string id, std::filesystem::path file_path);

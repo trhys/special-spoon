@@ -27,6 +27,7 @@ public:
 private:
     sf::Text text;
     sf::Color textcolor = sf::Color(255, 255, 255, 255);
+    float text_alpha = 255.0f;
     bool flicker = true;
 
     void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -36,23 +37,25 @@ private:
 
     void OnUpdate(sf::Time tick) override
     {   
-        if (textcolor.a > 255) 
+        if (text_alpha >= 255.0f) 
         { 
-            textcolor.a = 254;
+            text_alpha = 254.0f;
             flicker = true;
         }
-        else if (textcolor.a < 0)
+        else if (text_alpha <= 0.0f)
         {
-            textcolor.a = 1;
+            text_alpha = 1.0f;
             flicker = false;
         }
         if (flicker)
         {
-            textcolor.a = textcolor.a - (60.0f * tick.asSeconds());
+            text_alpha -= 60.0f * tick.asSeconds();
+            textcolor.a = static_cast<std::uint8_t>(text_alpha);
         }
         else if (!flicker)
         {
-            textcolor.a = textcolor.a + (60.0f * tick.asSeconds());
+            text_alpha += 60.0f * tick.asSeconds();
+            textcolor.a = static_cast<std::uint8_t>(text_alpha);
         }
         text.setFillColor(textcolor);
     }

@@ -3,6 +3,7 @@
 Transition::Transition() : Spoon::Scene("loadscreen", {1080, 1080})
 {
     rect.setSize({ 1080, 1080 });
+    rect.setFillColor(rectcolor);
 }
 
 void Transition::OnCache()
