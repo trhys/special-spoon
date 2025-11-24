@@ -5,6 +5,7 @@
 #include "Physics/PhysicsManager.h"
 #include "ResourceManager.h"
 #include "SFML/Graphics.hpp"
+#include <functional>
 
 namespace Spoon 
 { 
@@ -27,12 +28,16 @@ namespace Spoon
 		virtual ~Application() {}
 
 		void PushLayer(Layer* layer);
-		void PopLayer(Layer* layer);		
+		void PopLayer(Layer* layer);	
+		void ProcessLayerQueue();	
 		void UpdatePhysics();
 		void Close();
 		void Run();
 		
+		static Application& Get() { return *s_Instance; }
+
 		AppSpecifications GetSpecs() { return m_Specs; }
+		sf::RenderWindow& GetWindow() { return m_Window; }
 		SceneManager* GetSM();
 		ResourceManager* GetRM();
 
@@ -46,6 +51,8 @@ namespace Spoon
 		ResourceManager   m_ResourceManager;
 		PhysicsManager    m_PhysicsManager;
 		SceneManager	  m_SceneManager;
+
+		std::vector<Layer*> m_LayerQueue;
 	};
 
 	//DEFINE IN CLIENT APPLICATION

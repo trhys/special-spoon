@@ -9,6 +9,7 @@ public:
     ~MainMenu() {}
 
     void OnTransition() override;
+    void OnCache() override;
 
 private:
     void OnUpdate(sf::Time tick) override;
@@ -20,13 +21,13 @@ private:
 class MenuText : public Spoon::Node
 {
 public:
-    MenuText(sf::Font font) : text(font, "Press Enter to Start") {}
+    MenuText(sf::Font& font) : text(font, "Press Enter to Start") {}
     ~MenuText() {}
 
 private:
     sf::Text text;
     sf::Color textcolor = sf::Color(255, 255, 255, 255);
-    bool flicker = false;
+    bool flicker = true;
 
     void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
@@ -34,40 +35,25 @@ private:
     }
 
     void OnUpdate(sf::Time tick) override
-    {
-        if(!flicker)
-        {
-            textcolor.a -= 127.5 * tick.asSeconds();
-            if(textcolor.a == 0) { flicker = true; }
+    {   
+        if (textcolor.a > 255) 
+        { 
+            textcolor.a = 254;
+            flicker = true;
         }
-        if(flicker)
+        else if (textcolor.a < 0)
         {
-            textcolor.a += 127.5 * tick.asSeconds();
-            if(textcolor.a == 255) { flicker = false; }
+            textcolor.a = 1;
+            flicker = false;
+        }
+        if (flicker)
+        {
+            textcolor.a = textcolor.a - (60.0f * tick.asSeconds());
+        }
+        else if (!flicker)
+        {
+            textcolor.a = textcolor.a + (60.0f * tick.asSeconds());
         }
         text.setFillColor(textcolor);
-    }
-};
-
-class Transition : public Spoon::Node
-{
-public:
-    Transition(sf::Vector2f bounds) : rect(bounds) {}
-
-private:
-    sf::RectangleShape rect;
-    sf::Color rectcolor = sf::Color(0, 0, 0, 0);
-
-    void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
-    {
-        target.draw(rect, states);
-    }
-
-    void OnUpdate(sf::Time tick) override
-    {
-        if(rectcolor.a < 255)
-        {
-            rectcolor.a += 127.5 * tick.asSeconds();
-        }
     }
 };

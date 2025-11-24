@@ -15,7 +15,7 @@ namespace Spoon
 
         void Detect(Scene& sceneroot);
 
-        Quadtree& GetTree() { return *m_ActiveQuadtree; }
+        Quadtree* GetTree() { return m_ActiveQuadtree; }
 
     private:
         Quadtree* m_ActiveQuadtree = nullptr;        

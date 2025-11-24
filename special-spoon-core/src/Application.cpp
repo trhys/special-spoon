@@ -37,12 +37,21 @@ namespace Spoon
 
     void Application::PopLayer(Layer* layer)
     {
-        m_LayerStack.PopLayer(layer);
+        m_LayerQueue.push_back(layer);
+    }
+
+    void Application::ProcessLayerQueue()
+    {
+        for(auto& layer : m_LayerQueue)
+        {
+            m_LayerStack.PopLayer(layer);
+        }
+        m_LayerQueue.clear();
     }
 
     void Application::UpdatePhysics()
     {
-        m_PhysicsManager.CheckCollision(m_SceneManager.GetActiveScene());
+        m_PhysicsManager.CheckCollision(m_SceneManager.GetSceneRef());
     }
 
     SceneManager* Application::GetSM() { return &m_SceneManager; }
@@ -90,19 +99,19 @@ namespace Spoon
             {
                 layer->OnUpdate(tick);
             }
+            ProcessLayerQueue();
 
             // PHYSICS
             #ifdef SS_PHYSICS_ENABLED
                 UpdatePhysics();
             #endif
 
-            //#define SS_PHYS_TEST // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
-            //#ifdef SS_PHYS_TEST
+            // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
             //   for(auto& leaf : m_PhysicsManager.PhysTest())
             //   {
             //       m_Window.draw(leaf.rect);
             //   }
-            //#endif
+            // TEST
 
             // RENDER
             m_Window.clear();

@@ -1,4 +1,3 @@
-#include "Core.h"
 #include "CollisionDetector.h"
 #include "Scene/Scene.h"
 
@@ -10,9 +9,9 @@ namespace Spoon
         auto found = m_BuiltTrees.find(sceneroot.GetName());
         if(found == m_BuiltTrees.end())
         {
-            Quadtree* quadtree = new Quadtree();
-            quadtree->BuildTree(sceneroot.GetBounds());
-            m_BuiltTrees.emplace(sceneroot.GetName(), *quadtree);
+            Quadtree quadtree;
+            quadtree.BuildTree(sceneroot.GetBounds());
+            m_BuiltTrees.emplace(sceneroot.GetName(), std::move(quadtree));
         }
         m_ActiveQuadtree = &m_BuiltTrees[sceneroot.GetName()];
         m_ActiveQuadtree->GetCollisionBodies(sceneroot);

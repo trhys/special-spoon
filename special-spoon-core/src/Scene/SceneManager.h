@@ -23,7 +23,8 @@ namespace Spoon
         void UpdateScene(sf::Time tick);
         void TransitionScene();
 
-        Scene& GetActiveScene() { return *m_ActiveScene; }
+        Scene& GetSceneRef() { return *m_ActiveScene; }
+        Scene* GetActiveScene() { return m_ActiveScene; }
         Scene GetOverlay() { return *m_Overlay; }
 
     private:

@@ -1,7 +1,8 @@
 #include "DemoMenu.h"
 #include "MainMenuScene.h"
-#include "DemoScene.h"
 #include "DemoZombie.h"
+#include "DemoLayer.h"
+#include "SceneTransition.h"
 
 void DemoMenu::OnAttach()
 {
@@ -11,7 +12,8 @@ void DemoMenu::OnAttach()
 
 void DemoMenu::OnDetach()
 {
-
+    Spoon::Application::Get().PushLayer(new DemoLayer());
+    delete this;
 }
 
 void DemoMenu::OnUpdate(sf::Time tick)
@@ -26,7 +28,7 @@ void DemoMenu::OnUpdate(sf::Time tick)
             timer = timer.Zero;
             transitiontimer = false;
             EndScene();
-            StartDemo();
+            Spoon::Application::Get().PopLayer(this);
         }
     }
 }
@@ -39,14 +41,9 @@ bool DemoMenu::OnEvent(const sf::Event& e)
         {
             GetSM()->TransitionScene();
             transitiontimer = true;
+            Spoon::Application::Get().PushLayer(new LoadScreen());
         }
     }
 
     return false;
-}
-
-void DemoMenu::StartDemo()
-{
-    RequestScene("demoscene", new DemoScene());
-    BeginScene("demoscene");
 }

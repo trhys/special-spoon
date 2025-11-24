@@ -24,13 +24,12 @@ namespace Spoon
 		void RequestScene(std::string name, Scene* scene);
 		void BeginScene(std::string name);
 		void EndScene();
-		// void PushOverlay(std::string name);
-		// void PopOverlay();
+		void PushOverlay(std::string name);
+		void PopOverlay();
 
 		SceneManager* GetSM() { return p_SM; }
 
 	private:
 		SceneManager* p_SM = nullptr;
-		ResourceManager* p_RM = nullptr;
 	};
 }

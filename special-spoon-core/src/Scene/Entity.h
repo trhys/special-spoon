@@ -13,7 +13,9 @@ namespace Spoon
         virtual ~Entity() {}
 
         virtual void OnAdd() {}
-        virtual void OnKill() {}
+        virtual void OnKill() { delete this; }
+
+        void ScaleSprite(sf::Vector2f scale) { m_Sprite.setScale(scale); }
 
         sf::FloatRect GetBoundingBox() override { return m_Sprite.getGlobalBounds(); }
         

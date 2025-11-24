@@ -23,13 +23,13 @@ namespace Spoon
 		p_SM->DeactivateScene();
 	}
 
-	// void Layer::PushOverlay(std::string name)
-	// {
-	// 	p_SM()->ActivateOverlay(name);
-	// }
+	void Layer::PushOverlay(std::string name)
+	{
+		p_SM->ActivateOverlay(name);
+	}
 
-	// void Layer::PopOverlay()
-	// {
-	// 	p_SM()->DeactivateOverlay();
-	// }
+	void Layer::PopOverlay()
+	{
+		p_SM->DeactivateOverlay();
+	}
 }

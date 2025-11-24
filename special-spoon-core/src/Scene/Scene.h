@@ -15,7 +15,9 @@ namespace Spoon
         virtual ~Scene() {}
 
         virtual void OnTransition() {}
+        virtual void OnCache() {}
 
+        void Init(ResourceManager* rm);
         void ShowScene();
         void HideScene();
         bool IsActive();
@@ -24,7 +26,6 @@ namespace Spoon
         sf::FloatRect GetBounds() const { return m_Bounds; }
         sf::View& GetView() { return mainview; }
 
-        void GetRM(ResourceManager* rm);
         sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path) override;
         sf::Font& LoadFont(std::string id, std::filesystem::path file_path) override;
 
