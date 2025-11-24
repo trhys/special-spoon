@@ -5,6 +5,7 @@
 #include "Physics/PhysicsManager.h"
 #include "ResourceManager.h"
 #include "SFML/Graphics.hpp"
+#include <functional>
 
 namespace Spoon 
 { 
@@ -51,7 +52,7 @@ namespace Spoon
 		PhysicsManager    m_PhysicsManager;
 		SceneManager	  m_SceneManager;
 
-		std::vector<std::function<void()>> m_LayerQueue;
+		std::vector<Layer*> m_LayerQueue;
 	};
 
 	//DEFINE IN CLIENT APPLICATION

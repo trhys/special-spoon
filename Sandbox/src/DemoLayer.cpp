@@ -1,6 +1,7 @@
 #include "DemoLayer.h"
 #include "DemoScene.h"
 #include "DemoMenu.h"
+#include "SceneTransition.h"
 
 DemoLayer::DemoLayer()
 {

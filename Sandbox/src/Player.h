@@ -5,7 +5,10 @@
 class Player : public Spoon::Entity
 {
 public:
-    Player(sf::Texture& texture) : Entity::Entity(texture) {}
+    Player(sf::Texture& texture) : Entity::Entity(texture) {
+        ScaleSprite({ 0.25, 0.25 });
+    }
+
     ~Player() {}
 
     void TurnLeft(sf::Time tick);

@@ -3,13 +3,13 @@
 void Player::TurnLeft(sf::Time tick)
 {
     move({-1 * (tick.asSeconds() * m_Speed), 0});
-    ScaleSprite({-1, 1});
+    ScaleSprite({-0.25, 0.25});
 }
 
 void Player::TurnRight(sf::Time tick)
 {
     move({1 * (tick.asSeconds() * m_Speed), 0});
-    ScaleSprite({1, 1});
+    ScaleSprite({0.25, 0.25});
 }
 
 void Player::TurnUp(sf::Time tick)

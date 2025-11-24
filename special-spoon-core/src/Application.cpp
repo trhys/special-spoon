@@ -37,14 +37,14 @@ namespace Spoon
 
     void Application::PopLayer(Layer* layer)
     {
-        m_LayerQueue.push_back(m_LayerStack.PopLayer(layer));
+        m_LayerQueue.push_back(layer);
     }
 
     void Application::ProcessLayerQueue()
     {
-        for(auto& func : m_LayerQueue)
+        for(auto& layer : m_LayerQueue)
         {
-            func();
+            m_LayerStack.PopLayer(layer);
         }
         m_LayerQueue.clear();
     }

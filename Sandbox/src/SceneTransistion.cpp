@@ -2,7 +2,7 @@
 
 Transition::Transition() : Spoon::Scene("loadscreen", {1080, 1080})
 {
-    rect.size = {1080, 1080};
+    rect.setSize({ 1080, 1080 });
 }
 
 void Transition::OnCache()

@@ -11,7 +11,7 @@ void MainMenu::OnCache()
 {
     AddChild(new Spoon::Entity(LoadTexture("menu_screen", "resources/SV-Scene.png")));
     AddChild(new MenuZombieSpawner({-100, 600}));
-    AddChild(new MenuText(LoadFont("menu_text", "resources/Fonts/RoadRage/RoadRage-Regular.ttf")), {GetBounds().size.x / 2, GetBounds().size.y / 2 });
+    AddChild(new MenuText(LoadFont("menu_text", "resources/Fonts/RoadRage/RoadRage-Regular.ttf")), { 400, 400 });
 }
 
 void MainMenu::OnUpdate(sf::Time tick)
