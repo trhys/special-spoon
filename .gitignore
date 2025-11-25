@@ -1,9 +1,7 @@
 *.vs
 *.sln
-bin/
-bin-int/
+/bin/
+/bin-int/
 *.vcxproj
 *.vcxproj.user
 *.vcxproj.filters
-*.dll
-Sandbox/resources
