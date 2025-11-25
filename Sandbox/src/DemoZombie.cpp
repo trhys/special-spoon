@@ -32,11 +32,6 @@ void DemoZombie::CollisionDetected()
     setPosition(m_CurrentPosition);
 }
 
-void DemoZombie::OnKill()
-{
-    GetParent()->KillChild(this);
-}
-
 void MenuZombie::OnUpdate(sf::Time tick)
 {
     timer = timer + tick;
@@ -46,11 +41,6 @@ void MenuZombie::OnUpdate(sf::Time tick)
     }
 
     move({100 * tick.asSeconds(), 0});
-}
-
-void MenuZombie::OnKill()
-{
-    GetParent()->KillChild(this);
 }
 
 void ZombieSpawner::SpawnZombie()

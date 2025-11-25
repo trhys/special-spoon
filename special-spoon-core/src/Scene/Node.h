@@ -28,12 +28,14 @@ namespace Spoon
 
         // Graph handling
         virtual void OnAdd() {}
-        virtual void OnKill() { delete this; }
 
         void MakeParent(Node* parent);
         void AddChild(Node* child);
         void AddChild(Node* child, sf::Vector2f position);
-        void KillChild(Node* child);
+        
+        void RemoveDead();
+        void OnKill() { m_IsDead = true; }
+        bool IsDead() { return m_IsDead; }
 
         // ==================================
         
@@ -47,5 +49,7 @@ namespace Spoon
         
         Node* p_Parent;
         std::vector<Node*> m_Children;
+
+        bool m_IsDead = false;
     };
 }

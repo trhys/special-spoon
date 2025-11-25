@@ -22,10 +22,14 @@ namespace Spoon
         child->OnAdd();
     }
 
-    void Node::KillChild(Node* child)
+    void Node::RemoveDead()
     {
-        m_Children.erase(remove(m_Children.begin(), m_Children.end(), child), m_Children.end());
-        child->OnKill();
+        auto remove_it = std::remove_if(m_Children.begin(), m_Children.end(), [](Node* child){ return child->IsDead(); });
+        for(auto it = remove_it; it != m_Children.end(); it++)
+        {
+            delete *it;
+        }
+        m_Children.erase(remove_it, m_Children.end());
     }
 
     void Node::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -47,6 +51,7 @@ namespace Spoon
         {
             child->Update(tick);
         }
+        RemoveDead();
     }
 
     sf::Texture& Node::LoadTexture(std::string id, std::filesystem::path file_path)

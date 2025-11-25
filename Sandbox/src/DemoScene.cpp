@@ -32,7 +32,6 @@ void DemoScene::OnUpdate(sf::Time tick)
             {
                 child->OnKill();
             }
-            GetChildren().clear();
         }
     }
 }

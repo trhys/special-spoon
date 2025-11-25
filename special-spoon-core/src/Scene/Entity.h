@@ -13,7 +13,6 @@ namespace Spoon
         virtual ~Entity() {}
 
         virtual void OnAdd() {}
-        virtual void OnKill() { delete this; }
 
         void ScaleSprite(sf::Vector2f scale) { m_Sprite.setScale(scale); }
 

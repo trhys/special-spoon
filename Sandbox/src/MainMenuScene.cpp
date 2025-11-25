@@ -26,7 +26,6 @@ void MainMenu::OnUpdate(sf::Time tick)
            {
                child->OnKill();
            }
-           GetChildren().clear();
         }
     }
 }
@@ -39,7 +38,7 @@ void MainMenu::OnTransition()
        MenuText* finder = dynamic_cast<MenuText*>(*it);
        if(finder)
        {
-           KillChild(finder);
+           finder->OnKill();
            break;
        }
     }
