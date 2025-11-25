@@ -14,25 +14,25 @@ namespace Spoon
         {
             leaf.body.size = node_size;
 
-            // TEST
-            // leaf.rect.setSize(node_size);
-            // leaf.rect.setOutlineThickness(10.0f);
-            // leaf.rect.setOutlineColor(sf::Color(250, 100, 100));
-            // TEST
+            // Show the quadtree nodes on-screen for visual debugging
+            leaf.rect.setSize(node_size);
+            leaf.rect.setOutlineThickness(10.0f);
+            leaf.rect.setOutlineColor(sf::Color::Transparent);
         }
-        for(auto it = m_GridNodes.begin(); it < m_GridNodes.end(); it++)
+        for(size_t in = 0; in < m_GridNodes.size(); in++)
         {
-            if(std::distance(m_GridNodes.begin(), it) < 4)
+            if(in < 4)
             {
-                int top = std::distance(m_GridNodes.begin(), it);
-                m_GridNodes[top].body.position.x = node_size.x * top;
-                m_GridNodes[top].body.position.y = 0;
+                m_GridNodes[in].body.position.x = node_size.x * in;
+                m_GridNodes[in].body.position.y = 0;
+                m_GridNodes[in].rect.setPosition(body.position);
             }
             else 
             {
-                int bottom = std::distance(m_GridNodes.begin(), it) - 4.0;
-                m_GridNodes[bottom].body.position.x = node_size.x * bottom;
-                m_GridNodes[bottom].body.position.y = node_size.y;
+                int bottom_index = in - 4;
+                m_GridNodes[in].body.position.x = node_size.x * bottom_index;
+                m_GridNodes[in].body.position.y = node_size.y;
+                m_GridNodes[in].rect.setPosition(body.position);
             }
         }
     }

@@ -11,10 +11,7 @@ namespace Spoon
     {
         sf::FloatRect body;
         std::vector<Node*> collision_buffer;
-
-        // TEST
-        //sf::RectangleShape rect;
-        // TEST
+        sf::RectangleShape rect;
     };
 
     class Quadtree
