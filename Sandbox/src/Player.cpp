@@ -1,5 +1,10 @@
 #include "Player.h"
 
+Player::Player(sf::Texture& texture)
+{
+    CenterOrigin();
+    ScaleSprite({ 0.25, 0.25 });
+}
 void Player::TurnLeft(sf::Time tick)
 {
     move({-1 * (tick.asSeconds() * m_Speed), 0});

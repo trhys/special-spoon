@@ -21,8 +21,8 @@ void DemoZombie::OnUpdate(sf::Time tick)
     const float angle = (dist(engine)) * 2.0 * 3.14;
     const float distance = (dist(engine)) * 0.9 + 0.1;
 
-    float dX = std::cos(angle) * distance * speed;
-    float dY = std::sin(angle) * distance * speed;
+    float dX = std::cos(angle) * distance * (speed * tick.asSeconds());
+    float dY = std::sin(angle) * distance * (speed * tick.asSeconds());
 
     move({dX, dY});
 }

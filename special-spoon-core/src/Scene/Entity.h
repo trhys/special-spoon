@@ -15,6 +15,12 @@ namespace Spoon
         virtual void OnAdd() {}
 
         void ScaleSprite(sf::Vector2f scale) { m_Sprite.setScale(scale); }
+        
+        void CenterOrigin() 
+        {
+            sf::FloatRect bounds = m_Sprite.getLocalBounds(); 
+            m_Sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f)
+        }
 
         bool GetIsCollidable() override { return m_IsCollidable; }
         sf::FloatRect GetBoundingBox() override { return m_Sprite.getGlobalBounds(); }
