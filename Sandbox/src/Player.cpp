@@ -36,6 +36,8 @@ void Player::CollisionDetected()
 
 void Player::OnUpdate(sf::Time tick)
 {
+    m_CurrentPosition = getPosition();
+    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) { TurnUp(tick); }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) { TurnLeft(tick); }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) { TurnDown(tick); }
