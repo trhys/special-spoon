@@ -9,9 +9,29 @@ MainMenu::MainMenu() : Spoon::Scene("MainMenu", {1080, 1080})
 
 void MainMenu::OnCache()
 {
-    AddChild(new Spoon::Entity(LoadTexture("menu_screen", "resources/SV-Scene.png")));
-    AddChild(new MenuZombieSpawner({-100, 600}));
-    AddChild(new MenuText(LoadFont("menu_text", "resources/Fonts/RoadRage/RoadRage-Regular.ttf")), { 400, 400 });
+    LoadTexture("menu_screen", "resources/SV-Scene.png");
+    LoadFont("menu_text", "resources/Fonts/RoadRage/RoadRage-Regular.ttf");
+}
+
+void MainMenu::OnStart()
+{
+    if(!is_Initialized)
+    {
+        AddChild(new Spoon::Entity(LoadTexture("menu_screen")));
+        AddChild(new MenuZombieSpawner({-100, 600}));
+        AddChild(new MenuText(LoadFont("menu_text"), { 400, 400 }));
+        is_Initialized = true;
+    }
+}
+
+void MainMenu::OnEnd()
+{
+    for(auto& child : GetChildren())
+    {
+        child->OnKill();
+    }
+    transitioning = false;
+    is_Initialized = false;
 }
 
 void MainMenu::OnUpdate(sf::Time tick)
@@ -20,13 +40,6 @@ void MainMenu::OnUpdate(sf::Time tick)
     {
         timer = timer + tick;
         GetView().zoom(1.15 * timer.asSeconds());
-        if(timer.asSeconds() > 3)
-        {
-           for(auto& child : GetChildren())
-           {
-               child->OnKill();
-           }
-        }
     }
 }
 

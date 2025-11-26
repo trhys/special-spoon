@@ -16,6 +16,8 @@ namespace Spoon
 
         virtual void OnTransition() {}
         virtual void OnCache() {}
+        virtual void OnStart() {}
+        virtual void OnEnd() {}
 
         void Init(ResourceManager* rm);
         void ShowScene();

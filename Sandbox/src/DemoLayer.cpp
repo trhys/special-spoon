@@ -16,6 +16,7 @@ void DemoLayer::OnAttach()
 
 void DemoLayer::OnDetach()
 {
+    Spoon::Application::Get().PushLayer(new DemoMenu());
     delete this;
 }
 
@@ -26,12 +27,11 @@ void DemoLayer::OnUpdate(sf::Time tick)
     if(transitioning)
     {
         timer = timer + tick;
-        if(timer.asSeconds() > 5)
+        if(timer.asSeconds() > 3)
         {
             timer = timer.Zero;
             transitioning = false;
             EndScene();
-            Spoon::Application::Get().PushLayer(new DemoMenu());
             Spoon::Application::Get().PopLayer(this);
         }
     }
@@ -46,6 +46,7 @@ bool DemoLayer::OnEvent(const sf::Event& e)
             GetSM()->TransitionScene();
             transitioning = true;
             Spoon::Application::Get().PushLayer(new LoadScreen());
+            return true;
         }
     }
 
