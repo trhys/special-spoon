@@ -17,7 +17,7 @@ namespace Spoon
             // Show the quadtree nodes on-screen for visual debugging
             leaf.rect.setSize(node_size);
             leaf.rect.setOutlineThickness(10.0f);
-            leaf.rect.setOutlineColor(sf::Color::Transparent);
+            leaf.rect.setFillColor(sf::Color::Transparent);
         }
         for(size_t in = 0; in < m_GridNodes.size(); in++)
         {
@@ -25,14 +25,14 @@ namespace Spoon
             {
                 m_GridNodes[in].body.position.x = node_size.x * in;
                 m_GridNodes[in].body.position.y = 0;
-                m_GridNodes[in].rect.setPosition(body.position);
+                m_GridNodes[in].rect.setPosition({ node_size.x * in, 0 });
             }
             else 
             {
                 int bottom_index = in - 4;
                 m_GridNodes[in].body.position.x = node_size.x * bottom_index;
                 m_GridNodes[in].body.position.y = node_size.y;
-                m_GridNodes[in].rect.setPosition(body.position);
+                m_GridNodes[in].rect.setPosition({ node_size.x * bottom_index, node_size.y });
             }
         }
     }

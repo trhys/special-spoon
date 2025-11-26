@@ -5,7 +5,7 @@
 class Player : public Spoon::Entity
 {
 public:
-    Player(sf::Texture& texture) : Entity::Entity(texture, true);
+    Player(sf::Texture& texture);
     ~Player() {}
 
     void TurnLeft(sf::Time tick);

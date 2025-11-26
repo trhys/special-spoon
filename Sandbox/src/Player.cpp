@@ -1,6 +1,6 @@
 #include "Player.h"
 
-Player::Player(sf::Texture& texture)
+Player::Player(sf::Texture& texture) : Entity::Entity(texture, true)
 {
     CenterOrigin();
     ScaleSprite({ 0.25, 0.25 });

@@ -112,10 +112,10 @@ namespace Spoon
             m_SceneManager.DrawScene(m_Window, states);
 
             // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
-            //   for(auto& leaf : m_PhysicsManager.PhysTest())
-            //   {
-            //       m_Window.draw(leaf.rect);
-            //   }
+               for(auto& leaf : m_PhysicsManager.PhysTest())
+               {
+                   m_Window.draw(leaf.rect);
+               }
             
             m_Window.display();
         }

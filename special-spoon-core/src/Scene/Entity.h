@@ -19,7 +19,7 @@ namespace Spoon
         void CenterOrigin() 
         {
             sf::FloatRect bounds = m_Sprite.getLocalBounds(); 
-            m_Sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f)
+            m_Sprite.setOrigin({ bounds.size.x / 2.0f, bounds.size.y / 2.0f });
         }
 
         bool GetIsCollidable() override { return m_IsCollidable; }

@@ -26,7 +26,7 @@ private:
         if(alpha_value < 255.0f)
         {
             alpha_value += 127.5f * tick.asSeconds();
-            rectcolor.a = std::static_cast<std::uint8_t>(alpha_value);
+            rectcolor.a = static_cast<std::uint8_t>(alpha_value);
         }
     }
 };
