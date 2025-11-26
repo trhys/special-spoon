@@ -21,7 +21,9 @@ namespace Spoon
         ~Quadtree() {}
 
         void BuildTree(sf::FloatRect bounds);
-        void GetCollisionBodies(Scene& sceneroot);
+        void Populate(Scene& sceneroot);
+        void Insert(Node* node);
+        std::set<std::pair<Node*, Node*>> GeneratePairs();
         void ProcessCollisionBuffer();
 
         std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }

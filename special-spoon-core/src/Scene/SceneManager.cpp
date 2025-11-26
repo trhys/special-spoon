@@ -78,6 +78,7 @@ namespace Spoon
     void SceneManager::UpdateScene(sf::Time tick)
     {
         if(m_ActiveScene) { m_ActiveScene->Update(tick); }
+        if(m_Overlay) { m_Overlay->Update(tick); }
     }
 
     void SceneManager::TransitionScene()
@@ -86,5 +87,11 @@ namespace Spoon
         {
             m_ActiveScene->OnTransition();
         }
+    }
+
+    void SceneManager::SceneCleanup()
+    {
+        if(m_ActiveScene) { m_ActiveScene->Cleanup(); }
+        if(m_Overlay) { m_Overlay->Cleanup(); }
     }
 }

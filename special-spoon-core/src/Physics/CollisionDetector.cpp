@@ -14,7 +14,7 @@ namespace Spoon
             m_BuiltTrees.emplace(sceneroot.GetName(), std::move(quadtree));
         }
         m_ActiveQuadtree = &m_BuiltTrees[sceneroot.GetName()];
-        m_ActiveQuadtree->GetCollisionBodies(sceneroot);
+        m_ActiveQuadtree->Populate(sceneroot);
 
         // Collision check
         m_ActiveQuadtree->ProcessCollisionBuffer();

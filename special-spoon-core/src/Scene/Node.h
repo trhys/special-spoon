@@ -24,32 +24,30 @@ namespace Spoon
         virtual sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path);
         virtual sf::Font& LoadFont(std::string id, std::filesystem::path file_path);
 
-        // ==================================
-
         // Graph handling
         virtual void OnAdd() {}
 
         void MakeParent(Node* parent);
         void AddChild(Node* child);
         void AddChild(Node* child, sf::Vector2f position);
-        
-        void RemoveDead();
+         
         void OnKill() { m_IsDead = true; }
         bool IsDead() { return m_IsDead; }
-
-        // ==================================
         
         // Misc methods
         Node* GetParent() { return p_Parent; }
-        std::vector<Node*>& GetChildren() { return m_Children; } 
+        std::vector<Node*>& GetChildren() { return m_Children; }
+        void SendNodes(std::vector<Node*>& outbuffer);
+        void Cleanup();
 
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
         virtual void OnUpdate(sf::Time tick) {}
-        
+
+        void RemoveDead();
+        bool m_IsDead = false;
+
         Node* p_Parent;
         std::vector<Node*> m_Children;
-
-        bool m_IsDead = false;
     };
 }

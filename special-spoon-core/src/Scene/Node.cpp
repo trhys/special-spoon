@@ -51,7 +51,6 @@ namespace Spoon
         {
             child->Update(tick);
         }
-        RemoveDead();
     }
 
     sf::Texture& Node::LoadTexture(std::string id, std::filesystem::path file_path)
@@ -64,5 +63,23 @@ namespace Spoon
     {
         sf::Font font;
         return font;
+    }
+
+    void Node::Cleanup()
+    {
+        for(auto& child : m_Children)
+        {
+            child->Cleanup();
+        }
+        RemoveDead();
+    }
+
+    void Node::SendNodes(std::vector<Node*>& outbuffer)
+    {
+        if(m_IsCollidable) { outbuffer.push_back(this); }
+        for(auto& child : m_Children)
+        {
+            child->SendNodes(outbuffer);
+        }
     }
 }

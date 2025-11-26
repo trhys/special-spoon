@@ -22,6 +22,7 @@ namespace Spoon
         void DrawScene(sf::RenderTarget& target, sf::RenderStates states);
         void UpdateScene(sf::Time tick);
         void TransitionScene();
+        void SceneCleanup();
 
         Scene& GetSceneRef() { return *m_ActiveScene; }
         Scene* GetActiveScene() { return m_ActiveScene; }

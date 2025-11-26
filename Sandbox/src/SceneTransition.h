@@ -27,6 +27,7 @@ private:
         {
             alpha_value += 127.5f * tick.asSeconds();
             rectcolor.a = static_cast<std::uint8_t>(alpha_value);
+            rect.setFillColor(rectcolor);
         }
     }
 };
