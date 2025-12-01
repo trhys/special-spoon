@@ -46,6 +46,7 @@ namespace Spoon
 
         void RemoveDead();
         bool m_IsDead = false;
+        bool m_IsCollidable = false;
 
         Node* p_Parent;
         std::vector<Node*> m_Children;

@@ -1,6 +1,6 @@
 #include "Player.h"
 
-Player::Player(sf::Texture& texture) : Entity::Entity(texture, true)
+Player::Player(sf::Texture& texture, bool collidable) : Entity::Entity(texture, collidable)
 {
     CenterOrigin();
     ScaleSprite({ 0.25, 0.25 });
@@ -31,12 +31,12 @@ void Player::TurnDown(sf::Time tick)
 
 void Player::CollisionDetected()
 {
-    setPosition(m_CurrentPosition);
+    SetSpritePosition(m_CurrentPosition);
 }
 
 void Player::OnUpdate(sf::Time tick)
 {
-    m_CurrentPosition = getPosition();
+    m_CurrentPosition = GetSpritePosition();
     
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) { TurnUp(tick); }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) { TurnLeft(tick); }

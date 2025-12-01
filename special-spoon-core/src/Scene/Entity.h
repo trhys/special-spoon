@@ -9,12 +9,15 @@ namespace Spoon
     class Entity : public Node
     {
     public:
-        Entity(sf::Texture& texture, bool collidable = false) : m_Sprite(texture), m_IsCollidable(collidable) {}
+        Entity(sf::Texture& texture) : m_Sprite(texture) {}
+        Entity(sf::Texture& texture, bool collidable) : m_Sprite(texture), m_IsCollidable(collidable) {}
         virtual ~Entity() {}
 
         virtual void OnAdd() {}
 
         void ScaleSprite(sf::Vector2f scale) { m_Sprite.setScale(scale); }
+        void SetSpritePosition(sf::Vector2f pos) { m_Sprite.setPosition(pos); }
+        sf::Vector2f GetSpritePosition() { return m_Sprite.getPosition(); }
         
         void CenterOrigin() 
         {

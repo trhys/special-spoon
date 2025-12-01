@@ -16,7 +16,7 @@ void DemoZombie::OnUpdate(sf::Time tick)
         OnKill();
     }
 
-    m_CurrentPosition = getPosition();
+    m_CurrentPosition = GetSpritePosition();
 
     const float angle = (dist(engine)) * 2.0 * 3.14;
     const float distance = (dist(engine)) * 0.9 + 0.1;
@@ -29,7 +29,7 @@ void DemoZombie::OnUpdate(sf::Time tick)
 
 void DemoZombie::CollisionDetected()
 {
-    setPosition(m_CurrentPosition);
+    SetSpritePosition(m_CurrentPosition);
 }
 
 void MenuZombie::OnUpdate(sf::Time tick)

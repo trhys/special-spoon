@@ -18,8 +18,8 @@ void MainMenu::OnStart()
     if(!is_Initialized)
     {
         AddChild(new Spoon::Entity(LoadTexture("menu_screen")));
-        AddChild(new MenuZombieSpawner({-100, 600}));
-        AddChild(new MenuText(LoadFont("menu_text"), { 400, 400 }));
+        AddChild(new ZombieSpawner({-100, 600}));
+        AddChild(new MenuText(LoadFont("menu_text")), { 400, 400 });
         is_Initialized = true;
     }
 }

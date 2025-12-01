@@ -28,8 +28,8 @@ namespace Spoon
         sf::FloatRect GetBounds() const { return m_Bounds; }
         sf::View& GetView() { return mainview; }
 
-        sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path) override;
-        sf::Font& LoadFont(std::string id, std::filesystem::path file_path) override;
+        sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path = "") override;
+        sf::Font& LoadFont(std::string id, std::filesystem::path file_path = "") override;
 
         std::vector<Node*>& GetCollidablesGraph();
 
