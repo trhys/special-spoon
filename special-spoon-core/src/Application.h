@@ -5,11 +5,9 @@
 #include "Physics/PhysicsManager.h"
 #include "ResourceManager.h"
 #include "SFML/Graphics.hpp"
-#include <functional>
 
 namespace Spoon 
 { 
-
 	class SceneManager;
 	class ResourceManager;
 	class PhysicsManager;
@@ -35,11 +33,8 @@ namespace Spoon
 		void Run();
 		
 		static Application& Get() { return *s_Instance; }
-
 		AppSpecifications GetSpecs() { return m_Specs; }
 		sf::RenderWindow& GetWindow() { return m_Window; }
-		SceneManager* GetSM();
-		ResourceManager* GetRM();
 
 	private:
 		static Application* s_Instance;

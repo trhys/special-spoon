@@ -16,10 +16,10 @@ void DemoScene::OnCache()
 
 void DemoScene::OnStart()
 {
-    AddChild<Spoon::Entity>("demoscene");
+    AddChild<Spoon::Entity, sf::Texture>("demoscene");
     AddChild<ZombieSpawner>({500, 500});
     AddChild<ZombieSpawner>({700, 700});
-    AddChild<Player>("player");
+    AddChild<Player, sf::Texture>("player");
 }
 
 void DemoScene::OnEnd()

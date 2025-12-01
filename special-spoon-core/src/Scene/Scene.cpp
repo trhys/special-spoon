@@ -38,7 +38,7 @@ namespace Spoon
         m_CollidablesGraph.clear();
         for(auto& child : GetChildren())
         {
-            SendNodes(m_CollidablesGraph);
+            child->SendNodes(m_CollidablesGraph);
         }
         return m_CollidablesGraph;
     }

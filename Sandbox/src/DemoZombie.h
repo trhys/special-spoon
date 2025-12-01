@@ -22,7 +22,7 @@ class ZombieSpawner : public Spoon::Node
 {
 public:
     ZombieSpawner(sf::Vector2f point) { setPosition(point); }
-    ~ZombieSpawner() { for(auto& child : GetChildren()) delete child; }
+    ~ZombieSpawner() {}
 
     void SpawnZombie();
 
@@ -48,7 +48,7 @@ class MenuZombieSpawner : public Spoon::Node
 {
 public:
     MenuZombieSpawner(sf::Vector2f point) { setPosition(point); }
-    ~MenuZombieSpawner() { for(auto& child : GetChildren()) delete child; }
+    ~MenuZombieSpawner() {}
 
     void OnAdd() override;
     void SpawnMenuZombie();

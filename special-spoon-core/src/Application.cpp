@@ -54,9 +54,6 @@ namespace Spoon
         m_PhysicsManager.CheckCollision(m_SceneManager.GetSceneRef());
     }
 
-    SceneManager* Application::GetSM() { return &m_SceneManager; }
-    ResourceManager* Application::GetRM() { return &m_ResourceManager; }
-
     void Application::Close()
     {
         m_IsRunning = false;

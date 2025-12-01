@@ -45,7 +45,7 @@ void MenuZombie::OnUpdate(sf::Time tick)
 
 void ZombieSpawner::SpawnZombie()
 {
-    AddChild<DemoZombie>("demozombie");
+    AddChild<DemoZombie, sf::Texture>("demozombie");
 }
 
 void ZombieSpawner::OnUpdate(sf::Time tick)
@@ -65,7 +65,7 @@ void MenuZombieSpawner::OnAdd()
 
 void MenuZombieSpawner::SpawnMenuZombie()
 {
-    AddChild<MenuZombie>("demozombie");
+    AddChild<MenuZombie, sf::Texture>("demozombie");
 }
 
 void MenuZombieSpawner::OnUpdate(sf::Time tick)

@@ -18,9 +18,9 @@ void MainMenu::OnStart()
     if(!is_Initialized)
     {
         GetView().zoom(0.8);
-        AddChild<Spoon::Entity>("menu_screen");
+        AddChild<Spoon::Entity, sf::Texture>("menu_screen");
         AddChild<ZombieSpawner>({-100, 600});
-        AddChild<MenuText>("menu_text", { 400, 400 });
+        AddChild<MenuText, sf::Font>("menu_text", { 400, 400 });
         is_Initialized = true;
     }
 }
