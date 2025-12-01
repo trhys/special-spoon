@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "SFML/Graphics.hpp"
+#include <type_traits>
 
 namespace Spoon
 {
@@ -11,7 +12,7 @@ namespace Spoon
         ResourceManager() {}
         ~ResourceManager() {}
 
-        sf::Texture& LoadTexture(const std::string id, const std::filesystem::path file_path)
+        void LoadTexture(const std::string id, const std::filesystem::path file_path)
         {
             auto found = m_Textures.find(id);
             if(found == m_Textures.end())
@@ -22,12 +23,10 @@ namespace Spoon
                     throw std::runtime_error("Failed to load texture from file path: " + file_path.string());
                 }
                 m_Textures.emplace(id, std::move(texture));
-                return m_Textures[id];
             }
-            else { return m_Textures[id]; }
         }
 
-        sf::Font& LoadFont(const std::string id, const std::filesystem::path file_path)
+        void LoadFont(const std::string id, const std::filesystem::path file_path)
         {
             auto found = m_Fonts.find(id);
             if(found == m_Fonts.end())
@@ -38,13 +37,24 @@ namespace Spoon
                     throw std::runtime_error("Failed to load font from file path: " + file_path.string());
                 }
                 m_Fonts.emplace(id, std::move(font));
+            }
+        }
+
+        template<typename RESOURCE>
+        static RESOURCE& GetResource(std::string id)
+        {
+            if constexpr(std::is_same_v(RESOURCE, sf::Texture))
+            {
+                return m_Textures[id];
+            }
+            else if constexpr(std::is_same_v(RESOURCE, sf::Font))
+            {
                 return m_Fonts[id];
             }
-            else { return m_Fonts[id]; }
         }
 
     private:
-        std::unordered_map<std::string, sf::Texture> m_Textures;
-        std::unordered_map<std::string, sf::Font> m_Fonts;
+        static std::unordered_map<std::string, sf::Texture> m_Textures;
+        static std::unordered_map<std::string, sf::Font> m_Fonts;
     };
 }

@@ -20,6 +20,8 @@ namespace Spoon
         virtual void OnEnd() {}
 
         void Init(ResourceManager* rm);
+        void LoadTexture(std::string id, std::filesystem::path file_path);
+        void LoadFont(std::string id, std::filesystem::path file_path);
         void ShowScene();
         void HideScene();
         bool IsActive();
@@ -27,9 +29,6 @@ namespace Spoon
         std::string GetName() const { return m_Name; }
         sf::FloatRect GetBounds() const { return m_Bounds; }
         sf::View& GetView() { return mainview; }
-
-        sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path = "") override;
-        sf::Font& LoadFont(std::string id, std::filesystem::path file_path = "") override;
 
         std::vector<Node*>& GetCollidablesGraph();
 

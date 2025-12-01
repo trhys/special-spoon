@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Core.h"
-
+#include "ResourceManager.h"
 #include "SFML/Graphics.hpp"
-
 #include <vector>
+#include <optional>
 
 namespace Spoon
 {   
@@ -12,39 +12,56 @@ namespace Spoon
     {
     public:
         Node() {}
+        Node(bool collidable) : m_IsCollidable(collidable) {}
         virtual ~Node() {}
 
-        // Scene handling
+        // Scene updating
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void Update(sf::Time tick);
 
-        virtual void CollisionDetected() {}   
-        virtual bool GetIsCollidable() { return false; }   
-        virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
-        virtual sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path);
-        virtual sf::Font& LoadFont(std::string id, std::filesystem::path file_path);
-
         // Graph handling
-        virtual void OnAdd() {}
+        template<typename NODE, typename RESOURCE>
+        void AddChild(std::optional<std::string> resource_id = std::nullopt,
+                      std::optional<sf::Vector2f> position = std::nullopt)
+        {
+            if(resource_id.has_value())
+            {
+                RESOURCE& asset = ResourceManager::GetResource<RESOURCE>(resource_id);
+                m_Children.emplace_back(new NODE(asset));
+            }
+            else if(resource_id.has_value() && position.has_value())
+            {
+                RESOURCE& asset = ResourceManager::GetResource<RESOURCE>(resource_id);
+                m_Children.emplace_back(new NODE(asset, position));
+            }
+            else if(position.has_value())
+            {
+                m_Children.emplace_back(new NODE(position));
+            }
+            else
+            {
+                m_Children.emplace_back(new NODE());
+            }
+        }
 
-        void MakeParent(Node* parent);
-        void AddChild(Node* child);
-        void AddChild(Node* child, sf::Vector2f position);
-         
+        virtual void OnAdd() {}
         void OnKill() { m_IsDead = true; }
         bool IsDead() { return m_IsDead; }
-        
-        // Misc methods
-        Node* GetParent() { return p_Parent; }
-        std::vector<Node*>& GetChildren() { return m_Children; }
-        void SendNodes(std::vector<Node*>& outbuffer);
         void Cleanup();
-
+        
+        std::vector<Node*>& GetChildren() { return m_Children; }
+        
+        // Physics
+        virtual sf::FloatRect GetBoundingBox() { return sf::FloatRect(); }
+        virtual void CollisionDetected() {}
+        bool GetIsCollidable() { return m_IsCollidable; }
+        void SendNodes(std::vector<Node*>& outbuffer);
+         
     private:
         virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
         virtual void OnUpdate(sf::Time tick) {}
-
         void RemoveDead();
+
         bool m_IsDead = false;
         bool m_IsCollidable = false;
 

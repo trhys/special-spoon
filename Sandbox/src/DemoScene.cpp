@@ -16,10 +16,10 @@ void DemoScene::OnCache()
 
 void DemoScene::OnStart()
 {
-    AddChild(new Spoon::Entity(LoadTexture("demoscene")));
-    AddChild(new ZombieSpawner({500, 500}));
-    AddChild(new ZombieSpawner({700, 700}));
-    AddChild(new Player(LoadTexture("player")));
+    AddChild<Spoon::Entity>("demoscene");
+    AddChild<ZombieSpawner>({500, 500});
+    AddChild<ZombieSpawner>({700, 700});
+    AddChild<Player>("player");
 }
 
 void DemoScene::OnEnd()

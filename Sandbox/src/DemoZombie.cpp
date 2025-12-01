@@ -45,7 +45,7 @@ void MenuZombie::OnUpdate(sf::Time tick)
 
 void ZombieSpawner::SpawnZombie()
 {
-    AddChild(new DemoZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
+    AddChild<DemoZombie>("demozombie");
 }
 
 void ZombieSpawner::OnUpdate(sf::Time tick)
@@ -65,7 +65,7 @@ void MenuZombieSpawner::OnAdd()
 
 void MenuZombieSpawner::SpawnMenuZombie()
 {
-    AddChild(new MenuZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
+    AddChild<MenuZombie>("demozombie");
 }
 
 void MenuZombieSpawner::OnUpdate(sf::Time tick)

@@ -4,7 +4,7 @@
 
 MainMenu::MainMenu() : Spoon::Scene("MainMenu", {1080, 1080})
 {
-    GetView().zoom(0.8);
+    
 }
 
 void MainMenu::OnCache()
@@ -17,9 +17,10 @@ void MainMenu::OnStart()
 {
     if(!is_Initialized)
     {
-        AddChild(new Spoon::Entity(LoadTexture("menu_screen")));
-        AddChild(new ZombieSpawner({-100, 600}));
-        AddChild(new MenuText(LoadFont("menu_text")), { 400, 400 });
+        GetView().zoom(0.8);
+        AddChild<Spoon::Entity>("menu_screen");
+        AddChild<ZombieSpawner>({-100, 600});
+        AddChild<MenuText>("menu_text", { 400, 400 });
         is_Initialized = true;
     }
 }
@@ -45,15 +46,17 @@ void MainMenu::OnUpdate(sf::Time tick)
 
 void MainMenu::OnTransition()
 {
-    auto& children = GetChildren();
-    for(auto it = children.begin(); it != children.end(); ++it)
-    {
-       MenuText* finder = dynamic_cast<MenuText*>(*it);
-       if(finder)
-       {
-           finder->OnKill();
-           break;
-       }
-    }
+    // COULD BE THE CAUSE OF LOADSCREEN ISSUE =================================================<<<<
+    
+    // auto& children = GetChildren();
+    // for(auto it = children.begin(); it != children.end(); ++it)
+    // {
+    //    MenuText* finder = dynamic_cast<MenuText*>(*it);
+    //    if(finder)
+    //    {
+    //        finder->OnKill();
+    //        break;
+    //    }
+    // }
     transitioning = true;
 }
