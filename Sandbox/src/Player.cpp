@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "iostream"
 
 Player::Player(sf::Texture& texture, bool collidable) : Entity::Entity(texture, collidable)
 {
@@ -32,6 +33,7 @@ void Player::TurnDown(sf::Time tick)
 void Player::CollisionDetected()
 {
     SetSpritePosition(m_CurrentPosition);
+    std::cout << "COLLISION DETECTED" << std::endl;
 }
 
 void Player::OnUpdate(sf::Time tick)

@@ -24,7 +24,7 @@ private:
 class MenuText : public Spoon::Node
 {
 public:
-    MenuText(sf::Font& font) : text(font, "Press Enter to Start") {}
+    MenuText(sf::Font& font, sf::Vector2f position = { 0,0 }) : text(font, "Press Enter to Start") { setPosition(position); }
     ~MenuText() {}
 
 private:

@@ -5,7 +5,10 @@
 class DemoZombie : public Spoon::Entity
 {
 public:
-    DemoZombie(sf::Texture& texture, bool collidable = true) : Entity::Entity(texture, collidable) { ScaleSprite({ 0.25, 0.25 }); }
+    DemoZombie(sf::Texture& texture, bool collidable = true) : Entity::Entity(texture, collidable) 
+    { 
+        ScaleSprite({ 0.25, 0.25 });
+    }
     ~DemoZombie() {}
 
     void CollisionDetected() override;

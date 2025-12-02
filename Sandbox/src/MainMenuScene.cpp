@@ -11,6 +11,7 @@ void MainMenu::OnCache()
 {
     LoadTexture("menu_screen", "resources/SV-Scene.png");
     LoadFont("menu_text", "resources/Fonts/RoadRage/RoadRage-Regular.ttf");
+    LoadTexture("demozombie", "resources/DemoSprite.png");
 }
 
 void MainMenu::OnStart()
@@ -18,9 +19,9 @@ void MainMenu::OnStart()
     if(!is_Initialized)
     {
         GetView().zoom(0.8);
-        AddChild<Spoon::Entity, sf::Texture>("menu_screen");
-        AddChild<ZombieSpawner>({-100, 600});
-        AddChild<MenuText, sf::Font>("menu_text", { 400, 400 });
+        AddChild<Spoon::Entity>("menu_screen");
+        AddChild<ZombieSpawner>(sf::Vector2f{100.0f, 600.0f});
+        AddText<MenuText>("menu_text", {400.0f, 400.0f});
         is_Initialized = true;
     }
 }
@@ -40,14 +41,12 @@ void MainMenu::OnUpdate(sf::Time tick)
     if(transitioning)
     {
         timer = timer + tick;
-        GetView().zoom(1.15 * timer.asSeconds());
+        //GetView().zoom(1.15 * timer.asSeconds()); <====== ISSUE IS HERE
     }
 }
 
 void MainMenu::OnTransition()
-{
-    // COULD BE THE CAUSE OF LOADSCREEN ISSUE =================================================<<<<
-    
+{   
     // auto& children = GetChildren();
     // for(auto it = children.begin(); it != children.end(); ++it)
     // {

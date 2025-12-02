@@ -25,7 +25,7 @@ namespace Spoon
 
     void Node::RemoveDead()
     {
-        auto remove_it = std::remove_if(m_Children.begin(), m_Children.end(), [](Node* child){ return child->IsDead(); });
+        auto remove_it = std::remove_if(m_Children.begin(), m_Children.end(), [](const auto& child){ return child->IsDead(); });
         m_Children.erase(remove_it, m_Children.end());
     }
 

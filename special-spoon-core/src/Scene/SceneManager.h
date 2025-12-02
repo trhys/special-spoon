@@ -26,7 +26,7 @@ namespace Spoon
 
         Scene& GetSceneRef() { return *m_ActiveScene; }
         Scene* GetActiveScene() { return m_ActiveScene; }
-        Scene GetOverlay() { return *m_Overlay; }
+        Scene& GetOverlay() { return *m_Overlay; }
 
     private:
         Scene* m_ActiveScene = nullptr;

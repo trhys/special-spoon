@@ -16,34 +16,49 @@ namespace Spoon
         Node(bool collidable) : m_IsCollidable(collidable) {}
         virtual ~Node() {}
 
+        Node(const Node&) = delete;
+        Node& operator=(const Node&) = delete;
+
+        Node(Node&&) = default;
+        Node& operator=(Node&&) = default;
+
         // Recursive updating methods
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void Update(sf::Time tick);
 
     public:
         // Graph handling \ Child management
-        template<typename NODE, typename RESOURCE>
-        void AddChild(std::optional<std::string> resource_id = std::nullopt,
-                      std::optional<sf::Vector2f> position = std::nullopt)
+        template<typename NODE>
+        void AddChild(std::string resource_id)
         {
-            if(resource_id.has_value() && position.has_value())
-            {
-                RESOURCE& asset = ResourceManager::GetResource<RESOURCE>(resource_id.value());
-                m_Children.emplace_back(std::make_unique<NODE>(asset, position.value()));
-            }
-            else if(resource_id.has_value())
-            {
-                RESOURCE& asset = ResourceManager::GetResource<RESOURCE>(resource_id.value());
-                m_Children.emplace_back(std::make_unique<NODE>(asset));
-            }
-            else if(position.has_value())
-            {
-                m_Children.emplace_back(std::make_unique<NODE>(position.value()));
-            }
-            else
-            {
-                m_Children.emplace_back(std::make_unique<NODE>());
-            }
+            sf::Texture& texture = ResourceManager::GetResource<sf::Texture>(resource_id);
+            m_Children.emplace_back(std::make_unique<NODE>(texture));
+        }
+
+        template<typename NODE>
+        void AddChild()
+        {
+            m_Children.emplace_back(std::make_unique<NODE>());
+        }
+
+        template<typename NODE>
+        void AddChild(std::string resource_id, sf::Vector2f position)
+        {
+            sf::Texture& texture = ResourceManager::GetResource<sf::Texture>(resource_id);
+            m_Children.emplace_back(std::make_unique<NODE>(texture, position));
+        }
+
+        template<typename NODE>
+        void AddChild(sf::Vector2f position)
+        {
+            m_Children.emplace_back(std::make_unique<NODE>(position));
+        }
+
+        template<typename NODE>
+        void AddText(std::string resource_id, sf::Vector2f position)
+        {
+            sf::Font& font = ResourceManager::GetResource<sf::Font>(resource_id);
+            m_Children.emplace_back(std::make_unique<NODE>(font, position));
         }
 
         virtual void OnAdd() {}
@@ -51,7 +66,7 @@ namespace Spoon
         bool IsDead() { return m_IsDead; }
         void Cleanup();
         
-        std::vector<Node*>& GetChildren() { return m_Children; }
+        const std::vector<std::unique_ptr<Node>>& GetChildren() { return m_Children; }
         
     public:
         // Physics
