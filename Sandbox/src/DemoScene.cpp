@@ -10,29 +10,33 @@ DemoScene::DemoScene() : Spoon::Scene("demo_scene", {1080, 1080})
 
 void DemoScene::OnCache()
 {
-    AddChild(new Spoon::Entity(LoadTexture("demoscene", "resources/TD-Scene.png")));
-    AddChild(new ZombieSpawner({500, 500}));
-    AddChild(new ZombieSpawner({700, 700}));
-    AddChild(new Player(LoadTexture("player", "resources/Player.png")));
+    LoadTexture("demoscene", "resources/TD-Scene.png");
+    LoadTexture("player", "resources/Player.png");
+}
+
+void DemoScene::OnStart()
+{
+    AddChild<Spoon::Entity>("demoscene");
+    AddChild<ZombieSpawner>(sf::Vector2f{500, 500});
+    AddChild<ZombieSpawner>(sf::Vector2f{700, 700});
+    AddChild<Player>("player");
+}
+
+void DemoScene::OnEnd()
+{
+    for(auto& child : GetChildren())
+    {
+        child->OnKill();
+    }
+    is_Initialized = false;
 }
 
 void DemoScene::OnTransition()
 {
-    transitioning = true;
+    
 }
 
 void DemoScene::OnUpdate(sf::Time tick)
 {
-    if(transitioning)
-    {
-        timer = timer + tick;
-        if(timer.asSeconds() > 3)
-        {
-            for(auto& child : GetChildren())
-            {
-                child->OnKill();
-            }
-            GetChildren().clear();
-        }
-    }
+
 }

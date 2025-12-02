@@ -2,32 +2,6 @@
 
 namespace Spoon
 {
-    void Node::MakeParent(Node* parent)
-    {
-        p_Parent = parent;
-    }
-
-    void Node::AddChild(Node* child)
-    {
-        child->MakeParent(this);
-        m_Children.push_back(child);
-        child->OnAdd();
-    }
-
-    void Node::AddChild(Node* child, sf::Vector2f position)
-    {
-        child->MakeParent(this);
-        child->setPosition(position);
-        m_Children.push_back(child);
-        child->OnAdd();
-    }
-
-    void Node::KillChild(Node* child)
-    {
-        m_Children.erase(remove(m_Children.begin(), m_Children.end(), child), m_Children.end());
-        child->OnKill();
-    }
-
     void Node::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.transform *= getTransform();
@@ -49,15 +23,27 @@ namespace Spoon
         }
     }
 
-    sf::Texture& Node::LoadTexture(std::string id, std::filesystem::path file_path)
+    void Node::RemoveDead()
     {
-        sf::Texture texture;
-        return texture;
+        auto remove_it = std::remove_if(m_Children.begin(), m_Children.end(), [](const auto& child){ return child->IsDead(); });
+        m_Children.erase(remove_it, m_Children.end());
     }
 
-    sf::Font& Node::LoadFont(std::string id, std::filesystem::path file_path)
+    void Node::Cleanup()
     {
-        sf::Font font;
-        return font;
+        for(auto& child : m_Children)
+        {
+            child->Cleanup();
+        }
+        RemoveDead();
+    }
+
+    void Node::SendNodes(std::vector<Node*>& outbuffer)
+    {
+        if(m_IsCollidable) { outbuffer.push_back(this); }
+        for(auto& child : m_Children)
+        {
+            child->SendNodes(outbuffer);
+        }
     }
 }

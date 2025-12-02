@@ -16,25 +16,20 @@ void DemoZombie::OnUpdate(sf::Time tick)
         OnKill();
     }
 
-    m_CurrentPosition = getPosition();
+    m_CurrentPosition = GetSpritePosition();
 
     const float angle = (dist(engine)) * 2.0 * 3.14;
     const float distance = (dist(engine)) * 0.9 + 0.1;
 
-    float dX = std::cos(angle) * distance * speed;
-    float dY = std::sin(angle) * distance * speed;
+    float dX = std::cos(angle) * distance * (speed * tick.asSeconds());
+    float dY = std::sin(angle) * distance * (speed * tick.asSeconds());
 
     move({dX, dY});
 }
 
 void DemoZombie::CollisionDetected()
 {
-    setPosition(m_CurrentPosition);
-}
-
-void DemoZombie::OnKill()
-{
-    GetParent()->KillChild(this);
+    SetSpritePosition(m_CurrentPosition);
 }
 
 void MenuZombie::OnUpdate(sf::Time tick)
@@ -48,20 +43,15 @@ void MenuZombie::OnUpdate(sf::Time tick)
     move({100 * tick.asSeconds(), 0});
 }
 
-void MenuZombie::OnKill()
-{
-    GetParent()->KillChild(this);
-}
-
 void ZombieSpawner::SpawnZombie()
 {
-    AddChild(new DemoZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
+    AddChild<DemoZombie>("demozombie");
 }
 
 void ZombieSpawner::OnUpdate(sf::Time tick)
 {
     timer = timer + tick;
-    if(timer.asSeconds() > 10)
+    if(timer.asSeconds() > 5)
     {
        SpawnZombie();
        timer = timer.Zero;
@@ -75,7 +65,7 @@ void MenuZombieSpawner::OnAdd()
 
 void MenuZombieSpawner::SpawnMenuZombie()
 {
-    AddChild(new MenuZombie(GetParent()->LoadTexture("demozombie", "resources/DemoSprite.png")));
+    AddChild<MenuZombie>("demozombie");
 }
 
 void MenuZombieSpawner::OnUpdate(sf::Time tick)

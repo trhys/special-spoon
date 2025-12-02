@@ -14,6 +14,7 @@ public:
 private:
     sf::RectangleShape rect;
     sf::Color rectcolor = sf::Color(0, 0, 0, 0);
+    float alpha_value = 0.0f;
 
     void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
@@ -22,13 +23,11 @@ private:
 
     void OnUpdate(sf::Time tick) override
     {
-        if(rectcolor.a < 255)
+        if(alpha_value < 255.0f)
         {
-            rectcolor.a += 127.5 * tick.asSeconds();
-        }
-        else if(rectcolor.a > 255)
-        {
-            rectcolor.a = 255;
+            alpha_value += 127.5f * tick.asSeconds();
+            rectcolor.a = static_cast<std::uint8_t>(alpha_value);
+            rect.setFillColor(rectcolor);
         }
     }
 };

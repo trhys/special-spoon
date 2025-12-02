@@ -23,7 +23,7 @@ void DemoMenu::OnUpdate(sf::Time tick)
     if(transitiontimer)
     {
         timer = timer + tick;
-        if(timer.asSeconds() > 5)
+        if(timer.asSeconds() > 3)
         {
             timer = timer.Zero;
             transitiontimer = false;
@@ -42,6 +42,7 @@ bool DemoMenu::OnEvent(const sf::Event& e)
             GetSM()->TransitionScene();
             transitiontimer = true;
             Spoon::Application::Get().PushLayer(new LoadScreen());
+            return true;
         }
     }
 

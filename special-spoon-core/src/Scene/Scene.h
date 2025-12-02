@@ -16,8 +16,12 @@ namespace Spoon
 
         virtual void OnTransition() {}
         virtual void OnCache() {}
+        virtual void OnStart() {}
+        virtual void OnEnd() {}
 
         void Init(ResourceManager* rm);
+        void LoadTexture(std::string id, std::filesystem::path file_path);
+        void LoadFont(std::string id, std::filesystem::path file_path);
         void ShowScene();
         void HideScene();
         bool IsActive();
@@ -26,8 +30,7 @@ namespace Spoon
         sf::FloatRect GetBounds() const { return m_Bounds; }
         sf::View& GetView() { return mainview; }
 
-        sf::Texture& LoadTexture(std::string id, std::filesystem::path file_path) override;
-        sf::Font& LoadFont(std::string id, std::filesystem::path file_path) override;
+        std::vector<Node*>& GetCollidablesGraph();
 
     private:
         void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override { target.setView(mainview); }
@@ -38,5 +41,7 @@ namespace Spoon
         sf::View mainview;
         sf::FloatRect m_Bounds;
         std::string m_Name;
+
+        std::vector<Node*> m_CollidablesGraph;
     };
 }

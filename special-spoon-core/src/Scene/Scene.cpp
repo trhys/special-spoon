@@ -3,14 +3,14 @@
 
 namespace Spoon
 {
-    sf::Texture& Scene::LoadTexture(std::string id, std::filesystem::path file_path)
+    void Scene::LoadTexture(std::string id, std::filesystem::path file_path)
     {
-        return p_RM->LoadTexture(id, file_path);
+        p_RM->LoadTexture(id, file_path);
     }
 
-    sf::Font& Scene::LoadFont(std::string id, std::filesystem::path file_path)
+    void Scene::LoadFont(std::string id, std::filesystem::path file_path)
     {
-        return p_RM->LoadFont(id, file_path);
+        p_RM->LoadFont(id, file_path);
     }
 
     void Scene::ShowScene() 
@@ -20,7 +20,7 @@ namespace Spoon
 
     void Scene::HideScene() 
     { 
-        m_IsActive = false; 
+        m_IsActive = false;
     }
 
     bool Scene::IsActive() 
@@ -31,5 +31,15 @@ namespace Spoon
     void Scene::Init(ResourceManager* rm) 
     { 
         p_RM = rm; 
+    }
+
+    std::vector<Node*>& Scene::GetCollidablesGraph()
+    {
+        m_CollidablesGraph.clear();
+        for(auto& child : GetChildren())
+        {
+            child->SendNodes(m_CollidablesGraph);
+        }
+        return m_CollidablesGraph;
     }
 }

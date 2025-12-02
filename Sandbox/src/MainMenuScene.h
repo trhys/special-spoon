@@ -10,18 +10,21 @@ public:
 
     void OnTransition() override;
     void OnCache() override;
+    void OnStart() override;
+    void OnEnd() override;
 
 private:
     void OnUpdate(sf::Time tick) override;
 
     sf::Time timer;
     bool transitioning = false;
+    bool is_Initialized = false;
 };
 
 class MenuText : public Spoon::Node
 {
 public:
-    MenuText(sf::Font& font) : text(font, "Press Enter to Start") {}
+    MenuText(sf::Font& font, sf::Vector2f position = { 0,0 }) : text(font, "Press Enter to Start") { setPosition(position); }
     ~MenuText() {}
 
 private:
@@ -49,12 +52,12 @@ private:
         }
         if (flicker)
         {
-            text_alpha -= 60.0f * tick.asSeconds();
+            text_alpha -= 127.5f * tick.asSeconds();
             textcolor.a = static_cast<std::uint8_t>(text_alpha);
         }
         else if (!flicker)
         {
-            text_alpha += 60.0f * tick.asSeconds();
+            text_alpha += 127.5f * tick.asSeconds();
             textcolor.a = static_cast<std::uint8_t>(text_alpha);
         }
         text.setFillColor(textcolor);

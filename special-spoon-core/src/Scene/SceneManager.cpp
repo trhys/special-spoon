@@ -38,7 +38,7 @@ namespace Spoon
         }
 
         m_ActiveScene = m_SceneCache[id];
-        m_ActiveScene->ShowScene();
+        m_ActiveScene->OnStart();
     }
 
     void SceneManager::ActivateOverlay(std::string id)
@@ -54,18 +54,18 @@ namespace Spoon
         }
 
         m_Overlay = m_SceneCache[id];
-        m_Overlay->ShowScene();
+        m_Overlay->OnStart();
     }
 
     void SceneManager::DeactivateScene()
     {
-        m_ActiveScene->HideScene();
+        m_ActiveScene->OnEnd();
         m_ActiveScene = nullptr;
     }
 
     void SceneManager::DeactivateOverlay()
     {
-        m_Overlay->HideScene();
+        m_Overlay->OnEnd();
         m_Overlay = nullptr;
     }
 
@@ -78,6 +78,7 @@ namespace Spoon
     void SceneManager::UpdateScene(sf::Time tick)
     {
         if(m_ActiveScene) { m_ActiveScene->Update(tick); }
+        if(m_Overlay) { m_Overlay->Update(tick); }
     }
 
     void SceneManager::TransitionScene()
@@ -86,5 +87,11 @@ namespace Spoon
         {
             m_ActiveScene->OnTransition();
         }
+    }
+
+    void SceneManager::SceneCleanup()
+    {
+        if(m_ActiveScene) { m_ActiveScene->Cleanup(); }
+        if(m_Overlay) { m_Overlay->Cleanup(); }
     }
 }

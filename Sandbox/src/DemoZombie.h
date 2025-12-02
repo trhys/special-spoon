@@ -5,10 +5,12 @@
 class DemoZombie : public Spoon::Entity
 {
 public:
-    DemoZombie(sf::Texture& texture) : Entity::Entity(texture, true) { ScaleSprite({ 0.25, 0.25 }); }
+    DemoZombie(sf::Texture& texture, bool collidable = true) : Entity::Entity(texture, collidable) 
+    { 
+        ScaleSprite({ 0.25, 0.25 });
+    }
     ~DemoZombie() {}
 
-    void OnKill() override;
     void CollisionDetected() override;
 
 private:
@@ -23,7 +25,7 @@ class ZombieSpawner : public Spoon::Node
 {
 public:
     ZombieSpawner(sf::Vector2f point) { setPosition(point); }
-    ~ZombieSpawner() { for(auto& child : GetChildren()) delete child; }
+    ~ZombieSpawner() {}
 
     void SpawnZombie();
 
@@ -39,8 +41,6 @@ public:
     MenuZombie(sf::Texture& texture) : Entity::Entity(texture) { ScaleSprite({ 0.25, 0.25 }); }
     ~MenuZombie() {}
 
-    void OnKill() override;
-
 private:
     sf::Time timer;
 
@@ -51,7 +51,7 @@ class MenuZombieSpawner : public Spoon::Node
 {
 public:
     MenuZombieSpawner(sf::Vector2f point) { setPosition(point); }
-    ~MenuZombieSpawner() { for(auto& child : GetChildren()) delete child; }
+    ~MenuZombieSpawner() {}
 
     void OnAdd() override;
     void SpawnMenuZombie();

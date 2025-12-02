@@ -22,10 +22,11 @@ namespace Spoon
         void DrawScene(sf::RenderTarget& target, sf::RenderStates states);
         void UpdateScene(sf::Time tick);
         void TransitionScene();
+        void SceneCleanup();
 
         Scene& GetSceneRef() { return *m_ActiveScene; }
         Scene* GetActiveScene() { return m_ActiveScene; }
-        Scene GetOverlay() { return *m_Overlay; }
+        Scene& GetOverlay() { return *m_Overlay; }
 
     private:
         Scene* m_ActiveScene = nullptr;

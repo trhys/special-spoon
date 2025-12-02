@@ -54,9 +54,6 @@ namespace Spoon
         m_PhysicsManager.CheckCollision(m_SceneManager.GetSceneRef());
     }
 
-    SceneManager* Application::GetSM() { return &m_SceneManager; }
-    ResourceManager* Application::GetRM() { return &m_ResourceManager; }
-
     void Application::Close()
     {
         m_IsRunning = false;
@@ -100,23 +97,23 @@ namespace Spoon
                 layer->OnUpdate(tick);
             }
             ProcessLayerQueue();
+            m_SceneManager.SceneCleanup();
 
             // PHYSICS
             #ifdef SS_PHYSICS_ENABLED
                 UpdatePhysics();
             #endif
 
-            // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
-            //   for(auto& leaf : m_PhysicsManager.PhysTest())
-            //   {
-            //       m_Window.draw(leaf.rect);
-            //   }
-            // TEST
-
             // RENDER
             m_Window.clear();
 
             m_SceneManager.DrawScene(m_Window, states);
+
+            // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
+               for(auto& leaf : m_PhysicsManager.PhysTest())
+               {
+                   m_Window.draw(leaf.rect);
+               }
             
             m_Window.display();
         }

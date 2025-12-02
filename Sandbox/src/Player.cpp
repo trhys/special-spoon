@@ -1,5 +1,11 @@
 #include "Player.h"
+#include "iostream"
 
+Player::Player(sf::Texture& texture, bool collidable) : Entity::Entity(texture, collidable)
+{
+    CenterOrigin();
+    ScaleSprite({ 0.25, 0.25 });
+}
 void Player::TurnLeft(sf::Time tick)
 {
     move({-1 * (tick.asSeconds() * m_Speed), 0});
@@ -26,11 +32,14 @@ void Player::TurnDown(sf::Time tick)
 
 void Player::CollisionDetected()
 {
-    setPosition(m_CurrentPosition);
+    SetSpritePosition(m_CurrentPosition);
+    std::cout << "COLLISION DETECTED" << std::endl;
 }
 
 void Player::OnUpdate(sf::Time tick)
 {
+    m_CurrentPosition = GetSpritePosition();
+    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) { TurnUp(tick); }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) { TurnLeft(tick); }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) { TurnDown(tick); }

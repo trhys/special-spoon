@@ -3,6 +3,8 @@
 
 #include <optional>
 #include <iterator>
+#include <set>
+#include <algorithm>
 
 namespace Spoon
 {
@@ -14,63 +16,81 @@ namespace Spoon
         {
             leaf.body.size = node_size;
 
-            // TEST
-            // leaf.rect.setSize(node_size);
-            // leaf.rect.setOutlineThickness(10.0f);
-            // leaf.rect.setOutlineColor(sf::Color(250, 100, 100));
-            // TEST
+            // Show the quadtree nodes on-screen for visual debugging
+            leaf.rect.setSize(node_size);
+            leaf.rect.setOutlineThickness(10.0f);
+            leaf.rect.setFillColor(sf::Color::Transparent);
         }
-        for(auto it = m_GridNodes.begin(); it < m_GridNodes.end(); it++)
+        for(size_t in = 0; in < m_GridNodes.size(); in++)
         {
-            if(std::distance(m_GridNodes.begin(), it) < 4)
+            if(in < 4)
             {
-                int top = std::distance(m_GridNodes.begin(), it);
-                m_GridNodes[top].body.position.x = node_size.x * top;
-                m_GridNodes[top].body.position.y = 0;
+                m_GridNodes[in].body.position.x = node_size.x * in;
+                m_GridNodes[in].body.position.y = 0;
+                m_GridNodes[in].rect.setPosition({ node_size.x * in, 0 });
             }
             else 
             {
-                int bottom = std::distance(m_GridNodes.begin(), it) - 4.0;
-                m_GridNodes[bottom].body.position.x = node_size.x * bottom;
-                m_GridNodes[bottom].body.position.y = node_size.y;
+                int bottom_index = in - 4;
+                m_GridNodes[in].body.position.x = node_size.x * bottom_index;
+                m_GridNodes[in].body.position.y = node_size.y;
+                m_GridNodes[in].rect.setPosition({ node_size.x * bottom_index, node_size.y });
             }
         }
     }
 
-    void Quadtree::GetCollisionBodies(Scene& sceneroot)
+    void Quadtree::Populate(Scene& sceneroot)
+    {
+        for(auto& leaf : m_GridNodes) { leaf.collision_buffer.clear(); }
+        for(auto& child : sceneroot.GetCollidablesGraph()) { Insert(child); }
+    }
+
+    void Quadtree::Insert(Node* node)
     {
         for(auto& leaf : m_GridNodes)
         {
-            for(auto& child : sceneroot.GetChildren())
-            {
-                if(child->GetIsCollidable())
+            if(const std::optional intersect = leaf.body.findIntersection(node->GetBoundingBox()))
                 {
-                    if(const std::optional intersect = leaf.body.findIntersection(child->GetBoundingBox()))
-                    {
-                        leaf.collision_buffer.push_back(child);
-                    }
+                    leaf.collision_buffer.push_back(node);
                 }
-            }
         }
     }
 
-    void Quadtree::ProcessCollisionBuffer() // TODO : Collision handling needs some kind of callback to help respond (where collision occured for example)
+    std::set<std::pair<Node*, Node*>> Quadtree::GeneratePairs()
     {
+        std::set<std::pair<Node*, Node*>> unique_pairs;
         for(auto& leaf : m_GridNodes)
         {
             for(auto a = 0; a < leaf.collision_buffer.size(); a++)
             {
                 for(auto b = a + 1; b < leaf.collision_buffer.size(); b++)
                 {
-                    if (const std::optional collision = leaf.collision_buffer[a]->GetBoundingBox().findIntersection(leaf.collision_buffer[b]->GetBoundingBox()))
-                    {
-                        // Handle collision
-                        leaf.collision_buffer[a]->CollisionDetected();
-                        leaf.collision_buffer[b]->CollisionDetected();
-                    }
+                    Node* objA = leaf.collision_buffer[a];
+                    Node* objB = leaf.collision_buffer[b];
+
+                    if(objA > objB) { std::swap(objA, objB); }
+
+                    unique_pairs.insert({objA, objB});
                 }
             }
-            leaf.collision_buffer.clear();
+        }
+        return unique_pairs;
+    }
+
+    void Quadtree::ProcessCollisionBuffer() // TODO : Collision handling needs some kind of callback to help respond (where collision occured for example)
+    {
+        std::set<std::pair<Node*, Node*>> unique_pairs = GeneratePairs();
+        for(auto& pair : unique_pairs)
+        {
+            Node* objA = pair.first;
+            Node* objB = pair.second;
+            if(const std::optional collision = objA->GetBoundingBox().findIntersection(objB->GetBoundingBox()))
+            {
+                objA->CollisionDetected();
+                objB->CollisionDetected();
+            }
         }
     }
+
+    
 }
