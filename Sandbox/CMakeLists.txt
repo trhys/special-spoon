@@ -2,25 +2,25 @@ add_executable(Sandbox)
 
 target_sources(Sandbox
     PRIVATE
-        Sandbox.cpp
-        DemoLayer.cpp
-        DemoMenu.cpp
-        DemoScene.cpp
-        DemoZombie.cpp
-        MainMenuScene.cpp
-        Player.cpp
-        SceneTransition.cpp
+        src/Sandbox.cpp
+        src/DemoLayer.cpp
+        src/DemoMenu.cpp
+        src/DemoScene.cpp
+        src/DemoZombie.cpp
+        src/MainMenuScene.cpp
+        src/Player.cpp
+        src/SceneTransistion.cpp
 
     PUBLIC
         FILE_SET HEADERS
         FILES
-            DemoLayer.h
-            DemoMenu.h
-            DemoScene.h
-            DemoZombie.h
-            MainMenuScene.h
-            Player.h
-            SceneTransition.h
+            src/DemoLayer.h
+            src/DemoMenu.h
+            src/DemoScene.h
+            src/DemoZombie.h
+            src/MainMenuScene.h
+            src/Player.h
+            src/SceneTransition.h
 )
 
 include(GNUInstallDirs)

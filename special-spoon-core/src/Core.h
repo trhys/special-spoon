@@ -2,15 +2,15 @@
 
 #include <iostream>
 
-#ifdef SS_PLATFORM_WINDOWS
+//#ifdef SS_PLATFORM_WINDOWS
     #ifdef SS_BUILD_DLL
         #define SPOON_API __declspec(dllexport)
     #else
         #define SPOON_API __declspec(dllimport)
     #endif
-#else
-    #error Platform not supported!
-#endif
+//#else
+    //#error Platform not supported!
+//#endif
 
 //Debug Utils
 #ifdef SS_DEBUG_ENABLED

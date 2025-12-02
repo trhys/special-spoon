@@ -4,44 +4,45 @@ add_definitions(-DSS_BUILD_DLL)
 
 target_sources(special-spoon-core
     PRIVATE
-        Application.cpp
-        ECS/Node/Node.cpp
-        ECS/Component.cpp
-        ECS/TextComp.cpp
-        Layer.cpp
-        LayerStack.cpp
-        Scene/ResourceManager.cpp
-        Scene/Scene.cpp
-        Scene/SceneManager.cpp
-        Physics/CollisionDetector.cpp
-        Physics/QuadTree.cpp
+        src/Application.cpp
+        src/ECS/Node/Node.cpp
+        src/ECS/Component.cpp
+        src/ECS/TextComp.cpp
+        src/Layer.cpp
+        src/LayerStack.cpp
+        src/Scene/ResourceManager.cpp
+        src/Scene/Scene.cpp
+        src/Scene/SceneManager.cpp
+        src/Physics/CollisionDetector.cpp
+        src/Physics/QuadTree.cpp
 
     PUBLIC
         FILE_SET HEADERS
         FILES
-            Application.h
-            Core.h
-            EntryPoint.h
-            Layer.h
-            LayerStack.h                     
-            ECS/Component.h
-            ECS/PhysComp.h
-            ECS/SpriteComp.h
-            ECS/TextComp.h
-            ECS/TransComp.h
-            ECS/Node/Entity.h
-            ECS/Node/Node.h
-            Scene/Scene.h
-            Scene/SceneManager.h
-            Scene/ResourceManager.h
-            Spoon.h
-            Physics/CollisionDetector.h
-            Physics/PhysicsManager.h
-            Physics/QuadTree.h
-            Utils/MemoryUtils.h  
+            src/Application.h
+            src/Core.h
+            src/EntryPoint.h
+            src/Layer.h
+            src/LayerStack.h                     
+            src/ECS/Component.h
+            src/ECS/PhysComp.h
+            src/ECS/SpriteComp.h
+            src/ECS/TextComp.h
+            src/ECS/TransComp.h
+            src/ECS/Node/Entity.h
+            src/ECS/Node/Node.h
+            src/Scene/Scene.h
+            src/Scene/SceneManager.h
+            src/Scene/ResourceManager.h
+            src/Spoon.h
+            src/Physics/CollisionDetector.h
+            src/Physics/PhysicsManager.h
+            src/Physics/QuadTree.h
+            src/Utils/MemoryUtils.h  
 )
+set(SFML_DIR "${CMAKE_CURRENT_LIST_DIR}/vendor/SFML-3.0.2/lib/cmake/SFML")
 
-find_package(SFML REQUIRED system audio network window graphics)
+find_package(SFML REQUIRED System Audio Network Window Graphics)
 
 target_link_libraries(special-spoon-core PUBLIC ${SFML_LIBRARIES})
 
@@ -59,7 +60,7 @@ install(
 )
 
 install(
-    EXPORT special-spoon-targets
+    EXPORT special-spoon
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
     NAMESPACE special-spoon::
 )

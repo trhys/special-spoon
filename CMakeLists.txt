@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15...4.0)
 
 project(special-spoon
     VERSION 0.1
-    LANGUAGE CXX
+    LANGUAGES CXX
 )
 
 set(CMAKE_CXX_STANDARD 17)
