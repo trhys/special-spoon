@@ -5,7 +5,7 @@
 class Player : public Spoon::Entity
 {
 public:
-    Player(sf::Texture& texture, bool collidable = true);
+    Player(sf::Texture& texture);
     ~Player() {}
 
     void TurnLeft(sf::Time tick);
@@ -17,6 +17,5 @@ public:
     void CollisionDetected() override;
 
 private:
-    sf::Vector2f m_CurrentPosition;
-    float m_Speed = 100;
+    
 };

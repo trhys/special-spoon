@@ -5,9 +5,12 @@ add_definitions(-DSS_BUILD_DLL)
 target_sources(special-spoon-core
     PRIVATE
         Application.cpp
+        ECS/Node/Node.cpp
+        ECS/Component.cpp
+        ECS/TextComp.cpp
         Layer.cpp
         LayerStack.cpp
-        Scene/Node.cpp
+        Scene/ResourceManager.cpp
         Scene/Scene.cpp
         Scene/SceneManager.cpp
         Physics/CollisionDetector.cpp
@@ -20,17 +23,22 @@ target_sources(special-spoon-core
             Core.h
             EntryPoint.h
             Layer.h
-            LayerStack.h
-            MemoryUtils.h
-            ResourceManager.h
-            Spoon.h
-            Scene/Entity.h
-            Scene/Node.h
+            LayerStack.h                     
+            ECS/Component.h
+            ECS/PhysComp.h
+            ECS/SpriteComp.h
+            ECS/TextComp.h
+            ECS/TransComp.h
+            ECS/Node/Entity.h
+            ECS/Node/Node.h
             Scene/Scene.h
             Scene/SceneManager.h
+            Scene/ResourceManager.h
+            Spoon.h
             Physics/CollisionDetector.h
             Physics/PhysicsManager.h
             Physics/QuadTree.h
+            Utils/MemoryUtils.h  
 )
 
 find_package(SFML REQUIRED system audio network window graphics)

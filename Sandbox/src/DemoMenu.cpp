@@ -1,6 +1,5 @@
 #include "DemoMenu.h"
 #include "MainMenuScene.h"
-#include "DemoZombie.h"
 #include "DemoLayer.h"
 #include "SceneTransition.h"
 

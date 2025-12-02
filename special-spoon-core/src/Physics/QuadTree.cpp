@@ -49,7 +49,7 @@ namespace Spoon
     {
         for(auto& leaf : m_GridNodes)
         {
-            if(const std::optional intersect = leaf.body.findIntersection(node->GetBoundingBox()))
+            if(const std::optional intersect = leaf.body.findIntersection(node->GetComponent<PhysComp>()->GetCollisionBox()))
                 {
                     leaf.collision_buffer.push_back(node);
                 }
@@ -84,7 +84,7 @@ namespace Spoon
         {
             Node* objA = pair.first;
             Node* objB = pair.second;
-            if(const std::optional collision = objA->GetBoundingBox().findIntersection(objB->GetBoundingBox()))
+            if(const std::optional collision = objA->GetComponent<PhysComp>()->GetCollisionBox().findIntersection(objB->GetComponent<PhysComp>()->GetCollisionBox()))
             {
                 objA->CollisionDetected();
                 objB->CollisionDetected();

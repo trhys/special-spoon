@@ -1,6 +1,4 @@
 #include "MainMenuScene.h"
-#include "SceneTransition.h"
-#include "DemoZombie.h"
 
 MainMenu::MainMenu() : Spoon::Scene("MainMenu", {1080, 1080})
 {
@@ -21,9 +19,9 @@ void MainMenu::OnStart()
         GetView() = Spoon::Application::Get().GetWindow().getDefaultView();
         GetView().zoom(0.8);
 
-        AddChild<Spoon::Entity>("menu_screen");
-        AddChild<ZombieSpawner>(sf::Vector2f{100.0f, 600.0f});
-        AddText<MenuText>("menu_text", {400.0f, 400.0f});
+        AddChild<MenuScreen>(GET_TEXTURE("menu_screen"));
+        AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {-100.0f, 600.0f}, false);
+        AddChild<MenuText>(GET_FONT("menu_text"));
         
         is_Initialized = true;
     }

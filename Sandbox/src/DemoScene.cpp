@@ -1,7 +1,6 @@
 #include "DemoScene.h"
 #include "DemoZombie.h"
 #include "Player.h"
-#include "SceneTransition.h"
 
 DemoScene::DemoScene() : Spoon::Scene("demo_scene", {1080, 1080})
 {
@@ -16,10 +15,10 @@ void DemoScene::OnCache()
 
 void DemoScene::OnStart()
 {
-    AddChild<Spoon::Entity>("demoscene");
-    AddChild<ZombieSpawner>(sf::Vector2f{500, 500});
-    AddChild<ZombieSpawner>(sf::Vector2f{700, 700});
-    AddChild<Player>("player");
+    AddChild<Arena>(GET_TEXTURE("demoscene"));
+    AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {500.0f, 500.0f});
+    AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {200.0f, 800.0f});
+    AddChild<Player>(GET_TEXTURE("player"));
 }
 
 void DemoScene::OnEnd()

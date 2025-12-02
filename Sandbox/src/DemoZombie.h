@@ -5,60 +5,15 @@
 class DemoZombie : public Spoon::Entity
 {
 public:
-    DemoZombie(sf::Texture& texture, bool collidable = true) : Entity::Entity(texture, collidable) 
-    { 
-        ScaleSprite({ 0.25, 0.25 });
-    }
+    DemoZombie(sf::Texture& texture, sf::Vector2f position, bool wander = true);
     ~DemoZombie() {}
 
     void CollisionDetected() override;
 
 private:
-    sf::Vector2f m_CurrentPosition;
-    float speed = 1.0;
     sf::Time timer;
-
-    void OnUpdate(sf::Time tick) override;
-};
-
-class ZombieSpawner : public Spoon::Node
-{
-public:
-    ZombieSpawner(sf::Vector2f point) { setPosition(point); }
-    ~ZombieSpawner() {}
-
-    void SpawnZombie();
+    bool is_Wandering;
 
 private:
-    sf::Time timer;
-    void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
     void OnUpdate(sf::Time tick) override;
 };
-
-class MenuZombie : public Spoon::Entity
-{
-public:
-    MenuZombie(sf::Texture& texture) : Entity::Entity(texture) { ScaleSprite({ 0.25, 0.25 }); }
-    ~MenuZombie() {}
-
-private:
-    sf::Time timer;
-
-    void OnUpdate(sf::Time tick) override;
-};
-
-class MenuZombieSpawner : public Spoon::Node
-{
-public:
-    MenuZombieSpawner(sf::Vector2f point) { setPosition(point); }
-    ~MenuZombieSpawner() {}
-
-    void OnAdd() override;
-    void SpawnMenuZombie();
-
-private:
-    sf::Time timer;
-    void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override {}
-    void OnUpdate(sf::Time tick) override;
-};
-

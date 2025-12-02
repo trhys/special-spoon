@@ -44,3 +44,8 @@
 #ifdef SS_DEBUG_ENABLED
     #define SS_MUTILS_ON
 #endif
+
+// Resource Manager utility macros
+
+#define GET_TEXTURE GetResource<sf::Texture>
+#define GET_FONT GetResource<sf::Font>

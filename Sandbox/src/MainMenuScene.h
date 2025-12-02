@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Spoon.h"
+#include "DemoZombie.h"
 
 class MainMenu : public Spoon::Scene
 {
@@ -21,45 +22,44 @@ private:
     bool is_Initialized = false;
 };
 
-class MenuText : public Spoon::Node
+class MenuScreen : public Spoon::Entity
 {
 public:
-    MenuText(sf::Font& font, sf::Vector2f position = { 0,0 }) : text(font, "Press Enter to Start") { setPosition(position); }
+    MenuScreen(sf::Texture& asset) { AddComponent<SpriteComp>(asset); }
+    ~MenuScreen() {}
+
+private:
+    void OnUpdate(sf::Time tick) override
+    {
+        m_Timer = m_Timer + tick;
+        if(m_Timer.asSeconds() > 10)
+        {
+            AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {-100.0f, 600.0f});
+            m_Timer.Zero;
+        }
+    }
+
+private:
+    sf::Time m_Timer;
+};
+
+class MenuText : public Spoon::Entity
+{
+public:
+    MenuText(sf::Font& asset) { AddComponent<TextComp>(asset, "Press Enter to Start", {400.0f, 400.0f}, true); }
     ~MenuText() {}
 
 private:
-    sf::Text text;
-    sf::Color textcolor = sf::Color(255, 255, 255, 255);
-    float text_alpha = 255.0f;
-    bool flicker = true;
-
-    void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override
-    {
-        target.draw(text, states);
-    }
-
     void OnUpdate(sf::Time tick) override
-    {   
-        if (text_alpha >= 255.0f) 
+    {
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Tab))
         { 
-            text_alpha = 254.0f;
-            flicker = true;
+            if(!m_Switch) { GetComponent<TextComp>()->SetColor(sf::Color::Red); }
+            else { GetComponent<TextComp>()->SetColor(sf::Color::White); }
+            m_Switch = !m_Switch;
         }
-        else if (text_alpha <= 0.0f)
-        {
-            text_alpha = 1.0f;
-            flicker = false;
-        }
-        if (flicker)
-        {
-            text_alpha -= 127.5f * tick.asSeconds();
-            textcolor.a = static_cast<std::uint8_t>(text_alpha);
-        }
-        else if (!flicker)
-        {
-            text_alpha += 127.5f * tick.asSeconds();
-            textcolor.a = static_cast<std::uint8_t>(text_alpha);
-        }
-        text.setFillColor(textcolor);
     }
+
+private:
+    bool m_Switch = false;
 };

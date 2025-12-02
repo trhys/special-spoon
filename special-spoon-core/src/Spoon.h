@@ -6,6 +6,6 @@
 #include "Application.h"
 #include "Layer.h"
 
-#include "Scene/Node.h"
+#include "ECS/ECS.h"
+
 #include "Scene/Scene.h"
-#include "Scene/Entity.h"

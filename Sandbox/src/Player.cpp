@@ -1,45 +1,44 @@
 #include "Player.h"
 #include "iostream"
 
-Player::Player(sf::Texture& texture, bool collidable) : Entity::Entity(texture, collidable)
+Player::Player(sf::Texture& texture)
 {
-    CenterOrigin();
-    ScaleSprite({ 0.25, 0.25 });
+    AddComponent<TransComp>({540.0f 540.0f});
+    AddComponent<SpriteComp>(texture);
+    GetComponent<SpriteComp>()->CenterOrigin();
+    GetComponent<SpriteComp>()->SetScale({ 0.25, 0.25 });
+    AddComponent<PhysComp>(GetComponent<SpriteComp>()->GetBoundingBox());
 }
 void Player::TurnLeft(sf::Time tick)
 {
-    move({-1 * (tick.asSeconds() * m_Speed), 0});
+    GetComponent<TransComp>()->Move({-1 * (tick.asSeconds() * 100.0f), 0});
     ScaleSprite({-0.25, 0.25});
 }
 
 void Player::TurnRight(sf::Time tick)
 {
-    move({1 * (tick.asSeconds() * m_Speed), 0});
+    GetComponent<TransComp>()->Move({1 * (tick.asSeconds() * 100.0f), 0});
     ScaleSprite({0.25, 0.25});
 }
 
 void Player::TurnUp(sf::Time tick)
 {
-    // TODO TURN SPRITE UP
-    move({0, -1 * (tick.asSeconds() * m_Speed)});
+    GetComponent<TransComp>()->Move({0, -1 * (tick.asSeconds() * 100.0f)});
 }
 
 void Player::TurnDown(sf::Time tick)
 {
-    // TODO TURN SPRITE DOWN
-    move({0, 1 * (tick.asSeconds() * m_Speed)});
+    GetComponent<TransComp>()->Move({0, 1 * (tick.asSeconds() * 100.0f)});
 }
 
 void Player::CollisionDetected()
 {
-    SetSpritePosition(m_CurrentPosition);
+    GetComponent<TransComp>()->ResetPos();
     std::cout << "COLLISION DETECTED" << std::endl;
 }
 
 void Player::OnUpdate(sf::Time tick)
-{
-    m_CurrentPosition = GetSpritePosition();
-    
+{    
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) { TurnUp(tick); }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) { TurnLeft(tick); }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) { TurnDown(tick); }

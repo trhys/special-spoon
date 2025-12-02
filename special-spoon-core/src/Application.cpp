@@ -3,9 +3,9 @@
 
 #include "Physics/PhysicsManager.h"
 #include "Scene/SceneManager.h"
-#include "ResourceManager.h"
+#include "Scene/ResourceManager.h"
 
-#include "MemoryUtils.h"
+#include "Utils/MemoryUtils.h"
 
 
 namespace Spoon 
