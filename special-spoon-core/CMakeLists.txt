@@ -42,11 +42,7 @@ target_include_directories(special-spoon-core PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/src
 ${CMAKE_CURRENT_BINARY_DIR})
 
-# set(SFML_DIR "${CMAKE_CURRENT_LIST_DIR}/vendor/SFML-3.0.2/lib/cmake/SFML")
-
-# find_package(SFML REQUIRED System Audio Network Window Graphics)
-
-add_subdirectory(vendor/SFML)
+add_subdirectory(vendor)
 
 target_link_libraries(special-spoon-core PUBLIC 
 SFML::System
