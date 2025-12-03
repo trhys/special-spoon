@@ -3,6 +3,8 @@
 #include "ECS/SpriteComp.h"
 #include "ECS/PhysComp.h"
 
+#include <algorithm>
+
 namespace Spoon
 {
     Node::~Node() = default;

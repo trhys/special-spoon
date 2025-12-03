@@ -1,16 +1,9 @@
 #pragma once
 
 #include <iostream>
+#include "special-spoon-core_export.h"
 
-//#ifdef SS_PLATFORM_WINDOWS
-    #ifdef SS_BUILD_DLL
-        #define SPOON_API __declspec(dllexport)
-    #else
-        #define SPOON_API __declspec(dllimport)
-    #endif
-//#else
-    //#error Platform not supported!
-//#endif
+#define SPOON_API SPECIAL_SPOON_CORE_EXPORT
 
 //Debug Utils
 #ifdef SS_DEBUG_ENABLED
@@ -18,13 +11,13 @@
     #define SS_CATCH(string) } \
         catch (const std::bad_alloc& e) \
             { \
-                std::cerr << "Fatal error: Bad memory allocation during " << string << "--- Details: " << e.what() << std::endl \
+                std::cerr << "Fatal error: Bad memory allocation during " << string << "--- Details: " << e.what() << std::endl; \
                 delete app; \
                 return EXIT_FAILURE; \
             } \
         catch (const std::exception& e) \
             { \
-                std::cerr << "Fatal error: An unexpected error occured during startup --- Details: " << e.what() << std::endl \
+                std::cerr << "Fatal error: An unexpected error occured during startup --- Details: " << e.what() << std::endl; \
                 delete app; \
                 return EXIT_FAILURE; \
             }

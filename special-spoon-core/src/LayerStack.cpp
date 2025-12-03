@@ -1,6 +1,8 @@
 #include "Layer.h"
 #include "LayerStack.h"
 
+#include <algorithm>
+
 namespace Spoon
 {
     void LayerStack::PushLayer(Layer* layer)
@@ -11,7 +13,7 @@ namespace Spoon
     void LayerStack::PopLayer(Layer* layer)
     {
         layer->OnDetach();
-        m_Layers.erase(remove(m_Layers.begin(), m_Layers.end(), layer));
+        m_Layers.erase(std::remove(m_Layers.begin(), m_Layers.end(), layer));
     }
 
     void LayerStack::PushEvent(const sf::Event& event)

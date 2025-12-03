@@ -5,3 +5,4 @@
 *.vcxproj
 *.vcxproj.user
 *.vcxproj.filters
+/build

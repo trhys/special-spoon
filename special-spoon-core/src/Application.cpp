@@ -61,7 +61,7 @@ namespace Spoon
 
     void Application::Run()
     {
-        sf::RenderStates states = sf::RenderStates::RenderStates();
+        sf::RenderStates states;
         sf::Clock clock;
 
         while (m_IsRunning)

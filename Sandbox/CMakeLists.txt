@@ -1,5 +1,7 @@
 add_executable(Sandbox)
 
+target_link_libraries(Sandbox PRIVATE special-spoon-core)
+
 target_sources(Sandbox
     PRIVATE
         src/Sandbox.cpp
@@ -22,6 +24,11 @@ target_sources(Sandbox
             src/Player.h
             src/SceneTransition.h
 )
+
+target_include_directories(Sandbox PRIVATE 
+${CMAKE_CURRENT_SOURCE_DIR}/src
+${CMAKE_SOURCE_DIR}/special-spoon-core/src
+${CMAKE_BINARY_DIR}/special-spoon-core)
 
 include(GNUInstallDirs)
 

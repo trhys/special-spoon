@@ -7,9 +7,10 @@ extern Spoon::Application* Spoon::CreateApp();
 
 int main(int argc, char** argv)
 {
-    SS_TRY
+    Spoon::Application* app = Spoon::CreateApp();
 
-    auto app = Spoon::CreateApp();
+    SS_TRY
+    
     app->Spoon::Application::Run();
 
     SS_CATCH("STARTUP")
