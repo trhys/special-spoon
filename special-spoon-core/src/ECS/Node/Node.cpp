@@ -5,6 +5,11 @@
 
 namespace Spoon
 {
+    Node::~Node() = default;
+
+    Node::Node(Node&&) noexcept = default;
+    Node& Node::operator=(Node&&) noexcept = default;
+
     void Node::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         if(HasComponent<TransComp>())
@@ -27,7 +32,7 @@ namespace Spoon
         SpriteComp* sprite = GetComponent<SpriteComp>();
         PhysComp* pbody = GetComponent<PhysComp>();
 
-        if(transform) { transform->m_CurrentPosition = transform->GetPosition(); }
+        if(transform) { transform->SavePos(); }
 
         ComponentUpdate(tick); // Update AFTER saving current position for future collision handling
         

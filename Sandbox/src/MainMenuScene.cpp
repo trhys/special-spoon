@@ -19,9 +19,9 @@ void MainMenu::OnStart()
         GetView() = Spoon::Application::Get().GetWindow().getDefaultView();
         GetView().zoom(0.8);
 
-        AddChild<MenuScreen>(GET_TEXTURE("menu_screen"));
-        AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {-100.0f, 600.0f}, false);
-        AddChild<MenuText>(GET_FONT("menu_text"));
+        AddChild<MenuScreen>(Spoon::ResourceManager::GET_TEXTURE("menu_screen"));
+        AddChild<DemoZombie>(Spoon::ResourceManager::GET_TEXTURE("demozombie"), sf::Vector2f{-100.0f, 600.0f}, false);
+        AddChild<MenuText>(Spoon::ResourceManager::GET_FONT("menu_text"));
         
         is_Initialized = true;
     }

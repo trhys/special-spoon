@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "ECS/Component.h"
 
 #include "SFML/Graphics.hpp"
 
@@ -10,19 +11,17 @@
 
 namespace Spoon
 {   
-    class Component;
-    
     class SPOON_API Node : public sf::Drawable, public sf::Transformable
     {
     public:
         Node() {}
-        virtual ~Node() {}
+        virtual ~Node();
 
         Node(const Node&) = delete;
         Node& operator=(const Node&) = delete;
 
-        Node(Node&&) = default;
-        Node& operator=(Node&&) = default;
+        Node(Node&&) noexcept;
+        Node& operator=(Node&&) noexcept;
 
         // Recursive updating methods
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -48,7 +47,7 @@ namespace Spoon
         void AddComponent(Args&&... args) { m_Components.emplace_back(std::make_unique<COMP>(std::forward<Args>(args)...)); }
 
         template<typename COMP>
-        COMP* GetComponent()
+        COMP* GetComponent() const
         {
             for(const auto& comp : m_Components)
             {
@@ -59,7 +58,7 @@ namespace Spoon
         }
 
         template<typename COMP>
-        bool HasComponent() { return GetComponent<COMP>() != nullptr; }
+        bool HasComponent() const { return GetComponent<COMP>() != nullptr; }
 
     public:
         // Physics helpers

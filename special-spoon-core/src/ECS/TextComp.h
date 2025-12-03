@@ -6,7 +6,7 @@
 
 namespace Spoon
 {
-    class TextComp : public Component
+    class SPOON_API TextComp : public Component
     {
     public:
         TextComp(sf::Font& asset, std::string text = "", sf::Vector2f position = {0.0f, 0.0f}, bool blinking = false) : m_Text(asset, text), is_Blinking(blinking)
@@ -17,7 +17,7 @@ namespace Spoon
 
         void Update(sf::Time tick) override;
 
-        void ToggleBlink()
+        void ToggleBlink();
         void SetBlinkRate(float rate);
         void SetColor(sf::Color color);
 

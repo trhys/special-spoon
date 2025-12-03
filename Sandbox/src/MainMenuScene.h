@@ -25,7 +25,7 @@ private:
 class MenuScreen : public Spoon::Entity
 {
 public:
-    MenuScreen(sf::Texture& asset) { AddComponent<SpriteComp>(asset); }
+    MenuScreen(sf::Texture& asset) { AddComponent<Spoon::SpriteComp>(asset); }
     ~MenuScreen() {}
 
 private:
@@ -34,7 +34,7 @@ private:
         m_Timer = m_Timer + tick;
         if(m_Timer.asSeconds() > 10)
         {
-            AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {-100.0f, 600.0f});
+            AddChild<DemoZombie>(Spoon::ResourceManager::GET_TEXTURE("demozombie"), sf::Vector2f{-100.0f, 600.0f});
             m_Timer.Zero;
         }
     }
@@ -46,7 +46,7 @@ private:
 class MenuText : public Spoon::Entity
 {
 public:
-    MenuText(sf::Font& asset) { AddComponent<TextComp>(asset, "Press Enter to Start", {400.0f, 400.0f}, true); }
+    MenuText(sf::Font& asset) { AddComponent<Spoon::TextComp>(asset, "Press Enter to Start", sf::Vector2f{400.0f, 400.0f}, true); }
     ~MenuText() {}
 
 private:
@@ -54,8 +54,8 @@ private:
     {
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Tab))
         { 
-            if(!m_Switch) { GetComponent<TextComp>()->SetColor(sf::Color::Red); }
-            else { GetComponent<TextComp>()->SetColor(sf::Color::White); }
+            if(!m_Switch) { GetComponent<Spoon::TextComp>()->SetColor(sf::Color::Red); }
+            else { GetComponent<Spoon::TextComp>()->SetColor(sf::Color::White); }
             m_Switch = !m_Switch;
         }
     }

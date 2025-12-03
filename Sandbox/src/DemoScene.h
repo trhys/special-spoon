@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Spoon.h"
+#include "DemoZombie.h"
 
 class DemoScene : public Spoon::Scene
 {
@@ -24,7 +25,7 @@ private:
 class Arena : public Spoon::Entity
 {
 public:
-    Arena(sf::Texture& asset) { AddComponent<SpriteComp>(asset); }
+    Arena(sf::Texture& asset) { AddComponent<Spoon::SpriteComp>(asset); }
     ~Arena() {}
 
 private:
@@ -33,8 +34,8 @@ private:
         m_Timer = m_Timer + tick;
         if(m_Timer.asSeconds() > 10)
         {
-            AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {500.0f, 500.0f});
-            AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {200.0f, 800.0f});
+            AddChild<DemoZombie>(Spoon::ResourceManager::GET_TEXTURE("demozombie"), sf::Vector2f{500.0f, 500.0f});
+            AddChild<DemoZombie>(Spoon::ResourceManager::GET_TEXTURE("demozombie"), sf::Vector2f{200.0f, 800.0f});
             m_Timer.Zero;
         }
     }

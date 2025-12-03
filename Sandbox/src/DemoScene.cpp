@@ -15,10 +15,10 @@ void DemoScene::OnCache()
 
 void DemoScene::OnStart()
 {
-    AddChild<Arena>(GET_TEXTURE("demoscene"));
-    AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {500.0f, 500.0f});
-    AddChild<DemoZombie>(GET_TEXTURE("demozombie"), {200.0f, 800.0f});
-    AddChild<Player>(GET_TEXTURE("player"));
+    AddChild<Arena>(Spoon::ResourceManager::GET_TEXTURE("demoscene"));
+    AddChild<DemoZombie>(Spoon::ResourceManager::GET_TEXTURE("demozombie"), sf::Vector2f{500.0f, 500.0f});
+    AddChild<DemoZombie>(Spoon::ResourceManager::GET_TEXTURE("demozombie"), sf::Vector2f{200.0f, 800.0f});
+    AddChild<Player>(Spoon::ResourceManager::GET_TEXTURE("player"));
 }
 
 void DemoScene::OnEnd()

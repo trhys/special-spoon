@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.h"
-#include "ECS/Node.h"
+#include "ECS/Node/Node.h"
 
 namespace Spoon 
 {

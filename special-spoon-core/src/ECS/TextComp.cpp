@@ -23,7 +23,7 @@ namespace Spoon
             if(progress >= 255.0f)
             {
                 blink_switch = !blink_switch;
-                timer.Zero;
+                m_Timer.Zero;
             }
 
             m_Text.setFillColor(m_Color);

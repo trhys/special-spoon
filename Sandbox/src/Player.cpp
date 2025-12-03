@@ -3,37 +3,37 @@
 
 Player::Player(sf::Texture& texture)
 {
-    AddComponent<TransComp>({540.0f 540.0f});
-    AddComponent<SpriteComp>(texture);
-    GetComponent<SpriteComp>()->CenterOrigin();
-    GetComponent<SpriteComp>()->SetScale({ 0.25, 0.25 });
-    AddComponent<PhysComp>(GetComponent<SpriteComp>()->GetBoundingBox());
+    AddComponent<Spoon::TransComp>(sf::Vector2f{540.0f, 540.0f});
+    AddComponent<Spoon::SpriteComp>(texture);
+    GetComponent<Spoon::SpriteComp>()->CenterOrigin();
+    GetComponent<Spoon::SpriteComp>()->SetScale({ 0.25, 0.25 });
+    AddComponent<Spoon::PhysComp>(GetComponent<Spoon::SpriteComp>()->GetBoundingBox());
 }
 void Player::TurnLeft(sf::Time tick)
 {
-    GetComponent<TransComp>()->Move({-1 * (tick.asSeconds() * 100.0f), 0});
-    ScaleSprite({-0.25, 0.25});
+    GetComponent<Spoon::TransComp>()->Move({-1 * (tick.asSeconds() * 100.0f), 0});
+    GetComponent<Spoon::SpriteComp>()->SetScale(sf::Vector2f{-0.25, 0.25});
 }
 
 void Player::TurnRight(sf::Time tick)
 {
-    GetComponent<TransComp>()->Move({1 * (tick.asSeconds() * 100.0f), 0});
-    ScaleSprite({0.25, 0.25});
+    GetComponent<Spoon::TransComp>()->Move({1 * (tick.asSeconds() * 100.0f), 0});
+    GetComponent<Spoon::SpriteComp>()->SetScale({0.25, 0.25});
 }
 
 void Player::TurnUp(sf::Time tick)
 {
-    GetComponent<TransComp>()->Move({0, -1 * (tick.asSeconds() * 100.0f)});
+    GetComponent<Spoon::TransComp>()->Move({0, -1 * (tick.asSeconds() * 100.0f)});
 }
 
 void Player::TurnDown(sf::Time tick)
 {
-    GetComponent<TransComp>()->Move({0, 1 * (tick.asSeconds() * 100.0f)});
+    GetComponent<Spoon::TransComp>()->Move({0, 1 * (tick.asSeconds() * 100.0f)});
 }
 
 void Player::CollisionDetected()
 {
-    GetComponent<TransComp>()->ResetPos();
+    GetComponent<Spoon::TransComp>()->ResetPos();
     std::cout << "COLLISION DETECTED" << std::endl;
 }
 

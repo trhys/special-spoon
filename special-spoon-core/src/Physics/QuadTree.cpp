@@ -1,10 +1,12 @@
 #include "QuadTree.h"
 #include "Scene/Scene.h"
+#include <ECS/PhysComp.h>
 
 #include <optional>
 #include <iterator>
 #include <set>
 #include <algorithm>
+
 
 namespace Spoon
 {

@@ -20,6 +20,7 @@ namespace Spoon
         void SetPosition(sf::Vector2f pos) { m_Transform.setPosition(pos); }
         void Move(sf::Vector2f offset) { m_Transform.move(offset); }
         void ResetPos() { m_Transform.setPosition(m_CurrentPosition); }
+        void SavePos() { m_CurrentPosition = GetPosition(); }
 
     private:
         sf::Transformable m_Transform;

@@ -2,8 +2,5 @@
 
 namespace Spoon
 {
-    Component::Update(sf::Time tick)
-    {
-        
-    }
+
 }
