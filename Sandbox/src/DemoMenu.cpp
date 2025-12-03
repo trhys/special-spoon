@@ -17,8 +17,6 @@ void DemoMenu::OnDetach()
 
 void DemoMenu::OnUpdate(sf::Time tick)
 {
-    GetSM()->UpdateScene(tick);
-
     if(transitiontimer)
     {
         timer = timer + tick;

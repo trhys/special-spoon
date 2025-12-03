@@ -1,7 +1,5 @@
 Packages that must be installed on linux systems for SFML to build. 
 
-TODO #28 - put this in a script that runs before building
-
 Linux dependancies:
 
 X11

@@ -97,9 +97,10 @@ namespace Spoon
                 layer->OnUpdate(tick);
             }
             ProcessLayerQueue();
+
+            m_SceneManager.UpdateScene(tick);
             m_SceneManager.SceneCleanup();
 
-            // PHYSICS
             #ifdef SS_PHYSICS_ENABLED
                 UpdatePhysics();
             #endif

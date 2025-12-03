@@ -22,8 +22,6 @@ void DemoLayer::OnDetach()
 
 void DemoLayer::OnUpdate(sf::Time tick)
 {
-    GetSM()->UpdateScene(tick);
-
     if(transitioning)
     {
         timer = timer + tick;
