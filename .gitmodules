@@ -1,0 +1,3 @@
+[submodule "special-spoon-core/vendor"]
+	path = special-spoon-core/vendor
+	url = https://github.com/SFML/SFML.git
