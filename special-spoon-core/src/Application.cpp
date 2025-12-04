@@ -1,9 +1,11 @@
 #include "Application.h"
-#include "LayerStack.h"
+// #include "LayerStack.h"
 
 #include "Physics/PhysicsManager.h"
 #include "Scene/SceneManager.h"
 #include "Scene/ResourceManager.h"
+#include "System/AnimationSystem.h"
+#include "System/RenderSystem.h"
 
 #include "Utils/MemoryUtils.h"
 
@@ -28,31 +30,31 @@ namespace Spoon
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
     }
 
-    void Application::PushLayer(Layer* layer)
-    {
-        layer->Init(&m_SceneManager);
-        m_LayerStack.PushLayer(layer);
-        layer->OnAttach();
-    }
+    // void Application::PushLayer(Layer* layer)
+    // {
+    //     layer->Init(&m_SceneManager);
+    //     m_LayerStack.PushLayer(layer);
+    //     layer->OnAttach();
+    // }
 
-    void Application::PopLayer(Layer* layer)
-    {
-        m_LayerQueue.push_back(layer);
-    }
+    // void Application::PopLayer(Layer* layer)
+    // {
+    //     m_LayerQueue.push_back(layer);
+    // }
 
-    void Application::ProcessLayerQueue()
-    {
-        for(auto& layer : m_LayerQueue)
-        {
-            m_LayerStack.PopLayer(layer);
-        }
-        m_LayerQueue.clear();
-    }
+    // void Application::ProcessLayerQueue()
+    // {
+    //     for(auto& layer : m_LayerQueue)
+    //     {
+    //         m_LayerStack.PopLayer(layer);
+    //     }
+    //     m_LayerQueue.clear();
+    // }
 
-    void Application::UpdatePhysics()
-    {
-        m_PhysicsManager.CheckCollision(m_SceneManager.GetSceneRef());
-    }
+    // void Application::UpdatePhysics()
+    // {
+    //     m_PhysicsManager.CheckCollision(m_SceneManager.GetSceneRef());
+    // }
 
     void Application::Close()
     {
@@ -64,6 +66,9 @@ namespace Spoon
         sf::RenderStates states;
         sf::Clock clock;
 
+        RenderSystem Renderer(m_Window);
+        AnimationSystem Animator;
+
         while (m_IsRunning)
         {
             // EVENT HANDLING
@@ -71,50 +76,47 @@ namespace Spoon
             (
                 [&](const sf::Event::KeyPressed& keyPress)
                 {
-                   m_LayerStack.PushEvent(keyPress);
-                },
+                   m_InputSystem.PushKeyPress(keyPress);
+                }
 
                 [&](const auto& event)
                 {
                     using T = std::decay_t<decltype(event)>;
-
                     if constexpr (std::is_same_v<T, sf::Event::Closed>)
                     {
                        m_Window.close();
                        Application::Close();
-                    }
-                    else
-                    {
-                       m_LayerStack.PushEvent(event);                        
                     }
                 }
             );
 
             // UPDATE
             sf::Time tick = clock.restart();
-            for (Layer* layer : m_LayerStack)
-            {
-                layer->OnUpdate(tick);
-            }
-            ProcessLayerQueue();
+            // for (Layer* layer : m_LayerStack)
+            // {
+            //     layer->OnUpdate(tick);
+            // }
+            // ProcessLayerQueue();
 
+            m_InputSystem.Update(tick, m_EntityManager);
             m_SceneManager.UpdateScene(tick);
             m_SceneManager.SceneCleanup();
 
-            #ifdef SS_PHYSICS_ENABLED
-                UpdatePhysics();
-            #endif
+            // #ifdef SS_PHYSICS_ENABLED
+            //     UpdatePhysics();
+            // #endif
 
             // RENDER
             m_Window.clear();
 
-            m_SceneManager.DrawScene(m_Window, states);
+            Renderer.Render(states, m_EntityManager);
+            // m_SceneManager.DrawScene(m_Window, states);
 
             // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
-               for(auto& leaf : m_PhysicsManager.PhysTest())
-               {
-                   m_Window.draw(leaf.rect);
-               }
+            //    for(auto& leaf : m_PhysicsManager.PhysTest())
+            //    {
+            //        m_Window.draw(leaf.rect);
+            //    }
             
             m_Window.display();
         }

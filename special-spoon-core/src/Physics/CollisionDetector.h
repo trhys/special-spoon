@@ -5,7 +5,7 @@
 
 namespace Spoon
 {
-    class Scene;
+    // class Scene;
 
     class CollisionDetector
     {
@@ -13,12 +13,12 @@ namespace Spoon
         CollisionDetector() {}
         ~CollisionDetector() {}
 
-        void Detect(Scene& sceneroot);
+    //     void Detect(Scene& sceneroot);
 
-        Quadtree* GetTree() { return m_ActiveQuadtree; }
+    //     Quadtree* GetTree() { return m_ActiveQuadtree; }
 
-    private:
-        Quadtree* m_ActiveQuadtree = nullptr;        
-        std::unordered_map<std::string, Quadtree> m_BuiltTrees;
+    // private:
+    //     Quadtree* m_ActiveQuadtree = nullptr;        
+    //     std::unordered_map<std::string, Quadtree> m_BuiltTrees;
     };
 }

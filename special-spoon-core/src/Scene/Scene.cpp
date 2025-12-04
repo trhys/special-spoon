@@ -33,13 +33,13 @@ namespace Spoon
         p_RM = rm; 
     }
 
-    std::vector<Node*>& Scene::GetCollidablesGraph()
-    {
-        m_CollidablesGraph.clear();
-        for(auto& child : GetChildren())
-        {
-            child->SendNodes(m_CollidablesGraph);
-        }
-        return m_CollidablesGraph;
-    }
+    // std::vector<Node*>& Scene::GetCollidablesGraph()
+    // {
+    //     m_CollidablesGraph.clear();
+    //     for(auto& child : GetChildren())
+    //     {
+    //         child->SendNodes(m_CollidablesGraph);
+    //     }
+    //     return m_CollidablesGraph;
+    // }
 }

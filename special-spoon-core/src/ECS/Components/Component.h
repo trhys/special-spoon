@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core.h"
-#include "SFML/Graphics.hpp"
 
 namespace Spoon
 {
@@ -10,7 +9,5 @@ namespace Spoon
     public:
         Component() {}
         virtual ~Component() {}
-
-        virtual void Update(sf::Time tick) {}
     };
 }

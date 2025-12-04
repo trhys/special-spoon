@@ -69,17 +69,11 @@ namespace Spoon
         m_Overlay = nullptr;
     }
 
-    void SceneManager::DrawScene(sf::RenderTarget& target, sf::RenderStates states)
-    {
-        if(m_ActiveScene) { m_ActiveScene->draw(target, states); }
-        if(m_Overlay) { m_Overlay->draw(target, states); }
-    }
-
-    void SceneManager::UpdateScene(sf::Time tick)
-    {
-        if(m_ActiveScene) { m_ActiveScene->Update(tick); }
-        if(m_Overlay) { m_Overlay->Update(tick); }
-    }
+    // void SceneManager::UpdateScene(sf::Time tick)
+    // {
+    //     if(m_ActiveScene) { m_ActiveScene->Update(tick); }
+    //     if(m_Overlay) { m_Overlay->Update(tick); }
+    // }
 
     void SceneManager::TransitionScene()
     {
@@ -89,9 +83,9 @@ namespace Spoon
         }
     }
 
-    void SceneManager::SceneCleanup()
-    {
-        if(m_ActiveScene) { m_ActiveScene->Cleanup(); }
-        if(m_Overlay) { m_Overlay->Cleanup(); }
-    }
+    // void SceneManager::SceneCleanup()
+    // {
+    //     if(m_ActiveScene) { m_ActiveScene->Cleanup(); }
+    //     if(m_Overlay) { m_Overlay->Cleanup(); }
+    // }
 }

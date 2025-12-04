@@ -1,19 +1,16 @@
 #pragma once
 
 #include "Component.h"
-
 #include "SFML/Graphics/Rect.hpp"
 
 namespace Spoon
 {
-    class PhysComp : public Component
+    struct PhysicsComp : public Component
     {
     public:
-        PhysComp() {}
-        PhysComp(sf::FloatRect rect) : m_CollisionBox(rect) {}
-        ~PhysComp() {}
-
-        void Update(sf::Time tick) override {}
+        PhysicsComp() {}
+        PhysicsComp(sf::FloatRect rect) : m_CollisionBox(rect) {}
+        ~PhysicsComp() {}
         
         void SetPosition(sf::Vector2f pos) 
         { 

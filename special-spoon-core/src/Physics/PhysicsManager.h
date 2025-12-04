@@ -4,8 +4,8 @@
 
 namespace Spoon
 {
-    class Scene;
-    struct QT_GridNode;
+    // class Scene;
+    // struct QT_GridNode;
 
     class PhysicsManager
     {
@@ -13,10 +13,10 @@ namespace Spoon
         PhysicsManager() {}
         ~PhysicsManager() {}
 
-        void CheckCollision(Scene& sceneroot) { m_CD.Detect(sceneroot); }   
-        std::vector<QT_GridNode>& PhysTest() { return m_CD.GetTree()->GetNodes(); }
+    //     void CheckCollision(Scene& sceneroot) { m_CD.Detect(sceneroot); }   
+    //     std::vector<QT_GridNode>& PhysTest() { return m_CD.GetTree()->GetNodes(); }
 
-    private:
-        CollisionDetector m_CD;
+    // private:
+    //     CollisionDetector m_CD;
     };
 }

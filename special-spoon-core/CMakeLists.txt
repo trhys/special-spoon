@@ -3,9 +3,6 @@ add_library(special-spoon-core SHARED)
 target_sources(special-spoon-core
     PRIVATE
         src/Application.cpp
-        src/ECS/Node/Node.cpp
-        src/ECS/Component.cpp
-        src/ECS/TextComp.cpp
         src/Layer.cpp
         src/LayerStack.cpp
         src/Scene/ResourceManager.cpp
@@ -13,27 +10,46 @@ target_sources(special-spoon-core
         src/Scene/SceneManager.cpp
         src/Physics/CollisionDetector.cpp
         src/Physics/QuadTree.cpp
-
+        src/System/AnimationSystem.cpp
+        
+        # HEADERS
+        
         src/Application.h
         src/Core.h
         src/EntryPoint.h
         src/Layer.h
-        src/LayerStack.h                     
-        src/ECS/Component.h
-        src/ECS/PhysComp.h
-        src/ECS/SpriteComp.h
-        src/ECS/TextComp.h
-        src/ECS/TransComp.h
-        src/ECS/Node/Entity.h
-        src/ECS/Node/Node.h
+        src/LayerStack.h  
+        src/Spoon.h
+
+        src/ECS/Components/Component.h
+        src/ECS/Components/InputComp.h
+        src/ECS/Components/PhysicsComp.h
+        src/ECS/Components/StatusComp.h
+        src/ECS/Components/TransformComp.h
+        src/ECS/Components/Animation/BlinkComp.h
+        src/ECS/Components/Animation/FadeComp.h
+        src/ECS/Components/Render/SpriteComp.h
+        src/ECS/Components/Render/TextComp.h
+        src/ECS/Components/Render/ColorComp.h
+        
+        src/ECS/Entity.h
+        src/ECS/ECS.h
+
         src/Scene/Scene.h
         src/Scene/SceneManager.h
         src/Scene/ResourceManager.h
-        src/Spoon.h
+
+        src/System/AnimationSystem.h
+        src/System/ComponentArray.h
+        src/System/EntityManager.h
+        src/System/InputSystem.h
+        src/System/RenderSystem.h
+
         src/Physics/CollisionDetector.h
         src/Physics/PhysicsManager.h
         src/Physics/QuadTree.h
         src/Utils/MemoryUtils.h  
+        src/Utils/KeyMappings.h
 )
 
 generate_export_header(special-spoon-core)

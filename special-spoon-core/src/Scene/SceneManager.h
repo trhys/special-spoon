@@ -19,10 +19,9 @@ namespace Spoon
         void ActivateOverlay(std::string id);
         void DeactivateScene();
         void DeactivateOverlay();
-        void DrawScene(sf::RenderTarget& target, sf::RenderStates states);
-        void UpdateScene(sf::Time tick);
+        // void UpdateScene(sf::Time tick);
         void TransitionScene();
-        void SceneCleanup();
+        // void SceneCleanup();
 
         Scene& GetSceneRef() { return *m_ActiveScene; }
         Scene* GetActiveScene() { return m_ActiveScene; }

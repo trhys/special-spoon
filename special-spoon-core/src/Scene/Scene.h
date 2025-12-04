@@ -1,13 +1,12 @@
 #pragma once
 
 #include "Core.h"
-#include "ECS/Node/Node.h"
 
 namespace Spoon 
 {
     class ResourceManager;
 
-    class SPOON_API Scene : public Node
+    class SPOON_API Scene
     {
     public:
         Scene() {}
@@ -30,18 +29,12 @@ namespace Spoon
         sf::FloatRect GetBounds() const { return m_Bounds; }
         sf::View& GetView() { return mainview; }
 
-        std::vector<Node*>& GetCollidablesGraph();
-
     private:
-        void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override { target.setView(mainview); }
-
         bool m_IsActive = false;
         ResourceManager* p_RM = nullptr;
 
         sf::View mainview;
         sf::FloatRect m_Bounds;
         std::string m_Name;
-
-        std::vector<Node*> m_CollidablesGraph;
     };
 }
