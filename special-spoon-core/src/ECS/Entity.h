@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core.h"
+#include "Core/Core.h"
 #include "ECS/Components/Component.h"
 
 #include <cstdint>

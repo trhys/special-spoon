@@ -1,5 +1,4 @@
 #include "CollisionDetector.h"
-#include "Scene/Scene.h"
 
 namespace Spoon
 {

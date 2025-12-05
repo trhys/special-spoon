@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Core.h"
-// #include "LayerStack.h"
-#include "Physics/PhysicsManager.h"
-#include "Scene/ResourceManager.h"
-#include "Scene/SceneManager.h"
-#include "System/EntityManager.h"
+
+#include "ResourceManager.h"
+#include "SceneManager.h"
+#include "EntityManager.h"
 #include "System/InputSystem.h"
+#include "System/SystemManager.h"
 
 #include "SFML/Graphics.hpp"
 
@@ -25,10 +25,6 @@ namespace Spoon
 		Application(const AppSpecifications& specs);
 		virtual ~Application() {}
 
-		// void PushLayer(Layer* layer);
-		// void PopLayer(Layer* layer);	
-		// void ProcessLayerQueue();	
-		// void UpdatePhysics();
 		void Close();
 		void Run();
 		
@@ -42,14 +38,12 @@ namespace Spoon
 
 		AppSpecifications m_Specs;
 		sf::RenderWindow  m_Window;
-		//LayerStack 		  m_LayerStack;
+		
 		ResourceManager   m_ResourceManager;
-		PhysicsManager    m_PhysicsManager;
 		SceneManager	  m_SceneManager;
 		EntityManager	  m_EntityManager;
 		InputSystem		  m_InputSystem;
-
-		// std::vector<Layer*> m_LayerQueue;
+		SystemManager	  m_SystemManager;
 	};
 
 	//DEFINE IN CLIENT APPLICATION

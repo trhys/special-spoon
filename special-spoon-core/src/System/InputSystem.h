@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EntityManager.h"
+#include "Core/EntityManager.h"
 #include "SFML/Window/Event.hpp"
 
 #include <iostream>

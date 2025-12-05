@@ -1,15 +1,16 @@
 #pragma once
 
 #include "EntityManager.h"
+#include "ECS/ECS.h"
 #include "SFML/Graphics.hpp"
 
 namespace Spoon
 {
-    class RenderSystem
+    class Renderer
     {
     public:
-        RenderSystem(sf::RenderTarget& target) : m_Target(target) {}
-        ~RenderSystem() {}
+        Renderer(sf::RenderTarget& target) : m_Target(target) {}
+        ~Renderer() {}
 
         void Render(sf::RenderStates states, EntityManager& manager)
         {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ECS/Entity.h"
-#include "System/ComponentArray.h"
+#include "ComponentArray.h"
 #include <memory>
 
 namespace Spoon

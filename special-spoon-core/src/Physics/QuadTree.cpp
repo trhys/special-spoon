@@ -1,5 +1,4 @@
 #include "QuadTree.h"
-#include "Scene/Scene.h"
 
 #include <optional>
 #include <iterator>

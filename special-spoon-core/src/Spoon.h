@@ -2,10 +2,9 @@
 
 // Includes for client application only
 
-#include "Core.h"
-#include "Application.h"
-#include "Layer.h"
+#include "Core/Core.h"
+#include "Core/Application.h"
 
 #include "ECS/ECS.h"
 
-#include "Scene/Scene.h"
+#include "System/System.h"

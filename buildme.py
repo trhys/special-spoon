@@ -65,8 +65,6 @@ def getsubmodules():
         sys.exit(1)
 
 def buildme():
-    # Presets in CMakePresets.json
-    presets = subprocess.run(["cmake", "--list-presets"], capture_output=True)
 
     print("\nGenerating build directory\n")
 
@@ -74,8 +72,8 @@ def buildme():
     os.chdir("build")
 
     selecting = True
-    print("Select preset:") 
-    print(presets.stdout)
+    print("Select preset:\n") 
+    print(" sandbox-debug\n", "sandbox-release\n", "core")
     while selecting:
         configuration = input("\n: ")
         if configuration == "sandbox-debug":

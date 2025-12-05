@@ -40,7 +40,7 @@ namespace Spoon
         }
     }
 
-    void AnimationSystem::Run(sf::Time tick, Scene& scene)
+    void AnimationSystem::Run(sf::Time tick, EntityManager& manager)
     {
 
     }
