@@ -85,7 +85,7 @@ def buildme():
             preset_out_dir == "release"
             selecting = False
         elif configuration == "core":
-            preset_out_dir = ""
+            preset_out_dir = "core"
             selecting = False
         else: print("\nInvalid preset\n\n")
 

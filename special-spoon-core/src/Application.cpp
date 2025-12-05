@@ -77,7 +77,7 @@ namespace Spoon
                 [&](const sf::Event::KeyPressed& keyPress)
                 {
                    m_InputSystem.PushKeyPress(keyPress);
-                }
+                },
 
                 [&](const auto& event)
                 {
@@ -99,8 +99,8 @@ namespace Spoon
             // ProcessLayerQueue();
 
             m_InputSystem.Update(tick, m_EntityManager);
-            m_SceneManager.UpdateScene(tick);
-            m_SceneManager.SceneCleanup();
+            // m_SceneManager.UpdateScene(tick);
+            // m_SceneManager.SceneCleanup();
 
             // #ifdef SS_PHYSICS_ENABLED
             //     UpdatePhysics();

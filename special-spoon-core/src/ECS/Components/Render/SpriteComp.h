@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "ECS/Components/Component.h"
 #include "SFML/Graphics/Sprite.hpp"
 
 namespace Spoon

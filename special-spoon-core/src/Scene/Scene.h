@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "SFML/Graphics.hpp"
 
 namespace Spoon 
 {

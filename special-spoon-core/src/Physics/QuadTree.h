@@ -11,7 +11,7 @@ namespace Spoon
     struct QT_GridNode
     {
         sf::FloatRect body;
-        std::vector<Node*> collision_buffer;
+        // std::vector<Node*> collision_buffer;
         sf::RectangleShape rect;
     };
 

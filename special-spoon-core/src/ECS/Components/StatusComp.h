@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "ECS/Components/Component.h"
 
 namespace Spoon
 {

@@ -16,7 +16,7 @@ namespace Spoon
         void PushKeyPress(const sf::Event::KeyPressed& keyPress)
         {
             m_KeyPressEvents.push_back(keyPress);
-            std::cout << "keypress: " + keyPress.code() << std::endl;
+            std::cout << "keypress: " + sf::Keyboard::getDescription(keyPress.scancode).toAnsiString() << std::endl;
         }
 
         void Update(sf::Time tick, EntityManager& manager)
@@ -25,6 +25,6 @@ namespace Spoon
         }
     
     private:
-        std::vector<sf::Event::KeyPressed&> m_KeyPressEvents;
+        std::vector<sf::Event::KeyPressed> m_KeyPressEvents;
     };
 }

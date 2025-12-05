@@ -24,7 +24,7 @@ namespace Spoon
             const char* type = typeid(COMP).name();
             ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[type].get());
 
-            COMP newcomp = COMP(std::forward<Args>(args...));
+            COMP newcomp = COMP(std::forward<Args>(args)...);
             array->AddComponent(id, newcomp);
         }
 
@@ -64,7 +64,7 @@ namespace Spoon
 
     private:
         std::uint64_t m_IdCounter = 0;
-        std::vector<std::uint_64> m_RecycledIds;
+        std::vector<std::uint64_t> m_RecycledIds;
 
         std::unordered_map<const char*, std::unique_ptr<IComponentArray>> m_Arrays;
     };

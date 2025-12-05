@@ -4,6 +4,7 @@
 // #include "LayerStack.h"
 #include "Physics/PhysicsManager.h"
 #include "Scene/ResourceManager.h"
+#include "Scene/SceneManager.h"
 #include "System/EntityManager.h"
 #include "System/InputSystem.h"
 
@@ -11,8 +12,6 @@
 
 namespace Spoon 
 { 
-	class SceneManager;
-
 	struct AppSpecifications
 	{
 		sf::Vector2u m_WindowSize = {600, 600};

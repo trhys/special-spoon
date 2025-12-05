@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ECS/ECS.h"
+#include "Scene/Scene.h"
 
 namespace Spoon
 {
