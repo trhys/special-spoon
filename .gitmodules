@@ -1,0 +1,6 @@
+[submodule "special-spoon-core/vendor/JSON"]
+	path = special-spoon-core/vendor/JSON
+	url = https://github.com/nlohmann/json.git
+[submodule "special-spoon-core/vendor/SFML"]
+	path = special-spoon-core/vendor/SFML
+	url = https://github.com/SFML/SFML.git
