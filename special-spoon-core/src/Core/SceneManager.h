@@ -1,15 +1,17 @@
 #pragma once
 
 #include "Core.h"
+#include "SFML/Graphics/Rect.hpp"
 #include <unordered_map>
 
 namespace Spoon
 {
-    struct FilePaths
+    struct SceneData
     {
         std::string ID;
         std::string ResourceFiles;
         std::string DataFiles;
+        sf::Vector2f Bounds;
     };
 
     class SPOON_API SceneManager
@@ -22,6 +24,6 @@ namespace Spoon
         void LoadScene(std::string id);
 
     private:
-        std::unordered_map<std::string, FilePaths> m_SceneManifest;
+        std::unordered_map<std::string, SceneData> m_SceneManifest;
     };
 }

@@ -5,8 +5,7 @@ target_sources(special-spoon-core
         src/Core/Application.cpp
         src/Core/SceneManager.cpp
 
-        src/Physics/CollisionDetector.cpp
-        src/Physics/QuadTree.cpp
+        src/System/Physics/QuadTree.cpp
 
         src/System/AnimationSystem.cpp
         
@@ -45,13 +44,11 @@ target_sources(special-spoon-core
 
         src/System/AnimationSystem.h
         src/System/InputSystem.h
-        src/System/PhysicsSystem.h
         src/System/System.h
         src/System/SystemManager.h
 
-        src/Physics/CollisionDetector.h
-        src/Physics/PhysicsManager.h
-        src/Physics/QuadTree.h
+        src/System/Physics/PhysicsSystem.h
+        src/System/Physics/QuadTree.h
 
         src/Utils/MemoryUtils.h  
         src/Utils/KeyMappings.h

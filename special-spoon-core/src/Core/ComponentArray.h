@@ -37,5 +37,15 @@ namespace Spoon
             m_IdToIndex.erase(id);
             m_IndexToId.erase(last);
         }
+
+        std::vector<UUID> GetAllEntities()
+        {
+            std::vector<UUID> entities;
+            for(auto& [id, index] : m_IdToIndex)
+            {
+                entities.push_back(id);
+            }
+            return entities;
+        }
     };
 }

@@ -1,18 +1,19 @@
 #pragma once
 
+#include "ECS/Components/PhysicsComp.h"
 #include "SFML/Graphics.hpp"
 #include <set>
 
 namespace Spoon
 {
-    // class Node;
-    class Scene;
+    class EntityManager;
+    struct UUID;
 
     struct QT_GridNode
     {
         sf::FloatRect body;
-        // std::vector<Node*> collision_buffer;
         sf::RectangleShape rect;
+        std::vector<UUID> collision_buffer;
     };
 
     class Quadtree
@@ -22,8 +23,7 @@ namespace Spoon
         ~Quadtree() {}
 
         void BuildTree(sf::FloatRect bounds);
-        // void Populate(Scene& sceneroot);
-        // void Insert(Node* node);
+        void Populate(EntityManager& manager);
         // std::set<std::pair<Node*, Node*>> GeneratePairs();
         // void ProcessCollisionBuffer();
 

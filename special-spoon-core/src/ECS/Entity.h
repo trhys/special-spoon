@@ -27,15 +27,9 @@ namespace Spoon
         
         template<typename COMP, typename... Args>
         void AddComponent(Args&&... args);
-        // {
-        //     p_EM->MakeComponent<COMP>(m_ID, std::forward<Args>(args...));
-        // }
 
         template<typename COMP>
         void DropComponent();
-        // {
-        //     p_EM->KillComponent<COMP>(m_ID);
-        // }
 
     private:
         EntityManager* p_EM;

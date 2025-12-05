@@ -18,6 +18,17 @@ namespace Spoon
             return entity;
         }
 
+        UUID GenerateID()
+        {
+            if(!m_RecycledIds.empty())
+            {
+                std::uint64_t id = m_RecycledIds.back();
+                m_RecycledIds.pop_back();
+                return UUID(id);
+            }
+            else { return UUID(m_IdCounter++); }
+        }
+
         template<typename COMP, typename... Args>
         void MakeComponent(UUID id, Args&&... args)
         {
@@ -51,15 +62,27 @@ namespace Spoon
             return *array;
         }
 
-        UUID GenerateID()
+        template<typename COMP>
+        std::vector<UUID> GetAllEntitiesWithComponent()
         {
-            if(!m_RecycledIds.empty())
-            {
-                std::uint64_t id = m_RecycledIds.back();
-                m_RecycledIds.pop_back();
-                return UUID(id);
-            }
-            else { return UUID(m_IdCounter++); }
+            std::vector<UUID> entities;
+
+            const char* name = typeid(COMP).name();
+            ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[name].get());
+            
+            entities = array->GetAllEntities();
+
+            return entities;
+        }
+
+        template<typename COMP>
+        COMP* GetComponent(UUID id)
+        {
+            const char* name = typeid(COMP).name();
+            ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[name].get());
+
+            size_t index = array->m_IdToIndex[id];
+            return &array->m_Components[index];
         }
 
     private:

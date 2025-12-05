@@ -1,4 +1,5 @@
 #include "QuadTree.h"
+#include "Core/EntityManager.h"
 
 #include <optional>
 #include <iterator>
@@ -21,6 +22,7 @@ namespace Spoon
             leaf.rect.setOutlineThickness(10.0f);
             leaf.rect.setFillColor(sf::Color::Transparent);
         }
+
         for(size_t in = 0; in < m_GridNodes.size(); in++)
         {
             if(in < 4)
@@ -39,22 +41,22 @@ namespace Spoon
         }
     }
 
-    // void Quadtree::Populate(Scene& sceneroot)
-    // {
-    //     for(auto& leaf : m_GridNodes) { leaf.collision_buffer.clear(); }
-    //     for(auto& child : sceneroot.GetCollidablesGraph()) { Insert(child); }
-    // }
-
-    // void Quadtree::Insert(Node* node)
-    // {
-    //     for(auto& leaf : m_GridNodes)
-    //     {
-    //         if(const std::optional intersect = leaf.body.findIntersection(node->GetComponent<PhysComp>()->GetCollisionBox()))
-    //             {
-    //                 leaf.collision_buffer.push_back(node);
-    //             }
-    //     }
-    // }
+    void Quadtree::Populate(EntityManager& manager)
+    {
+        for(auto& leaf : m_GridNodes) { leaf.collision_buffer.clear(); }
+        for(auto& entity : manager.GetAllEntitiesWithComponent<PhysicsComp>())
+        {
+            PhysicsComp* phys = manager.GetComponent<PhysicsComp>(entity);
+            sf::FloatRect entityBox = phys->GetCollisionBox();
+            for(auto& leaf : m_GridNodes)
+            {
+                if(const std::optional intersect = leaf.body.findIntersection(entityBox))
+                {
+                    leaf.collision_buffer.push_back(entity);
+                }
+            }
+        }
+    }
 
     // std::set<std::pair<Node*, Node*>> Quadtree::GeneratePairs()
     // {
@@ -90,7 +92,5 @@ namespace Spoon
     //             objB->CollisionDetected();
     //         }
     //     }
-    // }
-
-    
+    // }   
 }
