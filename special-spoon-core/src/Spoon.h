@@ -1,9 +1,7 @@
 #pragma once
 
 // Includes for client application only
-
-#include "Core/Core.h"
-#include "Core/Application.h"
+#include "Core/EntryPoint.h"
 
 #include "ECS/ECS.h"
 

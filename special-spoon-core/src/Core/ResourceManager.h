@@ -52,11 +52,11 @@ namespace Spoon
         {
             if constexpr (std::is_same_v<RESOURCE, sf::Texture>)
             {
-                return m_Textures[id];
+                return m_Textures.at(id);
             }
             else if constexpr(std::is_same_v<RESOURCE, sf::Font>)
             {
-                return m_Fonts[id];
+                return m_Fonts.at(id);
             }
             else
             {

@@ -20,7 +20,18 @@ namespace Spoon
 
         sf::FloatRect GetCollisionBox() { return m_CollisionBox; }
 
+        void CollisionDetected() 
+        {
+            Collided = true;
+        }
+
+        void CollisionHandled() 
+        {
+            Collided = false;
+        }
+
     private:
         sf::FloatRect m_CollisionBox;
+        bool Collided = false;
     };
 }

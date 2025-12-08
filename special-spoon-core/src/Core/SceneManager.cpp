@@ -1,5 +1,7 @@
 #include "SceneManager.h"
 #include "ResourceManager.h"
+#include "EntityManager.h"
+#include "ComponentLoaders.h"
 
 #include "nlohmann/json.hpp"
 #include <fstream>
@@ -37,7 +39,7 @@ namespace Spoon
         }
     }
 
-    void SceneManager::LoadScene(std::string id)
+    void SceneManager::LoadScene(std::string id, EntityManager& manager)
     {
         // Find scene in manifest
         auto found = m_SceneManifest.find(id);
@@ -56,6 +58,7 @@ namespace Spoon
         json resourceData;
         resourceData = json::parse(resources);
 
+        // Load textures
         for(auto& resource : resourceData["Textures"])
         {
             std::string resID = resource["ID"].get<std::string>();
@@ -63,6 +66,7 @@ namespace Spoon
             ResourceManager::LoadResource<sf::Texture>(resID, filePath);
         }
 
+        // Load fonts
         for(auto& resource : resourceData["Fonts"])
         {
             std::string resID = resource["ID"].get<std::string>();
@@ -79,10 +83,30 @@ namespace Spoon
 
         json sceneData;
         sceneData = json::parse(data);
-        
+
+        try {
+        // Load entities and components
         for(auto& entity : sceneData["Entities"])
         {
-            // TODO Load entity data here
+            Entity newEntity = manager.CreateEntity();
+            for(auto& comp : entity["Components"])
+            {
+                std::string type = comp["Type"].get<std::string>();
+
+                auto found = ComponentLoader::s_Loaders.find(type);
+                if(found != ComponentLoader::s_Loaders.end())
+                {
+                    found->second(manager, newEntity.GetID(), comp);
+                }
+                else
+                {
+                    throw std::runtime_error("No loader found for component type: " + type);
+                }
+            }
+        }
+
+        } catch (const nlohmann::json::exception& e) {
+            throw std::runtime_error("Error loading scene data for scene: " + id + "\n" + e.what());
         }
     }
 }

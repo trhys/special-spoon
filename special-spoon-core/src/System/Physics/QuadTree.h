@@ -24,8 +24,8 @@ namespace Spoon
 
         void BuildTree(sf::FloatRect bounds);
         void Populate(EntityManager& manager);
-        // std::set<std::pair<Node*, Node*>> GeneratePairs();
-        // void ProcessCollisionBuffer();
+        std::set<std::pair<UUID, UUID>> GeneratePairs();
+        void ProcessCollisionBuffer(EntityManager& manager);
 
         // std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }
 

@@ -1,8 +1,4 @@
 #include "Spoon.h"
-#include "DemoLayer.h"
-#include "DemoMenu.h"
-#include "EntryPoint.h"
-
 
 class Sandbox : public Spoon::Application
 {
@@ -15,7 +11,8 @@ public:
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	: Spoon::Application(specs)
 {
-	PushLayer(new DemoMenu());
+	GetSceneManager().LoadManifest("assets/scene/scene_manifest.json");
+	GetSceneManager().LoadScene("MainMenu", GetEntityManager());
 }
 
 Spoon::Application* Spoon::CreateApp()

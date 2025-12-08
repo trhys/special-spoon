@@ -17,19 +17,23 @@ namespace Spoon
 
         bool operator==(const UUID& other) const { return ID == other.ID; }
         bool operator!=(const UUID& other) const { return ID != other.ID; }
+        bool operator<(const UUID& other) const { return ID < other.ID; }
+        bool operator>(const UUID& other) const { return ID > other.ID; }
     };
 
     class SPOON_API Entity
     {
     public:
         Entity(UUID id, EntityManager* em) : m_ID(id), p_EM(em) {}
-        ~Entity();
+        ~Entity() = default;
         
         template<typename COMP, typename... Args>
         void AddComponent(Args&&... args);
 
         template<typename COMP>
         void DropComponent();
+
+        UUID GetID() const { return m_ID; }
 
     private:
         EntityManager* p_EM;

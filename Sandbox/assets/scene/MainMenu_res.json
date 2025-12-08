@@ -1,0 +1,18 @@
+{
+    "Textures": [
+        {
+            "ID": "MainMenu",
+            "FilePath": "assets/Textures/SV-Scene.png"
+        },
+        {
+            "ID": "Zombie",
+            "FilePath": "assets/Textures/DemoSprite.png"
+        }
+    ],
+    "Fonts": [
+        {
+            "ID": "MenuFont",
+            "FilePath": "assets/Fonts/RoadRage/RoadRage-Regular.ttf"
+        }
+    ]
+}

@@ -7,7 +7,10 @@ namespace Spoon
 {
     struct TextComp : public Component
     {
-        TextComp(sf::Font& asset, std::string text = "", sf::Color color = sf::Color::White) : m_Text(asset, text) { m_Text.setFillColor(color); }
+        TextComp(sf::Font& asset, std::string text = "", unsigned int char_size = 30, sf::Color color = sf::Color::White) : m_Text(asset, text, char_size) 
+        { 
+            m_Text.setFillColor(color);
+        }
 
         sf::Text m_Text;
 

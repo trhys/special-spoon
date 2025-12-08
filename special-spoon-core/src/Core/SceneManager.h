@@ -6,6 +6,8 @@
 
 namespace Spoon
 {
+    class EntityManager;
+    
     struct SceneData
     {
         std::string ID;
@@ -21,7 +23,7 @@ namespace Spoon
         ~SceneManager() {}
 
         void LoadManifest(std::string manifestPath);
-        void LoadScene(std::string id);
+        void LoadScene(std::string id, EntityManager& manager);
 
     private:
         std::unordered_map<std::string, SceneData> m_SceneManifest;

@@ -19,7 +19,7 @@ namespace Spoon
 
             // Show the quadtree nodes on-screen for visual debugging
             leaf.rect.setSize(node_size);
-            leaf.rect.setOutlineThickness(10.0f);
+            leaf.rect.setOutlineThickness(1.0f);
             leaf.rect.setFillColor(sf::Color::Transparent);
         }
 
@@ -58,39 +58,42 @@ namespace Spoon
         }
     }
 
-    // std::set<std::pair<Node*, Node*>> Quadtree::GeneratePairs()
-    // {
-    //     std::set<std::pair<Node*, Node*>> unique_pairs;
-    //     for(auto& leaf : m_GridNodes)
-    //     {
-    //         for(auto a = 0; a < leaf.collision_buffer.size(); a++)
-    //         {
-    //             for(auto b = a + 1; b < leaf.collision_buffer.size(); b++)
-    //             {
-    //                 Node* objA = leaf.collision_buffer[a];
-    //                 Node* objB = leaf.collision_buffer[b];
+    std::set<std::pair<UUID, UUID>> Quadtree::GeneratePairs()
+    {
+        std::set<std::pair<UUID, UUID>> unique_pairs;
+        for(auto& leaf : m_GridNodes)
+        {
+            for(auto a = 0; a < leaf.collision_buffer.size(); a++)
+            {
+                for(auto b = a + 1; b < leaf.collision_buffer.size(); b++)
+                {
+                    UUID entityA = leaf.collision_buffer[a];
+                    UUID entityB = leaf.collision_buffer[b];
 
-    //                 if(objA > objB) { std::swap(objA, objB); }
+                    if(entityA > entityB) { std::swap(entityA, entityB); }
 
-    //                 unique_pairs.insert({objA, objB});
-    //             }
-    //         }
-    //     }
-    //     return unique_pairs;
-    // }
+                    unique_pairs.insert({entityA, entityB});
+                }
+            }
+        }
+        return unique_pairs;
+    }
 
-    // void Quadtree::ProcessCollisionBuffer() // TODO : Collision handling needs some kind of callback to help respond (where collision occured for example)
-    // {
-    //     std::set<std::pair<Node*, Node*>> unique_pairs = GeneratePairs();
-    //     for(auto& pair : unique_pairs)
-    //     {
-    //         Node* objA = pair.first;
-    //         Node* objB = pair.second;
-    //         if(const std::optional collision = objA->GetComponent<PhysComp>()->GetCollisionBox().findIntersection(objB->GetComponent<PhysComp>()->GetCollisionBox()))
-    //         {
-    //             objA->CollisionDetected();
-    //             objB->CollisionDetected();
-    //         }
-    //     }
-    // }   
+    void Quadtree::ProcessCollisionBuffer(EntityManager& manager)
+    {
+        std::set<std::pair<UUID, UUID>> unique_pairs = GeneratePairs();
+        for(auto& pair : unique_pairs)
+        {
+            UUID entityA = pair.first;
+            UUID entityB = pair.second;
+            PhysicsComp* physA = manager.GetComponent<PhysicsComp>(entityA);
+            PhysicsComp* physB = manager.GetComponent<PhysicsComp>(entityB);
+
+            if(const std::optional collision = physA->GetCollisionBox().findIntersection(physB->GetCollisionBox()))
+            {
+                physA->CollisionDetected();
+                physB->CollisionDetected();
+            }
+        }
+    }   
 }

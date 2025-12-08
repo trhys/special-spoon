@@ -31,6 +31,12 @@ namespace Spoon
 		static Application& Get() { return *s_Instance; }
 		AppSpecifications GetSpecs() { return m_Specs; }
 		sf::RenderWindow& GetWindow() { return m_Window; }
+		
+		SceneManager& GetSceneManager() { return m_SceneManager; }
+		EntityManager& GetEntityManager() { return m_EntityManager; }
+		ResourceManager& GetResourceManager() { return m_ResourceManager; }
+		InputSystem& GetInputSystem() { return m_InputSystem; }
+		SystemManager& GetSystemManager() { return m_SystemManager; }
 
 	private:
 		static Application* s_Instance;

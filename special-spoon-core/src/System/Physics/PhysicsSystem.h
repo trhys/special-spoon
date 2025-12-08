@@ -5,7 +5,7 @@
 
 namespace Spoon
 {
-    class PhysicsSystem
+    class PhysicsSystem : public ISystem
     {
     public:
         PhysicsSystem() {}
