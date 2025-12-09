@@ -14,9 +14,8 @@ namespace Spoon
 
         void Update(sf::Time tick, EntityManager& manager) override;
 
+    private:
         void FadeAnimation(sf::Time tick, FadeComp& comp, ColorComp& colorcomp);
         void BlinkAnimation(sf::Time tick, BlinkComp& comp, ColorComp& colorcomp);
-
-    private:
     };
 }

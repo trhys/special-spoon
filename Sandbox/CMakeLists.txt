@@ -18,7 +18,11 @@ target_sources(Sandbox
     PUBLIC
         FILE_SET HEADERS
         FILES
-
+            src/ECS/Component/PatrolComp.h
+            src/ECS/System/PatrolSystem.h
+            
+            src/ECS/CustomCompLoader.h
+            src/ECS/CustomSystemLoader.h
 )
 
 target_include_directories(Sandbox PRIVATE 

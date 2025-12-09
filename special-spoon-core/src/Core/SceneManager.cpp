@@ -32,11 +32,6 @@ namespace Spoon
                 paths.ID = scene["ID"].get<std::string>();
                 paths.ResourceFiles = scene["Resources"].get<std::string>();
                 paths.DataFiles = scene["Data"].get<std::string>();
-                sf::Vector2f boundsVec(
-                    scene["Bounds"]["Width"].get<float>(),
-                    scene["Bounds"]["Height"].get<float>()
-                );
-                paths.Bounds = boundsVec;
                 m_SceneManifest[paths.ID] = paths;
             }
         }

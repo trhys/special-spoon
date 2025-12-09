@@ -15,8 +15,20 @@ namespace Spoon
     void LoadSpriteComponent(EntityManager& manager, UUID id, const json& comp)
     {
         std::string textureID = comp["TextureID"].get<std::string>();
-        sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
-        manager.MakeComponent<SpriteComp>(id, asset);
+        if(comp.contains("TextureRect"))
+        {
+            sf::IntRect rect(
+                {comp["TextureRect"]["x"].get<int>(), comp["TextureRect"]["y"].get<int>()},
+                {comp["TextureRect"]["width"].get<int>(), comp["TextureRect"]["height"].get<int>()}
+            );
+            sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
+            manager.MakeComponent<SpriteComp>(id, asset, rect);
+        }
+        else
+        {
+            sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
+            manager.MakeComponent<SpriteComp>(id, asset);            
+        }
     }
 
     void LoadTextComponent(EntityManager& manager, UUID id, const json& comp)

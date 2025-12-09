@@ -14,7 +14,6 @@ namespace Spoon
         std::string ID;
         std::string ResourceFiles;
         std::string DataFiles;
-        sf::Vector2f Bounds;
     };
 
     class SPOON_API SceneManager

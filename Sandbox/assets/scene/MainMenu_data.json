@@ -44,6 +44,16 @@
                 "Animation": {
                     "Type": "Animation",
                     "AnimationID": "Zombie-Idle"
+                },
+                "Sprite": {
+                    "Type": "Sprite",
+                    "TextureID": "Zombie"
+                },
+                "Patrol": {
+                    "Type": "Patrol",
+                    "PointA": { "x": 100.0, "y": 400.0 },
+                    "PointB": { "x": 700.0, "y": 200.0 },
+                    "IdleTime": 3.0
                 }
             }
         }
@@ -52,6 +62,9 @@
     "Systems": [
         {
             "Type": "Animation"
+        },
+        {
+            "Type": "Patrol"
         }
     ]
 }
