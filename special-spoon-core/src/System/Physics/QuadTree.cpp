@@ -9,10 +9,10 @@
 
 namespace Spoon
 {
-    void Quadtree::BuildTree(sf::FloatRect bounds)
+    void Quadtree::BuildTree(sf::Vector2f gridSize)
     {
         // Split the scene bounds into 8 equal grid squares
-        sf::Vector2f node_size = {bounds.size.x/4, bounds.size.y/2};
+        sf::Vector2f node_size = {gridSize.x/4, gridSize.y/2};
         for(auto& leaf : m_GridNodes)
         {
             leaf.body.size = node_size;

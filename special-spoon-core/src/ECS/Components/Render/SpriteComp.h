@@ -23,5 +23,7 @@ namespace Spoon
             sf::FloatRect bounds = m_Sprite.getLocalBounds(); 
             m_Sprite.setOrigin({ bounds.size.x / 2.0f, bounds.size.y / 2.0f });
         }
+
+        void SetTextureRect(const sf::IntRect& rect) { m_Sprite.setTextureRect(rect); }
     };
 }

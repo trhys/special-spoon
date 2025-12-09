@@ -12,7 +12,7 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	: Spoon::Application(specs)
 {
 	GetSceneManager().LoadManifest("assets/scene/scene_manifest.json");
-	GetSceneManager().LoadScene("MainMenu", GetEntityManager());
+	GetSceneManager().LoadScene("MainMenu", GetEntityManager(), GetSystemManager());
 }
 
 Spoon::Application* Spoon::CreateApp()

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "System.h"
+#include "SystemLoaders.h"
+#include <memory>
 
 namespace Spoon
 {
@@ -10,9 +12,18 @@ namespace Spoon
         SystemManager() {}
         ~SystemManager() {}
 
-        void AddSystem(ISystem* system)
+        void AddSystem(const json& systemData)
         {
-            m_Systems.push_back(system);
+            std::string type = systemData["Type"].get<std::string>();
+            auto found = SystemLoaders::s_SysLoaders.find(type);
+            if(found != SystemLoaders::s_SysLoaders.end())
+            {
+                m_Systems.emplace_back(found->second(systemData));
+            }
+            else
+            {
+                throw std::runtime_error("No system loader registered for type: " + type);
+            }
         }
 
         void ClearSystems()
@@ -29,6 +40,6 @@ namespace Spoon
         }
 
     private:
-        std::vector<ISystem*> m_Systems;
+        std::vector<std::unique_ptr<ISystem>> m_Systems;
     };
 }

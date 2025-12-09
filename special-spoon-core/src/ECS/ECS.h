@@ -9,5 +9,6 @@
 #include "Components/Render/SpriteComp.h"
 #include "Components/Render/ColorComp.h"
 
+#include "Components/Animation/AnimationComp.h"
 #include "Components/Animation/BlinkComp.h"
 #include "Components/Animation/FadeComp.h"

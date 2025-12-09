@@ -31,6 +31,27 @@
                     "CharacterSize": 48
                 }
             }
+        },
+        {
+            "ID": "Zombie",
+            "Components": {
+                "Transform": {
+                    "Type": "Transform",
+                    "Position": { "x": 400.0, "y": 300.0 },
+                    "Scale": { "x": 2.0, "y": 2.0 },
+                    "Rotation": 0.0
+                },
+                "Animation": {
+                    "Type": "Animation",
+                    "AnimationID": "Zombie-Idle"
+                }
+            }
+        }
+    ],
+
+    "Systems": [
+        {
+            "Type": "Animation"
         }
     ]
 }

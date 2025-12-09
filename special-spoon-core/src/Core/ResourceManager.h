@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Core.h"
+#include "ECS/Components/Animation/AnimationData.h"
+
 #include "SFML/Graphics.hpp"
+
 #include <type_traits>
 
 namespace Spoon
@@ -64,8 +67,31 @@ namespace Spoon
             }
         }
 
+        static void LoadAnimationData(const std::string id, const AnimationData& animationData)
+        {
+            auto found = m_Animations.find(id);
+            if(found == m_Animations.end())
+            {
+                m_Animations.emplace(id, animationData);
+            }
+        }
+
+        static AnimationData* GetAnimationData(const std::string id)
+        {
+            auto found = m_Animations.find(id);
+            if(found != m_Animations.end())
+            {
+                return &found->second;
+            }
+            else
+            {
+                throw std::runtime_error("AnimationID: " + id + " not found.");
+            }
+        }
+        
     private:
         static inline std::unordered_map<std::string, sf::Texture> m_Textures;
         static inline std::unordered_map<std::string, sf::Font> m_Fonts;
+        static inline std::unordered_map<std::string, AnimationData> m_Animations;
     };
 }

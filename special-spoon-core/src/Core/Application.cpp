@@ -67,12 +67,6 @@ namespace Spoon
                 m_Window.clear();
 
                 Renderer.Render(states, m_EntityManager);
-
-                // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
-                // for(auto& leaf : m_PhysicsManager.PhysTest())
-                // {
-                //     m_Window.draw(leaf.rect);
-                // }
                 
                 m_Window.display();
             }

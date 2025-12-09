@@ -2,8 +2,11 @@
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "ComponentLoaders.h"
+#include "System/SystemManager.h"
+#include "System/SystemLoaders.h"
 
 #include "nlohmann/json.hpp"
+
 #include <fstream>
 
 using json = nlohmann::json;
@@ -37,9 +40,13 @@ namespace Spoon
                 m_SceneManifest[paths.ID] = paths;
             }
         }
+        else
+        {
+            throw std::runtime_error("Scene manifest file is missing 'Scenes' key at path: " + manifestPath);
+        }
     }
 
-    void SceneManager::LoadScene(std::string id, EntityManager& manager)
+    void SceneManager::LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager)
     {
         // Find scene in manifest
         auto found = m_SceneManifest.find(id);
@@ -74,6 +81,26 @@ namespace Spoon
             ResourceManager::LoadResource<sf::Font>(resID, filePath);
         }
 
+        // Load animation data
+        for(auto& resource : resourceData["Animations"])
+        {
+            AnimationData animData;
+            animData.ID = resource["ID"].get<std::string>();
+            animData.textureID = resource["TextureID"].get<std::string>();
+            for(auto& cord : resource["SpriteCords"])
+            {
+                SpriteCords sc;
+                sc.x = cord["x"].get<int>();
+                sc.y = cord["y"].get<int>();
+                sc.width = cord["width"].get<int>();
+                sc.height = cord["height"].get<int>();
+                animData.spriteCords.push_back(sc);
+            }
+            if(resource.contains("FrameRate")) { animData.frameRate = resource["FrameRate"].get<float>(); }
+            if(resource.contains("Looping")) { animData.isLooping = resource["Looping"].get<bool>(); }
+            ResourceManager::LoadAnimationData(animData.ID, animData);
+        }
+
         // Begin loading scene data
         std::ifstream data(found->second.DataFiles);
         if(!data.is_open()) 
@@ -88,15 +115,15 @@ namespace Spoon
         // Load entities and components
         for(auto& entity : sceneData["Entities"])
         {
-            Entity newEntity = manager.CreateEntity();
+            Entity newEntity = entityManager.CreateEntity();
             for(auto& comp : entity["Components"])
             {
                 std::string type = comp["Type"].get<std::string>();
 
-                auto found = ComponentLoader::s_Loaders.find(type);
-                if(found != ComponentLoader::s_Loaders.end())
+                auto found = ComponentLoader::s_CompLoaders.find(type);
+                if(found != ComponentLoader::s_CompLoaders.end())
                 {
-                    found->second(manager, newEntity.GetID(), comp);
+                    found->second(entityManager, newEntity.GetID(), comp);
                 }
                 else
                 {
@@ -107,6 +134,12 @@ namespace Spoon
 
         } catch (const nlohmann::json::exception& e) {
             throw std::runtime_error("Error loading scene data for scene: " + id + "\n" + e.what());
+        }
+
+        // Load systems
+        for(auto& system : sceneData["Systems"])
+        {
+            systemManager.AddSystem(system);
         }
     }
 }

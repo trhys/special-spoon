@@ -9,6 +9,7 @@ target_sources(special-spoon-core
         src/System/Physics/QuadTree.cpp
 
         src/System/AnimationSystem.cpp
+        src/System/SystemLoaders.cpp
         
         src/ECS/Entity.inl
 
@@ -34,6 +35,8 @@ target_sources(special-spoon-core
         src/ECS/Components/StatusComp.h
         src/ECS/Components/TransformComp.h
 
+        src/ECS/Components/Animation/AnimationComp.h
+        src/ECS/Components/Animation/AnimationData.h
         src/ECS/Components/Animation/BlinkComp.h
         src/ECS/Components/Animation/FadeComp.h
 
@@ -47,6 +50,7 @@ target_sources(special-spoon-core
         src/System/AnimationSystem.h
         src/System/InputSystem.h
         src/System/System.h
+        src/System/SystemLoaders.h
         src/System/SystemManager.h
 
         src/System/Physics/PhysicsSystem.h
@@ -72,9 +76,11 @@ SFML::Network
 SFML::Window
 SFML::Graphics)
 
+set(JSON_Install ON CACHE BOOL "Force nlohmann_json to be installable when used as a subdirectory." FORCE)
+
 add_subdirectory(vendor/JSON)
 
-target_link_libraries(special-spoon-core PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(special-spoon-core PUBLIC nlohmann_json::nlohmann_json)
 
 include(GNUInstallDirs)
 

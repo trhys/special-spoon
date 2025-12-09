@@ -22,7 +22,7 @@ namespace Spoon
         Quadtree() {}
         ~Quadtree() {}
 
-        void BuildTree(sf::FloatRect bounds);
+        void BuildTree(sf::Vector2f gridSize);
         void Populate(EntityManager& manager);
         std::set<std::pair<UUID, UUID>> GeneratePairs();
         void ProcessCollisionBuffer(EntityManager& manager);

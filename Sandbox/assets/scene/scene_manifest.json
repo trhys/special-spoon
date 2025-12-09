@@ -8,15 +8,6 @@
         "Width": 1080.0,
         "Height": 1080.0
       }
-    },
-    {
-      "ID": "Arena",
-      "Resources": "assets/scene/Arena_res.json",
-      "Data": "assets/scene/Arena_data.json",
-      "Bounds": {
-        "Width": 1080.0,
-        "Height": 1080.0
-      }
     }
   ]
 }

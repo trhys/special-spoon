@@ -19,11 +19,11 @@ namespace Spoon
         ComponentLoader() {}
         ~ComponentLoader() {}
 
-        static inline std::unordered_map<std::string, Loader> s_Loaders;
+        static inline std::unordered_map<std::string, Loader> s_CompLoaders;
 
-        static void RegisterLoader(const std::string& type, Loader loader)
+        static void RegisterCompLoader(const std::string& type, Loader loader)
         {
-            s_Loaders[type] = loader;
+            s_CompLoaders[type] = loader;
         }
     };
 }

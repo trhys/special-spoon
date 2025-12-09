@@ -35,14 +35,20 @@ namespace Spoon
         }
     }
 
-    void RegisterDefaultLoaders()
+    void LoadAnimationComponent(EntityManager& manager, UUID id, const json& comp)
     {
-        ComponentLoader::RegisterLoader("Transform", &LoadTransformComponent);
-        ComponentLoader::RegisterLoader("Sprite", &LoadSpriteComponent);
-        ComponentLoader::RegisterLoader("Text", &LoadTextComponent);
+        std::string animationID = comp["AnimationID"].get<std::string>();
+        manager.MakeComponent<AnimationComp>(id, animationID);
     }
 
-    static const bool registered = []() {
+    void RegisterDefaultLoaders()
+    {
+        ComponentLoader::RegisterCompLoader("Transform", &LoadTransformComponent);
+        ComponentLoader::RegisterCompLoader("Sprite", &LoadSpriteComponent);
+        ComponentLoader::RegisterCompLoader("Text", &LoadTextComponent);
+    }
+
+    static const bool components_registered = []() {
         RegisterDefaultLoaders();
         return true;
     }();

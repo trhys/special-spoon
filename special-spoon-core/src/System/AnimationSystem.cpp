@@ -42,6 +42,77 @@ namespace Spoon
 
     void AnimationSystem::Update(sf::Time tick, EntityManager& manager)
     {
+        // Default animation components
+        auto& fadeArray = manager.GetArray<FadeComp>();
+        auto& blinkArray = manager.GetArray<BlinkComp>();
+        auto& colorArray = manager.GetArray<ColorComp>();
 
+        for(size_t in = 0; in < fadeArray.m_Components.size(); in++)
+        {
+            FadeComp& fadecomp = fadeArray.m_Components[in];
+            UUID id = fadeArray.m_IndexToId[in];
+
+            if(fadecomp.isActive)
+            {
+                if(colorArray.m_IdToIndex.count(id))
+                {
+                    ColorComp& colorcomp = colorArray.m_Components[colorArray.m_IdToIndex[id]];
+                    FadeAnimation(tick, fadecomp, colorcomp);
+                }
+            }
+        }
+
+        for(size_t in = 0; in < blinkArray.m_Components.size(); in++)
+        {
+            BlinkComp& blinkcomp = blinkArray.m_Components[in];
+            UUID id = blinkArray.m_IndexToId[in];
+
+            if(blinkcomp.isActive)
+            {
+                if(colorArray.m_IdToIndex.count(id))
+                {
+                    ColorComp& colorcomp = colorArray.m_Components[colorArray.m_IdToIndex[id]];
+                    BlinkAnimation(tick, blinkcomp, colorcomp);
+                }
+            }
+        }
+
+        // AnimationComp based animations (defined by scene_data.json files)
+        auto& animationArray = manager.GetArray<AnimationComp>();
+        auto& spriteArray = manager.GetArray<SpriteComp>();
+
+        for(size_t in = 0; in < animationArray.m_Components.size(); in++)
+        {
+            AnimationComp& animComp = animationArray.m_Components[in];
+            UUID id = animationArray.m_IndexToId[in];
+
+            if(animComp.m_AnimationData != nullptr && !animComp.isFinished)
+            {
+                animComp.elapsedTime += tick.asSeconds();
+                while(animComp.elapsedTime >= animComp.m_AnimationData->frameRate)
+                {
+                    animComp.elapsedTime -= animComp.m_AnimationData->frameRate;
+                    animComp.currentFrame++;
+                }
+                if(animComp.currentFrame >= static_cast<int>(animComp.m_AnimationData->spriteCords.size()))
+                {
+                    if(animComp.m_AnimationData->isLooping)
+                    {
+                        animComp.currentFrame = 0;
+                    }
+                    else
+                    {
+                        animComp.currentFrame = static_cast<int>(animComp.m_AnimationData->spriteCords.size()) - 1;
+                        animComp.isFinished = true;
+                    }
+                }
+                if(spriteArray.m_IdToIndex.count(id))
+                {
+                    SpriteComp& spriteComp = spriteArray.m_Components[spriteArray.m_IdToIndex[id]];
+                    SpriteCords& sc = animComp.m_AnimationData->spriteCords[animComp.currentFrame];
+                    spriteComp.SetTextureRect(sf::IntRect({sc.x, sc.y}, {sc.width, sc.height}));
+                }
+            }
+        }
     }
 }
