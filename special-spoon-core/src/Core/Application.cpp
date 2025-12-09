@@ -17,7 +17,9 @@ namespace Spoon
             #define SS_PHYSICS_ENABLED
         }
         
-        m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
+        #ifndef SS_CONSOLE_ONLY
+            m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
+        #endif
     }
 
     void Application::Close()
@@ -27,51 +29,66 @@ namespace Spoon
 
     void Application::Run()
     {
-        sf::RenderStates states;
-        sf::Clock clock;
+        #ifndef SS_CONSOLE_ONLY
+            sf::RenderStates states;
+            sf::Clock clock;
 
-        Renderer Renderer(m_Window);
+            Renderer Renderer(m_Window);
 
-        while (m_IsRunning)
-        {
-            // Event polling
-            m_Window.handleEvents
-            (
-                [&](const sf::Event::KeyPressed& keyPress)
-                {
-                   m_InputSystem.PushKeyPress(keyPress);
-                },
-
-                [&](const auto& event)
-                {
-                    using T = std::decay_t<decltype(event)>;
-                    if constexpr (std::is_same_v<T, sf::Event::Closed>)
+            while (m_IsRunning)
+            {
+                // Event polling
+                m_Window.handleEvents
+                (
+                    [&](const sf::Event::KeyPressed& keyPress)
                     {
-                       m_Window.close();
-                       Application::Close();
+                    m_InputSystem.PushKeyPress(keyPress);
+                    },
+
+                    [&](const auto& event)
+                    {
+                        using T = std::decay_t<decltype(event)>;
+                        if constexpr (std::is_same_v<T, sf::Event::Closed>)
+                        {
+                        m_Window.close();
+                        Application::Close();
+                        }
                     }
-                }
-            );
+                );
 
-            // Update systems
-            sf::Time tick = clock.restart();
+                // Update systems
+                sf::Time tick = clock.restart();
 
-            m_InputSystem.Update(tick, m_EntityManager);
+                m_InputSystem.Update(tick, m_EntityManager);
 
-            m_SystemManager.UpdateSystems(tick, m_EntityManager);
+                m_SystemManager.UpdateSystems(tick, m_EntityManager);
 
-            // Render
-            m_Window.clear();
+                // Render
+                m_Window.clear();
 
-            Renderer.Render(states, m_EntityManager);
+                Renderer.Render(states, m_EntityManager);
 
-            // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
-            // for(auto& leaf : m_PhysicsManager.PhysTest())
-            // {
-            //     m_Window.draw(leaf.rect);
-            // }
-            
-            m_Window.display();
-        }
+                // TEST QUADTREE AND COLLISION --- DRAWS QUADTREE NODES ON SCREEN FOR VISUAL REFERENCE
+                // for(auto& leaf : m_PhysicsManager.PhysTest())
+                // {
+                //     m_Window.draw(leaf.rect);
+                // }
+                
+                m_Window.display();
+            }
+        #endif
+        
+        #ifdef SS_CONSOLE_ONLY
+            sf::Clock clock;
+            while (m_IsRunning)
+            {
+                // Update systems
+                sf::Time tick = clock.restart();
+
+                m_InputSystem.Update(tick, m_EntityManager);
+
+                m_SystemManager.UpdateSystems(tick, m_EntityManager);
+            }
+        #endif
     }
 }

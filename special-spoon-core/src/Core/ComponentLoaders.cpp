@@ -1,6 +1,7 @@
 #include "ComponentLoaders.h"
 #include "ECS/ECS.h"
 #include "EntityManager.h"
+#include "ResourceManager.h"
 
 namespace Spoon
 {

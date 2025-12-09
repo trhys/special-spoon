@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ECS/ECS.h"
 #include "ECS/Entity.h"
 #include "ComponentArray.h"
 #include <memory>
@@ -9,7 +10,7 @@ namespace Spoon
     class EntityManager
     {
     public:
-        EntityManager() {}
+        EntityManager() { LoadDefaultArrays(); }
         ~EntityManager() {}
 
         Entity CreateEntity()
@@ -83,6 +84,19 @@ namespace Spoon
 
             size_t index = array->m_IdToIndex[id];
             return &array->m_Components[index];
+        }
+
+        void LoadDefaultArrays()
+        {
+            LoadArray<TransformComp>();
+            LoadArray<InputComp>();
+            LoadArray<StatusComp>();
+            LoadArray<SpriteComp>();
+            LoadArray<TextComp>();
+            LoadArray<ColorComp>();
+            LoadArray<PhysicsComp>();
+            LoadArray<BlinkComp>();
+            LoadArray<FadeComp>();
         }
 
     private:

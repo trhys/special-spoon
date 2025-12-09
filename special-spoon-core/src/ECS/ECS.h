@@ -3,6 +3,7 @@
 #include "Components/PhysicsComp.h"
 #include "Components/TransformComp.h"
 #include "Components/InputComp.h"
+#include "Components/StatusComp.h"
 
 #include "Components/Render/TextComp.h"
 #include "Components/Render/SpriteComp.h"

@@ -26,6 +26,19 @@
         },
 
         {
+            "name": "sandbox-console",
+            "displayName": "Sandbox CONSOLE ONLY",
+            "description": "Run the sandbox in console only mode.",
+            "binaryDir": "build/console",
+            "cacheVariables":
+            {
+                "BUILD_SANDBOX": "ON",
+                "DEBUG_MODE": "ON",
+                "CONSOLE_ONLY": "ON"
+            }
+        },
+
+        {
             "name": "core",
             "displayName": "Special-Spoon",
             "description": "The core special-spoon engine.",
@@ -46,6 +59,10 @@
         {
             "name": "sandbox-release",
             "configurePreset": "sandbox-release"
+        },
+        {
+            "name": "sandbox-console",
+            "configurePreset": "sandbox-console"
         },
         {
             "name": "core",

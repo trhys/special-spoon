@@ -3,6 +3,7 @@ add_library(special-spoon-core SHARED)
 target_sources(special-spoon-core
     PRIVATE
         src/Core/Application.cpp
+        src/Core/ComponentLoaders.cpp
         src/Core/SceneManager.cpp
 
         src/System/Physics/QuadTree.cpp
@@ -19,6 +20,7 @@ target_sources(special-spoon-core
 
         src/Core/Application.h
         src/Core/ComponentArray.h
+        src/Core/ComponentLoaders.h
         src/Core/Core.h
         src/Core/EntityManager.h
         src/Core/EntryPoint.h
@@ -54,6 +56,7 @@ target_sources(special-spoon-core
         src/Utils/KeyMappings.h
 )
 
+   
 generate_export_header(special-spoon-core)
 
 target_include_directories(special-spoon-core PRIVATE 

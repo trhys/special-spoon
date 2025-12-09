@@ -30,7 +30,6 @@ namespace Spoon
 		
 		static Application& Get() { return *s_Instance; }
 		AppSpecifications GetSpecs() { return m_Specs; }
-		sf::RenderWindow& GetWindow() { return m_Window; }
 		
 		SceneManager& GetSceneManager() { return m_SceneManager; }
 		EntityManager& GetEntityManager() { return m_EntityManager; }
@@ -43,7 +42,9 @@ namespace Spoon
 		bool m_IsRunning = true;
 
 		AppSpecifications m_Specs;
-		sf::RenderWindow  m_Window;
+		#ifndef SS_CONSOLE_ONLY
+			sf::RenderWindow  m_Window;
+		#endif
 		
 		ResourceManager   m_ResourceManager;
 		SceneManager	  m_SceneManager;

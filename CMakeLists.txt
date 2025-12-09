@@ -8,11 +8,14 @@ project(special-spoon
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
 if(WIN32)
     message(STATUS "Configuring for windows")
 elseif(UNIX)
     message(STATUS "Configuring for unix")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
@@ -27,10 +30,6 @@ install(
         cmake/special-spoonConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
 )
-
-if(DEBUG_MODE)
-    add_definitions(-DSS_DEBUG_ENABLED -DSS_ASSERTS_ENABLED)
-endif()
 
 if(BUILD_SANDBOX)
     add_subdirectory(Sandbox)
