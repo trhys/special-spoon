@@ -33,6 +33,7 @@ namespace Spoon
                 paths.ResourceFiles = scene["Resources"].get<std::string>();
                 paths.DataFiles = scene["Data"].get<std::string>();
                 m_SceneManifest[paths.ID] = paths;
+                SS_DEBUG_LOG("Registered scene in manifest: " + paths.ID)
             }
         }
         else
@@ -43,6 +44,7 @@ namespace Spoon
 
     void SceneManager::LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager)
     {
+        SS_DEBUG_LOG("Loading scene: " + id)
         // Find scene in manifest
         auto found = m_SceneManifest.find(id);
         if(found == m_SceneManifest.end())
@@ -66,6 +68,7 @@ namespace Spoon
             std::string resID = resource["ID"].get<std::string>();
             std::string filePath = resource["FilePath"].get<std::string>();
             ResourceManager::LoadResource<sf::Texture>(resID, filePath);
+            SS_DEBUG_LOG("Loaded texture resource with ID: " +  resID)
         }
 
         // Load fonts
@@ -74,6 +77,7 @@ namespace Spoon
             std::string resID = resource["ID"].get<std::string>();
             std::string filePath = resource["FilePath"].get<std::string>();
             ResourceManager::LoadResource<sf::Font>(resID, filePath);
+            SS_DEBUG_LOG("Loaded font resource with ID: " +  resID)
         }
 
         // Load animation data
@@ -94,6 +98,16 @@ namespace Spoon
             if(resource.contains("FrameRate")) { animData.frameRate = resource["FrameRate"].get<float>(); }
             if(resource.contains("Looping")) { animData.isLooping = resource["Looping"].get<bool>(); }
             ResourceManager::LoadAnimationData(animData.ID, animData);
+            SS_DEBUG_LOG("Loaded animation data resource with ID: " +  animData.ID)
+        }
+
+        // Load sounds
+        for(auto& resource : resourceData["Sounds"])
+        {
+            std::string resID = resource["ID"].get<std::string>();
+            std::string filePath = resource["FilePath"].get<std::string>();
+            ResourceManager::LoadResource<sf::SoundBuffer>(resID, filePath);
+            SS_DEBUG_LOG("Loaded sound resource with ID: " +  resID)
         }
 
         // Begin loading scene data
@@ -106,22 +120,27 @@ namespace Spoon
         json sceneData;
         sceneData = json::parse(data);
 
-        try {
         // Load entities and components
         for(auto& entity : sceneData["Entities"])
         {
-            Entity newEntity = entityManager.CreateEntity();
-            for(auto& comp : entity["Components"])
+            if(entity.contains("ID"))
             {
-                std::string type = comp["Type"].get<std::string>();
+                // This is specifically for debugging; ID can be left empty
+                std::string entityID = entity["ID"].get<std::string>(); 
+            }
+            else { std::string entityID = "UnnamedEntity"; }
 
+            Entity newEntity = entityManager.CreateEntity();
+
+            for(auto const& [type, data] : entity["Components"].items())
+            {
                 SS_DEBUG_LOG("Requesting component type: " + type)
 
                 auto& loaderMap = ComponentLoaders::GetCompLoaders();
                 auto found = loaderMap.find(type);
                 if(found != loaderMap.end())
                 {
-                    found->second(entityManager, newEntity.GetID(), comp);
+                    found->second(entityManager, newEntity.GetID(), data);
                 }
                 else
                 {
@@ -130,14 +149,11 @@ namespace Spoon
             }
         }
 
-        } catch (const nlohmann::json::exception& e) {
-            throw std::runtime_error("Error loading scene data for scene: " + id + "\n" + e.what());
-        }
-
         // Load systems
         for(auto& system : sceneData["Systems"])
         {
             systemManager.AddSystem(system);
         }
+        SS_DEBUG_LOG("Successfully loaded scene: " + id)
     }
 }

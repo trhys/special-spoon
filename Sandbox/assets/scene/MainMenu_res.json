@@ -43,5 +43,9 @@
             "FrameRate": 0.1,
             "Looping": true
         }
+    ],
+
+    "Sounds": [
+        
     ]
 }

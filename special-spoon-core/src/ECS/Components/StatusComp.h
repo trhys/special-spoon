@@ -6,7 +6,12 @@ namespace Spoon
 {
     struct StatusComp : public Component
     {
+        StatusComp(bool isActive = true, std::string currentState = "Idle")
+            : is_Active(isActive), m_CurrentState(currentState) 
+        {
+        }
+
         bool is_Active;
-        bool is_Visible;
+        std::string m_CurrentState; // Idle, Moving, Attacking, etc. This maps to AnimationMap
     };
 }

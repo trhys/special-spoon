@@ -49,6 +49,7 @@ target_sources(special-spoon-core
 
         src/System/AnimationSystem.h
         src/System/InputSystem.h
+        src/System/StateSystem.h
         src/System/System.h
         src/System/SystemLoaders.h
         src/System/SystemManager.h

@@ -79,6 +79,7 @@ namespace Spoon
 
         // AnimationComp based animations (defined by scene_data.json files)
         auto& animationArray = manager.GetArray<AnimationComp>();
+        auto& statusArray = manager.GetArray<StatusComp>();
         auto& spriteArray = manager.GetArray<SpriteComp>();
 
         for(size_t in = 0; in < animationArray.m_Components.size(); in++)
@@ -86,6 +87,23 @@ namespace Spoon
             AnimationComp& animComp = animationArray.m_Components[in];
             UUID id = animationArray.m_IndexToId[in];
 
+            // Update animation based on StatusComp current state
+            if(statusArray.m_IdToIndex.count(id))
+            {
+                StatusComp& statusComp = statusArray.m_Components[statusArray.m_IdToIndex[id]];
+                if(animComp.m_AnimationData->ID != animComp.m_AnimationMap[statusComp.m_CurrentState])
+                {
+                    std::string newAnimID = animComp.m_AnimationMap[statusComp.m_CurrentState];
+                    animComp.SetAnimationData(newAnimID);
+                    animComp.currentFrame = 0;
+                    animComp.elapsedTime = 0.0f;
+                    animComp.isFinished = false;
+                }
+            }
+            else
+            {
+                throw std::runtime_error("Entity is missing StatusComp required for AnimationComp state management.");
+            }
             if(animComp.m_AnimationData != nullptr && !animComp.isFinished)
             {
                 animComp.elapsedTime += tick.asSeconds();
@@ -112,6 +130,14 @@ namespace Spoon
                     SpriteCords& sc = animComp.m_AnimationData->spriteCords[animComp.currentFrame];
                     spriteComp.SetTextureRect(sf::IntRect({sc.x, sc.y}, {sc.width, sc.height}));
                 }
+            }
+            else if(animComp.m_AnimationData != nullptr && animComp.isFinished)
+            {
+                // Animation is finished, do nothing
+            }   
+            else
+            {
+                throw std::runtime_error("AnimationData is null for Entity");
             }
         }
     }

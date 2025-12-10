@@ -26,6 +26,8 @@ namespace Spoon
         sf::RenderStates states;
         sf::Clock clock;
 
+        m_SystemManager.InitializeStateSystem(m_SceneManager);
+        
         Renderer Renderer(m_Window);
 
         while (m_IsRunning)
@@ -53,8 +55,9 @@ namespace Spoon
             sf::Time tick = clock.restart();
 
             m_InputSystem.Update(tick, m_EntityManager);
-
+            
             m_SystemManager.UpdateSystems(tick, m_EntityManager);
+            m_SystemManager.UpdateState(tick, m_EntityManager);
 
             // Render
             m_Window.clear();

@@ -4,6 +4,7 @@
 #include "ECS/Components/Animation/AnimationData.h"
 
 #include "SFML/Graphics.hpp"
+#include "SFML/Audio.hpp"
 
 #include <type_traits>
 
@@ -44,6 +45,19 @@ namespace Spoon
                     m_Fonts.emplace(id, std::move(font));
                 }
             }
+            else if constexpr(std::is_same_v<RESOURCE, sf::SoundBuffer>)
+            {
+                auto found = m_SoundBuffers.find(id);
+                if (found == m_SoundBuffers.end())
+                {
+                    sf::SoundBuffer soundBuffer;
+                    if (!soundBuffer.loadFromFile(file_path))
+                    {
+                        throw std::runtime_error("Failed to load sound buffer from file path: " + file_path.string());
+                    }
+                    m_SoundBuffers.emplace(id, std::move(soundBuffer));
+                }
+            }
             else
             {
                 static_assert(std::is_same_v<RESOURCE, sf::Texture> || std::is_same_v<RESOURCE, sf::Font>, "Unsupported resource type");
@@ -60,6 +74,10 @@ namespace Spoon
             else if constexpr(std::is_same_v<RESOURCE, sf::Font>)
             {
                 return m_Fonts.at(id);
+            }
+            else if constexpr(std::is_same_v<RESOURCE, sf::SoundBuffer>)
+            {
+                return m_SoundBuffers.at(id);
             }
             else
             {
@@ -93,5 +111,6 @@ namespace Spoon
         static inline std::unordered_map<std::string, sf::Texture> m_Textures;
         static inline std::unordered_map<std::string, sf::Font> m_Fonts;
         static inline std::unordered_map<std::string, AnimationData> m_Animations;
+        static inline std::unordered_map<std::string, sf::SoundBuffer> m_SoundBuffers;
     };
 }

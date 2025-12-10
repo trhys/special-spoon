@@ -8,12 +8,14 @@ namespace Spoon
 {
     struct AnimationComp : public Component
     {
-        AnimationComp(std::string animationID)
+        AnimationComp(std::string animationID, std::unordered_map<std::string, std::string> animationMap = {}) 
+            : m_AnimationMap(animationMap)
         {
             m_AnimationData = ResourceManager::GetAnimationData(animationID);
         }
 
         AnimationData* m_AnimationData = nullptr;
+        std::unordered_map<std::string, std::string> m_AnimationMap;
 
         int currentFrame = 0;
         float elapsedTime = 0.0f;

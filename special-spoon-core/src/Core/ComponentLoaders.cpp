@@ -50,7 +50,27 @@ namespace Spoon
     void LoadAnimationComponent(EntityManager& manager, UUID id, const json& comp)
     {
         std::string animationID = comp["AnimationID"].get<std::string>();
-        manager.MakeComponent<AnimationComp>(id, animationID);
+        
+        if(comp.contains("AnimationMap"))
+        {
+            std::unordered_map<std::string, std::string> animationMap;
+            for(auto& [key, value] : comp["AnimationMap"].items())
+            {
+                animationMap[key] = value.get<std::string>();
+            }
+            manager.MakeComponent<AnimationComp>(id, animationID, animationMap);
+        }
+        else 
+        { 
+            manager.MakeComponent<AnimationComp>(id, animationID); 
+        }
+    }
+
+    void LoadStatusComponent(EntityManager& manager, UUID id, const json& comp)
+    {
+        bool isActive = comp["IsActive"].get<bool>();
+        std::string currentState = comp["CurrentState"].get<std::string>();
+        manager.MakeComponent<StatusComp>(id, isActive, currentState);
     }
 
     void RegisterDefaultLoaders()
@@ -60,6 +80,7 @@ namespace Spoon
         ComponentLoaders::RegisterCompLoader("Sprite", &LoadSpriteComponent);
         ComponentLoaders::RegisterCompLoader("Text", &LoadTextComponent);
         ComponentLoaders::RegisterCompLoader("Animation", &LoadAnimationComponent);
+        ComponentLoaders::RegisterCompLoader("Status", &LoadStatusComponent);
     }
 
     namespace
@@ -72,7 +93,6 @@ namespace Spoon
                 RegisterDefaultLoaders();
             }
     };
-
         static RegisterDefaultLoadersHelper s_RegisterDefaultLoadersHelper;
     }
 }

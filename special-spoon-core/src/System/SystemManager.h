@@ -2,6 +2,8 @@
 
 #include "System.h"
 #include "SystemLoaders.h"
+#include "StateSystem.h"
+#include "InputSystem.h"
 #include <memory>
 
 namespace Spoon
@@ -20,7 +22,7 @@ namespace Spoon
             std::string type = systemData["Type"].get<std::string>();
             auto& loaderMap = SystemLoaders::GetSysLoaders();
             auto found = loaderMap.find(type);
-            if(found != SystemLoaders::s_SysLoaders.end())
+            if(found != loaderMap.end())
             {
                 m_Systems.emplace_back(found->second(systemData));
             }
@@ -43,7 +45,21 @@ namespace Spoon
             }
         }
 
+        void UpdateState(sf::Time tick, EntityManager& manager)
+        {
+            if(m_StateSystem)
+            {
+                m_StateSystem->Update(tick, manager);
+            }
+        }
+
+        void InitializeStateSystem(SceneManager& manager)
+        {
+            m_StateSystem = std::make_unique<StateSystem>(manager, *this);
+        }
+
     private:
         std::vector<std::unique_ptr<ISystem>> m_Systems;
+        std::unique_ptr<StateSystem> m_StateSystem = nullptr;
     };
 }

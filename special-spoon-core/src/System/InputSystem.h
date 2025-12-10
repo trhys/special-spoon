@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Core/EntityManager.h"
+#include "System.h"
 #include "SFML/Window/Event.hpp"
-
-#include <iostream>
 
 namespace Spoon
 {
-    class InputSystem
+    class SystemManager;
+
+    class InputSystem : public ISystem
     {
     public:
         InputSystem() {}
@@ -19,7 +19,7 @@ namespace Spoon
             std::cout << "keypress: " + sf::Keyboard::getDescription(keyPress.scancode).toAnsiString() << std::endl;
         }
 
-        void Update(sf::Time tick, EntityManager& manager)
+        void Update(sf::Time tick, EntityManager& manager) override
         {
             // TODO process events
         }
