@@ -16,7 +16,6 @@ namespace Spoon
 	{
 		sf::Vector2u m_WindowSize = {600, 600};
 		std::string m_WindowName = "Special Spoon";
-		bool PhysicsEnabled = false;
 	};
 
 	class SPOON_API Application
@@ -42,9 +41,7 @@ namespace Spoon
 		bool m_IsRunning = true;
 
 		AppSpecifications m_Specs;
-		#ifndef SS_CONSOLE_ONLY
-			sf::RenderWindow  m_Window;
-		#endif
+		sf::RenderWindow  m_Window;
 		
 		ResourceManager   m_ResourceManager;
 		SceneManager	  m_SceneManager;

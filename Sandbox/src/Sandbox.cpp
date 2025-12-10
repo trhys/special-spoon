@@ -42,7 +42,6 @@ Spoon::Application* Spoon::CreateApp()
 	AppSpecifications spec;
 	spec.m_WindowSize = {1080, 1080};
 	spec.m_WindowName = "Sandbox";
-	spec.PhysicsEnabled = true;
 	return new Sandbox(spec);
 }
 
