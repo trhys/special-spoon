@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Renderer.h"
 #include "Utils/MemoryUtils.h"
+#include "ComponentLoaders.h"
 
 namespace Spoon 
 {        

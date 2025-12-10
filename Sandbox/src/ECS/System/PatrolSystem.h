@@ -8,11 +8,12 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
-        auto& patrolArray = manager.GetAllEntitiesWithComponent<PatrolComp>();
-        for(auto& entity : patrolArray)
+        auto& patrolArray = manager.GetArray<PatrolComp>();
+        for(size_t in = 0; in < patrolArray.m_Components.size(); in++)
         {
-            // PatrolComp& patrol = patrolArray.m_Components[patrolArray.m_IdToIndex[entity]];
-            Spoon::TransformComp& transform = manager.GetComponent<Spoon::TransformComp>(entity);
+            PatrolComp& patrol = patrolArray.m_Components[in];
+            Spoon::UUID entity = patrolArray.m_IndexToId[in];
+            
 
             // TODO
         }

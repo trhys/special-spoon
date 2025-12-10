@@ -9,12 +9,13 @@ void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nl
     if(comp.contains("IdleTime"))
     {
         float idleTime = comp["IdleTime"].get<float>();
-        PatrolComp& patrol = manager.MakeComponent<PatrolComp>(id, pointA, pointB, idleTime);
+        manager.MakeComponent<PatrolComp>(id, pointA, pointB, idleTime);
     }
     else { manager.MakeComponent<PatrolComp>(id, pointA, pointB); }
 }
 
 void RegisterCustomLoaders()
 {
-    Spoon::ComponentLoader::RegisterCompLoader("Patrol", &LoadPatrolComponent);
+    std::cout << "INSIDE REGISTER CUSTOM LOADER FUNCTION" << std::endl;
+    Spoon::ComponentLoaders::RegisterCompLoader("Patrol", &LoadPatrolComponent);
 }

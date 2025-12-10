@@ -10,7 +10,7 @@ namespace Spoon
     class EntityManager
     {
     public:
-        EntityManager() { LoadDefaultArrays(); }
+        EntityManager() {}
         ~EntityManager() {}
 
         Entity CreateEntity()
@@ -33,7 +33,15 @@ namespace Spoon
         template<typename COMP, typename... Args>
         void MakeComponent(UUID id, Args&&... args)
         {
-            const char* type = typeid(COMP).name();
+            std::string type = typeid(COMP).name();
+            auto found = m_Arrays.find(type);
+            if(found == m_Arrays.end())
+            {
+                std::string errorMsg = "ERROR: Attempted to MakeComponent<";
+                errorMsg += type;
+                errorMsg += "> but no ComponentArray storage was found. Did you forget to call LoadArray<T>() in startup?";
+                throw std::runtime_error(errorMsg);
+            }
             ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[type].get());
 
             COMP newcomp = COMP(std::forward<Args>(args)...);
@@ -43,7 +51,7 @@ namespace Spoon
         template<typename COMP>
         void KillComponent(UUID id)
         {
-            const char* type = typeid(COMP).name();
+            std::string type = typeid(COMP).name();
             ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[type].get());
             array->RemoveComponent(id);
         }
@@ -51,14 +59,14 @@ namespace Spoon
         template<typename T>
         void LoadArray()
         {
-            const char* name = typeid(T).name();
+            std::string name = typeid(T).name();
             m_Arrays[name] = std::make_unique<ComponentArray<T>>();
         }
 
         template<typename T>
         ComponentArray<T>& GetArray()
         {
-            const char* name = typeid(T).name();
+            std::string name = typeid(T).name();
             ComponentArray<T>* array = static_cast<ComponentArray<T>*>(m_Arrays[name].get());
             return *array;
         }
@@ -68,7 +76,7 @@ namespace Spoon
         {
             std::vector<UUID> entities;
 
-            const char* name = typeid(COMP).name();
+            std::string name = typeid(COMP).name();
             ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[name].get());
             
             entities = array->GetAllEntities();
@@ -79,7 +87,7 @@ namespace Spoon
         template<typename COMP>
         COMP* GetComponent(UUID id)
         {
-            const char* name = typeid(COMP).name();
+            std::string name = typeid(COMP).name();
             ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[name].get());
 
             size_t index = array->m_IdToIndex[id];
@@ -97,12 +105,13 @@ namespace Spoon
             LoadArray<PhysicsComp>();
             LoadArray<BlinkComp>();
             LoadArray<FadeComp>();
+            LoadArray<AnimationComp>();
         }
 
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<std::uint64_t> m_RecycledIds;
 
-        std::unordered_map<const char*, std::unique_ptr<IComponentArray>> m_Arrays;
+        std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays;
     };
 }

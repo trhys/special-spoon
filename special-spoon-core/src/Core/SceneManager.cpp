@@ -115,8 +115,11 @@ namespace Spoon
             {
                 std::string type = comp["Type"].get<std::string>();
 
-                auto found = ComponentLoader::s_CompLoaders.find(type);
-                if(found != ComponentLoader::s_CompLoaders.end())
+                std::cout << "Requesting component type: " + type << std::endl;
+
+                auto& loaderMap = ComponentLoaders::GetCompLoaders();
+                auto found = loaderMap.find(type);
+                if(found != loaderMap.end())
                 {
                     found->second(entityManager, newEntity.GetID(), comp);
                 }

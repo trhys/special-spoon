@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core.h"
 #include <functional>
 #include <unordered_map>
 #include "nlohmann/json.hpp"
@@ -13,17 +14,23 @@ namespace Spoon
     
     using Loader = std::function<void(EntityManager& manager, UUID id, const json& comp)>;
 
-    class ComponentLoader
+    class SPOON_API ComponentLoaders
     {
     public:
-        ComponentLoader() {}
-        ~ComponentLoader() {}
+        ComponentLoaders() {}
 
-        static inline std::unordered_map<std::string, Loader> s_CompLoaders;
+        static std::unordered_map<std::string, Loader>& GetCompLoaders()
+        {
+            static std::unordered_map<std::string, Loader> s_CompLoaders;
+            return s_CompLoaders;
+        }
 
         static void RegisterCompLoader(const std::string& type, Loader loader)
         {
-            s_CompLoaders[type] = loader;
+            GetCompLoaders()[type] = loader;
         }
+
     };
+
+    void SPOON_API RegisterDefaultLoaders();
 }

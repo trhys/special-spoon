@@ -12,6 +12,9 @@ namespace Spoon
         SystemManager() {}
         ~SystemManager() {}
 
+        SystemManager(const SystemManager&) = delete;
+        SystemManager& operator=(const SystemManager&) = delete;
+
         void AddSystem(const json& systemData)
         {
             std::string type = systemData["Type"].get<std::string>();
