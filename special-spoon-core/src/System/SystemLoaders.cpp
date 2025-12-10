@@ -6,7 +6,6 @@ namespace Spoon
 {
     std::unique_ptr<ISystem> LoadAnimationSystem(const json& systemData)
     {
-        // Implementation for loading Animation System
         return std::make_unique<AnimationSystem>();
     }
 
@@ -24,8 +23,17 @@ namespace Spoon
         SystemLoaders::RegisterSysLoader("Physics", &LoadPhysicsSystem);
     }
 
-    static const bool systems_registered = []() {
-        RegisterDefaultSystems();
-        return true;
-    }();
+    namespace
+    {
+        class RegisterDefaultSystemsHelper
+        {
+        public:
+            RegisterDefaultSystemsHelper()
+            {
+                RegisterDefaultSystems();
+            }
+        };
+
+        static RegisterDefaultSystemsHelper s_RegisterDefaultSystemsHelper;
+    }
 }

@@ -115,7 +115,7 @@ namespace Spoon
             {
                 std::string type = comp["Type"].get<std::string>();
 
-                std::cout << "Requesting component type: " + type << std::endl;
+                SS_DEBUG_LOG("Requesting component type: " + type)
 
                 auto& loaderMap = ComponentLoaders::GetCompLoaders();
                 auto found = loaderMap.find(type);

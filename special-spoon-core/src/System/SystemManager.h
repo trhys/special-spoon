@@ -18,7 +18,8 @@ namespace Spoon
         void AddSystem(const json& systemData)
         {
             std::string type = systemData["Type"].get<std::string>();
-            auto found = SystemLoaders::s_SysLoaders.find(type);
+            auto& loaderMap = SystemLoaders::GetSysLoaders();
+            auto found = loaderMap.find(type);
             if(found != SystemLoaders::s_SysLoaders.end())
             {
                 m_Systems.emplace_back(found->second(systemData));
