@@ -102,6 +102,13 @@ install(
 
 install(
     EXPORT special-spoon
+    FILE special-spoon-targets.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
     NAMESPACE special-spoon::
+)
+
+install(
+    FILES
+        ${CMAKE_SOURCE_DIR}/cmake/special-spoonConfig.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
 )

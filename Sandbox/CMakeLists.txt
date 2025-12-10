@@ -1,13 +1,5 @@
 add_executable(Sandbox)
 
-if(DEBUG_MODE)
-    target_compile_definitions(Sandbox PRIVATE SS_DEBUG_ENABLED SS_ASSERTS_ENABLED)
-endif()
-
-if(CONSOLE_ONLY)
-    target_compile_definitions(Sandbox PRIVATE SS_CONSOLE_ONLY)
-endif()
-
 target_link_libraries(Sandbox PRIVATE special-spoon-core)
 
 target_sources(Sandbox

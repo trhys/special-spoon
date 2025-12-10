@@ -55,14 +55,24 @@ namespace Spoon
 
     void RegisterDefaultLoaders()
     {
+        SS_DEBUG_LOG("Registering default component loaders")
         ComponentLoaders::RegisterCompLoader("Transform", &LoadTransformComponent);
         ComponentLoaders::RegisterCompLoader("Sprite", &LoadSpriteComponent);
         ComponentLoaders::RegisterCompLoader("Text", &LoadTextComponent);
         ComponentLoaders::RegisterCompLoader("Animation", &LoadAnimationComponent);
     }
 
-    //static const bool components_registered = []() {
-    //    RegisterDefaultLoaders();
-    //    return true;
-    //}();
+    namespace
+    {
+        class RegisterDefaultLoadersHelper
+        {
+        public:
+            RegisterDefaultLoadersHelper()
+            {
+                RegisterDefaultLoaders();
+            }
+    };
+
+        static RegisterDefaultLoadersHelper s_RegisterDefaultLoadersHelper;
+    }
 }

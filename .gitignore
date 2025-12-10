@@ -6,6 +6,3 @@
 *.vcxproj.user
 *.vcxproj.filters
 /build
-/Sandbox/assets/scene/Arena_data.json
-/Sandbox/assets/scene/Arena_res.json
-/launch.vs.json

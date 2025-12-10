@@ -22,14 +22,11 @@ endif()
 
 include(GenerateExportHeader)
 
-add_subdirectory(special-spoon-core)
+if(DEBUG_MODE)
+    add_compile_definitions(SS_DEBUG_ENABLED SS_ASSERTS_ENABLED)
+endif()
 
-include(GNUInstallDirs)
-install(
-    FILES
-        cmake/special-spoonConfig.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
-)
+add_subdirectory(special-spoon-core)
 
 if(BUILD_SANDBOX)
     add_subdirectory(Sandbox)

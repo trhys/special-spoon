@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core.h"
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 #include "ComponentArray.h"
@@ -10,7 +11,7 @@ namespace Spoon
     class EntityManager
     {
     public:
-        EntityManager() {}
+        EntityManager() { LoadDefaultArrays(); }
         ~EntityManager() {}
 
         Entity CreateEntity()
@@ -39,7 +40,7 @@ namespace Spoon
             {
                 std::string errorMsg = "ERROR: Attempted to MakeComponent<";
                 errorMsg += type;
-                errorMsg += "> but no ComponentArray storage was found. Did you forget to call LoadArray<T>() in startup?";
+                errorMsg += "> but no ComponentArray storage was found. Did you forget to call LoadArray<COMP>() in startup?";
                 throw std::runtime_error(errorMsg);
             }
             ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[type].get());
@@ -56,18 +57,18 @@ namespace Spoon
             array->RemoveComponent(id);
         }
 
-        template<typename T>
+        template<typename COMP>
         void LoadArray()
         {
-            std::string name = typeid(T).name();
-            m_Arrays[name] = std::make_unique<ComponentArray<T>>();
+            std::string name = typeid(COMP).name();
+            m_Arrays[name] = std::make_unique<ComponentArray<COMP>>();
         }
 
-        template<typename T>
-        ComponentArray<T>& GetArray()
+        template<typename COMP>
+        ComponentArray<COMP>& GetArray()
         {
-            std::string name = typeid(T).name();
-            ComponentArray<T>* array = static_cast<ComponentArray<T>*>(m_Arrays[name].get());
+            std::string name = typeid(COMP).name();
+            ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[name].get());
             return *array;
         }
 
@@ -94,8 +95,15 @@ namespace Spoon
             return &array->m_Components[index];
         }
 
+    private:
+        std::uint64_t m_IdCounter = 0;
+        std::vector<std::uint64_t> m_RecycledIds;
+
+        std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays;
+
         void LoadDefaultArrays()
         {
+            SS_DEBUG_LOG("Loading default component arrays")
             LoadArray<TransformComp>();
             LoadArray<InputComp>();
             LoadArray<StatusComp>();
@@ -107,11 +115,5 @@ namespace Spoon
             LoadArray<FadeComp>();
             LoadArray<AnimationComp>();
         }
-
-    private:
-        std::uint64_t m_IdCounter = 0;
-        std::vector<std::uint64_t> m_RecycledIds;
-
-        std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays;
     };
 }

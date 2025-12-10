@@ -16,6 +16,6 @@ void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nl
 
 void RegisterCustomLoaders()
 {
-    std::cout << "INSIDE REGISTER CUSTOM LOADER FUNCTION" << std::endl;
+    SS_DEBUG_LOG("Registering Patrol Component Loader")
     Spoon::ComponentLoaders::RegisterCompLoader("Patrol", &LoadPatrolComponent);
 }

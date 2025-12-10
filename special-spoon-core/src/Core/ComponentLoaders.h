@@ -31,6 +31,4 @@ namespace Spoon
         }
 
     };
-
-    void SPOON_API RegisterDefaultLoaders();
 }

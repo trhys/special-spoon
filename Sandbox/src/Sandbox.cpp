@@ -13,19 +13,18 @@ public:
 
 void LoadCustomArrays(Spoon::EntityManager& manager)
 {
+	SS_DEBUG_LOG("Loading Patrol Component Array")
 	manager.LoadArray<PatrolComp>();
 }
 
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	: Spoon::Application(specs)
 {
-	GetEntityManager().LoadDefaultArrays();
-	GetEntityManager().LoadArray<PatrolComp>();
-	Spoon::RegisterDefaultLoaders();
-
-	std::cout << "Loading custom component loaders" << std::endl;
+	SS_DEBUG_LOG("Loading custom components")
 	RegisterCustomLoaders();
-	std::cout << "Finished loading custom loaders" << std::endl;
+	LoadCustomArrays(GetEntityManager());
+	SS_DEBUG_LOG("Custom loaders initialized")
+
 	RegisterCustomSystems();
 
 	try {

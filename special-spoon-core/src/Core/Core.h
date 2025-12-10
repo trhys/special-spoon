@@ -4,7 +4,7 @@
 #include "special-spoon-core_export.h"
 
 #define SPOON_API SPECIAL_SPOON_CORE_EXPORT
-
+#define SPOON_INIT 
 //Debug Utils
 #ifdef SS_DEBUG_ENABLED
     #define SS_TRY try {
@@ -21,6 +21,7 @@
                 delete app; \
                 return EXIT_FAILURE; \
             }
+    #define SS_DEBUG_LOG(msg) std::cout << "[DEBUG] " << msg << std::endl;
 #else
     #define SS_TRY
     #define SS_CATCH(string)
