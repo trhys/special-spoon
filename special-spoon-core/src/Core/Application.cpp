@@ -16,7 +16,7 @@ namespace Spoon
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
         if (!m_Window.isOpen())
         {
-            throw std::exception("Failed to open SFML window");
+            throw std::runtime_error("Failed to create application window.");
         }
     }
 

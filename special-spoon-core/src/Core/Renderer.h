@@ -22,17 +22,17 @@ namespace Spoon
             for(size_t in = 0; in < spriteArray.m_Components.size(); in++)
             {
                 SpriteComp& sprite = spriteArray.m_Components[in];
-                UUID id = spriteArray.m_IndexToId[in];
+                UUID ID = spriteArray.m_IndexToId[in];
 
-                if(transformArray.m_IdToIndex.count(id))
+                if(transformArray.m_IdToIndex.count(ID))
                 {
-                    TransformComp& transform = transformArray.m_Components[transformArray.m_IdToIndex[id]];
+                    TransformComp& transform = transformArray.m_Components[transformArray.m_IdToIndex[ID]];
                     sprite.SetPosition(transform.GetPosition());
                 }
 
-                if(colorArray.m_IdToIndex.count(id)) 
+                if(colorArray.m_IdToIndex.count(ID)) 
                 {
-                    ColorComp& color = colorArray.m_Components[colorArray.m_IdToIndex[id]];
+                    ColorComp& color = colorArray.m_Components[colorArray.m_IdToIndex[ID]];
                     sprite.SetColor(color.m_Color);
                 }
 
@@ -42,17 +42,17 @@ namespace Spoon
             for(size_t in = 0; in < textArray.m_Components.size(); in++)
             {
                 TextComp& text = textArray.m_Components[in];
-                UUID id = textArray.m_IdToIndex[id];
+                UUID ID = textArray.m_IndexToId[in];
 
-                if(transformArray.m_IdToIndex.count(id))
+                if(transformArray.m_IdToIndex.count(ID))
                 {
-                    TransformComp& transform = transformArray.m_Components[transformArray.m_IdToIndex[id]];
+                    TransformComp& transform = transformArray.m_Components[transformArray.m_IdToIndex[ID]];
                     text.SetPosition(transform.GetPosition());
                 }
 
-                if(colorArray.m_IdToIndex.count(id)) 
+                if(colorArray.m_IdToIndex.count(ID)) 
                 {
-                    ColorComp& color = colorArray.m_Components[colorArray.m_IdToIndex[id]];
+                    ColorComp& color = colorArray.m_Components[colorArray.m_IdToIndex[ID]];
                     text.SetColor(color.m_Color);
                 }
 
