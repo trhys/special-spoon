@@ -1,0 +1,9 @@
+{
+  "Scenes": [
+    {
+      "ID": "MainMenu",
+      "Resources": "assets/scene/MainMenu_res.json",
+      "Data": "assets/scene/MainMenu_data.json"
+    }
+  ]
+}

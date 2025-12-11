@@ -1,0 +1,25 @@
+Packages that must be installed on linux systems for SFML to build. 
+
+Linux dependancies:
+
+X11
+========
+sudo apt update
+sudo apt install libxrandr-dev libxcursor-dev libxi-dev libudev-dev
+
+OpenGL
+========
+sudo apt install libopengl-dev 
+sudo apt install libgl-dev 
+
+HarfBuzz
+=======
+sudo apt install libharfbuzz-dev
+
+Ogg & Vorbis
+=======
+sudo apt install libogg-dev libvorbis-dev
+
+FLAC
+=======
+sudo apt install libflac-dev

@@ -29,7 +29,7 @@
             "name": "core",
             "displayName": "Special-Spoon",
             "description": "The core special-spoon engine.",
-            "binaryDir": "build",
+            "binaryDir": "build/core",
             "cacheVariables":
             {
                 "BUILD_SANDBOX": "OFF",

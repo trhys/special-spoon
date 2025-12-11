@@ -1,11 +1,10 @@
 #pragma once
 
 // Includes for client application only
+#include "Core/EntryPoint.h"
+#include "Core/ComponentLoaders.h"
 
-#include "Core.h"
-#include "Application.h"
-#include "Layer.h"
+#include "ECS/ECS.h"
 
-#include "Scene/Node.h"
-#include "Scene/Scene.h"
-#include "Scene/Entity.h"
+#include "System/System.h"
+#include "System/SystemLoaders.h"

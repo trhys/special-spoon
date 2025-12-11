@@ -1,0 +1,70 @@
+{
+    "Entities": [
+        {
+            "ID": "Background",
+            "Components": {
+                "Transform": {
+                    "Position": { "x": 0.0, "y": 0.0 },
+                    "Scale": { "x": 1.0, "y": 1.0 },
+                    "Rotation": 0.0
+                },
+                "Sprite": {
+                    "TextureID": "MainMenu"  
+                }
+            }
+        },
+        {
+            "ID": "MenuText",
+            "Components": {
+                "Transform": {
+                    "Position": { "x": 540.0, "y": 540.0 },
+                    "Scale": { "x": 1.0, "y": 1.0 },
+                    "Rotation": 0.0
+                },
+                "Text": {
+                    "FontID": "MenuFont",
+                    "Content": "Press Enter to Start",
+                    "CharacterSize": 48
+                }
+            }
+        },
+        {
+            "ID": "Zombie",
+            "Components": {
+                "Status": {
+                    "is_Active": true,
+                    "m_CurrentState": "Idle"
+                },
+                "Transform": {
+                    "Position": { "x": 400.0, "y": 300.0 },
+                    "Scale": { "x": 2.0, "y": 2.0 },
+                    "Rotation": 0.0
+                },
+                "Animation": {
+                    "AnimationID": "Zombie-Idle",
+                    "AnimationMap": {
+                        "Idle": "Zombie-Idle",
+                        "MoveRight": "Zombie-WalkRight"
+                    }
+                },
+                "Sprite": {
+                    "TextureID": "Zombie"
+                },
+                "Patrol": {
+                    "PointA": { "x": 100.0, "y": 400.0 },
+                    "PointB": { "x": 700.0, "y": 200.0 },
+                    "IdleTime": 3.0
+                }
+            }
+        }
+    ],
+
+    "Systems": [
+        {
+            "Type": "Animation"
+        },
+        {
+            "Type": "Patrol"
+        }
+    ]
+}
