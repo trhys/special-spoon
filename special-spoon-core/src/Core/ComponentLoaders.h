@@ -27,6 +27,7 @@ namespace Spoon
 
         static void RegisterCompLoader(const std::string& type, Loader loader)
         {
+            SS_DEBUG_LOG("Registering component loader for type: " + type)
             GetCompLoaders()[type] = loader;
         }
 

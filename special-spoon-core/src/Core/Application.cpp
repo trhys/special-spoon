@@ -41,7 +41,7 @@ namespace Spoon
             (
                 [&](const sf::Event::KeyPressed& keyPress)
                 {
-                m_InputSystem.PushKeyPress(keyPress);
+                    m_InputSystem.PushKeyPress(keyPress);
                 },
 
                 [&](const auto& event)
@@ -62,6 +62,17 @@ namespace Spoon
             m_SystemManager.UpdateSystems(tick, m_EntityManager);
             m_SystemManager.UpdateState(tick, m_EntityManager);
 
+            if(m_SystemManager.GetStateSystem()->IsQuitRequested())
+            {
+                Application::Close();
+                break;
+            }
+            if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
+            {
+                std::string newState = m_SystemManager.GetStateSystem()->ConsumeChangeRequest();
+                m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
+            }
+            
             // Render
             m_Window.clear();
 
@@ -69,7 +80,6 @@ namespace Spoon
             
             m_Window.display();
         }
-
         m_Window.close();
         return;
     }

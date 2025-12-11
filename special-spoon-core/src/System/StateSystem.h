@@ -15,10 +15,34 @@ namespace Spoon
 
         void Update(sf::Time tick, EntityManager& manager) override
         {
+            auto& stateActionArray = manager.GetArray<StateActionComp>();
+            for(size_t in = 0; in < stateActionArray.m_Components.size(); in++)
+            {
+                StateActionComp& stateComp = stateActionArray.m_Components[in];
+                UUID ID = stateActionArray.m_IndexToId[in];
+
+                auto& actionsBuffer = manager.GetActionsBuffer();
+                auto found = actionsBuffer.find(ID);
+                if(found != actionsBuffer.end())
+                {
+                    std::string triggeredAction = found->second;
+                    if(stateComp.m_Actions.count(triggeredAction))
+                    {
+                        std::string targetState = stateComp.m_Actions[triggeredAction];
+                        if(targetState == "Quit")
+                        {
+                            quitFlag = true;
+                            return;
+                        }
+                        RequestSceneChange(targetState);
+                        break;
+                    }
+                }
+            }
+
             if(sceneChangeFlag)
             {
-                r_SceneManager.LoadScene(m_CurrentScene, manager, r_SystemManager);
-                sceneChangeFlag = false;
+                return;
             }
         }
 
@@ -28,10 +52,15 @@ namespace Spoon
             sceneChangeFlag = true;
         }
 
+        bool IsQuitRequested() { return quitFlag; }
+        bool IsSceneChangeRequested() { return sceneChangeFlag; }
+        std::string ConsumeChangeRequest() { return m_CurrentScene; }
+
     private:
         SceneManager& r_SceneManager;
         SystemManager& r_SystemManager;
         std::string m_CurrentScene;
         bool sceneChangeFlag = false;
+        bool quitFlag = false;
     };
 }

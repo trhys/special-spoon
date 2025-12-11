@@ -6,7 +6,11 @@
 namespace Spoon
 {
     struct UUID;
-    class IComponentArray {};
+    class IComponentArray 
+    {
+    public:
+        virtual void Clear() {};
+    };
 
     template<typename COMP>
     struct ComponentArray : public IComponentArray
@@ -47,6 +51,13 @@ namespace Spoon
                 entities.push_back(id);
             }
             return entities;
+        }
+
+        void Clear() override
+        {
+            m_Components.clear();
+            m_IdToIndex.clear();
+            m_IndexToId.clear();
         }
     };
 }

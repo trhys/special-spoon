@@ -58,6 +58,8 @@ namespace Spoon
             m_StateSystem = std::make_unique<StateSystem>(manager, *this);
         }
 
+        std::unique_ptr<StateSystem>& GetStateSystem() { return m_StateSystem; }
+        
     private:
         std::vector<std::unique_ptr<ISystem>> m_Systems;
         std::unique_ptr<StateSystem> m_StateSystem = nullptr;

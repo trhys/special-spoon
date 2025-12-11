@@ -4,6 +4,7 @@
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 #include "ComponentArray.h"
+
 #include <memory>
 
 namespace Spoon
@@ -95,6 +96,29 @@ namespace Spoon
             return &array->m_Components[index];
         }
 
+        void PushAction(UUID entityId, std::string action)
+        {
+            m_ActionsBuffer[entityId] = action;
+        }
+
+        void ClearActionsBuffer()
+        {
+            m_ActionsBuffer.clear();
+        }
+
+        std::unordered_map<UUID, std::string>& GetActionsBuffer()
+        {
+            return m_ActionsBuffer;
+        }
+
+        void ClearArrays()
+        {
+            for(auto& [type, array] : m_Arrays)
+            {
+                array->Clear();
+            }
+        }
+
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<std::uint64_t> m_RecycledIds;
@@ -114,6 +138,9 @@ namespace Spoon
             LoadArray<BlinkComp>();
             LoadArray<FadeComp>();
             LoadArray<AnimationComp>();
+            LoadArray<StateActionComp>();
         }
+
+        std::unordered_map<UUID, std::string> m_ActionsBuffer;
     };
 }

@@ -25,6 +25,21 @@
                     "FontID": "MenuFont",
                     "Content": "Press Enter to Start",
                     "CharacterSize": 48
+                },
+                "Input" : {
+                    "KeyBindings": {
+                        "Enter": "SceneChange",
+                        "Escape": "Exit"
+                    }
+                },
+                "StateAction": {
+                    "Actions" : {
+                        "SceneChange" : "Arena",
+                        "Exit" : "Quit"
+                    }
+                },
+                "Blink": {
+                    "Interval": 2.0
                 }
             }
         },

@@ -32,6 +32,7 @@ target_sources(special-spoon-core
         src/ECS/Components/Component.h
         src/ECS/Components/InputComp.h
         src/ECS/Components/PhysicsComp.h
+        src/ECS/Components/StateActionComp.h
         src/ECS/Components/StatusComp.h
         src/ECS/Components/TransformComp.h
 

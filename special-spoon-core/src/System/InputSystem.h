@@ -1,6 +1,9 @@
 #pragma once
 
 #include "System.h"
+#include "ECS/ECS.h"
+#include "Core/EntityManager.h"
+
 #include "SFML/Window/Event.hpp"
 
 namespace Spoon
@@ -21,7 +24,25 @@ namespace Spoon
 
         void Update(sf::Time tick, EntityManager& manager) override
         {
-            // TODO process events
+            manager.ClearActionsBuffer();
+            auto& inputArray = manager.GetArray<InputComp>();
+
+            for(size_t in = 0; in < inputArray.m_Components.size(); in++)
+            {
+                InputComp& inputComp = inputArray.m_Components[in];
+                UUID ID = inputArray.m_IndexToId[in];
+
+                for(const auto& keyEvent : m_KeyPressEvents)
+                {
+                    std::string keyDesc = sf::Keyboard::getDescription(keyEvent.scancode).toAnsiString();
+                    auto found = inputComp.m_KeyBindings.find(keyDesc);
+                    if(found != inputComp.m_KeyBindings.end())
+                    {
+                        manager.PushAction(ID, found->second);
+                    }
+                }
+            }
+            m_KeyPressEvents.clear();
         }
     
     private:

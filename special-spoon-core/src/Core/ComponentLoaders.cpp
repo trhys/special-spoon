@@ -73,14 +73,43 @@ namespace Spoon
         manager.MakeComponent<StatusComp>(id, is_Active, currentState);
     }
 
+    void LoadBlinkComponent(EntityManager& manager, UUID id, const json& comp)
+    {
+        float interval = comp["Interval"].get<float>();
+        manager.MakeComponent<BlinkComp>(id, interval);
+    }
+
+    void LoadInputComponent(EntityManager& manager, UUID id, const json& comp)
+    {
+        std::unordered_map<std::string, std::string> keyBindings;
+        for(auto& [key, value] : comp["KeyBindings"].items())
+        {
+            keyBindings[key] = value.get<std::string>();
+        }
+        manager.MakeComponent<InputComp>(id, keyBindings);
+    }
+
+    void LoadStateActionComponent(EntityManager& manager, UUID id, const json& comp)
+    {
+        std::unordered_map<std::string, std::string> stateActions;
+        for(auto& [actionTrigger, targetState] : comp["Actions"].items())
+        {
+            stateActions[actionTrigger] = targetState.get<std::string>();
+        }
+        manager.MakeComponent<StateActionComp>(id, stateActions);
+    }
+
     void RegisterDefaultLoaders()
     {
-        SS_DEBUG_LOG("Registering default component loaders")
+        SS_DEBUG_LOG("Registering default component loaders...")
         ComponentLoaders::RegisterCompLoader("Transform", &LoadTransformComponent);
         ComponentLoaders::RegisterCompLoader("Sprite", &LoadSpriteComponent);
         ComponentLoaders::RegisterCompLoader("Text", &LoadTextComponent);
         ComponentLoaders::RegisterCompLoader("Animation", &LoadAnimationComponent);
         ComponentLoaders::RegisterCompLoader("Status", &LoadStatusComponent);
+        ComponentLoaders::RegisterCompLoader("Blink", &LoadBlinkComponent);
+        ComponentLoaders::RegisterCompLoader("Input", &LoadInputComponent);
+        ComponentLoaders::RegisterCompLoader("StateAction", &LoadStateActionComponent);
     }
 
     namespace
