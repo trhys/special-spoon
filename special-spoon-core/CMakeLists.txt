@@ -57,7 +57,8 @@ target_sources(special-spoon-core
         src/System/Physics/PhysicsSystem.h
         src/System/Physics/QuadTree.h
 
-        src/Utils/MemoryUtils.h  
+        src/Utils/MemoryUtils.h
+        src/Utils/Logger.h
         src/Utils/KeyMappings.h
 )
 

@@ -49,8 +49,7 @@ namespace Spoon
                     using T = std::decay_t<decltype(event)>;
                     if constexpr (std::is_same_v<T, sf::Event::Closed>)
                     {
-                    m_Window.close();
-                    Application::Close();
+                        Application::Close();
                     }
                 }
             );
@@ -70,5 +69,8 @@ namespace Spoon
             
             m_Window.display();
         }
+
+        m_Window.close();
+        return;
     }
 }
