@@ -119,40 +119,48 @@ namespace Spoon
 
         json sceneData;
         sceneData = json::parse(data);
-
-        // Load entities and components
-        for(auto& entity : sceneData["Entities"])
-        {
-            if(entity.contains("ID"))
+        try {
+            // Load entities and components
+            for (auto& entity : sceneData["Entities"])
             {
-                // This is specifically for debugging; ID can be left empty
-                std::string entityID = entity["ID"].get<std::string>(); 
-            }
-            else { std::string entityID = "UnnamedEntity"; }
-
-            Entity newEntity = entityManager.CreateEntity();
-
-            for(auto const& [type, data] : entity["Components"].items())
-            {
-                SS_DEBUG_LOG("Requesting component type: " + type)
-
-                auto& loaderMap = ComponentLoaders::GetCompLoaders();
-                auto found = loaderMap.find(type);
-                if(found != loaderMap.end())
+                if (entity.contains("ID"))
                 {
-                    found->second(entityManager, newEntity.GetID(), data);
+                    // This is specifically for debugging; ID can be left empty
+                    std::string entityID = entity["ID"].get<std::string>();
                 }
-                else
+                else { std::string entityID = "UnnamedEntity"; }
+
+                Entity newEntity = entityManager.CreateEntity();
+
+                for (auto const& [type, data] : entity["Components"].items())
                 {
-                    throw std::runtime_error("No loader found for component type: " + type);
+                    SS_DEBUG_LOG("Requesting component type: " + type)
+
+                    auto& loaderMap = ComponentLoaders::GetCompLoaders();
+                    auto found = loaderMap.find(type);
+                    if (found != loaderMap.end())
+                    {
+                        found->second(entityManager, newEntity.GetID(), data);
+                    }
+                    else
+                    {
+                        throw std::runtime_error("No loader found for component type: " + type);
+                    }
                 }
             }
         }
-
+        catch (const json::exception& e)
+        {
+            std::cout << e.what() << '\n';
+        }
+        
         // Load systems
         for(auto& system : sceneData["Systems"])
         {
+            std::string systemID = system["Type"].get<std::string>();
+            SS_DEBUG_LOG("Loading system:" + systemID)
             systemManager.AddSystem(system);
+            SS_DEBUG_LOG("Successfully loaded system" + systemID)
         }
         SS_DEBUG_LOG("Successfully loaded scene: " + id)
     }

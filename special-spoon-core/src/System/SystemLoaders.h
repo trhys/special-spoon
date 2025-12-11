@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Core.h"
 #include "nlohmann/json.hpp"
 
 #include <memory>
@@ -12,7 +13,7 @@ namespace Spoon
 {
     class ISystem;
 
-    class SystemLoaders
+    class SPOON_API SystemLoaders
     {
     public:
         SystemLoaders() {}

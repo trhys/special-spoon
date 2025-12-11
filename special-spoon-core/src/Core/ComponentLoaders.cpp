@@ -68,9 +68,9 @@ namespace Spoon
 
     void LoadStatusComponent(EntityManager& manager, UUID id, const json& comp)
     {
-        bool isActive = comp["IsActive"].get<bool>();
-        std::string currentState = comp["CurrentState"].get<std::string>();
-        manager.MakeComponent<StatusComp>(id, isActive, currentState);
+        bool is_Active = comp["is_Active"].get<bool>();
+        std::string currentState = comp["m_CurrentState"].get<std::string>();
+        manager.MakeComponent<StatusComp>(id, is_Active, currentState);
     }
 
     void RegisterDefaultLoaders()

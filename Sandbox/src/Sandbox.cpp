@@ -27,14 +27,9 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 
 	RegisterCustomSystems();
 
-	try {
 	GetSceneManager().LoadManifest("assets/scene/scene_manifest.json");
 	GetSceneManager().LoadScene("MainMenu", GetEntityManager(), GetSystemManager());
-	}
-	catch (const std::runtime_error& e) {
-		std::cerr << "Fatal Error during scene loading: " << e.what() << std::endl;
-		throw;
-	}
+
 }
 
 Spoon::Application* Spoon::CreateApp()

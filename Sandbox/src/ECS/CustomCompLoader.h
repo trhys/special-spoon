@@ -4,14 +4,16 @@
 
 void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
 {
-    float pointA = comp["PointA"].get<float>();
-    float pointB = comp["PointB"].get<float>();
-    if(comp.contains("IdleTime"))
+
+    sf::Vector2f pointA(comp["PointA"]["x"].get<float>(), comp["PointA"]["y"].get<float>());
+    sf::Vector2f pointB(comp["PointB"]["x"].get<float>(), comp["PointB"]["y"].get<float>());
+    if (comp.contains("IdleTime"))
     {
         float idleTime = comp["IdleTime"].get<float>();
         manager.MakeComponent<PatrolComp>(id, pointA, pointB, idleTime);
     }
     else { manager.MakeComponent<PatrolComp>(id, pointA, pointB); }
+
 }
 
 void RegisterCustomLoaders()

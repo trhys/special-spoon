@@ -12,8 +12,12 @@ namespace Spoon
     {
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
-        
+
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
+        if (!m_Window.isOpen())
+        {
+            throw std::exception("Failed to open SFML window");
+        }
     }
 
     void Application::Close()

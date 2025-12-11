@@ -9,7 +9,7 @@ namespace Spoon
     class Renderer
     {
     public:
-        Renderer(sf::RenderTarget& target) : m_Target(target) {}
+        Renderer(sf::RenderWindow& target) : m_Target(target) {}
         ~Renderer() {}
 
         void Render(sf::RenderStates states, EntityManager& manager)
@@ -61,6 +61,6 @@ namespace Spoon
         }
 
     private:
-        sf::RenderTarget& m_Target;
+        sf::RenderWindow& m_Target;
     };
 }
