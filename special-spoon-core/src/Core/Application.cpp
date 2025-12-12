@@ -16,7 +16,7 @@ namespace Spoon
         m_Window.create(sf::VideoMode(m_Specs.m_WindowSize), m_Specs.m_WindowName);
         if (!m_Window.isOpen())
         {
-            throw std::exception("Failed to open SFML window");
+            throw std::runtime_error("Failed to create application window.");
         }
     }
 
@@ -41,7 +41,7 @@ namespace Spoon
             (
                 [&](const sf::Event::KeyPressed& keyPress)
                 {
-                m_InputSystem.PushKeyPress(keyPress);
+                    m_InputSystem.PushKeyPress(keyPress);
                 },
 
                 [&](const auto& event)
@@ -49,8 +49,7 @@ namespace Spoon
                     using T = std::decay_t<decltype(event)>;
                     if constexpr (std::is_same_v<T, sf::Event::Closed>)
                     {
-                    m_Window.close();
-                    Application::Close();
+                        Application::Close();
                     }
                 }
             );
@@ -63,6 +62,17 @@ namespace Spoon
             m_SystemManager.UpdateSystems(tick, m_EntityManager);
             m_SystemManager.UpdateState(tick, m_EntityManager);
 
+            if(m_SystemManager.GetStateSystem()->IsQuitRequested())
+            {
+                Application::Close();
+                break;
+            }
+            if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
+            {
+                std::string newState = m_SystemManager.GetStateSystem()->ConsumeChangeRequest();
+                m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
+            }
+            
             // Render
             m_Window.clear();
 
@@ -70,5 +80,7 @@ namespace Spoon
             
             m_Window.display();
         }
+        m_Window.close();
+        return;
     }
 }

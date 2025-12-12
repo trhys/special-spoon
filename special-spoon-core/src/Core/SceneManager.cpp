@@ -71,43 +71,61 @@ namespace Spoon
             SS_DEBUG_LOG("Loaded texture resource with ID: " +  resID)
         }
 
-        // Load fonts
-        for(auto& resource : resourceData["Fonts"])
-        {
-            std::string resID = resource["ID"].get<std::string>();
-            std::string filePath = resource["FilePath"].get<std::string>();
-            ResourceManager::LoadResource<sf::Font>(resID, filePath);
-            SS_DEBUG_LOG("Loaded font resource with ID: " +  resID)
-        }
-
-        // Load animation data
-        for(auto& resource : resourceData["Animations"])
-        {
-            AnimationData animData;
-            animData.ID = resource["ID"].get<std::string>();
-            animData.textureID = resource["TextureID"].get<std::string>();
-            for(auto& cord : resource["SpriteCords"])
+        try {
+            // Load fonts
+            for(auto& resource : resourceData["Fonts"])
             {
-                SpriteCords sc;
-                sc.x = cord["x"].get<int>();
-                sc.y = cord["y"].get<int>();
-                sc.width = cord["width"].get<int>();
-                sc.height = cord["height"].get<int>();
-                animData.spriteCords.push_back(sc);
+                std::string resID = resource["ID"].get<std::string>();
+                std::string filePath = resource["FilePath"].get<std::string>();
+                ResourceManager::LoadResource<sf::Font>(resID, filePath);
+                SS_DEBUG_LOG("Loaded font resource with ID: " +  resID)
             }
-            if(resource.contains("FrameRate")) { animData.frameRate = resource["FrameRate"].get<float>(); }
-            if(resource.contains("Looping")) { animData.isLooping = resource["Looping"].get<bool>(); }
-            ResourceManager::LoadAnimationData(animData.ID, animData);
-            SS_DEBUG_LOG("Loaded animation data resource with ID: " +  animData.ID)
+        }
+        catch(const json::exception& e)
+        {
+            throw std::runtime_error("Failed to load font resources for scene: " + id + " Error: " + e.what());
         }
 
-        // Load sounds
-        for(auto& resource : resourceData["Sounds"])
+        try {
+            // Load animation data
+            for(auto& resource : resourceData["Animations"])
+            {
+                AnimationData animData;
+                animData.ID = resource["ID"].get<std::string>();
+                animData.textureID = resource["TextureID"].get<std::string>();
+                for(auto& cord : resource["SpriteCords"])
+                {
+                    SpriteCords sc;
+                    sc.x = cord["x"].get<int>();
+                    sc.y = cord["y"].get<int>();
+                    sc.width = cord["width"].get<int>();
+                    sc.height = cord["height"].get<int>();
+                    animData.spriteCords.push_back(sc);
+                }
+                if(resource.contains("FrameRate")) { animData.frameRate = resource["FrameRate"].get<float>(); }
+                if(resource.contains("Looping")) { animData.isLooping = resource["Looping"].get<bool>(); }
+                ResourceManager::LoadAnimationData(animData.ID, animData);
+                SS_DEBUG_LOG("Loaded animation data resource with ID: " +  animData.ID)
+            }
+        }
+        catch(const json::exception& e)
         {
-            std::string resID = resource["ID"].get<std::string>();
-            std::string filePath = resource["FilePath"].get<std::string>();
-            ResourceManager::LoadResource<sf::SoundBuffer>(resID, filePath);
-            SS_DEBUG_LOG("Loaded sound resource with ID: " +  resID)
+            throw std::runtime_error("Failed to load animation resources for scene: " + id + " Error: " + e.what());
+        }
+
+        try {
+            // Load sounds
+            for(auto& resource : resourceData["Sounds"])
+            {
+                std::string resID = resource["ID"].get<std::string>();
+                std::string filePath = resource["FilePath"].get<std::string>();
+                ResourceManager::LoadResource<sf::SoundBuffer>(resID, filePath);
+                SS_DEBUG_LOG("Loaded sound resource with ID: " +  resID)
+            }
+        }
+        catch(const json::exception& e)
+        {
+            throw std::runtime_error("Failed to load sound resources for scene: " + id + " Error: " + e.what());
         }
 
         // Begin loading scene data
@@ -123,45 +141,68 @@ namespace Spoon
             // Load entities and components
             for (auto& entity : sceneData["Entities"])
             {
-                if (entity.contains("ID"))
-                {
-                    // This is specifically for debugging; ID can be left empty
-                    std::string entityID = entity["ID"].get<std::string>();
+                std::string entityID = "UnnamedEntity"; // This is specifically for debugging; ID can be omitted in sceneData.json
+                try {
+                    if (entity.contains("ID")) { entityID = entity["ID"].get<std::string>(); }
+                    SS_DEBUG_LOG("Loading entity: " + entityID)
+                    
+                    Entity newEntity = entityManager.CreateEntity();
+
+                    for (auto const& [type, data] : entity["Components"].items())
+                    {
+                        SS_DEBUG_LOG("Requesting component type: " + type)
+
+                        auto& loaderMap = ComponentLoaders::GetCompLoaders();
+                        auto found = loaderMap.find(type);
+                        if (found != loaderMap.end())
+                        {
+                            found->second(entityManager, newEntity.GetID(), data);
+                        }
+                        else
+                        {
+                            throw std::runtime_error("No loader found for component type: " + type);
+                        }
+                    }
                 }
-                else { std::string entityID = "UnnamedEntity"; }
-
-                Entity newEntity = entityManager.CreateEntity();
-
-                for (auto const& [type, data] : entity["Components"].items())
+                catch (const std::exception& e)
                 {
-                    SS_DEBUG_LOG("Requesting component type: " + type)
-
-                    auto& loaderMap = ComponentLoaders::GetCompLoaders();
-                    auto found = loaderMap.find(type);
-                    if (found != loaderMap.end())
-                    {
-                        found->second(entityManager, newEntity.GetID(), data);
-                    }
-                    else
-                    {
-                        throw std::runtime_error("No loader found for component type: " + type);
-                    }
+                    throw std::runtime_error("Failed to load entity: " + entityID + " Error: " + e.what());
                 }
             }
         }
         catch (const json::exception& e)
         {
-            std::cout << e.what() << '\n';
+            throw std::runtime_error("Failed to load entities for scene: " + id + " Error: " + e.what());
         }
         
-        // Load systems
-        for(auto& system : sceneData["Systems"])
+        try {
+            // Load systems
+            for(auto& system : sceneData["Systems"])
+            {
+                std::string systemID = system["Type"].get<std::string>();
+                SS_DEBUG_LOG("Loading system:" + systemID)
+                systemManager.AddSystem(system);
+                SS_DEBUG_LOG("Successfully loaded system" + systemID)
+            }
+        }
+        catch(const json::exception& e)
         {
-            std::string systemID = system["Type"].get<std::string>();
-            SS_DEBUG_LOG("Loading system:" + systemID)
-            systemManager.AddSystem(system);
-            SS_DEBUG_LOG("Successfully loaded system" + systemID)
+            throw std::runtime_error("Failed to load systems for scene: " + id + " Error: " + e.what());
         }
         SS_DEBUG_LOG("Successfully loaded scene: " + id)
+    }
+
+    void SceneManager::UnloadScene(EntityManager& entityManager, SystemManager& systemManager)
+    {
+        SS_DEBUG_LOG("Unloading current scene...")
+        ResourceManager::ClearAllResources();
+        entityManager.ClearArrays();
+        systemManager.ClearSystems();
+    }
+
+    void SceneManager::Transition(std::string id, EntityManager& eManager, SystemManager& sManager)
+    {
+        UnloadScene(eManager, sManager);
+        LoadScene(id, eManager, sManager);
     }
 }

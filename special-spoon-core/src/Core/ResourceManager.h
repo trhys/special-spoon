@@ -107,6 +107,14 @@ namespace Spoon
             }
         }
         
+        static void ClearAllResources()
+        {
+            m_Textures.clear();
+            m_Fonts.clear();
+            m_Animations.clear();
+            m_SoundBuffers.clear();
+        }
+        
     private:
         static inline std::unordered_map<std::string, sf::Texture> m_Textures;
         static inline std::unordered_map<std::string, sf::Font> m_Fonts;

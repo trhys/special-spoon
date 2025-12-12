@@ -2,58 +2,117 @@
     "Entities": [
         {
             "ID": "Background",
-            "Components": {
-                "Transform": {
+            "Components": 
+            {
+                "Transform": 
+                {
                     "Position": { "x": 0.0, "y": 0.0 },
                     "Scale": { "x": 1.0, "y": 1.0 },
                     "Rotation": 0.0
                 },
-                "Sprite": {
-                    "TextureID": "MainMenu"  
+
+                "Sprite": 
+                {
+                  "TextureID": "MainMenu"
+                },
+
+                "RenderLayer": 
+                {
+                    "Layer": -100
                 }
             }
         },
+
         {
             "ID": "MenuText",
-            "Components": {
-                "Transform": {
+            "Components": 
+            {
+                "Transform": 
+                {
                     "Position": { "x": 540.0, "y": 540.0 },
                     "Scale": { "x": 1.0, "y": 1.0 },
                     "Rotation": 0.0
                 },
-                "Text": {
+
+                "Text": 
+                {
                     "FontID": "MenuFont",
                     "Content": "Press Enter to Start",
                     "CharacterSize": 48
+                },
+
+                "Input" : 
+                {
+                    "KeyBindings": 
+                    {
+                        "Enter": "SceneChange",
+                        "Escape": "Exit"
+                    }
+                },
+
+                "StateAction" : 
+                {
+                    "Actions" : 
+                    {
+                        "SceneChange" : "Arena",
+                        "Exit" : "Quit"
+                    }
+                },
+
+                "Blink": 
+                {
+                    "Interval": 2.0
+                },
+
+                "RenderLayer": 
+                {
+                    "Layer" : 0
                 }
             }
         },
+
         {
             "ID": "Zombie",
-            "Components": {
-                "Status": {
+            "Components": 
+            {
+                "Status": 
+                {
                     "is_Active": true,
                     "m_CurrentState": "Idle"
                 },
-                "Transform": {
-                    "Position": { "x": 400.0, "y": 300.0 },
-                    "Scale": { "x": 2.0, "y": 2.0 },
+
+                "Transform": 
+                {
+                    "Position": { "x": 400.0, "y": 700.0 },
+                    "Scale": { "x": 4.0, "y": 4.0 },
                     "Rotation": 0.0
                 },
-                "Animation": {
+
+                "Animation": 
+                {
                     "AnimationID": "Zombie-Idle",
-                    "AnimationMap": {
+                    "AnimationMap": 
+                    {
                         "Idle": "Zombie-Idle",
                         "MoveRight": "Zombie-WalkRight"
                     }
                 },
-                "Sprite": {
+
+                "Sprite": 
+                {
                     "TextureID": "Zombie"
                 },
-                "Patrol": {
-                    "PointA": { "x": 100.0, "y": 400.0 },
-                    "PointB": { "x": 700.0, "y": 200.0 },
+
+                "Patrol": 
+                {
+                    "PointA": { "x": 100.0, "y": 800.0 },
+                    "PointB": { "x": 700.0, "y": 600.0 },
                     "IdleTime": 3.0
+                },
+
+                "RenderLayer": 
+                {
+                    "Layer" : 10
                 }
             }
         }
@@ -63,6 +122,7 @@
         {
             "Type": "Animation"
         },
+        
         {
             "Type": "Patrol"
         }

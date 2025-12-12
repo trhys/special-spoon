@@ -22,8 +22,7 @@
             "ID": "Zombie-Idle",
             "TextureID": "Zombie",
             "SpriteCords": [
-                { "x" : 16, "y" : 144, "width" : 31, "height" : 49 },
-                { "x" : 81, "y" : 144, "width" : 31, "height" : 49 }
+                { "x" : 16, "y" : 144, "width" : 31, "height" : 49 }
             ]
         },
         {

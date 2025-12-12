@@ -32,6 +32,7 @@ target_sources(special-spoon-core
         src/ECS/Components/Component.h
         src/ECS/Components/InputComp.h
         src/ECS/Components/PhysicsComp.h
+        src/ECS/Components/StateActionComp.h
         src/ECS/Components/StatusComp.h
         src/ECS/Components/TransformComp.h
 
@@ -43,6 +44,7 @@ target_sources(special-spoon-core
         src/ECS/Components/Render/SpriteComp.h
         src/ECS/Components/Render/TextComp.h
         src/ECS/Components/Render/ColorComp.h
+        src/ECS/Components/Render/RenderLayer.h
         
         src/ECS/Entity.h
         src/ECS/ECS.h
@@ -57,7 +59,8 @@ target_sources(special-spoon-core
         src/System/Physics/PhysicsSystem.h
         src/System/Physics/QuadTree.h
 
-        src/Utils/MemoryUtils.h  
+        src/Utils/MemoryUtils.h
+        src/Utils/Logger.h
         src/Utils/KeyMappings.h
 )
 
