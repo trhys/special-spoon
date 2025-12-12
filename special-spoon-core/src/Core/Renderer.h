@@ -6,6 +6,13 @@
 
 namespace Spoon
 {
+    struct Renderable
+    {
+        Renderable(UUID id, int layer) : m_ID(id), m_Layer(layer) {}
+        UUID m_ID;
+        int m_Layer;
+    };
+
     class Renderer
     {
     public:
@@ -14,53 +21,66 @@ namespace Spoon
 
         void Render(sf::RenderStates states, EntityManager& manager)
         {
+            m_Renderables.clear();
+            auto& layerArray = manager.GetArray<RenderLayer>();
+            for(size_t index = 0; index < layerArray.m_Components.size(); index++)
+            {
+                RenderLayer& renderLayer = layerArray.m_Components[index];
+                UUID ID = layerArray.m_IndexToId[index];
+
+                m_Renderables.emplace_back(ID, renderLayer.m_Layer);
+            }
+            std::sort(m_Renderables.begin(), m_Renderables.end(),
+                [](Renderable& a, Renderable& b){ return a.m_Layer < b.m_Layer; });
+
             auto& transformArray = manager.GetArray<TransformComp>();
             auto& spriteArray = manager.GetArray<SpriteComp>();
             auto& textArray = manager.GetArray<TextComp>();
             auto& colorArray = manager.GetArray<ColorComp>();
 
-            for(size_t in = 0; in < spriteArray.m_Components.size(); in++)
+            for(auto& renderable : m_Renderables)
             {
-                SpriteComp& sprite = spriteArray.m_Components[in];
-                UUID ID = spriteArray.m_IndexToId[in];
-
-                if(transformArray.m_IdToIndex.count(ID))
+                UUID ID = renderable.m_ID;
+                if(spriteArray.m_IdToIndex.count(ID))
                 {
-                    TransformComp& transform = transformArray.m_Components[transformArray.m_IdToIndex[ID]];
-                    sprite.SetPosition(transform.GetPosition());
+                    SpriteComp& sprite = manager.GetComponent<SpriteComp>(ID);
+
+                    if(transformArray.m_IdToIndex.count(ID))
+                    {
+                        TransformComp& transform = manager.GetComponent<TransformComp>(ID);
+                        sprite.SetPosition(transform.GetPosition());
+                    }
+
+                    if(colorArray.m_IdToIndex.count(ID)) 
+                    {
+                        ColorComp& color = manager.GetComponent<ColorComp>(ID);
+                        sprite.SetColor(color.m_Color);
+                    }
+                    m_Target.draw(sprite.m_Sprite, states);
                 }
 
-                if(colorArray.m_IdToIndex.count(ID)) 
+                if(textArray.m_IdToIndex.count(ID))
                 {
-                    ColorComp& color = colorArray.m_Components[colorArray.m_IdToIndex[ID]];
-                    sprite.SetColor(color.m_Color);
+                    TextComp& text = manager.GetComponent<TextComp>(ID);
+
+                    if(transformArray.m_IdToIndex.count(ID))
+                    {
+                        TransformComp& transform = manager.GetComponent<TransformComp>(ID);
+                        text.SetPosition(transform.GetPosition());
+                    }
+
+                    if(colorArray.m_IdToIndex.count(ID)) 
+                    {
+                        ColorComp& color = manager.GetComponent<ColorComp>(ID);
+                        text.SetColor(color.m_Color);
+                    }
+                    m_Target.draw(text.m_Text, states);
                 }
-
-                m_Target.draw(sprite.m_Sprite, states);
-            }
-
-            for(size_t in = 0; in < textArray.m_Components.size(); in++)
-            {
-                TextComp& text = textArray.m_Components[in];
-                UUID ID = textArray.m_IndexToId[in];
-
-                if(transformArray.m_IdToIndex.count(ID))
-                {
-                    TransformComp& transform = transformArray.m_Components[transformArray.m_IdToIndex[ID]];
-                    text.SetPosition(transform.GetPosition());
-                }
-
-                if(colorArray.m_IdToIndex.count(ID)) 
-                {
-                    ColorComp& color = colorArray.m_Components[colorArray.m_IdToIndex[ID]];
-                    text.SetColor(color.m_Color);
-                }
-
-                m_Target.draw(text.m_Text, states);
             }
         }
 
     private:
         sf::RenderWindow& m_Target;
+        std::vector<Renderable> m_Renderables;
     };
 }

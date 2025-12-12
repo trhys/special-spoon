@@ -87,13 +87,21 @@ namespace Spoon
         }
 
         template<typename COMP>
-        COMP* GetComponent(UUID id)
+        COMP& GetComponent(UUID id)
         {
             std::string name = typeid(COMP).name();
+            if(m_Arrays.find(name) == m_Arrays.end())
+            {
+                throw std::runtime_error("Component array does not exist for type: " + name);
+            }
             ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[name].get());
 
+            if(array->m_IdToIndex.find(id) == array->m_IdToIndex.end())
+            {
+                throw std::runtime_error("Entity does not have component type: " + name);
+            }
             size_t index = array->m_IdToIndex[id];
-            return &array->m_Components[index];
+            return array->m_Components[index];
         }
 
         void PushAction(UUID entityId, std::string action)
@@ -139,6 +147,7 @@ namespace Spoon
             LoadArray<FadeComp>();
             LoadArray<AnimationComp>();
             LoadArray<StateActionComp>();
+            LoadArray<RenderLayer>();
         }
 
         std::unordered_map<UUID, std::string> m_ActionsBuffer;

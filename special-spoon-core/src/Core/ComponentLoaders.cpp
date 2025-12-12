@@ -16,23 +16,21 @@ namespace Spoon
     {
         std::string textureID = comp["TextureID"].get<std::string>();
         sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
-        bool centered = false;
+        
+        bool centered = comp.value("Centered", false);
 
-        if (comp.contains("Centered"))
+        if (comp.contains("TextureRect"))
         {
-            bool centered = comp["Centered"].get<bool>();
-
-            if (comp.contains("TextureRect"))
-            {
-                sf::IntRect rect(
-                    { comp["TextureRect"]["x"].get<int>(), comp["TextureRect"]["y"].get<int>() },
-                    { comp["TextureRect"]["width"].get<int>(), comp["TextureRect"]["height"].get<int>() }
-                );
-                manager.MakeComponent<SpriteComp>(id, asset, rect, centered);
-            }
+            sf::IntRect rect(
+                { comp["TextureRect"]["x"].get<int>(), comp["TextureRect"]["y"].get<int>() },
+                { comp["TextureRect"]["width"].get<int>(), comp["TextureRect"]["height"].get<int>() }
+            );
+            manager.MakeComponent<SpriteComp>(id, asset, rect, centered);
+        }
+        else
+        {
             manager.MakeComponent<SpriteComp>(id, asset, centered);
         }
-        manager.MakeComponent<SpriteComp>(id, asset, centered);
     }
 
     void LoadTextComponent(EntityManager& manager, UUID id, const json& comp)
@@ -103,6 +101,12 @@ namespace Spoon
         manager.MakeComponent<StateActionComp>(id, stateActions);
     }
 
+    void LoadRenderLayer(EntityManager& manager, UUID id, const json& comp)
+    {
+        int layer = comp.value("Layer", 1);
+        manager.MakeComponent<RenderLayer>(id, layer);
+    }
+
     void RegisterDefaultLoaders()
     {
         SS_DEBUG_LOG("Registering default component loaders...")
@@ -114,6 +118,7 @@ namespace Spoon
         ComponentLoaders::RegisterCompLoader("Blink", &LoadBlinkComponent);
         ComponentLoaders::RegisterCompLoader("Input", &LoadInputComponent);
         ComponentLoaders::RegisterCompLoader("StateAction", &LoadStateActionComponent);
+        ComponentLoaders::RegisterCompLoader("RenderLayer", &LoadRenderLayer);
     }
 
     namespace
