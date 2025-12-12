@@ -8,7 +8,9 @@
 
 //Debug Utils
 #ifdef SS_DEBUG_ENABLED
-    #define SS_DEBUG_LOG(msg) Spoon::Logger::Get().Write(msg);
+    #define SS_DEBUG_LOG(msg) Spoon::Logger::Get().Write(std::string(msg));
+#else
+    #define SS_DEBUG_LOG(msg)
 #endif
 
 #ifdef SS_ASSERTS_ENABLED
