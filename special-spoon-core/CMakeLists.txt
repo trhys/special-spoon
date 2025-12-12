@@ -44,6 +44,7 @@ target_sources(special-spoon-core
         src/ECS/Components/Render/SpriteComp.h
         src/ECS/Components/Render/TextComp.h
         src/ECS/Components/Render/ColorComp.h
+        src/ECS/Components/Render/RenderLayer.h
         
         src/ECS/Entity.h
         src/ECS/ECS.h

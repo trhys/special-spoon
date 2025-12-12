@@ -7,8 +7,8 @@ namespace Spoon
 {
     struct SpriteComp : public Component
     {
-        SpriteComp(sf::Texture& asset, bool centered = true) : m_Sprite(asset) { if (centered) { CenterOrigin(); } }
-        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered = true) : m_Sprite(asset), m_TextureRect(rect) 
+        SpriteComp(sf::Texture& asset, bool centered = false) : m_Sprite(asset) { if (centered) { CenterOrigin(); } }
+        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered = false) : m_Sprite(asset), m_TextureRect(rect) 
         {
             m_Sprite.setTextureRect(rect);
             if (centered) { CenterOrigin(); }

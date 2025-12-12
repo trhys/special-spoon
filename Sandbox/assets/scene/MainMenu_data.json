@@ -9,7 +9,7 @@
                     "Rotation": 0.0
                 },
                 "Sprite": {
-                    "TextureID": "MainMenu"  
+                  "TextureID": "MainMenu"
                 }
             }
         },

@@ -15,20 +15,24 @@ namespace Spoon
     void LoadSpriteComponent(EntityManager& manager, UUID id, const json& comp)
     {
         std::string textureID = comp["TextureID"].get<std::string>();
-        if(comp.contains("TextureRect"))
+        sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
+        bool centered = false;
+
+        if (comp.contains("Centered"))
         {
-            sf::IntRect rect(
-                {comp["TextureRect"]["x"].get<int>(), comp["TextureRect"]["y"].get<int>()},
-                {comp["TextureRect"]["width"].get<int>(), comp["TextureRect"]["height"].get<int>()}
-            );
-            sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
-            manager.MakeComponent<SpriteComp>(id, asset, rect);
+            bool centered = comp["Centered"].get<bool>();
+
+            if (comp.contains("TextureRect"))
+            {
+                sf::IntRect rect(
+                    { comp["TextureRect"]["x"].get<int>(), comp["TextureRect"]["y"].get<int>() },
+                    { comp["TextureRect"]["width"].get<int>(), comp["TextureRect"]["height"].get<int>() }
+                );
+                manager.MakeComponent<SpriteComp>(id, asset, rect, centered);
+            }
+            manager.MakeComponent<SpriteComp>(id, asset, centered);
         }
-        else
-        {
-            sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
-            manager.MakeComponent<SpriteComp>(id, asset);            
-        }
+        manager.MakeComponent<SpriteComp>(id, asset, centered);
     }
 
     void LoadTextComponent(EntityManager& manager, UUID id, const json& comp)
