@@ -6,7 +6,7 @@ namespace Spoon
 {
     struct StatusComp : public Component
     {
-        StatusComp(bool isActive = true, std::string currentState = "Idle")
+        StatusComp(bool isActive, std::string currentState)
             : is_Active(isActive), m_CurrentState(currentState) 
         {
         }

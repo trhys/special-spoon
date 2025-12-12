@@ -11,7 +11,12 @@ target_sources(Sandbox
         FILE_SET HEADERS
         FILES
             src/ECS/Component/PatrolComp.h
+            src/ECS/Component/MovementComp.h
+            src/ECS/Component/PlayerComp.h
+
             src/ECS/System/PatrolSystem.h
+            src/ECS/System/MovementSystem.h
+            src/ECS/System/PlayerController.h
             
             src/ECS/CustomCompLoader.h
             src/ECS/CustomSystemLoader.h

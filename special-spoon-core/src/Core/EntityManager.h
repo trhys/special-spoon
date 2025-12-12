@@ -62,6 +62,7 @@ namespace Spoon
         void LoadArray()
         {
             std::string name = typeid(COMP).name();
+            SS_DEBUG_LOG("[ENTITY MANAGER] Loading component array: " + name)
             m_Arrays[name] = std::make_unique<ComponentArray<COMP>>();
         }
 
@@ -106,6 +107,7 @@ namespace Spoon
 
         void PushAction(UUID entityId, std::string action)
         {
+            SS_DEBUG_LOG("[ENTITY MANAGER] Buffering action: " + action)
             m_ActionsBuffer[entityId] = action;
         }
 

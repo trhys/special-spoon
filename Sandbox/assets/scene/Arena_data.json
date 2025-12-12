@@ -64,6 +64,11 @@
                     }
                 },
 
+                "Status":
+                {
+                    "CurrentState": "Player-IdleFront"
+                },
+
                 "Animation":
                 {
                     "AnimationID": "Player-IdleFront",

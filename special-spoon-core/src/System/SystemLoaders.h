@@ -29,6 +29,7 @@ namespace Spoon
 
         static void RegisterSysLoader(const std::string& type, Loader loader)
         {
+            SS_DEBUG_LOG("[SYSTEM] Registering loader for system: " + type)
             GetSysLoaders()[type] = loader;
         }
     };

@@ -1,10 +1,11 @@
 #include "Spoon.h"
 
 #include "Component/PatrolComp.h"
+#include "Component/MovementComp.h"
+#include "Component/PlayerComp.h"
 
 void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
 {
-
     sf::Vector2f pointA(comp["PointA"]["x"].get<float>(), comp["PointA"]["y"].get<float>());
     sf::Vector2f pointB(comp["PointB"]["x"].get<float>(), comp["PointB"]["y"].get<float>());
     if (comp.contains("IdleTime"))
@@ -16,8 +17,20 @@ void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nl
 
 }
 
+void LoadMovementComp(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
+{
+    float speed = comp["Speed"].get<float>();
+    manager.MakeComponent<MovementComp>(id, speed);
+}
+
+void LoadPlayerComp(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
+{
+    manager.MakeComponent<PlayerComp>(id);
+}
+
 void RegisterCustomLoaders()
 {
-    SS_DEBUG_LOG("Registering Patrol Component Loader")
     Spoon::ComponentLoaders::RegisterCompLoader("Patrol", &LoadPatrolComponent);
+    Spoon::ComponentLoaders::RegisterCompLoader("Movement", &LoadMovementComp);
+    Spoon::ComponentLoaders::RegisterCompLoader("Player", &LoadPlayerComp);
 }

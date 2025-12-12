@@ -70,8 +70,10 @@ namespace Spoon
 
     void LoadStatusComponent(EntityManager& manager, UUID id, const json& comp)
     {
-        bool is_Active = comp["is_Active"].get<bool>();
-        std::string currentState = comp["m_CurrentState"].get<std::string>();
+        bool is_Active = true;
+        std::string currentState = "Idle";
+        if(comp.contains("is_Active")) { is_Active = comp["is_Active"].get<bool>(); }
+        if(comp.contains("CurrentState")) { currentState = comp["CurrentState"].get<std::string>(); }
         manager.MakeComponent<StatusComp>(id, is_Active, currentState);
     }
 
@@ -109,7 +111,7 @@ namespace Spoon
 
     void RegisterDefaultLoaders()
     {
-        SS_DEBUG_LOG("Registering default component loaders...")
+        SS_DEBUG_LOG("[COMPONENT] Registering default component loaders...")
         ComponentLoaders::RegisterCompLoader("Transform", &LoadTransformComponent);
         ComponentLoaders::RegisterCompLoader("Sprite", &LoadSpriteComponent);
         ComponentLoaders::RegisterCompLoader("Text", &LoadTextComponent);

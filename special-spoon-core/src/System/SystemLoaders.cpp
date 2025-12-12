@@ -19,6 +19,7 @@ namespace Spoon
 
     void RegisterDefaultSystems()
     {
+        SS_DEBUG_LOG("[SYSTEM] Registering default systems...")
         SystemLoaders::RegisterSysLoader("Animation", &LoadAnimationSystem);
         SystemLoaders::RegisterSysLoader("Physics", &LoadPhysicsSystem);
     }

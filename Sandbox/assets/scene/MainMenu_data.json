@@ -78,7 +78,7 @@
                 "Status": 
                 {
                     "is_Active": true,
-                    "m_CurrentState": "Idle"
+                    "CurrentState": "Idle"
                 },
 
                 "Transform": 

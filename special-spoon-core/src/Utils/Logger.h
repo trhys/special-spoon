@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <vector>
 
 namespace Spoon
 {
@@ -23,6 +24,12 @@ namespace Spoon
                 throw std::runtime_error("Failed to open log file at path: " + logfilePath);
             }
             m_LogFile << std::unitbuf;
+
+            for(const auto& message : m_EarlyMessageBuffer)
+            {
+                m_LogFile << message << std::endl;
+            }
+            m_EarlyMessageBuffer.clear();
             m_LogFile << "Log file initialized." << std::endl;
         }
 
@@ -41,9 +48,14 @@ namespace Spoon
             {
                 m_LogFile << "[DEBUG]" << message << std::endl;
             }
+            else
+            {
+                m_EarlyMessageBuffer.push_back(message);
+            }
         }
 
     private:
         std::ofstream m_LogFile;
+        std::vector<std::string> m_EarlyMessageBuffer;
     };
 }
