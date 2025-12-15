@@ -78,7 +78,7 @@ namespace Spoon
             if(m_Specs.m_EditorEnabled)
             {
                 ImGui::SFML::Update(m_Window, tick);
-                m_Editor.Run(m_EntityManager);
+                m_Editor.Run(m_EntityManager, m_SceneManager, m_SystemManager);
             }
 
             m_InputSystem.Update(tick, m_EntityManager);

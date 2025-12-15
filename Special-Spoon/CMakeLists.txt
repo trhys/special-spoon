@@ -1,6 +1,6 @@
-add_library(special-spoon-core SHARED)
+add_library(Special-Spoon SHARED)
 
-target_sources(special-spoon-core
+target_sources(Special-Spoon
     PRIVATE
         src/Spoon.h
         src/Editor/Editor.h
@@ -12,9 +12,9 @@ add_subdirectory(src/ECS)
 add_subdirectory(src/System)
 add_subdirectory(src/Utils)
 
-generate_export_header(special-spoon-core)
+generate_export_header(Special-Spoon)
 
-target_include_directories(special-spoon-core PRIVATE 
+target_include_directories(Special-Spoon PRIVATE 
 ${CMAKE_CURRENT_SOURCE_DIR}/src
 ${CMAKE_CURRENT_BINARY_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
@@ -37,7 +37,7 @@ target_include_directories(ImGui PUBLIC
 
 add_subdirectory(vendor/SFML)
 
-target_link_libraries(special-spoon-core PUBLIC 
+target_link_libraries(Special-Spoon PUBLIC 
 SFML::System
 SFML::Audio
 SFML::Network
@@ -50,7 +50,7 @@ set(JSON_Install ON CACHE BOOL "Force nlohmann_json to be installable when used 
 
 add_subdirectory(vendor/JSON)
 
-target_link_libraries(special-spoon-core PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(Special-Spoon PUBLIC nlohmann_json::nlohmann_json)
 
 # IMGUI-SFML BACKEND =====================
 
@@ -58,37 +58,37 @@ set(IMGUI_SFML_FIND_SFML OFF CACHE BOOL "Use find_package to find SFML" FORCE)
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Imgui" CACHE PATH "Imgui top-level directory")
 add_subdirectory(vendor/Imgui-sfml)
 
-target_link_libraries(special-spoon-core PUBLIC ImGui-SFML)
+target_link_libraries(Special-Spoon PUBLIC ImGui-SFML)
 
 # END LIBS SETUP =====================
 
 include(GNUInstallDirs)
 
 install(
-    TARGETS special-spoon-core
-    EXPORT special-spoon
+    TARGETS Special-Spoon
+    EXPORT Special-Spoon
     RUNTIME
         DESTINATION ${CMAKE_INSTALL_BINDIR}/Sandbox
     ARCHIVE
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/special-spoon
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/Special-Spoon
 )
 
 file(GLOB_RECURSE CORE_HDRS CONFIGURE_DEPENDS "src/*.h")
 
 install(
     FILES ${CORE_HDRS}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/special-spoon-core
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Special-Spoon
 )
 
 install(
-    EXPORT special-spoon
+    EXPORT Special-Spoon
     FILE special-spoon-targets.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
-    NAMESPACE special-spoon::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Special-Spoon
+    NAMESPACE Special-Spoon::
 )
 
 install(
     FILES
         ${CMAKE_SOURCE_DIR}/cmake/special-spoonConfig.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/special-spoon
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Special-Spoon
 )

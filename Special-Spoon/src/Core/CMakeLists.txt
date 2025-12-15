@@ -1,4 +1,4 @@
-target_sources(special-spoon-core
+target_sources(Special-Spoon
     PRIVATE
         Application.cpp
         ComponentLoaders.cpp

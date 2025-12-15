@@ -215,4 +215,9 @@ namespace Spoon
         UnloadScene(eManager, sManager);
         LoadScene(id, eManager, sManager);
     }
+
+    const std::unordered_map<std::string, SceneData>& SceneManager::GetManifest()
+    {
+        return m_SceneManifest;
+    }
 }

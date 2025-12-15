@@ -41,7 +41,7 @@ namespace Spoon
             else { return UUID(m_IdCounter++); }
         }
 
-        const std::unordered_map<UUID, std::string> GetAllEntities()
+        const std::unordered_map<UUID, std::string>& GetAllEntities()
         {
             return m_Entities;
         }

@@ -1,4 +1,4 @@
-target_sources(special-spoon-core
+target_sources(Special-Spoon
     PRIVATE
         Components/Component.h
         Components/InputComp.h

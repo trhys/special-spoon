@@ -29,6 +29,8 @@ namespace Spoon
         void UnloadScene(EntityManager& entityManager, SystemManager& systemManager);
         void Transition(std::string id, EntityManager& eManager, SystemManager& sManager);
 
+        const std::unordered_map<std::string, SceneData>& GetManifest();
+
     private:
         std::unordered_map<std::string, SceneData> m_SceneManifest;
     };
