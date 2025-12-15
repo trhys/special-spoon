@@ -1,8 +1,12 @@
 #include "Application.h"
 #include "Renderer.h"
-#include "Utils/MemoryUtils.h"
 #include "ComponentLoaders.h"
+
+#include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
+
+#include "Imgui/imgui.h"
+#include "Imgui-sfml/imgui-SFML.h"
 
 namespace Spoon 
 {        
@@ -18,6 +22,13 @@ namespace Spoon
         if (!m_Window.isOpen())
         {
             throw std::runtime_error("Failed to create application window.");
+        }
+        if(m_Specs.m_EditorEnabled)
+        {
+            if(!ImGui::SFML::Init(m_Window))
+            {
+                throw std::runtime_error("Failed to initialize imgui window.");
+            }
         }
     }
 
@@ -40,28 +51,35 @@ namespace Spoon
             // Event polling
             m_Window.handleEvents
             (
-                [&](const sf::Event::KeyPressed& keyPress)
+                [&](const sf::Event::MouseButtonPressed& event) { if(m_Specs.m_EditorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+                [&](const sf::Event::MouseButtonReleased& event) { if(m_Specs.m_EditorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+                [&](const sf::Event::MouseMoved& event) { if(m_Specs.m_EditorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+                [&](const sf::Event::TextEntered& event) { if(m_Specs.m_EditorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+
+                [&](const sf::Event::KeyPressed& event)
                 {
-                    m_InputSystem.PushKeyPress(keyPress);
+                    m_InputSystem.PushKeyPress(event);
                 },
 
-                [&](const sf::Event::KeyReleased& keyRelease)
+                [&](const sf::Event::KeyReleased& event)
                 {
-                    m_InputSystem.PushKeyRelease(keyRelease);
+                    m_InputSystem.PushKeyRelease(event);
                 },
 
-                [&](const auto& event)
+                [&](const sf::Event::Closed& event)
                 {
-                    using T = std::decay_t<decltype(event)>;
-                    if constexpr (std::is_same_v<T, sf::Event::Closed>)
-                    {
-                        Application::Close();
-                    }
+                    Application::Close();
                 }
             );
 
             // Update systems
             sf::Time tick = clock.restart();
+
+            if(m_Specs.m_EditorEnabled)
+            {
+                ImGui::SFML::Update(m_Window, tick);
+                m_Editor.Run(m_EntityManager);
+            }
 
             m_InputSystem.Update(tick, m_EntityManager);
             
@@ -83,9 +101,15 @@ namespace Spoon
             m_Window.clear();
 
             Renderer.Render(states, m_EntityManager);
-            
+
+            if(m_Specs.m_EditorEnabled)
+            {
+                ImGui::SFML::Render(m_Window);
+            }
+
             m_Window.display();
         }
+        ImGui::SFML::Shutdown();
         m_Window.close();
         return;
     }

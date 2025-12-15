@@ -16,21 +16,34 @@ namespace Spoon
         EntityManager() { LoadDefaultArrays(); }
         ~EntityManager() {}
 
-        Entity CreateEntity()
+        Entity CreateEntity(std::string debugName = "")
         {
-            Entity entity = Entity(GenerateID(), this);
+            UUID id = GenerateID();
+            Entity entity = Entity(id, this);
+            m_Entities[id] = debugName;
             return entity;
+        }
+
+        void KillEntity(UUID id)
+        {
+            m_Entities.erase(id);
+            m_RecycledIds.push_back(id);
         }
 
         UUID GenerateID()
         {
             if(!m_RecycledIds.empty())
             {
-                std::uint64_t id = m_RecycledIds.back();
+                UUID id = m_RecycledIds.back();
                 m_RecycledIds.pop_back();
-                return UUID(id);
+                return id;
             }
             else { return UUID(m_IdCounter++); }
+        }
+
+        const std::unordered_map<UUID, std::string> GetAllEntities()
+        {
+            return m_Entities;
         }
 
         template<typename COMP, typename... Args>
@@ -106,6 +119,20 @@ namespace Spoon
             return array->m_Components[index];
         }
 
+        std::vector<std::string> GetAllComponentsOfEntity(UUID id)
+        {
+            std::vector<std::string> allComps;
+
+            for(auto& [type, array] : m_Arrays)
+            {
+                if(array->HasEntity(id))
+                {
+                    allComps.push_back(type);
+                }
+            }
+            return allComps;
+        }
+
         void PushAction(UUID entityId, std::string action)
         {
             SS_DEBUG_LOG("[ENTITY MANAGER] Buffering action: " + action)
@@ -132,9 +159,11 @@ namespace Spoon
 
     private:
         std::uint64_t m_IdCounter = 0;
-        std::vector<std::uint64_t> m_RecycledIds;
+        std::vector<UUID> m_RecycledIds;
 
-        std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays;
+        std::unordered_map<UUID, std::string> m_Entities;                           // Maps UUID to a debug name
+        std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays; // Maps type name to array object
+        std::unordered_map<UUID, std::string> m_ActionsBuffer;                      // Maps UUID to action string
 
         void LoadDefaultArrays()
         {
@@ -152,7 +181,5 @@ namespace Spoon
             LoadArray<StateActionComp>();
             LoadArray<RenderLayer>();
         }
-
-        std::unordered_map<UUID, std::string> m_ActionsBuffer;
     };
 }

@@ -2,75 +2,38 @@ add_library(special-spoon-core SHARED)
 
 target_sources(special-spoon-core
     PRIVATE
-        src/Core/Application.cpp
-        src/Core/ComponentLoaders.cpp
-        src/Core/SceneManager.cpp
-
-        src/System/Physics/QuadTree.cpp
-
-        src/System/AnimationSystem.cpp
-        src/System/SystemLoaders.cpp
-        
-        src/ECS/Entity.inl
-
-        # ===============
-        # === HEADERS ===
-        # ===============
-
         src/Spoon.h
-
-        src/Core/Application.h
-        src/Core/ComponentArray.h
-        src/Core/ComponentLoaders.h
-        src/Core/Core.h
-        src/Core/EntityManager.h
-        src/Core/EntryPoint.h
-        src/Core/Renderer.h
-        src/Core/ResourceManager.h
-        src/Core/SceneManager.h
-
-        src/ECS/Components/Component.h
-        src/ECS/Components/InputComp.h
-        src/ECS/Components/PhysicsComp.h
-        src/ECS/Components/StateActionComp.h
-        src/ECS/Components/StatusComp.h
-        src/ECS/Components/TransformComp.h
-
-        src/ECS/Components/Animation/AnimationComp.h
-        src/ECS/Components/Animation/AnimationData.h
-        src/ECS/Components/Animation/BlinkComp.h
-        src/ECS/Components/Animation/FadeComp.h
-
-        src/ECS/Components/Render/SpriteComp.h
-        src/ECS/Components/Render/TextComp.h
-        src/ECS/Components/Render/ColorComp.h
-        src/ECS/Components/Render/RenderLayer.h
-        
-        src/ECS/Entity.h
-        src/ECS/ECS.h
-
-        src/System/AnimationSystem.h
-        src/System/InputSystem.h
-        src/System/StateSystem.h
-        src/System/System.h
-        src/System/SystemLoaders.h
-        src/System/SystemManager.h
-
-        src/System/Physics/PhysicsSystem.h
-        src/System/Physics/QuadTree.h
-
-        src/Utils/MemoryUtils.h
-        src/Utils/Logger.h
-        src/Utils/KeyMappings.h
-        src/Utils/Macros.h
+        src/Editor/Editor.h
+        src/Editor/Editor.cpp
 )
 
-   
+add_subdirectory(src/Core)
+add_subdirectory(src/ECS)
+add_subdirectory(src/System)
+add_subdirectory(src/Utils)
+
 generate_export_header(special-spoon-core)
 
 target_include_directories(special-spoon-core PRIVATE 
 ${CMAKE_CURRENT_SOURCE_DIR}/src
-${CMAKE_CURRENT_BINARY_DIR})
+${CMAKE_CURRENT_BINARY_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/vendor)
+
+# IMGUI SETUP =====================
+
+add_library(ImGui STATIC 
+    vendor/Imgui/imgui.cpp
+    vendor/Imgui/imgui_demo.cpp
+    vendor/Imgui/imgui_draw.cpp
+    vendor/Imgui/imgui_tables.cpp
+    vendor/Imgui/imgui_widgets.cpp
+)
+
+target_include_directories(ImGui PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/Imgui
+)
+
+# SFML SETUP =====================
 
 add_subdirectory(vendor/SFML)
 
@@ -81,11 +44,23 @@ SFML::Network
 SFML::Window
 SFML::Graphics)
 
+# JSON SETUP =====================
+
 set(JSON_Install ON CACHE BOOL "Force nlohmann_json to be installable when used as a subdirectory." FORCE)
 
 add_subdirectory(vendor/JSON)
 
 target_link_libraries(special-spoon-core PUBLIC nlohmann_json::nlohmann_json)
+
+# IMGUI-SFML BACKEND =====================
+
+set(IMGUI_SFML_FIND_SFML OFF CACHE BOOL "Use find_package to find SFML" FORCE)
+set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Imgui" CACHE PATH "Imgui top-level directory")
+add_subdirectory(vendor/Imgui-sfml)
+
+target_link_libraries(special-spoon-core PUBLIC ImGui-SFML)
+
+# END LIBS SETUP =====================
 
 include(GNUInstallDirs)
 

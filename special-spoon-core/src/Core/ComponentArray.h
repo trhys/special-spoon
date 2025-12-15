@@ -10,6 +10,7 @@ namespace Spoon
     {
     public:
         virtual void Clear() {};
+        virtual bool HasEntity(UUID id) = 0;
     };
 
     template<typename COMP>
@@ -58,6 +59,12 @@ namespace Spoon
             m_Components.clear();
             m_IdToIndex.clear();
             m_IndexToId.clear();
+        }
+
+        bool HasEntity(UUID id) override
+        {
+            if(m_IdToIndex.count(id)) return true;
+            else return false;
         }
     };
 }

@@ -24,6 +24,7 @@ namespace Spoon
     class SPOON_API Entity
     {
     public:
+        Entity() {}
         Entity(UUID id, EntityManager* em) : m_ID(id), p_EM(em) {}
         ~Entity() = default;
         

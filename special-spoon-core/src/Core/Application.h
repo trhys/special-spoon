@@ -8,6 +8,8 @@
 #include "System/InputSystem.h"
 #include "System/SystemManager.h"
 
+#include "Editor/Editor.h"
+
 #include "SFML/Graphics.hpp"
 
 namespace Spoon 
@@ -16,6 +18,7 @@ namespace Spoon
 	{
 		sf::Vector2u m_WindowSize = {600, 600};
 		std::string m_WindowName = "Special Spoon";
+		bool m_EditorEnabled = true;
 	};
 
 	class SPOON_API Application
@@ -48,6 +51,7 @@ namespace Spoon
 		EntityManager	  m_EntityManager;
 		InputSystem		  m_InputSystem;
 		SystemManager	  m_SystemManager;
+		Editor 			  m_Editor;
 	};
 
 	//DEFINE IN CLIENT APPLICATION

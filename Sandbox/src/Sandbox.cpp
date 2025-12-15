@@ -40,6 +40,7 @@ Spoon::Application* Spoon::CreateApp()
 	AppSpecifications spec;
 	spec.m_WindowSize = {1080, 1080};
 	spec.m_WindowName = "Sandbox";
+	spec.m_EditorEnabled = true;
 	return new Sandbox(spec);
 }
 

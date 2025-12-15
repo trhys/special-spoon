@@ -142,12 +142,21 @@ namespace Spoon
             // Load entities and components
             for (auto& entity : sceneData["Entities"])
             {
-                std::string entityID = "UnnamedEntity"; // This is specifically for debugging; ID can be omitted in sceneData.json
+                Entity newEntity;
+                std::string entityID;
                 try {
-                    if (entity.contains("ID")) { entityID = entity["ID"].get<std::string>(); }
-                    SS_DEBUG_LOG("Loading entity: " + entityID)
                     
-                    Entity newEntity = entityManager.CreateEntity();
+                    if (entity.contains("ID")) 
+                    { 
+                        entityID = entity["ID"].get<std::string>(); 
+                        SS_DEBUG_LOG("Loading entity: " + entityID)
+                        newEntity = entityManager.CreateEntity(entityID);
+                    }
+                    else 
+                    { 
+                        newEntity = entityManager.CreateEntity(); 
+                        SS_DEBUG_LOG("[WARNING]~~~You are loading an entity without a name!")
+                    }
 
                     for (auto const& [type, data] : entity["Components"].items())
                     {
