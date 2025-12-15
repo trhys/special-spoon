@@ -4,3 +4,10 @@
 [submodule "special-spoon-core/vendor/SFML"]
 	path = special-spoon-core/vendor/SFML
 	url = https://github.com/SFML/SFML.git
+[submodule "special-spoon-core/vendor/Imgui"]
+	path = special-spoon-core/vendor/Imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "special-spoon-core/vendor/Imgui-sfml"]
+	path = special-spoon-core/vendor/Imgui-sfml
+	url = https://github.com/SFML/imgui-sfml.git
