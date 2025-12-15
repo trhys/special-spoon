@@ -26,10 +26,6 @@ public:
             MovementComp& movement = manager.GetComponent<MovementComp>(ID);
             Spoon::InputComp& input = manager.GetComponent<Spoon::InputComp>(ID);
 
-            if (movement.m_Velocity == sf::Vector2f{ 0.0, 0.0 })
-            {
-                status.m_CurrentState = "Player-IdleFront";
-            }
             movement.m_Velocity = { 0.0, 0.0 };
 
             auto found = actionBuffer.find(ID);
@@ -39,21 +35,34 @@ public:
                 status.m_CurrentState = triggeredAction;
             }
 
-            if(status.m_CurrentState == "MoveUp" && input.keyIsPressed)
+            for(const auto& keyState : input.m_KeyStates)
             {
-                movement.m_Velocity.y -= movement.m_Speed;
+                if(keyState.second)
+                {
+                    std::string keypressed = keyState.first;
+                    std::string action = input.m_KeyBindings[keypressed];
+
+                    if(action == "MoveUp")
+                    {
+                        movement.m_Velocity.y -= movement.m_Speed;
+                    }
+                    else if(action == "MoveDown")
+                    {
+                        movement.m_Velocity.y += movement.m_Speed;
+                    }
+                    else if(action == "MoveLeft")
+                    {
+                        movement.m_Velocity.x -= movement.m_Speed;
+                    }
+                    else if (action == "MoveRight")
+                    {
+                        movement.m_Velocity.x += movement.m_Speed;
+                    }
+                }
             }
-            else if(status.m_CurrentState == "MoveDown" && input.keyIsPressed)
+            if (movement.m_Velocity == sf::Vector2f{ 0.0, 0.0 })
             {
-                movement.m_Velocity.y += movement.m_Speed;
-            }
-            else if(status.m_CurrentState == "MoveLeft" && input.keyIsPressed)
-            {
-                movement.m_Velocity.x -= movement.m_Speed;
-            }
-            else if (status.m_CurrentState == "MoveRight" && input.keyIsPressed)
-            {
-                movement.m_Velocity.x += movement.m_Speed;
+                status.m_CurrentState = "Player-IdleFront";
             }
         }
     }

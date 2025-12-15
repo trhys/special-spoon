@@ -11,10 +11,15 @@ namespace Spoon
     struct InputComp : public Component
     {
         InputComp(const std::unordered_map<std::string, std::string>& keyBindings)
-            : m_KeyBindings(keyBindings) {}
+            : m_KeyBindings(keyBindings) 
+            {
+                for (const auto& pair : keyBindings)
+                {
+                    m_KeyStates[pair.first] = false;
+                }
+            }
 
         std::unordered_map<std::string, std::string> m_KeyBindings;
-        sf::Keyboard::Key pressedKey;
-        bool keyIsPressed = false;
+        std::unordered_map<std::string, bool> m_KeyStates;
     };
 }

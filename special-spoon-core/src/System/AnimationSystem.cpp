@@ -36,7 +36,7 @@ namespace Spoon
         if(progress >= 1.0f)
         {
             blinkcomp.ToggleSwitch();
-            blinkcomp.m_BlinkTimer.Zero;
+            blinkcomp.m_BlinkTimer = sf::Time::Zero;
         }
     }
 

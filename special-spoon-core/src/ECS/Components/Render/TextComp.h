@@ -30,7 +30,7 @@ namespace Spoon
         }
         void SetAlpha(float alpha)
         {
-            sf::Color& color = m_Text.getFillColor();
+            sf::Color color = m_Text.getFillColor();
             color.a = static_cast<uint8_t>(alpha);
             m_Text.setFillColor(color);
         }

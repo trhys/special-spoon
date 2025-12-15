@@ -32,7 +32,7 @@ namespace Spoon
         }
         void SetAlpha(float alpha)
         {
-            sf::Color& color = m_Sprite.getColor();
+            sf::Color color = m_Sprite.getColor();
             color.a = static_cast<uint8_t>(alpha);
             SetColor(color);
         }

@@ -45,7 +45,7 @@ namespace Spoon
                     if(found != inputComp.m_KeyBindings.end())
                     {
                         manager.PushAction(ID, found->second);
-                        inputComp.keyIsPressed = true;
+                        inputComp.m_KeyStates[found->first] = true;
                     }
                     
                 }
@@ -56,7 +56,7 @@ namespace Spoon
                     auto found = inputComp.m_KeyBindings.find(keyDesc);
                     if (found != inputComp.m_KeyBindings.end())
                     {
-                        inputComp.keyIsPressed = false;
+                        inputComp.m_KeyStates[found->first] = false;
                     }
                 }
             }
