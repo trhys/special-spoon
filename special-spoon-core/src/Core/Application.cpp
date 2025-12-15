@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Utils/MemoryUtils.h"
 #include "ComponentLoaders.h"
+#include "Utils/Macros.h"
 
 namespace Spoon 
 {        
@@ -42,6 +43,11 @@ namespace Spoon
                 [&](const sf::Event::KeyPressed& keyPress)
                 {
                     m_InputSystem.PushKeyPress(keyPress);
+                },
+
+                [&](const sf::Event::KeyReleased& keyRelease)
+                {
+                    m_InputSystem.PushKeyRelease(keyRelease);
                 },
 
                 [&](const auto& event)

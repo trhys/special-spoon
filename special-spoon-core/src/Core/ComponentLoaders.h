@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core.h"
+#include "Utils/Macros.h"
+
 #include <functional>
 #include <unordered_map>
 #include "nlohmann/json.hpp"

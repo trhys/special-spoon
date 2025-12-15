@@ -150,15 +150,15 @@
             "ID": "Player-WalkLeft",
             "TextureID": "Player",
             "SpriteCords": [
-                { "x" : 5, "y" : 585, "width" : 43, "height" : 55 },
+                { "x" : 5, "y" : 585, "width" : 48, "height" : 55 },
                 { "x" : 64, "y" : 585, "width" : 48, "height" : 55 },
                 { "x" : 128, "y" : 585, "width" : 48, "height" : 55 },
                 { "x" : 192, "y" : 585, "width" : 48, "height" : 55 },
                 { "x" : 257, "y" : 585, "width" : 48, "height" : 55 },
-                { "x" : 323, "y" : 585, "width" : 38, "height" : 55 },
-                { "x" : 386, "y" : 585, "width" : 43, "height" : 55 },
-                { "x" : 499, "y" : 585, "width" : 46, "height" : 55 },
-                { "x" : 513, "y" : 585, "width" : 47, "height" : 55 }
+                { "x" : 323, "y" : 585, "width" : 48, "height" : 55 },
+                { "x" : 386, "y" : 585, "width" : 48, "height" : 55 },
+                { "x" : 499, "y" : 585, "width" : 48, "height" : 55 },
+                { "x" : 513, "y" : 585, "width" : 48, "height" : 55 }
             ]
         },
         {

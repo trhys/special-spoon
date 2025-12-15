@@ -3,6 +3,7 @@
 #include "Core.h"
 #include "SFML/Graphics/Rect.hpp"
 #include <unordered_map>
+#include <string>
 
 namespace Spoon
 {

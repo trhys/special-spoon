@@ -22,6 +22,12 @@ namespace Spoon
             std::cout << "keypress: " + sf::Keyboard::getDescription(keyPress.scancode).toAnsiString() << std::endl;
         }
 
+        void PushKeyRelease(const sf::Event::KeyReleased& keyRelease)
+        {
+            m_KeyReleaseEvents.push_back(keyRelease);
+            std::cout << "key released: " + sf::Keyboard::getDescription(keyRelease.scancode).toAnsiString() << std::endl;
+        }
+
         void Update(sf::Time tick, EntityManager& manager) override
         {
             manager.ClearActionsBuffer();
@@ -39,13 +45,27 @@ namespace Spoon
                     if(found != inputComp.m_KeyBindings.end())
                     {
                         manager.PushAction(ID, found->second);
+                        inputComp.keyIsPressed = true;
+                    }
+                    
+                }
+
+                for (const auto& keyEvent : m_KeyReleaseEvents)
+                {
+                    std::string keyDesc = sf::Keyboard::getDescription(keyEvent.scancode).toAnsiString();
+                    auto found = inputComp.m_KeyBindings.find(keyDesc);
+                    if (found != inputComp.m_KeyBindings.end())
+                    {
+                        inputComp.keyIsPressed = false;
                     }
                 }
             }
             m_KeyPressEvents.clear();
+            m_KeyReleaseEvents.clear();
         }
     
     private:
         std::vector<sf::Event::KeyPressed> m_KeyPressEvents;
+        std::vector<sf::Event::KeyReleased> m_KeyReleaseEvents;
     };
 }

@@ -2,35 +2,35 @@
 
 namespace Spoon
 {
-    void AnimationSystem::FadeAnimation(sf::Time tick, FadeComp& fadecomp, ColorComp& colorcomp)
+    void AnimationSystem::FadeAnimation(sf::Time tick, FadeComp& fadecomp)
     {
         fadecomp.m_FadeTimer = fadecomp.m_FadeTimer + tick;
         float progress = std::min(fadecomp.m_FadeTimer.asSeconds() / fadecomp.m_FadeRate, 1.0f);
 
         if(fadecomp.isFadingIn)
         {
-            colorcomp.SetAlpha(static_cast<std::uint8_t>(0.0f + (255.0f - 0.0f) * progress));
+            fadecomp.m_Alpha = static_cast<std::uint8_t>(0.0f + (255.0f - 0.0f) * progress);
         }
         else if(fadecomp.isFadingOut)
         {
-            colorcomp.SetAlpha(static_cast<std::uint8_t>(255.0f + (0.0f - 255.0f) * progress));
+            fadecomp.m_Alpha = static_cast<std::uint8_t>(255.0f + (0.0f - 255.0f) * progress);
         }
 
         if(progress >= 1.0f) { fadecomp.ToggleActive(); }
     }
 
-    void AnimationSystem::BlinkAnimation(sf::Time tick, BlinkComp& blinkcomp, ColorComp& colorcomp)
+    void AnimationSystem::BlinkAnimation(sf::Time tick, BlinkComp& blinkcomp)
     {
         blinkcomp.m_BlinkTimer = blinkcomp.m_BlinkTimer + tick;
         float progress = std::min(blinkcomp.m_BlinkTimer.asSeconds() / blinkcomp.m_Blinkrate, 1.0f);
 
         if(!blinkcomp.isGoingUp)
         {
-            colorcomp.SetAlpha(static_cast<std::uint8_t>(255.0f + (0.0f - 255.0f) * progress));
+            blinkcomp.m_Alpha = static_cast<std::uint8_t>(255.0f + (0.0f - 255.0f) * progress);
         }
         else
         {
-            colorcomp.SetAlpha(static_cast<std::uint8_t>(0.0f + (255.0f - 0.0f) * progress));
+            blinkcomp.m_Alpha = static_cast<std::uint8_t>(0.0f + (255.0f - 0.0f) * progress);
         }
 
         if(progress >= 1.0f)
@@ -45,7 +45,8 @@ namespace Spoon
         // Default animation components
         auto& fadeArray = manager.GetArray<FadeComp>();
         auto& blinkArray = manager.GetArray<BlinkComp>();
-        auto& colorArray = manager.GetArray<ColorComp>();
+        auto& spriteArray = manager.GetArray<SpriteComp>();
+        auto& textArray = manager.GetArray<TextComp>();
 
         for(size_t in = 0; in < fadeArray.m_Components.size(); in++)
         {
@@ -54,10 +55,17 @@ namespace Spoon
 
             if(fadecomp.isActive)
             {
-                if(colorArray.m_IdToIndex.count(id))
+                if(spriteArray.m_IdToIndex.count(id))
                 {
-                    ColorComp& colorcomp = colorArray.m_Components[colorArray.m_IdToIndex[id]];
-                    FadeAnimation(tick, fadecomp, colorcomp);
+                    SpriteComp& spriteComp = manager.GetComponent<SpriteComp>(id);
+                    FadeAnimation(tick, fadecomp);
+                    spriteComp.SetAlpha(fadecomp.m_Alpha);
+                }
+                else if (textArray.m_IdToIndex.count(id))
+                {
+                    TextComp& textComp = manager.GetComponent<TextComp>(id);
+                    FadeAnimation(tick, fadecomp);
+                    textComp.SetAlpha(fadecomp.m_Alpha);
                 }
             }
         }
@@ -69,10 +77,17 @@ namespace Spoon
 
             if(blinkcomp.isActive)
             {
-                if(colorArray.m_IdToIndex.count(id))
+                if (spriteArray.m_IdToIndex.count(id))
                 {
-                    ColorComp& colorcomp = colorArray.m_Components[colorArray.m_IdToIndex[id]];
-                    BlinkAnimation(tick, blinkcomp, colorcomp);
+                    SpriteComp& spriteComp = manager.GetComponent<SpriteComp>(id);
+                    BlinkAnimation(tick, blinkcomp);
+                    spriteComp.SetAlpha(blinkcomp.m_Alpha);
+                }
+                else if (textArray.m_IdToIndex.count(id))
+                {
+                    TextComp& textComp = manager.GetComponent<TextComp>(id);
+                    BlinkAnimation(tick, blinkcomp);
+                    textComp.SetAlpha(blinkcomp.m_Alpha);
                 }
             }
         }
@@ -80,8 +95,7 @@ namespace Spoon
         // AnimationComp based animations (defined by scene_data.json files)
         auto& animationArray = manager.GetArray<AnimationComp>();
         auto& statusArray = manager.GetArray<StatusComp>();
-        auto& spriteArray = manager.GetArray<SpriteComp>();
-
+        
         for(size_t in = 0; in < animationArray.m_Components.size(); in++)
         {
             AnimationComp& animComp = animationArray.m_Components[in];

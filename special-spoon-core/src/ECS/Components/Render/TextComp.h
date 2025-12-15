@@ -28,5 +28,11 @@ namespace Spoon
             sf::FloatRect bounds = m_Text.getLocalBounds(); 
             m_Text.setOrigin({ bounds.size.x / 2.0f, bounds.size.y / 2.0f });
         }
+        void SetAlpha(float alpha)
+        {
+            sf::Color& color = m_Text.getFillColor();
+            color.a = static_cast<uint8_t>(alpha);
+            m_Text.setFillColor(color);
+        }
     };
 }

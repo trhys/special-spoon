@@ -46,7 +46,7 @@
                     "KeyBindings": 
                     {
                         "Enter": "SceneChange",
-                        "Escape": "Exit"
+                        "Esc": "Exit"
                     }
                 },
 
@@ -84,7 +84,7 @@
                 "Transform": 
                 {
                     "Position": { "x": 400.0, "y": 700.0 },
-                    "Scale": { "x": 4.0, "y": 4.0 },
+                    "Scale": { "x": 8.0, "y": 8.0 },
                     "Rotation": 0.0
                 },
 
@@ -103,12 +103,21 @@
                     "TextureID": "Zombie"
                 },
 
-                "Patrol": 
-                {
-                    "PointA": { "x": 100.0, "y": 800.0 },
-                    "PointB": { "x": 700.0, "y": 600.0 },
-                    "IdleTime": 3.0
+              "Patrol": {
+                "PointA": {
+                  "x": 100.0,
+                  "y": 800.0
                 },
+                "PointB": {
+                  "x": 700.0,
+                  "y": 800.0
+                },
+                "IdleTime": 3.0
+              },
+
+              "Movement": {
+                "Speed": 100.0
+              },
 
                 "RenderLayer": 
                 {
@@ -122,9 +131,13 @@
         {
             "Type": "Animation"
         },
-        
+
         {
             "Type": "Patrol"
+        },
+
+        {
+            "Type":  "Movement"
         }
     ]
 }

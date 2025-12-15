@@ -23,6 +23,7 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 {
 	SS_DEBUG_LOG("Loading custom components")
 	RegisterCustomLoaders();
+	SS_DEBUG_LOG("Loading custom arrays")
 	LoadCustomArrays(GetEntityManager());
 	SS_DEBUG_LOG("Custom loaders initialized")
 

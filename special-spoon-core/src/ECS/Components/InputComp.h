@@ -2,6 +2,8 @@
 
 #include "ECS/Components/Component.h"
 
+#include "SFML/Window/Keyboard.hpp"
+
 #include <unordered_map>
 
 namespace Spoon
@@ -12,5 +14,7 @@ namespace Spoon
             : m_KeyBindings(keyBindings) {}
 
         std::unordered_map<std::string, std::string> m_KeyBindings;
+        sf::Keyboard::Key pressedKey;
+        bool keyIsPressed = false;
     };
 }

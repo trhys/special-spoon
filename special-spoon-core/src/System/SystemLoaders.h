@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core/Core.h"
+#include "Utils/Macros.h"
+
 #include "nlohmann/json.hpp"
 
 #include <memory>

@@ -54,7 +54,11 @@ namespace Spoon
 
         bool IsQuitRequested() { return quitFlag; }
         bool IsSceneChangeRequested() { return sceneChangeFlag; }
-        std::string ConsumeChangeRequest() { return m_CurrentScene; }
+        std::string ConsumeChangeRequest() 
+        { 
+            sceneChangeFlag = false;
+            return m_CurrentScene; 
+        }
 
     private:
         SceneManager& r_SceneManager;

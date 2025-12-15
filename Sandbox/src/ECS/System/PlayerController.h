@@ -24,32 +24,36 @@ public:
 
             Spoon::StatusComp& status = manager.GetComponent<Spoon::StatusComp>(ID);
             MovementComp& movement = manager.GetComponent<MovementComp>(ID);
+            Spoon::InputComp& input = manager.GetComponent<Spoon::InputComp>(ID);
 
-            movement.m_Velocity = {0.0, 0.0};
-            status.m_CurrentState = "Player-IdleFront";
+            if (movement.m_Velocity == sf::Vector2f{ 0.0, 0.0 })
+            {
+                status.m_CurrentState = "Player-IdleFront";
+            }
+            movement.m_Velocity = { 0.0, 0.0 };
 
             auto found = actionBuffer.find(ID);
-            if(found != actionBuffer.end())
+            if (found != actionBuffer.end())
             {
                 std::string triggeredAction = found->second;
                 status.m_CurrentState = triggeredAction;
+            }
 
-                if(triggeredAction == "MoveUp")
-                {
-                    movement.m_Velocity.y += movement.m_Speed;
-                }
-                else if(triggeredAction == "MoveDown")
-                {
-                    movement.m_Velocity.y -= movement.m_Speed;
-                }
-                else if(triggeredAction == "MoveLeft")
-                {
-                    movement.m_Velocity.x -= movement.m_Speed;
-                }
-                else if(triggeredAction == "MoveRight")
-                {
-                    movement.m_Velocity.x += movement.m_Speed;
-                }
+            if(status.m_CurrentState == "MoveUp" && input.keyIsPressed)
+            {
+                movement.m_Velocity.y -= movement.m_Speed;
+            }
+            else if(status.m_CurrentState == "MoveDown" && input.keyIsPressed)
+            {
+                movement.m_Velocity.y += movement.m_Speed;
+            }
+            else if(status.m_CurrentState == "MoveLeft" && input.keyIsPressed)
+            {
+                movement.m_Velocity.x -= movement.m_Speed;
+            }
+            else if (status.m_CurrentState == "MoveRight" && input.keyIsPressed)
+            {
+                movement.m_Velocity.x += movement.m_Speed;
             }
         }
     }

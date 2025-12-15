@@ -1,15 +1,14 @@
 #pragma once
 
+#include "Core/Core.h"
 #include <fstream>
 #include <vector>
 
 namespace Spoon
 {
-    class Logger
+    class SPOON_API Logger
     {
     public:
-        Logger() {}
-
         static Logger& Get()
         {
             static Logger instance;
@@ -55,6 +54,10 @@ namespace Spoon
         }
 
     private:
+        Logger() {}
+        Logger(const Logger&) = delete;
+        Logger& operator=(const Logger&) = delete;
+
         std::ofstream m_LogFile;
         std::vector<std::string> m_EarlyMessageBuffer;
     };

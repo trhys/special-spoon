@@ -32,5 +32,5 @@ void RegisterCustomLoaders()
 {
     Spoon::ComponentLoaders::RegisterCompLoader("Patrol", &LoadPatrolComponent);
     Spoon::ComponentLoaders::RegisterCompLoader("Movement", &LoadMovementComp);
-    Spoon::ComponentLoaders::RegisterCompLoader("Player", &LoadPlayerComp);
+    Spoon::ComponentLoaders::RegisterCompLoader("PlayerComp", &LoadPlayerComp);
 }

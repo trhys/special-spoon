@@ -25,66 +25,67 @@
 
         {
             "ID": "Player",
-            "Components": 
-            {
-                "Transform": 
-                {
-                    "Position": { "x": 540.0, "y": 540.0 },
-                    "Scale": { "x": 1.0, "y": 1.0 },
-                    "Rotation": 0.0
-                },
+          "Components": {
+            "PlayerComp": {
+            },
+            "Transform": {
+              "Position": {
+                "x": 540.0,
+                "y": 540.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0
+              },
+              "Rotation": 0.0
+            },
 
-                "Sprite": 
-                {
-                    "TextureID": "Player"
-                },
+            "Movement": {
+              "Speed": 100.0
+            },
 
-                "RenderLayer": 
-                {
-                    "Layer" : 10
-                },
+            "Sprite": {
+              "TextureID": "Player"
+            },
 
-                "Input": 
-                {
-                    "KeyBindings" : 
-                    {
-                        "W" : "MoveUp",
-                        "S" : "MoveDown",
-                        "A" : "MoveLeft",
-                        "D" : "MoveRight",
-                        "Escape" : "SceneChange"
-                    }
-                },
+            "RenderLayer": {
+              "Layer": 10
+            },
 
-                "StateAction" : 
-                {
-                    "Actions" : 
-                    {
-                        "SceneChange" : "MainMenu"
-                    }
-                },
+            "Input": {
+              "KeyBindings": {
+                "W": "MoveUp",
+                "S": "MoveDown",
+                "A": "MoveLeft",
+                "D": "MoveRight",
+                "Esc": "SceneChange"
+              }
+            },
 
-                "Status":
-                {
-                    "CurrentState": "Player-IdleFront"
-                },
+            "StateAction": {
+              "Actions": {
+                "SceneChange": "MainMenu"
+              }
+            },
 
-                "Animation":
-                {
-                    "AnimationID": "Player-IdleFront",
-                    "AnimationMap":
-                    {
-                        "IdleFront": "Player-IdleFront",
-                        "IdleBack": "Player-IdleBack",
-                        "IdleLeft": "Player-IdleLeft",
-                        "IdleRight": "Player-IdleRight",
-                        "MoveUp": "Player-WalkUp",
-                        "MoveDown": "Player-WalkDown",
-                        "MoveRight": "Player-WalkRight",
-                        "MoveLeft": "Player-WalkLeft"
-                    }
-                }
+            "Status": {
+              "CurrentState": "Player-IdleFront"
+            },
+
+            "Animation": {
+              "AnimationID": "Player-IdleFront",
+              "AnimationMap": {
+                "Player-IdleFront": "Player-IdleFront",
+                "Player-IdleBack": "Player-IdleBack",
+                "Player-IdleLeft": "Player-IdleLeft",
+                "Player-IdleRight": "Player-IdleRight",
+                "MoveUp": "Player-WalkUp",
+                "MoveDown": "Player-WalkDown",
+                "MoveRight": "Player-WalkRight",
+                "MoveLeft": "Player-WalkLeft"
+              }
             }
+          }
         }
     ],
 
@@ -97,12 +98,20 @@
             "Type": "Patrol"
         },
 
-        {
-            "Type": "Physics",
-            "GridSize": {
-                "Width": 1080,
-                "Height": 1080
-            }
+      {
+        "Type": "Physics",
+        "GridSize": {
+          "Width": 1080,
+          "Height": 1080
         }
+      },
+
+      {
+        "Type": "Movement"
+      },
+
+      {
+        "Type": "PlayerController"
+      }
     ]
 }

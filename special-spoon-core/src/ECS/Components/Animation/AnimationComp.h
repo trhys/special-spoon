@@ -15,7 +15,7 @@ namespace Spoon
         }
 
         AnimationData* m_AnimationData = nullptr;
-        std::unordered_map<std::string, std::string> m_AnimationMap;
+        std::unordered_map<std::string, std::string> m_AnimationMap; // [key, value] = [state, animationID]
 
         int currentFrame = 0;
         float elapsedTime = 0.0f;

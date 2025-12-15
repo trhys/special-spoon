@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "Application.h"
+#include "Utils/Macros.h"
 
 extern Spoon::Application* Spoon::CreateApp();
 

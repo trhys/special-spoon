@@ -4,6 +4,7 @@
 #include "ComponentLoaders.h"
 #include "System/SystemManager.h"
 #include "System/SystemLoaders.h"
+#include "Utils/Macros.h"
 
 #include "nlohmann/json.hpp"
 
@@ -180,9 +181,9 @@ namespace Spoon
             for(auto& system : sceneData["Systems"])
             {
                 std::string systemID = system["Type"].get<std::string>();
-                SS_DEBUG_LOG("Loading system:" + systemID)
+                SS_DEBUG_LOG("Loading system: " + systemID)
                 systemManager.AddSystem(system);
-                SS_DEBUG_LOG("Successfully loaded system" + systemID)
+                SS_DEBUG_LOG("Successfully loaded system: " + systemID)
             }
         }
         catch(const json::exception& e)

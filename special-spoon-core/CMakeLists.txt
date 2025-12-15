@@ -62,6 +62,7 @@ target_sources(special-spoon-core
         src/Utils/MemoryUtils.h
         src/Utils/Logger.h
         src/Utils/KeyMappings.h
+        src/Utils/Macros.h
 )
 
    

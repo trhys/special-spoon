@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "Utils/Macros.h"
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 #include "ComponentArray.h"
