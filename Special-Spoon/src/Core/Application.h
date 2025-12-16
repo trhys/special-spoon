@@ -41,10 +41,7 @@ namespace Spoon
 
 	private:
 		static Application* s_Instance;
-		bool m_IsRunning = true;
-
-		AppSpecifications m_Specs;
-		sf::RenderWindow  m_Window;
+		bool m_IsRunning = true;	
 		
 		ResourceManager   m_ResourceManager;
 		SceneManager	  m_SceneManager;
@@ -52,6 +49,9 @@ namespace Spoon
 		InputSystem		  m_InputSystem;
 		SystemManager	  m_SystemManager;
 		Editor 			  m_Editor;
+
+		AppSpecifications m_Specs;
+		sf::RenderWindow  m_Window;
 	};
 
 	//DEFINE IN CLIENT APPLICATION

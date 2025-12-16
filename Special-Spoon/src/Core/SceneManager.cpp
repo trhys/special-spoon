@@ -45,6 +45,7 @@ namespace Spoon
 
     void SceneManager::LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager)
     {
+        UnloadScene(entityManager, systemManager);
         SS_DEBUG_LOG("Loading scene: " + id)
         // Find scene in manifest
         auto found = m_SceneManifest.find(id);

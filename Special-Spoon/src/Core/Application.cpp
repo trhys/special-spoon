@@ -109,7 +109,7 @@ namespace Spoon
 
             m_Window.display();
         }
-        ImGui::SFML::Shutdown();
+        if(m_Specs.m_EditorEnabled) ImGui::SFML::Shutdown();
         m_Window.close();
         return;
     }
