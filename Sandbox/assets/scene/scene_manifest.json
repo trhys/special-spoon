@@ -5,7 +5,6 @@
       "Resources": "assets/scene/MainMenu_res.json",
       "Data": "assets/scene/MainMenu_data.json"
     },
-
     {
       "ID": "Arena",
       "Resources": "assets/scene/Arena_res.json",

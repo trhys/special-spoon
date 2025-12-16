@@ -181,5 +181,7 @@ namespace Spoon
             LoadArray<StateActionComp>();
             LoadArray<RenderLayer>();
         }
+
+        std::unordered_map<UUID, std::string> m_ActionsBuffer;
     };
 }
