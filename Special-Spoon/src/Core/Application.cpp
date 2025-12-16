@@ -42,8 +42,9 @@ namespace Spoon
         sf::RenderStates states;
         sf::Clock clock;
 
-        m_SystemManager.InitializeStateSystem(m_SceneManager);
+        bool play = true;
         
+        m_SystemManager.InitializeStateSystem(m_SceneManager);
         Renderer Renderer(m_Window);
 
         while (m_IsRunning)
@@ -81,22 +82,27 @@ namespace Spoon
                 m_Editor.Run(m_EntityManager, m_SceneManager, m_SystemManager);
             }
 
-            m_InputSystem.Update(tick, m_EntityManager);
-            
-            m_SystemManager.UpdateSystems(tick, m_EntityManager);
-            m_SystemManager.UpdateState(tick, m_EntityManager);
+            if(m_Specs.m_EditorEnabled) play = m_Editor.Play();
+            if(play)
+            {
+                m_InputSystem.Update(tick, m_EntityManager);
+                
+                m_SystemManager.UpdateSystems(tick, m_EntityManager);
+                m_SystemManager.UpdateState(tick, m_EntityManager);
 
-            if(m_SystemManager.GetStateSystem()->IsQuitRequested())
-            {
-                Application::Close();
-                break;
+                if(m_SystemManager.GetStateSystem()->IsQuitRequested())
+                {
+                    Application::Close();
+                    break;
+                }
+                if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
+                {
+                    std::string newState = m_SystemManager.GetStateSystem()->ConsumeChangeRequest();
+                    m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
+                }
             }
-            if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
-            {
-                std::string newState = m_SystemManager.GetStateSystem()->ConsumeChangeRequest();
-                m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
-            }
-            
+            else m_InputSystem.ClearEvents();
+
             // Render
             m_Window.clear();
 

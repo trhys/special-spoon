@@ -64,6 +64,11 @@ namespace Spoon
             m_KeyReleaseEvents.clear();
         }
     
+        void ClearEvents()
+        {
+            m_KeyPressEvents.clear();
+            m_KeyReleaseEvents.clear();
+        }
     private:
         std::vector<sf::Event::KeyPressed> m_KeyPressEvents;
         std::vector<sf::Event::KeyReleased> m_KeyReleaseEvents;

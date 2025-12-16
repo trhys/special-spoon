@@ -9,8 +9,9 @@ namespace Spoon
     class IComponentArray 
     {
     public:
-        virtual void Clear() {};
+        virtual void Clear() {}
         virtual bool HasEntity(UUID id) = 0;
+        virtual void RemoveComponent(UUID id) {}
     };
 
     template<typename COMP>
@@ -28,7 +29,7 @@ namespace Spoon
             m_Components.push_back(comp);
         }
 
-        void RemoveComponent(UUID id)
+        void RemoveComponent(UUID id) override
         {
             size_t deleteme = m_IdToIndex[id];
             size_t last = m_Components.size() - 1;
