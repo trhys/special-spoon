@@ -1,6 +1,14 @@
-[submodule "special-spoon-core/vendor/JSON"]
-	path = special-spoon-core/vendor/JSON
+[submodule "Special-Spoon/vendor/JSON"]
+	path = Special-Spoon/vendor/JSON
 	url = https://github.com/nlohmann/json.git
-[submodule "special-spoon-core/vendor/SFML"]
-	path = special-spoon-core/vendor/SFML
+[submodule "Special-Spoon/vendor/SFML"]
+	path = Special-Spoon/vendor/SFML
 	url = https://github.com/SFML/SFML.git
+[submodule "Special-Spoon/vendor/Imgui"]
+	path = Special-Spoon/vendor/Imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+
+[submodule "Special-Spoon/vendor/Imgui-sfml"]
+	path = Special-Spoon/vendor/Imgui-sfml
+	url = https://github.com/SFML/imgui-sfml.git

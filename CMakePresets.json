@@ -4,11 +4,10 @@
         {
             "name": "sandbox-debug",
             "displayName": "Sandbox DEBUG",
-            "description": "A demo of the special-spoon engine.(DEBUG MODE)",
+            "description": "(DEBUG MODE) Sandbox editor",
             "binaryDir": "build/debug",
             "cacheVariables":
             {
-                "BUILD_SANDBOX": "ON",
                 "DEBUG_MODE": "ON"
             }
         },
@@ -16,23 +15,10 @@
         {
             "name": "sandbox-release",
             "displayName": "Sandbox RELEASE",
-            "description": "A demo of the special-spoon engine.(RELEASE MODE)",
+            "description": "(RELEASE MODE) Sandbox editor",
             "binaryDir": "build/release",
             "cacheVariables":
             {
-                "BUILD_SANDBOX": "ON",
-                "DEBUG_MODE": "OFF"
-            }
-        },
-
-        {
-            "name": "core",
-            "displayName": "Special-Spoon",
-            "description": "The core special-spoon engine.",
-            "binaryDir": "build/core",
-            "cacheVariables":
-            {
-                "BUILD_SANDBOX": "OFF",
                 "DEBUG_MODE": "OFF"
             }
         }
@@ -46,10 +32,6 @@
         {
             "name": "sandbox-release",
             "configurePreset": "sandbox-release"
-        },
-        {
-            "name": "core",
-            "configurePreset": "core"
         }
     ]
 }

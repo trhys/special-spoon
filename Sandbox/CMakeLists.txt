@@ -1,6 +1,6 @@
 add_executable(Sandbox)
 
-target_link_libraries(Sandbox PRIVATE special-spoon-core)
+target_link_libraries(Sandbox PRIVATE Special-Spoon)
 
 target_sources(Sandbox
     PRIVATE
@@ -11,7 +11,12 @@ target_sources(Sandbox
         FILE_SET HEADERS
         FILES
             src/ECS/Component/PatrolComp.h
+            src/ECS/Component/MovementComp.h
+            src/ECS/Component/PlayerComp.h
+
             src/ECS/System/PatrolSystem.h
+            src/ECS/System/MovementSystem.h
+            src/ECS/System/PlayerController.h
             
             src/ECS/CustomCompLoader.h
             src/ECS/CustomSystemLoader.h
@@ -19,8 +24,8 @@ target_sources(Sandbox
 
 target_include_directories(Sandbox PRIVATE 
 ${CMAKE_CURRENT_SOURCE_DIR}/src
-${CMAKE_SOURCE_DIR}/special-spoon-core/src
-${CMAKE_BINARY_DIR}/special-spoon-core)
+${CMAKE_SOURCE_DIR}/Special-Spoon/src
+${CMAKE_BINARY_DIR}/Special-Spoon)
 
 set(ASSETS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 set(ASSETS_DESTINATION_DIR "$<TARGET_FILE_DIR:Sandbox>/assets")

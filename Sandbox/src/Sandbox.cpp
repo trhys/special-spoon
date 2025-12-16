@@ -13,8 +13,9 @@ public:
 
 void LoadCustomArrays(Spoon::EntityManager& manager)
 {
-	SS_DEBUG_LOG("Loading Patrol Component Array")
 	manager.LoadArray<PatrolComp>();
+	manager.LoadArray<MovementComp>();
+	manager.LoadArray<PlayerComp>();
 }
 
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
@@ -22,14 +23,16 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 {
 	SS_DEBUG_LOG("Loading custom components")
 	RegisterCustomLoaders();
+	SS_DEBUG_LOG("Loading custom arrays")
 	LoadCustomArrays(GetEntityManager());
 	SS_DEBUG_LOG("Custom loaders initialized")
 
+	SS_DEBUG_LOG("Loading custom systems")
 	RegisterCustomSystems();
+	SS_DEBUG_LOG("Custom systems loaded")
 
 	GetSceneManager().LoadManifest("assets/scene/scene_manifest.json");
-	GetSceneManager().LoadScene("MainMenu", GetEntityManager(), GetSystemManager());
-
+	//GetSceneManager().LoadScene("MainMenu", GetEntityManager(), GetSystemManager());
 }
 
 Spoon::Application* Spoon::CreateApp()
@@ -37,6 +40,7 @@ Spoon::Application* Spoon::CreateApp()
 	AppSpecifications spec;
 	spec.m_WindowSize = {1080, 1080};
 	spec.m_WindowName = "Sandbox";
+	spec.m_EditorEnabled = true;
 	return new Sandbox(spec);
 }
 

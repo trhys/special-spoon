@@ -1,0 +1,7 @@
+target_sources(Special-Spoon
+    PRIVATE
+        KeyMappings.h
+        Logger.h
+        Macros.h
+        MemoryUtils.h    
+)

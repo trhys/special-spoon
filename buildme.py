@@ -73,7 +73,7 @@ def buildme():
 
     selecting = True
     print("Select preset:\n") 
-    print(" sandbox-debug\n", "sandbox-release\n", "core")
+    print(" sandbox-debug\n", "sandbox-release\n")
     while selecting:
         configuration = input("\n: ")
         if configuration == "sandbox-debug":
@@ -81,9 +81,6 @@ def buildme():
             selecting = False
         elif configuration == "sandbox-release":
             preset_out_dir == "release"
-            selecting = False
-        elif configuration == "core":
-            preset_out_dir = "core"
             selecting = False
         else: print("\nInvalid preset\n\n")
 

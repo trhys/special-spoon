@@ -1,0 +1,23 @@
+target_sources(Special-Spoon
+    PRIVATE
+        Components/Component.h
+        Components/InputComp.h
+        Components/PhysicsComp.h
+        Components/StateActionComp.h
+        Components/StatusComp.h
+        Components/TransformComp.h
+
+        Components/Animation/AnimationComp.h
+        Components/Animation/AnimationData.h
+        Components/Animation/BlinkComp.h
+        Components/Animation/FadeComp.h
+
+        Components/Render/SpriteComp.h
+        Components/Render/TextComp.h
+        Components/Render/ColorComp.h
+        Components/Render/RenderLayer.h
+        
+        ECS.h
+        Entity.h
+        Entity.inl
+)
