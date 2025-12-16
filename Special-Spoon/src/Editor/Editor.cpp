@@ -76,6 +76,7 @@ namespace Spoon
             ImGui::EndListBox();
             ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
         }
+        ImGui::End();
     }
 
     static void HelpMarker(const char* desc)
