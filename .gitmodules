@@ -8,6 +8,4 @@
 	path = Special-Spoon/vendor/Imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "Special-Spoon/vendor/Imgui-sfml"]
-	path = Special-Spoon/vendor/Imgui-sfml
-	url = https://github.com/SFML/imgui-sfml.git
+
