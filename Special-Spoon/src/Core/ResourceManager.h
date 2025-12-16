@@ -7,14 +7,56 @@
 #include "SFML/Audio.hpp"
 
 #include <type_traits>
+#include <filesystem>
 
 namespace Spoon
 {
+    struct AssetNode
+    {
+        AssetNode(std::string name, std::filesystem::path path, bool dir)
+            : m_Name(name), m_Path(path), isDir(dir) {}
+        std::string m_Name;
+        std::filesystem::path m_Path;
+        bool isDir;
+        std::vector<std::unique_ptr<AssetNode>> m_Children;
+    }
+
     class SPOON_API ResourceManager
     {
     public:
         ResourceManager() {}
         ~ResourceManager() {}
+
+        static void ScanAssets(const std::filesystem::path& rootDir)
+        {
+            fileRoot = std::make_unique<AssetNode>(rootDir.stem().string(), rootDir.path(), true);
+            
+            std::map<fs::path, AssetNode*> dirMap;
+            dirMap[rootDir] = fileRoot.get();
+
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(rootDir))
+            {
+                std::filesystem::path entryP = entry.path();
+                std::filesystem::path parentP = entryP.path();
+
+                AssetNode* parentNode = dirMap[parentP];
+
+                std::unique_ptr<AssetNode> newNode = std::make_unique<AssetNode>(
+                    entry.stem().string(), 
+                    entryP, 
+                    entry.is_directory()
+                );
+
+                AssetNode* newNodePtr = newNode.get();
+
+                parentNode->m_Children.push_back(std::move(newNode));
+
+                if (entry.is_directory())
+                {
+                    dirMap[entryPath] = newNodePtr;
+                }
+            }
+        }
 
         template<typename RESOURCE>
         static void LoadResource(const std::string id, const std::filesystem::path file_path)
@@ -30,6 +72,7 @@ namespace Spoon
                         throw std::runtime_error("Failed to load texture from file path: " + file_path.string());
                     }
                     m_Textures.emplace(id, std::move(texture));
+                    m_TexturePaths[id] = file_path;
                 }
             }
             else if constexpr(std::is_same_v<RESOURCE, sf::Font>)
@@ -115,10 +158,15 @@ namespace Spoon
             m_SoundBuffers.clear();
         }
         
+        static const std::unordered_map<std::string, std::filesystem::path>& GetTextureMap() { return m_TexturePaths; }
+
     private:
         static inline std::unordered_map<std::string, sf::Texture> m_Textures;
+        static inline std::unordered_map<std::string, std::filesystem::path> m_TexturePaths;
         static inline std::unordered_map<std::string, sf::Font> m_Fonts;
         static inline std::unordered_map<std::string, AnimationData> m_Animations;
         static inline std::unordered_map<std::string, sf::SoundBuffer> m_SoundBuffers;
+
+        static inline std::unique_ptr<AssetNode> fileRoot;
     };
 }

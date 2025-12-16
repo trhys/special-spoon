@@ -1,5 +1,6 @@
 #include "Editor.h"
 #include "Core/EntityManager.h"
+#include "Core/ResourceManager.h"
 #include "Core/SceneManager.h"
 #include "System/SystemManager.h"
 
@@ -10,8 +11,12 @@ namespace Spoon
 {
     static void HelpMarker(const char* desc);
 
+    struct ResourceManagerNode; // Used for the resource manager table
+
     bool LoadScene = false;
     bool ViewEntities = true;
+
+    // ===================================================================
 
     void Editor::Stop() 
     {
@@ -130,6 +135,67 @@ namespace Spoon
         ImGui::TreePop();
         ImGui::EndChild();
     }
+
+    void Editor::ViewResourcesMenu()
+    {
+        ImGui::Begin("Resources");
+        if(ImGui::BeginTable("Resource Manager"))
+        {
+            static ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth;
+
+            // Setup table
+            ImGui::TableSetupColumn("Name");
+            ImGui::TableSetupColumn("Size");
+            ImGui::TableSetupColumn("Type");
+            ImGui::TableHeadersRow();
+
+            // Populate
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+
+            bool openTextures = ImGui::TreeNodeEx("Textures", ImGuiTreeNodeFlags_SpanFullWidth);
+
+            ImGui::TableNextColumn();
+            ImGui::TextDisabled("--");
+            ImGui::TableNextColumn();
+            ImGui::TextDisabled("--");
+
+            if(openTextures)
+            {
+                for(const auto& [id, file] : ResourceManager::GetTextureMap())
+                {
+                    auto sizeInBytes = std::filesystem::file_size(file);
+                    std::string sizeStr = std::to_string(sizeInBytes);
+
+                    ImGui::PushID(id.c_str());
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TreeNodeEx(id.c_str(), childFlags);
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted(sizeStr.c_str());
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted("Image file");
+                    
+                    ImGui::PopID();
+                }
+                ImGui::TreePop();
+            }
+            ImGui::EndTable();
+        }
+
+        ImGui::End();
+    }
+
+    // ============================================================
+
+    // struct ResourceManagerNode
+    // {
+    //     const char*     Name;
+    //     const char*     Type;
+    //     int             Size;
+    //     int             ChildIndex;
+    //     int             ChildCount;
+    // }
 
     static void HelpMarker(const char* desc)
     {

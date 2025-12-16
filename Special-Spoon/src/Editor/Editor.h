@@ -19,6 +19,7 @@ namespace Spoon
 
         void ViewEntitiesMenu(EntityManager& manager);
         void LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager);
+        void ViewResourcesMenu();
 
     private:
         bool m_Play = false;
