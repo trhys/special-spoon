@@ -23,9 +23,11 @@ namespace Spoon
         void LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager);
         void ViewResourcesMenu();
         void ViewAssets(AssetNode* node);
-
+        
     private:
         AssetNode* workingDir = nullptr;
         bool m_Play = false;
     };
+
+    void HelpMarker(const char* desc);
 }

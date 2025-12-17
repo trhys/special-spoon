@@ -9,8 +9,6 @@
 
 namespace Spoon
 {
-    static void HelpMarker(const char* desc);
-
     struct ResourceManagerNode; // Used for the resource manager table
 
     bool LoadScene = false;
@@ -174,24 +172,6 @@ namespace Spoon
                 ImGui::EndChild();
             }
         }
-        // if (ImGui::TreeNodeEx(selectedName.empty() ? "##Empty" : selectedName.c_str()))
-        // {
-        //     for(const auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
-        //     {
-        //         ImGui::PushID(comp.c_str());
-        //         
-        //         if (ImGui::TreeNodeEx(comp.c_str()))
-        //         {
-        //             
-                
-                    
-        //             ImGui::TreePop();
-        //         }
-        //         ImGui::PopID();
-        //     }
-        //     if(ImGui::Button("Add component")) {}
-        //     ImGui::TreePop();
-        // }
         ImGui::EndChild();
     }
 
@@ -262,7 +242,7 @@ namespace Spoon
         ImGui::PopID();
     }
 
-    static void HelpMarker(const char* desc)
+    void HelpMarker(const char* desc)
     {
         ImGui::TextDisabled("(?)");
         if (ImGui::BeginItemTooltip())

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
+#include "Editor/Editor.h"
 
 #include "SFML/Window/Keyboard.hpp"
 
@@ -24,7 +25,82 @@ namespace Spoon
 
         void OnReflect() override
         {
+            static std::string currentKey = "";
+            if(ImGui::BeginListBox("Key Bindings"))
+            {
+                for(auto& [key, action] : m_KeyBindings)
+                {   
+                    ImGui::PushID(key.c_str());
+                    const bool is_selected = (currentKey == key);
+                    if(ImGui::Selectable(key.c_str(), is_selected))
+                    {
+                        currentKey = key;
+                    }
+                    if(is_selected)
+                        ImGui::SetItemDefaultFocus();
+                    ImGui::PopID();
+                }
+                ImGui::EndListBox();
+            }
+            ImGui::SameLine(); HelpMarker("Key bindings maps a keypress to an action string\nthat gets sent to the action buffer");
             
+            ImGui::SeparatorText("Action String Mapping");
+            if(!currentKey.empty() && m_KeyBindings.count(currentKey))
+            {
+                const char* editWindow = "Edit Binding";
+
+                ImGui::Text("Key: %s", currentKey.c_str());
+                ImGui::Text("Action: %s", m_KeyBindings[currentKey].c_str());
+                ImGui::SameLine(); if(ImGui::Button("Edit")) ImGui::OpenPopup(editWindow);
+
+                if(ImGui::BeginPopup(editWindow))
+                {   
+                    static char actionStringbuf[64];
+                    static char keyStringbuf[64];
+                    ImGui::InputText("New Key", keyStringbuf, IM_ARRAYSIZE(keyStringbuf));
+                    ImGui::InputText("New Action String", actionStringbuf, IM_ARRAYSIZE(actionStringbuf));
+                    if(ImGui::Button("Submit"))
+                    {
+                        if(keyStringbuf[0] != '\0' && actionStringbuf[0] != '\0')
+                        {
+                            currentKey = keyStringbuf;
+                            m_KeyBindings[keyStringbuf] = actionStringbuf;
+                            m_KeyBindings.erase(currentKey);
+                            ImGui::CloseCurrentPopup();
+                        }
+                    }
+                    ImGui::SameLine();
+                    if(ImGui::Button("Delete"))
+                    {
+                        m_KeyBindings.erase(currentKey);
+                        currentKey = "";
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+            else
+            {
+                ImGui::TextDisabled("No mapping available");
+            }
+            const char* newBindWindow = "New Binding";
+            if(ImGui::Button("New"))
+            {
+                ImGui::OpenPopup(newBindWindow);
+            }
+            if(ImGui::BeginPopup(newBindWindow))
+            {
+                static char newKeyBuf[64];
+                static char newActionBuf[64];
+                ImGui::InputText("New Key", newKeyBuf, IM_ARRAYSIZE(newKeyBuf));
+                ImGui::InputText("New Action String", newActionBuf, IM_ARRAYSIZE(newActionBuf));
+                if(ImGui::Button("Submit"))
+                {
+                    m_KeyBindings[newKeyBuf] = newActionBuf;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
         }
     };
 }
