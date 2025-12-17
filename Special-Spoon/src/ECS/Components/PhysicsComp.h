@@ -32,7 +32,9 @@ namespace Spoon
 
         void OnReflect() override
         {
-
+            ImGui::Text("POS X: %.2f", m_CollisionBox.position.x);
+            ImGui::Text("POS Y: %.2f", m_CollisionBox.position.y);
+            ImGui::Text("Collision detected? : %s", Collided ? "True" : "False");
         }
         
     private:
