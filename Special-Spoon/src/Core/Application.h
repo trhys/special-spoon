@@ -30,6 +30,7 @@ namespace Spoon
 
 		void Close();
 		void Run();
+		void Update(sf::Time tick);
 		
 		static Application& Get() { return *s_Instance; }
 		AppSpecifications GetSpecs() { return m_Specs; }

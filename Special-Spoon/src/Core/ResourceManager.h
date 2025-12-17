@@ -13,17 +13,37 @@
 
 namespace Spoon
 {
+    // For populating the editor's resource view
+    // ScanAssets() recurses the working directory and
+    // sets the fileRoot member to the top of this node graph 
     struct AssetNode
     {
-        AssetNode(std::string name, std::filesystem::path path, bool dir)
-            : m_Name(name), m_Path(path), isDir(dir) {
-        }
+        AssetNode(std::string name, std::filesystem::path path, std::string extension = "", bool dir = true)
+            : m_Name(name), m_Path(path), m_Ext(extension), isDir(dir) 
+            {
+                if(dir) { return; }
+                try {
+                    auto size = std::filesystem::file_size(path);
+                    if(size >= 1024 * 1024)
+                    {
+                        int sizeInMB = size / (1024 * 1024);
+                        m_Size = std::to_string(sizeInMB) + "MB";
+                    }
+                    else 
+                    {
+                        auto sizeInKB = size / 1024;
+                        m_Size = std::to_string(sizeInKB) + "KB";
+                    }
+                } catch (const std::filesystem::filesystem_error& e) { m_Size = "Error"; }
+            }
+
         std::string m_Name;
         std::filesystem::path m_Path;
+        std::string m_Ext;
         bool isDir;
+        std::string m_Size;
         std::vector<std::unique_ptr<AssetNode>> m_Children;
     };
-
 
     class SPOON_API ResourceManager
     {
@@ -36,10 +56,29 @@ namespace Spoon
             return p.lexically_normal().make_preferred();
         }
 
+        static std::string CheckExtension(std::filesystem::path p)
+        {
+            if(std::filesystem::is_directory(p))
+                return "Folder";
+
+            std::string extension = p.extension().string();
+            for(auto& c : extension)
+            {
+                c = std::tolower(c);
+            }
+            if(extension == ".png" || extension == "jpeg" || extension == ".jpg" || extension == ".svg")
+                return "Image file";
+
+            if(extension == ".wav" || extension == ".mp3")
+                return "Sound file";
+            
+            return "Unknown";
+        }
+
         static void ScanAssets(const std::filesystem::path& rootDir)
         {
             auto normalRoot = Normalize(rootDir);
-            fileRoot = std::make_unique<AssetNode>(normalRoot.stem().string(), normalRoot, true);
+            fileRoot = std::make_unique<AssetNode>(normalRoot.stem().string(), normalRoot, "Root", true);
             
             std::map<std::filesystem::path, AssetNode*> dirMap;
             dirMap[normalRoot] = fileRoot.get();
@@ -58,7 +97,8 @@ namespace Spoon
 
                 std::unique_ptr<AssetNode> newNode = std::make_unique<AssetNode>(
                     entryP.stem().string(), 
-                    entryP, 
+                    entryP,
+                    CheckExtension(entryP),
                     entry.is_directory()
                 );
 
@@ -66,7 +106,6 @@ namespace Spoon
 
                 parentNode->m_Children.push_back(std::move(newNode));
                 
-
                 if (entry.is_directory())
                 {
                     dirMap[Normalize(entryP)] = newNodePtr;
@@ -174,7 +213,7 @@ namespace Spoon
             m_SoundBuffers.clear();
         }
         
-        static const std::unordered_map<std::string, std::filesystem::path>& GetTextureMap() { return m_TexturePaths; }
+        static AssetNode* GetAssetsDir() { return fileRoot.get(); }
 
     private:
         static inline std::unordered_map<std::string, sf::Texture> m_Textures;

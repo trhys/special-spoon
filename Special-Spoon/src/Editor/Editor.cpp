@@ -15,6 +15,7 @@ namespace Spoon
 
     bool LoadScene = false;
     bool ViewEntities = true;
+    bool ViewResources = false;
 
     // ===================================================================
 
@@ -25,12 +26,14 @@ namespace Spoon
 
     bool Editor::Play()
     {
-        m_Play = true;
         return m_Play;
     }
 
     void Editor::Run(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
     {
+        if(!workingDir)
+            ResourceManager::GetAssetsDir();
+
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
         ImGui::Begin("Special-Spoon Editor", nullptr, window_flags);
 
@@ -47,16 +50,29 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Entity Manager"))
             {
-                if (ImGui::MenuItem("Entity Viewer")) ViewEntities = !ViewEntities;
+                if (ImGui::MenuItem("Entity View")) ViewEntities = !ViewEntities;
                 ImGui::EndMenu();
             }
+
+            if(ImGui::BeginMenu("Resource Manager"))
+            {
+                if(ImGui::MenuItem("Resource View")) ViewResources = !ViewResources;
+                ImGui::EndMenu();
+            }
+
+            if(ImGui::Button("Play")) 
+                m_Play = true;
+            if(ImGui::Button("Stop"))
+                Stop();
+
             ImGui::EndMenuBar();
         }
-        ImGui::SeparatorText("Scene object view");
+        ImGui::SeparatorText("Object viewer");
         if (ViewEntities) ViewEntitiesMenu(e_Manager);
         
         ImGui::End();
         if (LoadScene) { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
+        if (ViewResources) { ViewResourcesMenu(); }
     }
 
     void Editor::LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
@@ -99,6 +115,7 @@ namespace Spoon
         {
             for (const auto& [uuid, name] : entities)
             {
+                ImGui::PushID(name.c_str());
                 const bool is_selected = (selectedID == uuid);
                 if (ImGui::Selectable(name.c_str(), is_selected))
                 {
@@ -107,6 +124,7 @@ namespace Spoon
                 }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
+                ImGui::PopID();
             }
             ImGui::EndListBox();
             ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
@@ -128,7 +146,7 @@ namespace Spoon
                     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
                     if(ImGui::BeginPopupModal(popupName))
                     {
-                        ImGui::Text("Are you sure you want to delete this component? This cannot be undone! // todo: undo/redo");
+                        ImGui::Text("Are you sure you want to\ndelete this component? This cannot be undone!");
                         if(ImGui::Button("Delete")) { e_Manager.KillComponent(comp, selectedID); }
                         ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
                         ImGui::EndPopup();
@@ -160,49 +178,55 @@ namespace Spoon
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
 
-            bool openTextures = ImGui::TreeNodeEx("Textures", ImGuiTreeNodeFlags_SpanFullWidth);
-
-            ImGui::TableNextColumn();
-            ImGui::TextDisabled("--");
-            ImGui::TableNextColumn();
-            ImGui::TextDisabled("--");
-
-            if(openTextures)
-            {
-                for(const auto& [id, file] : ResourceManager::GetTextureMap())
-                {
-                    auto sizeInBytes = std::filesystem::file_size(file);
-                    std::string sizeStr = std::to_string(sizeInBytes);
-
-                    ImGui::PushID(id.c_str());
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::TreeNodeEx(id.c_str(), childFlags);
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted(sizeStr.c_str());
-                    ImGui::TableNextColumn();
-                    ImGui::TextUnformatted("Image file");
-                    
-                    ImGui::PopID();
-                }
-                ImGui::TreePop();
-            }
+            ViewAssets(workingDir);
             ImGui::EndTable();
         }
+
+        if(ImGui::Button("Refresh"))
+            workingDir = ResourceManager::GetAssetsDir();
 
         ImGui::End();
     }
 
-    // ============================================================
+    void Editor::ViewAssets(AssetNode* node)
+    {
+        ImGui::PushID(node->m_Path.string().c_str());
 
-    // struct ResourceManagerNode
-    // {
-    //     const char*     Name;
-    //     const char*     Type;
-    //     int             Size;
-    //     int             ChildIndex;
-    //     int             ChildCount;
-    // }
+        ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+        ImGuiTreeNodeFlags leaf_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+        if(node->isDir)
+        {
+            bool isOpen = ImGui::TreeNodeEx(node->m_Name.c_str(), base_flags);
+
+            ImGui::TableNextColumn();
+            ImGui::TextDisabled("--");
+            ImGui::TableNextColumn();
+            ImGui::TextDisabled("--");
+
+            if(isOpen)
+            {
+                for(const auto& child : node->m_Children)
+                {
+                    ViewAssets(child.get());
+                }
+            }
+            ImGui::TreePop();
+        }
+        else
+        {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(node->m_Size.c_str());
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(node->m_Ext.c_str());
+        }          
+        ImGui::PopID();
+    }
 
     static void HelpMarker(const char* desc)
     {

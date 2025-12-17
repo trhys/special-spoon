@@ -31,8 +31,7 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	RegisterCustomSystems();
 	SS_DEBUG_LOG("Custom systems loaded")
 
-	GetSceneManager().LoadManifest("assets/scene/scene_manifest.json");
-	//GetSceneManager().LoadScene("MainMenu", GetEntityManager(), GetSystemManager());
+	GetSceneManager().LoadManifest("data/scene/scene_manifest.json");
 }
 
 Spoon::Application* Spoon::CreateApp()

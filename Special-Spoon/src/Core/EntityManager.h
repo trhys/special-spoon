@@ -170,6 +170,11 @@ namespace Spoon
             }
         }
 
+        void ClearEntities()
+        {
+            m_Entities.clear();
+        }
+
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<UUID> m_RecycledIds;

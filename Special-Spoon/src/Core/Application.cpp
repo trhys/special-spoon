@@ -37,6 +37,24 @@ namespace Spoon
         m_IsRunning = false;
     }
 
+    void Application::Update(sf::Time tick)
+    {
+        m_InputSystem.Update(tick, m_EntityManager);
+                
+        m_SystemManager.UpdateSystems(tick, m_EntityManager);
+        m_SystemManager.UpdateState(tick, m_EntityManager);
+
+        if(m_SystemManager.GetStateSystem()->IsQuitRequested())
+        {
+            Application::Close();
+        }
+        if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
+        {
+            std::string newState = m_SystemManager.GetStateSystem()->ConsumeChangeRequest();
+            m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
+        }
+    }
+
     void Application::Run()
     {
         sf::RenderStates states;
@@ -58,20 +76,10 @@ namespace Spoon
                 [&](const sf::Event::MouseMoved& event) { if(m_Specs.m_EditorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::TextEntered& event) { if(m_Specs.m_EditorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
 
-                [&](const sf::Event::KeyPressed& event)
-                {
-                    m_InputSystem.PushKeyPress(event);
-                },
+                [&](const sf::Event::KeyPressed& event) { m_InputSystem.PushKeyPress(event); },
+                [&](const sf::Event::KeyReleased& event) { m_InputSystem.PushKeyRelease(event); },
 
-                [&](const sf::Event::KeyReleased& event)
-                {
-                    m_InputSystem.PushKeyRelease(event);
-                },
-
-                [&](const sf::Event::Closed& event)
-                {
-                    Application::Close();
-                }
+                [&](const sf::Event::Closed& event) { Application::Close(); }
             );
 
             // Update systems
@@ -83,24 +91,11 @@ namespace Spoon
                 m_Editor.Run(m_EntityManager, m_SceneManager, m_SystemManager);
             }
 
+            // If the editor is on, you must start the scene - otherwise the application runs by default
             if(m_Specs.m_EditorEnabled) play = m_Editor.Play();
             if(play)
             {
-                m_InputSystem.Update(tick, m_EntityManager);
-                
-                m_SystemManager.UpdateSystems(tick, m_EntityManager);
-                m_SystemManager.UpdateState(tick, m_EntityManager);
-
-                if(m_SystemManager.GetStateSystem()->IsQuitRequested())
-                {
-                    Application::Close();
-                    break;
-                }
-                if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
-                {
-                    std::string newState = m_SystemManager.GetStateSystem()->ConsumeChangeRequest();
-                    m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
-                }
+                Application::Update(tick);
             }
             else m_InputSystem.ClearEvents();
 
