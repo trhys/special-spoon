@@ -8,18 +8,22 @@
 
 #include <type_traits>
 #include <filesystem>
+#include <memory>
+#include <map>
 
 namespace Spoon
 {
     struct AssetNode
     {
         AssetNode(std::string name, std::filesystem::path path, bool dir)
-            : m_Name(name), m_Path(path), isDir(dir) {}
+            : m_Name(name), m_Path(path), isDir(dir) {
+        }
         std::string m_Name;
         std::filesystem::path m_Path;
         bool isDir;
         std::vector<std::unique_ptr<AssetNode>> m_Children;
-    }
+    };
+
 
     class SPOON_API ResourceManager
     {
@@ -27,22 +31,33 @@ namespace Spoon
         ResourceManager() {}
         ~ResourceManager() {}
 
+        static std::filesystem::path Normalize(std::filesystem::path p)
+        {
+            return p.lexically_normal().make_preferred();
+        }
+
         static void ScanAssets(const std::filesystem::path& rootDir)
         {
-            fileRoot = std::make_unique<AssetNode>(rootDir.stem().string(), rootDir.path(), true);
+            auto normalRoot = Normalize(rootDir);
+            fileRoot = std::make_unique<AssetNode>(normalRoot.stem().string(), normalRoot, true);
             
-            std::map<fs::path, AssetNode*> dirMap;
-            dirMap[rootDir] = fileRoot.get();
+            std::map<std::filesystem::path, AssetNode*> dirMap;
+            dirMap[normalRoot] = fileRoot.get();
 
             for (const auto& entry : std::filesystem::recursive_directory_iterator(rootDir))
             {
                 std::filesystem::path entryP = entry.path();
-                std::filesystem::path parentP = entryP.path();
+                std::filesystem::path parentP = Normalize(entryP.parent_path());
 
-                AssetNode* parentNode = dirMap[parentP];
+                auto it = dirMap.find(parentP);
+                if (it == dirMap.end()) {
+                    continue;
+                }
+
+                AssetNode* parentNode = it->second;
 
                 std::unique_ptr<AssetNode> newNode = std::make_unique<AssetNode>(
-                    entry.stem().string(), 
+                    entryP.stem().string(), 
                     entryP, 
                     entry.is_directory()
                 );
@@ -50,10 +65,11 @@ namespace Spoon
                 AssetNode* newNodePtr = newNode.get();
 
                 parentNode->m_Children.push_back(std::move(newNode));
+                
 
                 if (entry.is_directory())
                 {
-                    dirMap[entryPath] = newNodePtr;
+                    dirMap[Normalize(entryP)] = newNodePtr;
                 }
             }
         }

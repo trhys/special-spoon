@@ -44,6 +44,7 @@ namespace Spoon
 
         bool play = true;
         
+        ResourceManager::ScanAssets(m_Specs.workingDir);
         m_SystemManager.InitializeStateSystem(m_SceneManager);
         Renderer Renderer(m_Window);
 

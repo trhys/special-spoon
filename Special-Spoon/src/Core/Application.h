@@ -19,6 +19,7 @@ namespace Spoon
 		sf::Vector2u m_WindowSize = {600, 600};
 		std::string m_WindowName = "Special Spoon";
 		bool m_EditorEnabled = true;
+		std::filesystem::path workingDir = "assets/";
 	};
 
 	class SPOON_API Application

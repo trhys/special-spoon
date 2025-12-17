@@ -31,31 +31,32 @@ namespace Spoon
 
     void Editor::Run(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
     {
-        ImGui::Begin("Special-Spoon Editor");
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
+        ImGui::Begin("Special-Spoon Editor", nullptr, window_flags);
 
-        if(ImGui::BeginMenuBar())
+        if (ImGui::BeginMenuBar())
         {
-            if(ImGui::BeginMenu("Scene"))
+            if (ImGui::BeginMenu("Scene"))
             {
-                if(ImGui::MenuItem("New")) {}
-                if(ImGui::MenuItem("Load")) LoadScene = true;
-                if(ImGui::MenuItem("Save")) {}
-                if(ImGui::MenuItem("Save As")) {}
+                if (ImGui::MenuItem("New")) {}
+                if (ImGui::MenuItem("Load")) LoadScene = true;
+                if (ImGui::MenuItem("Save")) {}
+                if (ImGui::MenuItem("Save As")) {}
+                ImGui::EndMenu();
             }
 
-            if(ImGui::BeginMenu("Entity Manager"))
+            if (ImGui::BeginMenu("Entity Manager"))
             {
-                if(ImGui::MenuItem("Entity Viewer")) ViewEntities = !ViewEntities;
+                if (ImGui::MenuItem("Entity Viewer")) ViewEntities = !ViewEntities;
+                ImGui::EndMenu();
             }
-
             ImGui::EndMenuBar();
-            if(LoadScene) { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
         }
-
         ImGui::SeparatorText("Scene object view");
-        if(ViewEntities) ViewEntitiesMenu(e_Manager);
-
+        if (ViewEntities) ViewEntitiesMenu(e_Manager);
+        
         ImGui::End();
+        if (LoadScene) { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
     }
 
     void Editor::LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
@@ -64,19 +65,21 @@ namespace Spoon
         const auto& scenes = s_Manager.GetManifest();
         static std::string selectedScene = "";
 
-        ImGui::BeginListBox("Scene Manifest");
-        for(const auto& [name, sceneData] : scenes)
+        if (ImGui::BeginListBox("Scene Manifest"))
         {
-            const bool is_selected = (selectedScene == name);
-            if(ImGui::Selectable(name.c_str(), is_selected))
-                selectedScene = name;
+            for (const auto& [name, sceneData] : scenes)
+            {
+                const bool is_selected = (selectedScene == name);
+                if (ImGui::Selectable(name.c_str(), is_selected))
+                    selectedScene = name;
 
-            if(is_selected)
-                ImGui::SetItemDefaultFocus();
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndListBox();
+            ImGui::SameLine(); HelpMarker("A list of available scenes in the manifest");
         }
-        ImGui::EndListBox();
-        ImGui::SameLine(); HelpMarker("A list of available scenes in the manifest");
-
+        
         if(ImGui::Button("Open"))
         {
             s_Manager.LoadScene(selectedScene, e_Manager, sys_Manager);
@@ -92,54 +95,58 @@ namespace Spoon
         static UUID selectedID = 0;
         static std::string selectedName = "";
 
-        ImGui::BeginListBox("Entities");
-        for(const auto& [uuid, name] : entities)
+        if (ImGui::BeginListBox("Entities"))
         {
-            const bool is_selected = (selectedID == uuid);
-            if (ImGui::Selectable(name.c_str(), is_selected))
+            for (const auto& [uuid, name] : entities)
             {
-                selectedID = uuid;
-                selectedName = name;
+                const bool is_selected = (selectedID == uuid);
+                if (ImGui::Selectable(name.c_str(), is_selected))
+                {
+                    selectedID = uuid;
+                    selectedName = name;
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
             }
-            if (is_selected)
-                ImGui::SetItemDefaultFocus();
+            ImGui::EndListBox();
+            ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
         }
-        ImGui::EndListBox();
-        ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
 
         ImGui::BeginChild("Component View");
-        if(ImGui::TreeNodeEx(selectedName.c_str()))
+        if (ImGui::TreeNodeEx(selectedName.empty() ? "##Empty" : selectedName.c_str()))
         {
             for(const auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
             {
                 ImGui::PushID(comp.c_str());
                 const char* popupName = "Delete?";
-                if(ImGui::TreeNodeEx(comp.c_str()));
-                if(ImGui::Button("Delete")) ImGui::OpenPopup(popupName);
-                
-                // Always center this window when appearing
-                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-                if(ImGui::BeginPopupModal(popupName))
+                if (ImGui::TreeNodeEx(comp.c_str()))
                 {
-                    ImGui::Text("Are you sure you want to delete this component? This cannot be undone! // todo: undo/redo");
-                    if(ImGui::Button("Delete")) { e_Manager.KillComponent(comp, selectedID); }
-                    ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
-                    ImGui::EndPopup();
+                    if(ImGui::Button("Delete")) ImGui::OpenPopup(popupName);
+                
+                    // Always center this window when appearing
+                    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+                    if(ImGui::BeginPopupModal(popupName))
+                    {
+                        ImGui::Text("Are you sure you want to delete this component? This cannot be undone! // todo: undo/redo");
+                        if(ImGui::Button("Delete")) { e_Manager.KillComponent(comp, selectedID); }
+                        ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::TreePop();
                 }
                 ImGui::PopID();
-                ImGui::TreePop();
             }
             if(ImGui::Button("Add component")) {}
+            ImGui::TreePop();
         }
-        ImGui::TreePop();
         ImGui::EndChild();
     }
 
     void Editor::ViewResourcesMenu()
     {
         ImGui::Begin("Resources");
-        if(ImGui::BeginTable("Resource Manager"))
+        if(ImGui::BeginTable("Resource Manager", 3))
         {
             static ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth;
 
