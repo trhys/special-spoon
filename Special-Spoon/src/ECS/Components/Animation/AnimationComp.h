@@ -6,10 +6,10 @@
 
 namespace Spoon
 {
-    struct AnimationComp : public Component
+    struct AnimationComp : public ComponentBase<AnimationComp>
     {
         AnimationComp(std::string animationID, std::unordered_map<std::string, std::string> animationMap = {}) 
-            : m_AnimationMap(animationMap)
+            : ComponentBase::ComponentBase("AnimationComp"), m_AnimationMap(animationMap)
         {
             m_AnimationData = ResourceManager::GetAnimationData(animationID);
         }
@@ -24,6 +24,11 @@ namespace Spoon
         void SetAnimationData(const std::string animationID)
         {
             m_AnimationData = ResourceManager::GetAnimationData(animationID);
+        }
+
+        void OnReflect() override
+        {
+            
         }
     };
 }

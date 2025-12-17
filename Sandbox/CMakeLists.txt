@@ -25,6 +25,7 @@ target_sources(Sandbox
 target_include_directories(Sandbox PRIVATE 
 ${CMAKE_CURRENT_SOURCE_DIR}/src
 ${CMAKE_SOURCE_DIR}/Special-Spoon/src
+${CMAKE_SOURCE_DIR}/Special-Spoon/vendor
 ${CMAKE_BINARY_DIR}/Special-Spoon)
 
 set(ASSETS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")

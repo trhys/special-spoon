@@ -2,9 +2,9 @@
 
 #include "Spoon.h"
 
-struct MovementComp : public Spoon::Component
+struct MovementComp : public Spoon::ComponentBase<MovementComp>
 {
-    MovementComp(float speed) : m_Speed(speed) {}
+    MovementComp(float speed) : ComponentBase::ComponentBase("MovementComp"), m_Speed(speed) {}
 
     float m_Speed;
     sf::Vector2f m_Velocity;

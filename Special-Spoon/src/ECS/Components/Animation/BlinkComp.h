@@ -5,9 +5,9 @@
 
 namespace Spoon
 {
-    struct BlinkComp : public Component
+    struct BlinkComp : public ComponentBase<BlinkComp>
     {
-        BlinkComp(float rate = 2.0f) : m_Blinkrate(rate) {}
+        BlinkComp(float rate = 2.0f) : ComponentBase::ComponentBase("BlinkComp"), m_Blinkrate(rate) {}
 
         sf::Time m_BlinkTimer;
         float m_Alpha = 255.0f;
@@ -18,5 +18,10 @@ namespace Spoon
         void SetBlinkRate(float rate) { m_Blinkrate = rate; }
         void ToggleSwitch() { isGoingUp = !isGoingUp; }
         void ToggleActive() { isActive = !isActive; }
+
+        void OnReflect() override
+        {
+            
+        }
     };
 }

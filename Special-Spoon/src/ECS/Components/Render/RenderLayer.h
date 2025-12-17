@@ -4,10 +4,15 @@
 
 namespace Spoon
 {
-	struct RenderLayer : public Component
+	struct RenderLayer : public ComponentBase<RenderLayer>
 	{
-		RenderLayer(int layer) : m_Layer(layer) {}
+		RenderLayer(int layer) : ComponentBase::ComponentBase("RenderLayer"), m_Layer(layer) {}
 
 		int m_Layer;
+
+		void OnReflect() override
+		{
+			
+		}
 	};
 }

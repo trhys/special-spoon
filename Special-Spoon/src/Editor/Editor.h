@@ -15,6 +15,7 @@ namespace Spoon
 
         void Stop();
         bool Play();
+        void RefreshViewport();
 
         void Run(EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);
 

@@ -8,10 +8,10 @@
 
 namespace Spoon
 {
-    struct InputComp : public Component
+    struct InputComp : public ComponentBase<InputComp>
     {
         InputComp(const std::unordered_map<std::string, std::string>& keyBindings)
-            : m_KeyBindings(keyBindings) 
+            : ComponentBase::ComponentBase("InputComp"), m_KeyBindings(keyBindings) 
             {
                 for (const auto& pair : keyBindings)
                 {
@@ -21,5 +21,10 @@ namespace Spoon
 
         std::unordered_map<std::string, std::string> m_KeyBindings;
         std::unordered_map<std::string, bool> m_KeyStates;
+
+        void OnReflect() override
+        {
+            
+        }
     };
 }

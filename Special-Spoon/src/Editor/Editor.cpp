@@ -109,7 +109,7 @@ namespace Spoon
         // Display a selectable list of active entities
         const auto& entities = e_Manager.GetAllEntities();
         static UUID selectedID = 0;
-        static std::string selectedName = "";
+        static std::string selectedComp = "";
 
         if (ImGui::BeginListBox("Entities"))
         {
@@ -120,7 +120,6 @@ namespace Spoon
                 if (ImGui::Selectable(name.c_str(), is_selected))
                 {
                     selectedID = uuid;
-                    selectedName = name;
                 }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
@@ -130,34 +129,69 @@ namespace Spoon
             ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
         }
 
+        Component* selectedComponent = nullptr;
         ImGui::BeginChild("Component View");
-        if (ImGui::TreeNodeEx(selectedName.empty() ? "##Empty" : selectedName.c_str()))
+        if(ImGui::BeginListBox("Components"))
         {
-            for(const auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
+            for(auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
             {
-                ImGui::PushID(comp.c_str());
-                const char* popupName = "Delete?";
-                if (ImGui::TreeNodeEx(comp.c_str()))
+                ImGui::PushID(comp->GetDisplayName().c_str());
+                const bool compSelected = (selectedComp == comp->GetDisplayName());
+                if(ImGui::Selectable(comp->GetDisplayName().c_str(), compSelected))
                 {
-                    if(ImGui::Button("Delete")) ImGui::OpenPopup(popupName);
-                
-                    // Always center this window when appearing
-                    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-                    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-                    if(ImGui::BeginPopupModal(popupName))
-                    {
-                        ImGui::Text("Are you sure you want to\ndelete this component? This cannot be undone!");
-                        if(ImGui::Button("Delete")) { e_Manager.KillComponent(comp, selectedID); }
-                        ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
-                        ImGui::EndPopup();
-                    }
-                    ImGui::TreePop();
+                    selectedComp = comp->GetDisplayName();
+                }
+                if (compSelected)
+                {
+                    selectedComponent = comp;
+                    ImGui::SetItemDefaultFocus();
                 }
                 ImGui::PopID();
             }
-            if(ImGui::Button("Add component")) {}
-            ImGui::TreePop();
+            ImGui::EndListBox();
+            ImGui::SameLine(); HelpMarker("A list of all components belonging to this entity");
+
+            const char* popupName = "Delete?";
+            if(ImGui::Button("Delete")) ImGui::OpenPopup(popupName);
+
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+            if(ImGui::BeginPopupModal(popupName))
+            {
+                ImGui::Text("Are you sure you want to\ndelete this component? This cannot be undone!");
+                if(ImGui::Button("Delete")) { e_Manager.KillComponent(selectedComponent->GetType(), selectedID); }
+                ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
         }
+        if(selectedComponent)
+        {
+            ImGui::SeparatorText("Inspector");
+            if(ImGui::BeginChild("Component Inspector"))
+            {
+                selectedComponent->OnReflect();
+                ImGui::EndChild();
+            }
+        }
+        // if (ImGui::TreeNodeEx(selectedName.empty() ? "##Empty" : selectedName.c_str()))
+        // {
+        //     for(const auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
+        //     {
+        //         ImGui::PushID(comp.c_str());
+        //         
+        //         if (ImGui::TreeNodeEx(comp.c_str()))
+        //         {
+        //             
+                
+                    
+        //             ImGui::TreePop();
+        //         }
+        //         ImGui::PopID();
+        //     }
+        //     if(ImGui::Button("Add component")) {}
+        //     ImGui::TreePop();
+        // }
         ImGui::EndChild();
     }
 

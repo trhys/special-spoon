@@ -5,10 +5,10 @@
 
 namespace Spoon
 {
-    struct SpriteComp : public Component
+    struct SpriteComp : public ComponentBase<SpriteComp>
     {
-        SpriteComp(sf::Texture& asset, bool centered) : m_Sprite(asset) { if (centered) { CenterOrigin(); } }
-        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered) : m_Sprite(asset), m_TextureRect(rect) 
+        SpriteComp(sf::Texture& asset, bool centered) : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset) { if (centered) { CenterOrigin(); } }
+        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered) : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), m_TextureRect(rect) 
         {
             m_Sprite.setTextureRect(rect);
             if (centered) { CenterOrigin(); }
@@ -35,6 +35,11 @@ namespace Spoon
             sf::Color color = m_Sprite.getColor();
             color.a = static_cast<uint8_t>(alpha);
             SetColor(color);
+        }
+
+        void OnReflect() override
+        {
+            
         }
     };
 }

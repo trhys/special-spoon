@@ -132,15 +132,16 @@ namespace Spoon
             return array->m_Components[index];
         }
 
-        const std::vector<std::string> GetAllComponentsOfEntity(UUID id)
+        std::vector<Component*> GetAllComponentsOfEntity(UUID id)
         {
-            std::vector<std::string> allComps;
+            std::vector<Component*> allComps;
 
             for(auto& [type, array] : m_Arrays)
             {
                 if(array->HasEntity(id))
                 {
-                    allComps.push_back(type);
+                    Component* comp = array->GetRawComp(id);
+                    allComps.push_back(comp);
                 }
             }
             return allComps;
