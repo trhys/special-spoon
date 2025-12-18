@@ -10,4 +10,4 @@
 	branch = docking
 [submodule "Special-Spoon/vendor/Imgui-sfml"]
 	path = Special-Spoon/vendor/Imgui-sfml
-	url = https://github.com/SFML/imgui-sfml.git
+	url = https://github.com/trhys/imgui-sfml.git
