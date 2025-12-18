@@ -16,10 +16,10 @@ namespace Spoon
     class Renderer
     {
     public:
-        Renderer(sf::RenderWindow& target) : m_Target(target) {}
+        Renderer() {}
         ~Renderer() {}
 
-        void Render(sf::RenderStates states, EntityManager& manager)
+        void Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager)
         {
             m_Renderables.clear();
             auto& layerArray = manager.GetArray<RenderLayer>();
@@ -56,7 +56,7 @@ namespace Spoon
                         ColorComp& color = manager.GetComponent<ColorComp>(ID);
                         sprite.SetColor(color.m_Color);
                     }
-                    m_Target.draw(sprite.m_Sprite, states);
+                    target.draw(sprite.m_Sprite, states);
                 }
 
                 if(textArray.m_IdToIndex.count(ID))
@@ -74,13 +74,12 @@ namespace Spoon
                         ColorComp& color = manager.GetComponent<ColorComp>(ID);
                         text.SetColor(color.m_Color);
                     }
-                    m_Target.draw(text.m_Text, states);
+                    target.draw(text.m_Text, states);
                 }
             }
         }
 
     private:
-        sf::RenderWindow& m_Target;
         std::vector<Renderable> m_Renderables;
     };
 }

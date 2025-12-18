@@ -178,7 +178,10 @@ namespace Spoon
     void Editor::ViewResourcesMenu()
     {
         ImGui::Begin("Resources");
-        if(ImGui::BeginTable("Resource Manager", 3))
+        static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg 
+            | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable 
+            | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+        if(ImGui::BeginTable("Resource Manager", 3), flags)
         {
             static ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth;
 
@@ -198,6 +201,8 @@ namespace Spoon
 
         if(ImGui::Button("Refresh"))
             workingDir = ResourceManager::GetAssetsDir();
+        if(ImGui::Button("Close"))
+            ViewResources = false;
 
         ImGui::End();
     }

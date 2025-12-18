@@ -21,7 +21,7 @@ namespace Spoon
         AssetNode(std::string name, std::filesystem::path path, std::string extension = "", bool dir = true)
             : m_Name(name), m_Path(path), m_Ext(extension), isDir(dir) 
             {
-                if(dir) { return; }
+                if(isDir) { return; }
                 try {
                     auto size = std::filesystem::file_size(std::filesystem::absolute(path));
                     if(size >= 1024 * 1024)
@@ -66,11 +66,17 @@ namespace Spoon
             {
                 c = std::tolower(c);
             }
-            if(extension == ".png" || extension == "jpeg" || extension == ".jpg" || extension == ".svg")
+            if(extension == ".png" || extension == ".jpeg" || extension == ".jpg" || extension == ".svg")
                 return "Image file";
 
             if(extension == ".wav" || extension == ".mp3")
                 return "Sound file";
+
+            if(extension == ".txt")
+                return "Text file";
+
+            if(extension == ".ttf")
+                return "Font file";
             
             return "Unknown";
         }
@@ -97,7 +103,7 @@ namespace Spoon
 
                 std::unique_ptr<AssetNode> newNode = std::make_unique<AssetNode>(
                     entryP.stem().string(), 
-                    entryP,
+                    entry.path(),
                     CheckExtension(entryP),
                     entry.is_directory()
                 );
