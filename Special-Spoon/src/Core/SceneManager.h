@@ -4,6 +4,7 @@
 #include "SFML/Graphics/Rect.hpp"
 #include <unordered_map>
 #include <string>
+#include <filesystem>
 
 namespace Spoon
 {
@@ -29,9 +30,13 @@ namespace Spoon
         void UnloadScene(EntityManager& entityManager, SystemManager& systemManager);
         void Transition(std::string id, EntityManager& eManager, SystemManager& sManager);
 
+        void CreateScene(const std::string& ID);
+
         const std::unordered_map<std::string, SceneData>& GetManifest();
 
     private:
         std::unordered_map<std::string, SceneData> m_SceneManifest;
+        std::string m_DataDir;
+        std::filesystem::path m_ManifestPath;
     };
 }

@@ -16,30 +16,50 @@ namespace Spoon
 {
     void SceneManager::LoadManifest(std::string manifestPath)
     {
-        std::ifstream path(manifestPath);
-        if(!path.is_open())
+        m_DataDir = manifestPath;
+        m_ManifestPath = std::filesystem::path(manifestPath) / "scene" / "scene_manifest.json";
+        if(!std::filesystem::exists(m_ManifestPath.parent_path()))
         {
-            throw std::runtime_error("Failed to open scene manifest file at path: " + manifestPath);
+            std::filesystem::create_directories(m_ManifestPath.parent_path());
         }
 
+        if(!std::filesystem::exists(m_ManifestPath))
+        {
+            SS_DEBUG_LOG("[SCENE MANAGER] No existing manifest found --- creating new at: " + m_ManifestPath.string())
+            std::ofstream path(m_ManifestPath);
+
+            json manifest;
+            manifest["Scenes"] = json::array();
+            path << manifest.dump(4);
+            path.close();
+        }
+
+        std::ifstream path(m_ManifestPath);
+        if(!path.is_open())
+        {
+            throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
+        }
         json manifest;
         manifest = json::parse(path);
-
-        if(manifest.contains("Scenes"))
+        path.close();
+        if(manifest.contains("Scenes") && manifest["Scenes"].is_array())
         {
             for(auto& scene : manifest["Scenes"])
             {
+                if(!scene.is_object())
+                    continue;
+
                 SceneData paths;
-                paths.ID = scene["ID"].get<std::string>();
-                paths.ResourceFiles = scene["Resources"].get<std::string>();
-                paths.DataFiles = scene["Data"].get<std::string>();
+                paths.ID = scene.value("ID", "UnknownID");
+                paths.ResourceFiles = scene.value("Resources", "");
+                paths.DataFiles = scene.value("Data", "");
                 m_SceneManifest[paths.ID] = paths;
                 SS_DEBUG_LOG("Registered scene in manifest: " + paths.ID)
             }
         }
         else
         {
-            throw std::runtime_error("Scene manifest file is missing 'Scenes' key at path: " + manifestPath);
+            throw std::runtime_error("Scene manifest file is missing 'Scenes' key at path: " + m_ManifestPath.string());
         }
     }
 
@@ -221,5 +241,45 @@ namespace Spoon
     const std::unordered_map<std::string, SceneData>& SceneManager::GetManifest()
     {
         return m_SceneManifest;
+    }
+
+    void SceneManager::CreateScene(const std::string& id)
+    {
+        std::ifstream inFile(m_ManifestPath);
+        if(!inFile.is_open())
+        {
+            throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
+        }
+
+        json manifest = json::parse(inFile);
+        inFile.close();
+
+        std::filesystem::path sceneDir = std::filesystem::path(m_DataDir) / "scene";
+        
+        SceneData newScene;
+        newScene.ID = id;
+        newScene.ResourceFiles = (sceneDir / (id + "_resources.json")).string();
+        newScene.DataFiles = (sceneDir / (id + "_data.json")).string();
+
+        json newSceneJSON;
+        newSceneJSON =
+        {
+            {"ID", newScene.ID},
+            {"Resources", newScene.ResourceFiles},
+            {"Data", newScene.DataFiles}
+        };
+        manifest["Scenes"].push_back(newSceneJSON);
+
+        m_SceneManifest[id] = newScene;
+
+        std::ofstream outFile(m_ManifestPath);
+        if(!outFile.is_open())
+        {
+            throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
+        }
+        outFile << manifest.dump(4);
+        outFile.close();
+
+        SS_DEBUG_LOG("Registered new scene --- ID: " + id)
     }
 }

@@ -6,6 +6,7 @@ namespace Spoon
     class SceneManager;
     class SystemManager;
     struct AssetNode;
+    struct UUID;
     
     class Editor
     {
@@ -15,12 +16,15 @@ namespace Spoon
 
         void Stop();
         bool Play();
-        void RefreshViewport();
 
         void Run(EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);
 
         void ViewEntitiesMenu(EntityManager& manager);
+        void AddComponentMenu(UUID id);
+
+        void NewSceneMenu(SceneManager& s_Manager);
         void LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager);
+
         void ViewResourcesMenu();
         void ViewAssets(AssetNode* node);
         

@@ -33,7 +33,7 @@ namespace Spoon
 
             m_EditorViewport = sf::RenderTexture({1280, 720});
         }
-        m_SceneManager.LoadManifest(m_Specs.sceneManifestPath);
+        m_SceneManager.LoadManifest(m_Specs.dataDir);
     }
 
     void Application::Close()
@@ -44,7 +44,10 @@ namespace Spoon
             const char* popup = "Close";
             ImGui::OpenPopup(popup);
 
-            if(ImGui::BeginPopupModal(popup))
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            if(ImGui::BeginPopupModal(popup, &closePrompt, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 ImGui::Text("Are you sure you want to exit?");
                 ImGui::Separator();
@@ -55,7 +58,12 @@ namespace Spoon
                     ImGui::CloseCurrentPopup();
                 }
 
-                if(ImGui::Button("No")) ImGui::CloseCurrentPopup();
+                ImGui::SameLine();
+                if(ImGui::Button("No"))
+                {
+                    ImGui::CloseCurrentPopup();
+                    closePrompt = false;
+                }
                 ImGui::EndPopup();
             }
             ImGui::End();
@@ -76,7 +84,7 @@ namespace Spoon
             {
                 m_Editor.Stop();
             }
-            else Application::Close();
+            else closePrompt = true;
         }
         if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
         {
@@ -92,7 +100,7 @@ namespace Spoon
 
         bool play = true;
         
-        ResourceManager::ScanAssets(m_Specs.workingDir);
+        ResourceManager::ScanAssets(m_Specs.assetsDir);
         m_SystemManager.InitializeStateSystem(m_SceneManager);
 
         while (m_IsRunning)
@@ -108,7 +116,7 @@ namespace Spoon
                 [&](const sf::Event::KeyPressed& event) { m_InputSystem.PushKeyPress(event); },
                 [&](const sf::Event::KeyReleased& event) { m_InputSystem.PushKeyRelease(event); },
 
-                [&](const sf::Event::Closed& event) { Application::Close(); }
+                [&](const sf::Event::Closed& event) { closePrompt = true; }
             );
 
             // Update systems
@@ -160,6 +168,7 @@ namespace Spoon
                 m_Renderer.Render(m_Window, states, m_EntityManager);
                 m_Window.display();
             }
+            if(closePrompt) Close();
         }
         if(m_Specs.editorEnabled) ImGui::SFML::Shutdown();
         m_Window.close();

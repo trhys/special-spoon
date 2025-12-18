@@ -18,8 +18,8 @@ namespace Spoon
 		sf::VideoMode mode = sf::VideoMode::getDesktopMode();
 		std::string windowName = "Special Spoon";
 		bool editorEnabled = true;
-		std::filesystem::path workingDir = "assets/";
-		std::filesystem::path sceneManifestPath = "data/scene/scene_manifest.json";
+		std::filesystem::path assetsDir = "assets/";
+		std::filesystem::path dataDir = "data/";
 	};
 
 	class SPOON_API Application
@@ -38,7 +38,8 @@ namespace Spoon
 
 	private:
 		static Application* s_Instance;
-		bool m_IsRunning = true;	
+		bool m_IsRunning = true;
+		bool closePrompt = false;
 		
 		ResourceManager   m_ResourceManager;
 		SceneManager	  m_SceneManager;
