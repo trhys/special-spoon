@@ -30,7 +30,7 @@ namespace Spoon
     void Editor::Run(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
     {
         if(!workingDir)
-            ResourceManager::GetAssetsDir();
+            workingDir = ResourceManager::GetAssetsDir();
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
         ImGui::Begin("Special-Spoon Editor", nullptr, window_flags);
@@ -204,6 +204,8 @@ namespace Spoon
 
     void Editor::ViewAssets(AssetNode* node)
     {
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
         ImGui::PushID(node->m_Path.string().c_str());
 
         ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -220,12 +222,12 @@ namespace Spoon
 
             if(isOpen)
             {
-                for(const auto& child : node->m_Children)
+                for (const auto& child : node->m_Children)
                 {
                     ViewAssets(child.get());
                 }
+                ImGui::TreePop();
             }
-            ImGui::TreePop();
         }
         else
         {

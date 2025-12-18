@@ -23,7 +23,7 @@ namespace Spoon
             {
                 if(dir) { return; }
                 try {
-                    auto size = std::filesystem::file_size(path);
+                    auto size = std::filesystem::file_size(std::filesystem::absolute(path));
                     if(size >= 1024 * 1024)
                     {
                         int sizeInMB = size / (1024 * 1024);
@@ -53,7 +53,7 @@ namespace Spoon
 
         static std::filesystem::path Normalize(std::filesystem::path p)
         {
-            return p.lexically_normal().make_preferred();
+            return std::filesystem::absolute(p).lexically_normal();
         }
 
         static std::string CheckExtension(std::filesystem::path p)
@@ -78,15 +78,15 @@ namespace Spoon
         static void ScanAssets(const std::filesystem::path& rootDir)
         {
             auto normalRoot = Normalize(rootDir);
-            fileRoot = std::make_unique<AssetNode>(normalRoot.stem().string(), normalRoot, "Root", true);
+            fileRoot = std::make_unique<AssetNode>("Assets", normalRoot, "Root", true);
             
             std::map<std::filesystem::path, AssetNode*> dirMap;
-            dirMap[normalRoot] = fileRoot.get();
+            dirMap[""] = fileRoot.get();
 
             for (const auto& entry : std::filesystem::recursive_directory_iterator(rootDir))
             {
-                std::filesystem::path entryP = entry.path();
-                std::filesystem::path parentP = Normalize(entryP.parent_path());
+                auto entryP = std::filesystem::relative(entry.path(), normalRoot);
+                auto parentP = entryP.parent_path();
 
                 auto it = dirMap.find(parentP);
                 if (it == dirMap.end()) {
@@ -108,7 +108,7 @@ namespace Spoon
                 
                 if (entry.is_directory())
                 {
-                    dirMap[Normalize(entryP)] = newNodePtr;
+                    dirMap[entryP] = newNodePtr;
                 }
             }
         }
@@ -127,7 +127,6 @@ namespace Spoon
                         throw std::runtime_error("Failed to load texture from file path: " + file_path.string());
                     }
                     m_Textures.emplace(id, std::move(texture));
-                    m_TexturePaths[id] = file_path;
                 }
             }
             else if constexpr(std::is_same_v<RESOURCE, sf::Font>)
@@ -217,7 +216,6 @@ namespace Spoon
 
     private:
         static inline std::unordered_map<std::string, sf::Texture> m_Textures;
-        static inline std::unordered_map<std::string, std::filesystem::path> m_TexturePaths;
         static inline std::unordered_map<std::string, sf::Font> m_Fonts;
         static inline std::unordered_map<std::string, AnimationData> m_Animations;
         static inline std::unordered_map<std::string, sf::SoundBuffer> m_SoundBuffers;
