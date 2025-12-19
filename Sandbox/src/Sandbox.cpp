@@ -30,17 +30,12 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	SS_DEBUG_LOG("Loading custom systems")
 	RegisterCustomSystems();
 	SS_DEBUG_LOG("Custom systems loaded")
-
-	GetSceneManager().LoadManifest("assets/scene/scene_manifest.json");
-	//GetSceneManager().LoadScene("MainMenu", GetEntityManager(), GetSystemManager());
 }
 
 Spoon::Application* Spoon::CreateApp()
 {
 	AppSpecifications spec;
-	spec.m_WindowSize = {1080, 1080};
-	spec.m_WindowName = "Sandbox";
-	spec.m_EditorEnabled = true;
+	spec.windowName = "Sandbox";
 	return new Sandbox(spec);
 }
 

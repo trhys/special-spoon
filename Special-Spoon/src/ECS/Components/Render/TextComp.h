@@ -5,10 +5,10 @@
 
 namespace Spoon
 {
-    struct TextComp : public Component
+    struct TextComp : public ComponentBase<TextComp>
     {
         TextComp(sf::Font& asset, std::string text = "", unsigned int char_size = 30, sf::Color color = sf::Color::White, bool centered = true) 
-            : m_Text(asset, text, char_size) 
+            : ComponentBase::ComponentBase("TextComp"), m_Text(asset, text, char_size) 
         { 
             m_Text.setFillColor(color);
             if (centered) { CenterOrigin(); }
@@ -33,6 +33,11 @@ namespace Spoon
             sf::Color color = m_Text.getFillColor();
             color.a = static_cast<uint8_t>(alpha);
             m_Text.setFillColor(color);
+        }
+
+        void OnReflect() override
+        {
+            
         }
     };
 }

@@ -5,9 +5,9 @@
 
 namespace Spoon
 {
-    struct FadeComp : public Component
+    struct FadeComp : public ComponentBase<FadeComp>
     {
-        FadeComp(float rate = 2.0f) : m_FadeRate(rate) {}
+        FadeComp(float rate = 2.0f) : ComponentBase::ComponentBase("FadeComp"), m_FadeRate(rate) {}
 
         sf::Time m_FadeTimer;
         float m_Alpha;
@@ -33,5 +33,10 @@ namespace Spoon
         }
 
         void ToggleActive() { isActive = !isActive; }
+
+        void OnReflect() override
+        {
+            
+        }
     };
 }

@@ -1,5 +1,6 @@
 #include "Editor.h"
 #include "Core/EntityManager.h"
+#include "Core/ResourceManager.h"
 #include "Core/SceneManager.h"
 #include "System/SystemManager.h"
 
@@ -8,78 +9,328 @@
 
 namespace Spoon
 {
-    static void HelpMarker(const char* desc);
 
+    bool NewScene = false;
     bool LoadScene = false;
-    bool ViewEntities = false;
+    bool ViewEntities = true;
+    bool ViewResources = false;
+    bool AddingComponent = false;
 
-    void Editor::Close() 
+    // ===================================================================
+
+    void Editor::Stop() 
     {
+        m_Play = false;
+    }
 
+    bool Editor::Play()
+    {
+        return m_Play;
     }
 
     void Editor::Run(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
     {
-        ImGui::Begin("Special-Spoon Editor");
+        if(!workingDir)
+            workingDir = ResourceManager::GetAssetsDir();
 
-        if(ImGui::Button("Load Scene"))
+        if (ImGui::BeginMainMenuBar())
         {
-            LoadScene = true;
+            if (ImGui::BeginMenu("Scene"))
+            {
+                if (ImGui::MenuItem("New")) NewScene = true;
+                if (ImGui::MenuItem("Load")) LoadScene = true;
+                if (ImGui::MenuItem("Save")) {}
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Entity Manager"))
+            {
+                if (ImGui::MenuItem("Entity View")) ViewEntities = !ViewEntities;
+                ImGui::EndMenu();
+            }
+
+            if(ImGui::BeginMenu("Resource Manager"))
+            {
+                if(ImGui::MenuItem("Resource View")) ViewResources = !ViewResources;
+                ImGui::EndMenu();
+            }
+
+            if(ImGui::Button("Play")) 
+                m_Play = true;
+            if(ImGui::Button("Stop"))
+                Stop();
+
+            ImGui::EndMainMenuBar();
         }
 
-        if(LoadScene)
-        {
-            const auto& scenes = s_Manager.GetManifest();
-            static std::string selectedScene = "";
+        ImGui::Begin("Special-Spoon Editor");
+        ImGui::SeparatorText("Inspector");
+        if (ViewEntities) ViewEntitiesMenu(e_Manager);
+        
+        ImGui::End();
 
-            ImGui::BeginListBox("Scene Manifest");
-            for(const auto& [name, sceneData] : scenes)
+        if (NewScene) { NewSceneMenu(s_Manager); }
+        if (LoadScene) { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
+        if (ViewResources) { ViewResourcesMenu(); }
+    }
+
+    void Editor::NewSceneMenu(SceneManager& s_Manager)
+    {
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+        const char* popupId = "New Scene";
+        static char newSceneBuf[64] = {0};
+        if (!ImGui::IsPopupOpen(popupId))
+            ImGui::OpenPopup(popupId);
+
+        if(ImGui::BeginPopupModal(popupId, &NewScene, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Enter scene ID: "); ImGui::SameLine();
+
+            if (ImGui::IsWindowAppearing())
+                ImGui::SetKeyboardFocusHere();
+
+            if(ImGui::InputText("##ID", newSceneBuf, IM_ARRAYSIZE(newSceneBuf), ImGuiInputTextFlags_EnterReturnsTrue) && strlen(newSceneBuf) > 0 )
+            {
+                s_Manager.CreateScene(newSceneBuf);
+                newSceneBuf[0] = '\0';
+                ImGui::CloseCurrentPopup();
+                NewScene = false;
+            }
+            if(ImGui::Button("Submit") && strlen(newSceneBuf) > 0 )
+            {
+                s_Manager.CreateScene(newSceneBuf);
+                newSceneBuf[0] = '\0';
+                ImGui::CloseCurrentPopup();
+                NewScene = false;
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+
+            if(ImGui::Button("Cancel"))
+            {
+                newSceneBuf[0] = '\0';
+                ImGui::CloseCurrentPopup();
+                NewScene = false;
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    void Editor::LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
+    {
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+        ImGui::Begin("Load Scene", &LoadScene);
+        const auto& scenes = s_Manager.GetManifest();
+        static std::string selectedScene = "";
+
+        if (ImGui::BeginListBox("Scene Manifest"))
+        {
+            for (const auto& [name, sceneData] : scenes)
             {
                 const bool is_selected = (selectedScene == name);
-                if(ImGui::Selectable(name.c_str(), is_selected))
-                    selectedScene = name;
-
-                if(is_selected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndListBox();
-            ImGui::SameLine(); HelpMarker("A list of available scenes in the manifest");
-
-            if(ImGui::Button("Select"))
-            {
-                s_Manager.LoadScene(selectedScene, e_Manager, sys_Manager);
-                LoadScene = false;
-            }
-        }
-
-        if(ImGui::Button("View entities"))
-        {
-            ViewEntities = true;
-        }
-
-        if(ViewEntities)
-        {
-            // Display a selectable list of active entities
-            const auto& entities = e_Manager.GetAllEntities();
-            static UUID selectedID = 0;
-
-            ImGui::BeginListBox("Entities");
-            for(const auto& [uuid, name] : entities)
-            {
-                const bool is_selected = (selectedID == uuid);
                 if (ImGui::Selectable(name.c_str(), is_selected))
-                    selectedID = uuid;
+                    selectedScene = name;
 
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
             ImGui::EndListBox();
-            ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
+            ImGui::SameLine(); HelpMarker("A list of available scenes in the manifest");
         }
+        
+        if(ImGui::Button("Open"))
+        {
+            s_Manager.LoadScene(selectedScene, e_Manager, sys_Manager);
+            LoadScene = false;
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel")) 
+            LoadScene = false;
+        
         ImGui::End();
     }
 
-    static void HelpMarker(const char* desc)
+    void Editor::ViewEntitiesMenu(EntityManager& e_Manager)
+    {
+        // Display a selectable list of active entities
+        const auto& entities = e_Manager.GetAllEntities();
+        static UUID selectedID = 0;
+        static std::string selectedComp = "";
+
+        if (ImGui::BeginListBox("Entities"))
+        {
+            for (const auto& [uuid, name] : entities)
+            {
+                ImGui::PushID(name.c_str());
+                const bool is_selected = (selectedID == uuid);
+                if (ImGui::Selectable(name.c_str(), is_selected))
+                {
+                    selectedID = uuid;
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+                ImGui::PopID();
+            }
+            ImGui::EndListBox();
+            ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
+        }
+
+        Component* selectedComponent = nullptr;
+        ImGui::BeginChild("Component View");
+        if(ImGui::BeginListBox("Components"))
+        {
+            for(auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
+            {
+                ImGui::PushID(comp->GetDisplayName().c_str());
+                const bool compSelected = (selectedComp == comp->GetDisplayName());
+                if(ImGui::Selectable(comp->GetDisplayName().c_str(), compSelected))
+                {
+                    selectedComp = comp->GetDisplayName();
+                }
+                if (compSelected)
+                {
+                    selectedComponent = comp;
+                    ImGui::SetItemDefaultFocus();
+                }
+                ImGui::PopID();
+            }
+            ImGui::EndListBox();
+            ImGui::SameLine(); HelpMarker("A list of all components belonging to this entity");
+
+            if(ImGui::Button("Add"))
+            {
+                AddingComponent = true;
+                AddComponentMenu(selectedID);
+            }
+
+            const char* popupName = "Delete?";
+            if(ImGui::Button("Delete")) ImGui::OpenPopup(popupName);
+
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+            if(ImGui::BeginPopupModal(popupName))
+            {
+                ImGui::Text("Are you sure you want to\ndelete this component? This cannot be undone!");
+                if(ImGui::Button("Delete")) 
+                { 
+                    e_Manager.KillComponent(selectedComponent->GetType(), selectedID);
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
+        }
+        if(selectedComponent)
+        {
+            ImGui::SeparatorText("Inspector");
+            if(ImGui::BeginChild("Component Inspector"))
+            {
+                selectedComponent->OnReflect();
+                ImGui::EndChild();
+            }
+        }
+        ImGui::EndChild();
+    }
+
+    void Editor::AddComponentMenu(UUID id)
+    {
+        const char* compAdd = "Add Component";
+        if(!ImGui::IsPopupOpen(compAdd))
+            ImGui::OpenPopup(compAdd);
+        if(ImGui::BeginPopupModal(compAdd))
+        {
+
+            if(ImGui::Button("Cancel"))
+            {
+                AddingComponent = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    void Editor::ViewResourcesMenu()
+    {
+        ImGui::Begin("Resources");
+        static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg 
+            | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable 
+            | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+        if(ImGui::BeginTable("Resource Manager", 3), flags)
+        {
+            static ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth;
+
+            // Setup table
+            ImGui::TableSetupColumn("Name");
+            ImGui::TableSetupColumn("Size");
+            ImGui::TableSetupColumn("Type");
+            ImGui::TableHeadersRow();
+
+            // Populate
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+
+            ViewAssets(workingDir);
+            ImGui::EndTable();
+        }
+
+        if(ImGui::Button("Refresh"))
+            workingDir = ResourceManager::GetAssetsDir();
+        if(ImGui::Button("Close"))
+            ViewResources = false;
+
+        ImGui::End();
+    }
+
+    void Editor::ViewAssets(AssetNode* node)
+    {
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::PushID(node->m_Path.string().c_str());
+
+        ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+        ImGuiTreeNodeFlags leaf_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+        if(node->isDir)
+        {
+            bool isOpen = ImGui::TreeNodeEx(node->m_Name.c_str(), base_flags);
+
+            ImGui::TableNextColumn();
+            ImGui::TextDisabled("--");
+            ImGui::TableNextColumn();
+            ImGui::TextDisabled("--");
+
+            if(isOpen)
+            {
+                for (const auto& child : node->m_Children)
+                {
+                    ViewAssets(child.get());
+                }
+                ImGui::TreePop();
+            }
+        }
+        else
+        {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(node->m_Size.c_str());
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(node->m_Ext.c_str());
+        }          
+        ImGui::PopID();
+    }
+
+    void HelpMarker(const char* desc)
     {
         ImGui::TextDisabled("(?)");
         if (ImGui::BeginItemTooltip())

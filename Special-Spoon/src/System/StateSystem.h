@@ -53,6 +53,7 @@ namespace Spoon
         }
 
         bool IsQuitRequested() { return quitFlag; }
+        void ConsumeQuitFlag() { quitFlag = false; }
         bool IsSceneChangeRequested() { return sceneChangeFlag; }
         std::string ConsumeChangeRequest() 
         { 

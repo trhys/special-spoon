@@ -5,11 +5,11 @@
 
 namespace Spoon
 {
-    struct PhysicsComp : public Component
+    struct PhysicsComp : public ComponentBase<PhysicsComp>
     {
     public:
-        PhysicsComp() {}
-        PhysicsComp(sf::FloatRect rect) : m_CollisionBox(rect) {}
+        PhysicsComp() : ComponentBase::ComponentBase("PhysicsComp") {}
+        PhysicsComp(sf::FloatRect rect) : ComponentBase::ComponentBase("PhysicsComp"), m_CollisionBox(rect) {}
         ~PhysicsComp() {}
         
         void SetPosition(sf::Vector2f pos) 
@@ -30,6 +30,13 @@ namespace Spoon
             Collided = false;
         }
 
+        void OnReflect() override
+        {
+            ImGui::Text("POS X: %.2f", m_CollisionBox.position.x);
+            ImGui::Text("POS Y: %.2f", m_CollisionBox.position.y);
+            ImGui::Text("Collision detected? : %s", Collided ? "True" : "False");
+        }
+        
     private:
         sf::FloatRect m_CollisionBox;
         bool Collided = false;

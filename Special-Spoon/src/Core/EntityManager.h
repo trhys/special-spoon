@@ -72,6 +72,19 @@ namespace Spoon
             array->RemoveComponent(id);
         }
 
+        void KillComponent(std::string type, UUID id)
+        {
+            auto found = m_Arrays.find(type);
+            if(found != m_Arrays.end())
+            {
+                found->second->RemoveComponent(id);
+            }
+            else
+            {
+                throw std::runtime_error("Type or entity ID not found");
+            }
+        }
+
         template<typename COMP>
         void LoadArray()
         {
@@ -119,15 +132,16 @@ namespace Spoon
             return array->m_Components[index];
         }
 
-        std::vector<std::string> GetAllComponentsOfEntity(UUID id)
+        std::vector<Component*> GetAllComponentsOfEntity(UUID id)
         {
-            std::vector<std::string> allComps;
+            std::vector<Component*> allComps;
 
             for(auto& [type, array] : m_Arrays)
             {
                 if(array->HasEntity(id))
                 {
-                    allComps.push_back(type);
+                    Component* comp = array->GetRawComp(id);
+                    allComps.push_back(comp);
                 }
             }
             return allComps;
@@ -157,6 +171,11 @@ namespace Spoon
             }
         }
 
+        void ClearEntities()
+        {
+            m_Entities.clear();
+        }
+
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<UUID> m_RecycledIds;
@@ -181,7 +200,5 @@ namespace Spoon
             LoadArray<StateActionComp>();
             LoadArray<RenderLayer>();
         }
-
-        std::unordered_map<UUID, std::string> m_ActionsBuffer;
     };
 }

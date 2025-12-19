@@ -5,10 +5,10 @@
 
 namespace Spoon
 {
-    struct TransformComp : public Component
+    struct TransformComp : public ComponentBase<TransformComp>
     {
-        TransformComp() {}
-        TransformComp(sf::Vector2f pos) { SetPosition(pos); }
+        TransformComp() : ComponentBase::ComponentBase("TransformComp") {}
+        TransformComp(sf::Vector2f pos) : ComponentBase::ComponentBase("TransformComp") { SetPosition(pos); }
         ~TransformComp() {}
 
         sf::Transformable m_Transform;
@@ -21,5 +21,10 @@ namespace Spoon
         void Move(sf::Vector2f offset) { m_Transform.move(offset); }
         void ResetPos() { m_Transform.setPosition(m_CurrentPosition); }
         void SaveCurrentPos() { m_CurrentPosition = GetPosition(); }
+
+        void OnReflect() override
+        {
+            
+        }
     };
 }

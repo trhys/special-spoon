@@ -2,7 +2,7 @@
 
 #include "Spoon.h"
 
-struct PlayerComp : public Spoon::Component
+struct PlayerComp : public Spoon::ComponentBase<PlayerComp>
 {
-    PlayerComp() {}
+    PlayerComp() : ComponentBase::ComponentBase("PlayerComp") {}
 };

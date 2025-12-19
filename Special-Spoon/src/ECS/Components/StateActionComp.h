@@ -4,10 +4,15 @@
 
 namespace Spoon
 {
-    struct StateActionComp : public Component
+    struct StateActionComp : public ComponentBase<StateActionComp>
     {
-        StateActionComp(std::unordered_map<std::string, std::string> stateActions) : m_Actions(stateActions) {}
+        StateActionComp(std::unordered_map<std::string, std::string> stateActions) : ComponentBase::ComponentBase("StateActionComp"), m_Actions(stateActions) {}
 
         std::unordered_map<std::string, std::string> m_Actions;
+
+        void OnReflect() override
+        {
+            
+        }
     };
 }

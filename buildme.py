@@ -1,7 +1,11 @@
 import subprocess
 import sys
 import os
+import argparse
 
+parser = argparse.ArgumentParser(description='CMake preset flag')
+parser.add_argument('--preset', metavar='p', type=str, default="None",
+                    help='the cmake preset to configure')
 def get(packages):
 
     print(f"Checking for required packages: {', '.join(packages)}")
@@ -71,18 +75,22 @@ def buildme():
     subprocess.run(["mkdir", "build"])
     os.chdir("build")
 
-    selecting = True
-    print("Select preset:\n") 
-    print(" sandbox-debug\n", "sandbox-release\n")
-    while selecting:
-        configuration = input("\n: ")
-        if configuration == "sandbox-debug":
-            preset_out_dir = "debug"
-            selecting = False
-        elif configuration == "sandbox-release":
-            preset_out_dir == "release"
-            selecting = False
-        else: print("\nInvalid preset\n\n")
+    config = parser.parse_args()
+    print(config.preset)
+    if config.preset == "None":
+        selecting = True
+        print("Select preset:\n") 
+        print(" sandbox-debug\n", "sandbox-release\n")
+        configuration = input(">>: ")
+    else: configuration = config.preset
+
+    if configuration == "sandbox-debug":
+        preset_out_dir = "debug"
+        selecting = False
+    elif configuration == "sandbox-release":
+        preset_out_dir == "release"
+        selecting = False
+    else: print("\nInvalid preset\n\n")
 
     try:
         subprocess.run(["cmake", "..", "--preset", configuration], check=True)

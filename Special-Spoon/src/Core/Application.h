@@ -1,13 +1,12 @@
 #pragma once
 
 #include "Core.h"
-
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "EntityManager.h"
 #include "System/InputSystem.h"
 #include "System/SystemManager.h"
-
+#include "Renderer.h"
 #include "Editor/Editor.h"
 
 #include "SFML/Graphics.hpp"
@@ -16,9 +15,11 @@ namespace Spoon
 { 
 	struct AppSpecifications
 	{
-		sf::Vector2u m_WindowSize = {600, 600};
-		std::string m_WindowName = "Special Spoon";
-		bool m_EditorEnabled = true;
+		sf::VideoMode mode = sf::VideoMode::getDesktopMode();
+		std::string windowName = "Special Spoon";
+		bool editorEnabled = true;
+		std::filesystem::path assetsDir = "assets/";
+		std::filesystem::path dataDir = "data/";
 	};
 
 	class SPOON_API Application
@@ -29,29 +30,28 @@ namespace Spoon
 
 		void Close();
 		void Run();
+		void Update(sf::Time tick);
 		
 		static Application& Get() { return *s_Instance; }
-		AppSpecifications GetSpecs() { return m_Specs; }
-		
-		SceneManager& GetSceneManager() { return m_SceneManager; }
+
 		EntityManager& GetEntityManager() { return m_EntityManager; }
-		ResourceManager& GetResourceManager() { return m_ResourceManager; }
-		InputSystem& GetInputSystem() { return m_InputSystem; }
-		SystemManager& GetSystemManager() { return m_SystemManager; }
 
 	private:
 		static Application* s_Instance;
 		bool m_IsRunning = true;
-
-		AppSpecifications m_Specs;
-		sf::RenderWindow  m_Window;
+		bool closePrompt = false;
 		
 		ResourceManager   m_ResourceManager;
 		SceneManager	  m_SceneManager;
 		EntityManager	  m_EntityManager;
 		InputSystem		  m_InputSystem;
 		SystemManager	  m_SystemManager;
+		Renderer		  m_Renderer;
 		Editor 			  m_Editor;
+
+		AppSpecifications m_Specs;
+		sf::RenderWindow  m_Window;
+		sf::RenderTexture m_EditorViewport;
 	};
 
 	//DEFINE IN CLIENT APPLICATION
