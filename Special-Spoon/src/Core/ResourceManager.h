@@ -209,6 +209,11 @@ namespace Spoon
                 throw std::runtime_error("AnimationID: " + id + " not found.");
             }
         }
+
+        static const std::unordered_map<std::string, sf::Texture>& GetTextures()
+        {
+            return m_Textures;
+        }
         
         static void ClearAllResources()
         {

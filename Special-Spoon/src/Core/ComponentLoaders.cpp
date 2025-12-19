@@ -25,11 +25,11 @@ namespace Spoon
                 { comp["TextureRect"]["x"].get<int>(), comp["TextureRect"]["y"].get<int>() },
                 { comp["TextureRect"]["width"].get<int>(), comp["TextureRect"]["height"].get<int>() }
             );
-            manager.MakeComponent<SpriteComp>(id, asset, rect, centered);
+            manager.MakeComponent<SpriteComp>(id, asset, rect, centered, textureID);
         }
         else
         {
-            manager.MakeComponent<SpriteComp>(id, asset, centered);
+            manager.MakeComponent<SpriteComp>(id, asset, centered, textureID);
         }
     }
 

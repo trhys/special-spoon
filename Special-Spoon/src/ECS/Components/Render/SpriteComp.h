@@ -1,22 +1,30 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
+#include "Core/ResourceManager.h"
 #include "SFML/Graphics/Sprite.hpp"
 
 namespace Spoon
 {
     struct SpriteComp : public ComponentBase<SpriteComp>
     {
-        SpriteComp(sf::Texture& asset, bool centered) : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset) { if (centered) { CenterOrigin(); } }
-        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered) : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), m_TextureRect(rect) 
+        SpriteComp(sf::Texture& asset, bool centered, std::string& textureID) 
+        : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID) 
+        { 
+            if (centered) { CenterOrigin(); } 
+        }
+
+        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered, std::string& textureID) 
+        : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), m_TextureRect(rect), isCentered(centered), m_TextureID(textureID)
         {
             m_Sprite.setTextureRect(rect);
             if (centered) { CenterOrigin(); }
         }
-        ~SpriteComp() {}
-        
+                
         sf::Sprite m_Sprite;
         sf::IntRect m_TextureRect;
+        std::string m_TextureID; // Really only for the inspector - no practical use otherwise
+        bool isCentered;
 
         sf::Vector2f GetPosition() { return m_Sprite.getPosition(); }
         sf::FloatRect GetBoundingBox() { return m_Sprite.getGlobalBounds(); }
@@ -39,7 +47,22 @@ namespace Spoon
 
         void OnReflect() override
         {
-            
+            ImGui::Text("Texture ID: %s", m_TextureID.c_str());
+
+            ImGui::BeginChild("Texture Explorer");
+            for(const auto& [id, texture] : ResourceManager::GetTextures())
+            {
+                if(ImGui::ImageButton(id.c_str(), texture, sf::Vector2f(64, 64)))
+                {
+                    m_Sprite.setTexture(texture, true);
+                }
+                ImGui::SameLine();
+            }
+            ImGui::EndChild();
+
+            ImGui::SeparatorText("Center Origin");
+            ImGui::SameLine(); 
+            if(ImGui::Checkbox("Centered", &isCentered)) CenterOrigin();
         }
     };
 }

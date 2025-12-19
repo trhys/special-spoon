@@ -16,6 +16,7 @@ namespace Spoon
         
         const sf::Transform& GetTransform() { return m_Transform.getTransform(); }
         sf::Vector2f GetPosition() { return m_Transform.getPosition(); }
+        sf::Vector2f GetScale() { return m_Transform.getScale(); }
 
         void SetPosition(sf::Vector2f pos) { m_Transform.setPosition(pos); }
         void Move(sf::Vector2f offset) { m_Transform.move(offset); }
@@ -27,6 +28,15 @@ namespace Spoon
             ImGui::SeparatorText("Position");
             ImGui::Text("X: %s", std::to_string(m_CurrentPosition.x).c_str());
             ImGui::Text("Y: %s", std::to_string(m_CurrentPosition.y).c_str());
+
+            float tranScale[2] = { m_Transform.getScale().x, m_Transform.getScale().y };
+
+            ImGui::SeparatorText("Scale");
+            if(ImGui::SliderFloat2("##Scale", tranScale, -10.0f, 10.0f))
+            {
+                sf::Vector2f newScale = { tranScale[0], tranScale[1] };
+                m_Transform.setScale(newScale);
+            }
         }
     };
 }
