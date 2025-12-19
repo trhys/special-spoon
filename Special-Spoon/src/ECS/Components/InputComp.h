@@ -66,6 +66,8 @@ namespace Spoon
                             currentKey = keyStringbuf;
                             m_KeyBindings[keyStringbuf] = actionStringbuf;
                             m_KeyBindings.erase(currentKey);
+                            keyStringbuf[0] = '\0';
+                            actionStringbuf[0] = '\0';
                             ImGui::CloseCurrentPopup();
                         }
                     }
@@ -74,6 +76,8 @@ namespace Spoon
                     {
                         m_KeyBindings.erase(currentKey);
                         currentKey = "";
+                        keyStringbuf[0] = '\0';
+                        actionStringbuf[0] = '\0';
                         ImGui::CloseCurrentPopup();
                     }
                     ImGui::EndPopup();
@@ -92,11 +96,13 @@ namespace Spoon
             {
                 static char newKeyBuf[64];
                 static char newActionBuf[64];
-                ImGui::InputText("New Key", newKeyBuf, IM_ARRAYSIZE(newKeyBuf));
-                ImGui::InputText("New Action String", newActionBuf, IM_ARRAYSIZE(newActionBuf));
+                ImGui::InputText("New Key: ", newKeyBuf, IM_ARRAYSIZE(newKeyBuf));
+                ImGui::InputText("New Action String: ", newActionBuf, IM_ARRAYSIZE(newActionBuf));
                 if(ImGui::Button("Submit"))
                 {
                     m_KeyBindings[newKeyBuf] = newActionBuf;
+                    newKeyBuf[0] = '\0';
+                    newActionBuf[0] = '\0';
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::EndPopup();

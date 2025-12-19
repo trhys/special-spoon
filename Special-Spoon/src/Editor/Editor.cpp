@@ -9,7 +9,7 @@
 
 namespace Spoon
 {
-
+    // Menu flags
     bool NewScene = false;
     bool LoadScene = false;
     bool ViewEntities = true;
