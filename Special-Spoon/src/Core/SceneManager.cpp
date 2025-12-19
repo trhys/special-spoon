@@ -255,11 +255,13 @@ namespace Spoon
         inFile.close();
 
         std::filesystem::path sceneDir = std::filesystem::path(m_DataDir) / "scene";
-        
+        std::string newID = id;
+        std::replace(newID.begin(), newID.end(), ' ', '_');
+
         SceneData newScene;
-        newScene.ID = id;
-        newScene.ResourceFiles = (sceneDir / (id + "_resources.json")).string();
-        newScene.DataFiles = (sceneDir / (id + "_data.json")).string();
+        newScene.ID = newID;
+        newScene.ResourceFiles = (sceneDir / (newID + "_resources.json")).generic_string();
+        newScene.DataFiles = (sceneDir / (newID + "_data.json")).generic_string();
 
         json newSceneJSON;
         newSceneJSON =
@@ -270,7 +272,23 @@ namespace Spoon
         };
         manifest["Scenes"].push_back(newSceneJSON);
 
-        m_SceneManifest[id] = newScene;
+        std::ofstream resources(std::filesystem::path(newScene.ResourceFiles));
+        json newRes;
+        newRes["Textures"] = json::array();
+        newRes["Fonts"] = json::array();
+        newRes["Sounds"] = json::array();
+        newRes["Animations"] = json::array();
+        resources << newRes.dump(4);
+        resources.close();
+
+        std::ofstream data(std::filesystem::path(newScene.DataFiles));
+        json newData;
+        newData["Entities"] = json::array();
+        newData["Systems"] = json::array();
+        data << newData.dump(4);
+        data.close();
+
+        m_SceneManifest[newID] = newScene;
 
         std::ofstream outFile(m_ManifestPath);
         if(!outFile.is_open())

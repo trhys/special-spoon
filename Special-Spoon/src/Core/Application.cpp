@@ -33,14 +33,13 @@ namespace Spoon
 
             m_EditorViewport = sf::RenderTexture({1280, 720});
         }
-        m_SceneManager.LoadManifest(m_Specs.dataDir);
+        m_SceneManager.LoadManifest(m_Specs.dataDir.string());
     }
 
     void Application::Close()
     {
         if(m_Specs.editorEnabled)
         {
-            ImGui::Begin("Close prompt");
             const char* popup = "Close";
             ImGui::OpenPopup(popup);
 
@@ -66,7 +65,6 @@ namespace Spoon
                 }
                 ImGui::EndPopup();
             }
-            ImGui::End();
         }
         else m_IsRunning = false;
     }
@@ -80,6 +78,7 @@ namespace Spoon
 
         if(m_SystemManager.GetStateSystem()->IsQuitRequested())
         {
+            m_SystemManager.GetStateSystem()->ConsumeQuitFlag();
             if(m_Specs.editorEnabled)
             {
                 m_Editor.Stop();
@@ -125,6 +124,8 @@ namespace Spoon
             if(m_Specs.editorEnabled)
             {
                 ImGui::SFML::Update(m_Window, tick);
+                if (closePrompt)
+                    Close();
                 ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
                 play = m_Editor.Play();
             }
@@ -133,45 +134,45 @@ namespace Spoon
             else m_InputSystem.ClearEvents();
 
             // Rendering
-            if(m_Specs.editorEnabled && !play)
+            m_Window.clear();
+
+            if(m_Specs.editorEnabled)
             {
-                ImGui::Begin("Viewport");
+                if (!play)
+                {
+                    ImGui::Begin("Viewport");
 
-                // Resize viewport if necessary
-                sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
-                sf::Vector2u viewport2u(
-                    std::max(1u, static_cast<unsigned int>(viewportSize.x)),
-                    std::max(1u, static_cast<unsigned int>(viewportSize.y)));
-                if(m_EditorViewport.getSize() != viewport2u)
-                    if(m_EditorViewport.resize({viewport2u}))
-                    {
-                        sf::View view(sf::FloatRect({0.f, 0.f}, { (float)viewport2u.x, (float)viewport2u.y }));
-                        m_EditorViewport.setView(view);
-                    }
-                
-                // Draw to viewport
-                m_EditorViewport.clear();
-                m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
-                m_EditorViewport.display();
+                    // Resize viewport if necessary
+                    sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
+                    sf::Vector2u viewport2u(
+                        std::max(1u, static_cast<unsigned int>(viewportSize.x)),
+                        std::max(1u, static_cast<unsigned int>(viewportSize.y)));
+                    if (m_EditorViewport.getSize() != viewport2u)
+                        if (m_EditorViewport.resize({ viewport2u }))
+                        {
+                            sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
+                            m_EditorViewport.setView(view);
+                        }
+                    // Draw to viewport
+                    m_EditorViewport.clear();
+                    m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
+                    m_EditorViewport.display();
 
-                ImGui::Image(m_EditorViewport);
-                ImGui::End();
+                    ImGui::Image(m_EditorViewport);
+                    ImGui::End();
+                }
                 m_Editor.Run(m_EntityManager, m_SceneManager, m_SystemManager);
-
-                m_Window.clear();
                 ImGui::SFML::Render(m_Window);
-                m_Window.display();
             }
-            else
+            if (play || !m_Specs.editorEnabled)
             {
-                m_Window.clear();
                 m_Renderer.Render(m_Window, states, m_EntityManager);
-                m_Window.display();
             }
-            if(closePrompt) Close();
+            m_Window.display();
         }
         if(m_Specs.editorEnabled) ImGui::SFML::Shutdown();
-        m_Window.close();
+        if(m_Window.isOpen())
+            m_Window.close();
         return;
     }
 }
