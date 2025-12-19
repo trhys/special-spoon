@@ -9,7 +9,6 @@
 
 namespace Spoon
 {
-    struct ResourceManagerNode; // Used for the resource manager table
 
     bool NewScene = false;
     bool LoadScene = false;
@@ -33,9 +32,6 @@ namespace Spoon
     {
         if(!workingDir)
             workingDir = ResourceManager::GetAssetsDir();
-
-        //ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
-        //ImGui::Begin("Special-Spoon Editor", nullptr, window_flags);
 
         if (ImGui::BeginMainMenuBar())
         {
