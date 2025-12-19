@@ -21,7 +21,7 @@ namespace Spoon
 
         void OnReflect() override
         {
-            
+            ImGui::InputFloat("Current Blink Rate", &m_Blinkrate, 0.1f);
         }
     };
 }

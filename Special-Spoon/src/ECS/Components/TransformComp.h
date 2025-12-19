@@ -24,7 +24,9 @@ namespace Spoon
 
         void OnReflect() override
         {
-            
+            ImGui::SeparatorText("Position");
+            ImGui::Text("X: %s", std::to_string(m_CurrentPosition.x).c_str());
+            ImGui::Text("Y: %s", std::to_string(m_CurrentPosition.y).c_str());
         }
     };
 }

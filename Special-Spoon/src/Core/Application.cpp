@@ -138,33 +138,31 @@ namespace Spoon
 
             if(m_Specs.editorEnabled)
             {
-                if (!play)
-                {
-                    ImGui::Begin("Viewport");
+                ImGui::Begin("Viewport");
 
-                    // Resize viewport if necessary
-                    sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
-                    sf::Vector2u viewport2u(
-                        std::max(1u, static_cast<unsigned int>(viewportSize.x)),
-                        std::max(1u, static_cast<unsigned int>(viewportSize.y)));
-                    if (m_EditorViewport.getSize() != viewport2u)
-                        if (m_EditorViewport.resize({ viewport2u }))
-                        {
-                            sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
-                            m_EditorViewport.setView(view);
-                        }
-                    // Draw to viewport
-                    m_EditorViewport.clear();
-                    m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
-                    m_EditorViewport.display();
+                // Resize viewport if necessary
+                sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
+                sf::Vector2u viewport2u(
+                    std::max(1u, static_cast<unsigned int>(viewportSize.x)),
+                    std::max(1u, static_cast<unsigned int>(viewportSize.y)));
+                if (m_EditorViewport.getSize() != viewport2u)
+                    if (m_EditorViewport.resize({ viewport2u }))
+                    {
+                        sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
+                        m_EditorViewport.setView(view);
+                    }
+                // Draw to viewport
+                m_EditorViewport.clear();
+                m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
+                m_EditorViewport.display();
 
-                    ImGui::Image(m_EditorViewport);
-                    ImGui::End();
-                }
+                ImGui::Image(m_EditorViewport);
+                ImGui::End();
+                
                 m_Editor.Run(m_EntityManager, m_SceneManager, m_SystemManager);
                 ImGui::SFML::Render(m_Window);
             }
-            if (play || !m_Specs.editorEnabled)
+            if (!m_Specs.editorEnabled)
             {
                 m_Renderer.Render(m_Window, states, m_EntityManager);
             }

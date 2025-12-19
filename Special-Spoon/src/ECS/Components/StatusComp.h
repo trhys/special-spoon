@@ -16,7 +16,14 @@ namespace Spoon
 
         void OnReflect() override
         {
-            
+            std::string active;
+            if(is_Active)
+                active = "Yes";
+            else active = "No";
+
+            ImGui::Text("Current state: %s", m_CurrentState.c_str());
+            ImGui::Text("Active: %s", active.c_str());
+            ImGui::SameLine(); ImGui::Checkbox("##Active", &is_Active);
         }
     };
 }

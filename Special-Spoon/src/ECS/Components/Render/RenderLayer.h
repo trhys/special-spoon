@@ -12,7 +12,7 @@ namespace Spoon
 
 		void OnReflect() override
 		{
-			
+			ImGui::InputInt("Layer", &m_Layer);
 		}
 	};
 }

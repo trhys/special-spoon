@@ -36,7 +36,7 @@ namespace Spoon
 
         void OnReflect() override
         {
-            
+            ImGui::InputFloat("Current Fade Rate", &m_FadeRate, 0.1f);
         }
     };
 }
