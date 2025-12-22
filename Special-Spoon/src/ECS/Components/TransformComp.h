@@ -26,8 +26,8 @@ namespace Spoon
         void OnReflect() override
         {
             ImGui::SeparatorText("Position");
-            ImGui::Text("X: %s", std::to_string(m_CurrentPosition.x).c_str());
-            ImGui::Text("Y: %s", std::to_string(m_CurrentPosition.y).c_str());
+            ImGui::Text("X: %s", std::to_string(m_Transform.getPosition().x).c_str());
+            ImGui::Text("Y: %s", std::to_string(m_Transform.getPosition().y).c_str());
 
             float tranScale[2] = { m_Transform.getScale().x, m_Transform.getScale().y };
 

@@ -8,7 +8,7 @@ namespace Spoon
 {
     struct SpriteComp : public ComponentBase<SpriteComp>
     {
-        SpriteComp(sf::Texture& asset, bool centered, std::string& textureID) 
+        SpriteComp(sf::Texture& asset = ResourceManager::GetResource<sf::Texture>("empty"), bool centered = false, std::string textureID = "empty")
         : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID) 
         { 
             if (centered) { CenterOrigin(); } 
@@ -35,8 +35,15 @@ namespace Spoon
         void SetPosition(sf::Vector2f pos) { m_Sprite.setPosition(pos); }
         void CenterOrigin() 
         {
-            sf::FloatRect bounds = m_Sprite.getLocalBounds(); 
-            m_Sprite.setOrigin({ bounds.size.x / 2.0f, bounds.size.y / 2.0f });
+            if (!isCentered)
+            {
+                sf::FloatRect bounds = m_Sprite.getLocalBounds(); 
+                m_Sprite.setOrigin({ bounds.size.x / 2.0f, bounds.size.y / 2.0f });
+            }
+            else
+            {
+                m_Sprite.setOrigin({ 0.0, 0.0 });
+            }
         }
         void SetAlpha(float alpha)
         {
@@ -56,13 +63,11 @@ namespace Spoon
                 {
                     m_Sprite.setTexture(texture, true);
                 }
-                ImGui::SameLine();
             }
-            ImGui::EndChild();
 
             ImGui::SeparatorText("Center Origin");
-            ImGui::SameLine(); 
             if(ImGui::Checkbox("Centered", &isCentered)) CenterOrigin();
+            ImGui::EndChild();
         }
     };
 }

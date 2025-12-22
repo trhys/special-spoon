@@ -31,6 +31,7 @@ namespace Spoon
 		void Close();
 		void Run();
 		void Update(sf::Time tick);
+		void Shutdown();
 		
 		static Application& Get() { return *s_Instance; }
 

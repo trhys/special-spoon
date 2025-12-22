@@ -6,7 +6,7 @@ namespace Spoon
 {
 	struct RenderLayer : public ComponentBase<RenderLayer>
 	{
-		RenderLayer(int layer) : ComponentBase::ComponentBase("RenderLayer"), m_Layer(layer) {}
+		RenderLayer(int layer = 0) : ComponentBase::ComponentBase("RenderLayer"), m_Layer(layer) {}
 
 		int m_Layer;
 

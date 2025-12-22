@@ -226,7 +226,7 @@ namespace Spoon
     void SceneManager::UnloadScene(EntityManager& entityManager, SystemManager& systemManager)
     {
         SS_DEBUG_LOG("Unloading current scene...")
-        ResourceManager::ClearAllResources();
+        //ResourceManager::ClearAllResources();
         entityManager.ClearArrays();
         entityManager.ClearEntities();
         systemManager.ClearSystems();

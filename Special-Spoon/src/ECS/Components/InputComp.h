@@ -11,6 +11,7 @@ namespace Spoon
 {
     struct InputComp : public ComponentBase<InputComp>
     {
+        InputComp() : ComponentBase::ComponentBase("InputComp") {}
         InputComp(const std::unordered_map<std::string, std::string>& keyBindings)
             : ComponentBase::ComponentBase("InputComp"), m_KeyBindings(keyBindings) 
             {

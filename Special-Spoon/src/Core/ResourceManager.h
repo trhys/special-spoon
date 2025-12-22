@@ -48,7 +48,12 @@ namespace Spoon
     class SPOON_API ResourceManager
     {
     public:
-        ResourceManager() {}
+        ResourceManager() 
+        {
+            m_Textures["empty"] = sf::Texture();
+            m_Fonts["empty"] = sf::Font();
+        }
+
         ~ResourceManager() {}
 
         static std::filesystem::path Normalize(std::filesystem::path p)

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
+#include "Core/ResourceManager.h"
 #include "SFML/Graphics/Text.hpp"
 
 namespace Spoon
 {
     struct TextComp : public ComponentBase<TextComp>
     {
-        TextComp(sf::Font& asset, std::string text = "", unsigned int char_size = 30, sf::Color color = sf::Color::White, bool centered = true) 
+        TextComp(sf::Font& asset = ResourceManager::GetResource<sf::Font>("empty"), std::string text = "", unsigned int char_size = 30, sf::Color color = sf::Color::White, bool centered = true)
             : ComponentBase::ComponentBase("TextComp"), m_Text(asset, text, char_size) 
         { 
             m_Text.setFillColor(color);

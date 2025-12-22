@@ -14,6 +14,7 @@ namespace Spoon
     bool LoadScene = false;
     bool ViewEntities = true;
     bool ViewResources = false;
+    bool LoadResources = false;
     bool AddingComponent = false;
 
     // ===================================================================
@@ -51,7 +52,8 @@ namespace Spoon
 
             if(ImGui::BeginMenu("Resource Manager"))
             {
-                if(ImGui::MenuItem("Resource View")) ViewResources = !ViewResources;
+                if(ImGui::MenuItem("Resource Tree")) ViewResources = !ViewResources;
+                if (ImGui::MenuItem("Load Resources")) LoadResources = true;
                 ImGui::EndMenu();
             }
 
@@ -64,7 +66,6 @@ namespace Spoon
         }
 
         ImGui::Begin("Special-Spoon Editor");
-        ImGui::SeparatorText("Inspector");
         if (ViewEntities) ViewEntitiesMenu(e_Manager);
         
         ImGui::End();
@@ -163,11 +164,12 @@ namespace Spoon
         static UUID selectedID = 0;
         static std::string selectedComp = "";
 
-        if (ImGui::BeginListBox("Entities"))
+        ImGui::SeparatorText("Entities");
+        if (ImGui::BeginListBox("##Entities"))
         {
             for (const auto& [uuid, name] : entities)
             {
-                ImGui::PushID(name.c_str());
+                ImGui::PushID(uuid.ID);
                 const bool is_selected = (selectedID == uuid);
                 if (ImGui::Selectable(name.c_str(), is_selected))
                 {
@@ -180,10 +182,27 @@ namespace Spoon
             ImGui::EndListBox();
             ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
         }
-
+        if (ImGui::Button("Add Entity"))
+        {
+            ImGui::OpenPopup("New Entity");
+        }
+        
+        if (ImGui::BeginPopup("New Entity"))
+        {
+            static char newEntityBuf[64];
+            ImGui::InputText("Entity Name", newEntityBuf, IM_ARRAYSIZE(newEntityBuf));
+            if (ImGui::Button("Submit"))
+            {
+                e_Manager.CreateEntity(newEntityBuf);
+                newEntityBuf[0] = '\0';
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        
+        ImGui::SeparatorText("Component Inspector");
         Component* selectedComponent = nullptr;
-        ImGui::BeginChild("Component View");
-        if(ImGui::BeginListBox("Components"))
+        if(ImGui::BeginListBox("##Components"))
         {
             for(auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
             {
@@ -203,14 +222,18 @@ namespace Spoon
             ImGui::EndListBox();
             ImGui::SameLine(); HelpMarker("A list of all components belonging to this entity");
 
-            if(ImGui::Button("Add"))
+            if(ImGui::Button("Add Component"))
             {
+                selectedComp = "";
                 AddingComponent = true;
-                AddComponentMenu(selectedID);
             }
+            if (AddingComponent)
+                AddComponentMenu(selectedID, e_Manager);
 
+            ImGui::SameLine();
             const char* popupName = "Delete?";
-            if(ImGui::Button("Delete")) ImGui::OpenPopup(popupName);
+            if(ImGui::Button("Delete")) 
+                ImGui::OpenPopup(popupName);
 
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -236,17 +259,35 @@ namespace Spoon
                 ImGui::EndChild();
             }
         }
-        ImGui::EndChild();
     }
 
-    void Editor::AddComponentMenu(UUID id)
+    void Editor::AddComponentMenu(UUID id, EntityManager& manager)
     {
         const char* compAdd = "Add Component";
         if(!ImGui::IsPopupOpen(compAdd))
             ImGui::OpenPopup(compAdd);
+        static std::unordered_map<std::string, bool> compSelections;
+
         if(ImGui::BeginPopupModal(compAdd))
         {
-
+            if (ImGui::BeginChild("Available Components", ImVec2(0, 200)))
+            {
+                for (const auto& [type, array] : manager.GetAllArrays())
+                {
+                    ImGui::Checkbox(array->GetDisplayName().c_str(), &compSelections[type]);
+                }
+                ImGui::EndChild();
+            }
+            
+            if (ImGui::Button("Submit"))
+            {
+                for (const auto& [type, selected] : compSelections)
+                {
+                    if(selected) manager.GetCreators().at(type)(id);
+                    AddingComponent = false;
+                    ImGui::CloseCurrentPopup();
+                }
+            }
             if(ImGui::Button("Cancel"))
             {
                 AddingComponent = false;
@@ -328,6 +369,11 @@ namespace Spoon
             ImGui::TextUnformatted(node->m_Ext.c_str());
         }          
         ImGui::PopID();
+    }
+
+    void Editor::LoadResourcesMenu()
+    {
+
     }
 
     void HelpMarker(const char* desc)

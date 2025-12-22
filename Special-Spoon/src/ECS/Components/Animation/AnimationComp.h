@@ -8,6 +8,7 @@ namespace Spoon
 {
     struct AnimationComp : public ComponentBase<AnimationComp>
     {
+        AnimationComp() : ComponentBase::ComponentBase("AnimationComp") {}
         AnimationComp(std::string animationID, std::unordered_map<std::string, std::string> animationMap = {}) 
             : ComponentBase::ComponentBase("AnimationComp"), m_AnimationMap(animationMap)
         {

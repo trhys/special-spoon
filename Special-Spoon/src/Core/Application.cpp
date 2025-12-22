@@ -92,6 +92,13 @@ namespace Spoon
         }
     }
 
+    void Application::Shutdown()
+    {
+        m_EntityManager.ClearEntities();
+        m_ResourceManager.ClearAllResources();
+        m_Window.close();
+    }
+
     void Application::Run()
     {
         sf::RenderStates states;
@@ -169,8 +176,7 @@ namespace Spoon
             m_Window.display();
         }
         if(m_Specs.editorEnabled) ImGui::SFML::Shutdown();
-        if(m_Window.isOpen())
-            m_Window.close();
+        Shutdown();
         return;
     }
 }

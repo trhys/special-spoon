@@ -4,6 +4,7 @@
 
 struct PatrolComp : public Spoon::ComponentBase<PatrolComp>
 {
+    PatrolComp() : ComponentBase::ComponentBase("PatrolComp") {}
     PatrolComp(sf::Vector2f pointA, sf::Vector2f pointB, float idleTime = 0.0f) : ComponentBase::ComponentBase("PatrolComp"), m_PointA(pointA), m_PointB(pointB), m_IdleTime(idleTime) {}
 
     sf::Vector2f m_PointA;
