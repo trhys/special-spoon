@@ -1,4 +1,5 @@
 #include "Editor.h"
+#include "AnimationTool.h"
 #include "Core/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
 #include "Core/SceneManager.h"
@@ -35,7 +36,7 @@ namespace Spoon
         return m_Play;
     }
 
-    void Editor::Run(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
+    void Editor::Run(sf::Time tick, EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
     {
         if (!workingDir)
             workingDir = ResourceManager::Get().GetAssetsDir();
@@ -64,6 +65,12 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("Animation Tool"))
+            {
+                if (ImGui::MenuItem("Open Animation Tool")) AnimationTool::Get().Open(nullptr);
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Settings"))
             {
                 ImGui::Checkbox("Confirm component delete", &compDelAskAgain);
@@ -86,6 +93,8 @@ namespace Spoon
         if (LoadScene) { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
         if (ViewResources) { ViewResourcesMenu(); }
         if (LoadResources) { LoadResourcesMenu(); }
+
+        if (AnimationTool::Get().IsOpen()) { AnimationTool::Get().Update(tick); }
     }
 
     void Editor::NewSceneMenu(SceneManager& s_Manager)

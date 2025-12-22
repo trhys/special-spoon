@@ -175,7 +175,7 @@ namespace Spoon
                 ImGui::Image(m_EditorViewport);
                 ImGui::End();
                 
-                m_Editor.Run(m_EntityManager, m_SceneManager, m_SystemManager);
+                m_Editor.Run(tick, m_EntityManager, m_SceneManager, m_SystemManager);
                 ImGui::SFML::Render(m_Window);
             }
             if (!m_Specs.editorEnabled)

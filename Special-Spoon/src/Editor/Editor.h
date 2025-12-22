@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SFML/System/Time.hpp"
+
 namespace Spoon
 {
     class EntityManager;
@@ -17,7 +19,7 @@ namespace Spoon
         void Stop();
         bool Play();
 
-        void Run(EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);
+        void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);
 
         void ViewEntitiesMenu(EntityManager& manager);
         void AddComponentMenu(UUID id, EntityManager& manager);
