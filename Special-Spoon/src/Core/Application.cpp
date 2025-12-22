@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "ComponentLoaders.h"
+#include "ResourceManager/ResourceManager.h"
 
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
@@ -95,7 +96,7 @@ namespace Spoon
     void Application::Shutdown()
     {
         m_EntityManager.ClearEntities();
-        m_ResourceManager.ClearAllResources();
+        ResourceManager::Get().ClearAllResources();
         m_Window.close();
     }
 
@@ -106,7 +107,7 @@ namespace Spoon
 
         bool play = true;
         
-        ResourceManager::ScanAssets(m_Specs.assetsDir);
+        ResourceManager::Get().ScanAssets(m_Specs.assetsDir);
         m_SystemManager.InitializeStateSystem(m_SceneManager);
 
         while (m_IsRunning)
@@ -119,8 +120,16 @@ namespace Spoon
                 [&](const sf::Event::MouseMoved& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::TextEntered& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
 
-                [&](const sf::Event::KeyPressed& event) { m_InputSystem.PushKeyPress(event); },
-                [&](const sf::Event::KeyReleased& event) { m_InputSystem.PushKeyRelease(event); },
+                [&](const sf::Event::KeyPressed& event) 
+                { 
+                    m_InputSystem.PushKeyPress(event);
+                    ImGui::SFML::ProcessEvent(m_Window, event);
+                },
+                [&](const sf::Event::KeyReleased& event) 
+                { 
+                    m_InputSystem.PushKeyRelease(event);
+                    ImGui::SFML::ProcessEvent(m_Window, event);
+                },
 
                 [&](const sf::Event::Closed& event) { closePrompt = true; }
             );

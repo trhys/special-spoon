@@ -11,6 +11,9 @@ target_sources(Special-Spoon
         EntityManager.h
         EntryPoint.h
         Renderer.h
-        ResourceManager.h
         SceneManager.h
+
+        ResourceManager/ResourceManager.h
+        ResourceManager/ResourceManager.cpp
+        ResourceManager/ResourceManager.inl
 )

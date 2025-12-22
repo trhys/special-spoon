@@ -1,5 +1,5 @@
 #include "SceneManager.h"
-#include "ResourceManager.h"
+#include "ResourceManager/ResourceManager.h"
 #include "EntityManager.h"
 #include "ComponentLoaders.h"
 #include "System/SystemManager.h"
@@ -89,7 +89,7 @@ namespace Spoon
         {
             std::string resID = resource["ID"].get<std::string>();
             std::string filePath = resource["FilePath"].get<std::string>();
-            ResourceManager::LoadResource<sf::Texture>(resID, filePath);
+            ResourceManager::Get().LoadResource<sf::Texture>(resID, filePath);
             SS_DEBUG_LOG("Loaded texture resource with ID: " +  resID)
         }
 
@@ -99,7 +99,7 @@ namespace Spoon
             {
                 std::string resID = resource["ID"].get<std::string>();
                 std::string filePath = resource["FilePath"].get<std::string>();
-                ResourceManager::LoadResource<sf::Font>(resID, filePath);
+                ResourceManager::Get().LoadResource<sf::Font>(resID, filePath);
                 SS_DEBUG_LOG("Loaded font resource with ID: " +  resID)
             }
         }
@@ -126,7 +126,7 @@ namespace Spoon
                 }
                 if(resource.contains("FrameRate")) { animData.frameRate = resource["FrameRate"].get<float>(); }
                 if(resource.contains("Looping")) { animData.isLooping = resource["Looping"].get<bool>(); }
-                ResourceManager::LoadAnimationData(animData.ID, animData);
+                ResourceManager::Get().LoadAnimationData(animData.ID, animData);
                 SS_DEBUG_LOG("Loaded animation data resource with ID: " +  animData.ID)
             }
         }
@@ -141,7 +141,7 @@ namespace Spoon
             {
                 std::string resID = resource["ID"].get<std::string>();
                 std::string filePath = resource["FilePath"].get<std::string>();
-                ResourceManager::LoadResource<sf::SoundBuffer>(resID, filePath);
+                ResourceManager::Get().LoadResource<sf::SoundBuffer>(resID, filePath);
                 SS_DEBUG_LOG("Loaded sound resource with ID: " +  resID)
             }
         }
@@ -226,7 +226,7 @@ namespace Spoon
     void SceneManager::UnloadScene(EntityManager& entityManager, SystemManager& systemManager)
     {
         SS_DEBUG_LOG("Unloading current scene...")
-        //ResourceManager::ClearAllResources();
+        //ResourceManager::Get().ClearAllResources();
         entityManager.ClearArrays();
         entityManager.ClearEntities();
         systemManager.ClearSystems();

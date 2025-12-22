@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/ResourceManager.h"
+#include "Core/ResourceManager/ResourceManager.h"
 #include "ECS/Components/Component.h"
 #include "AnimationData.h"
 
@@ -12,7 +12,7 @@ namespace Spoon
         AnimationComp(std::string animationID, std::unordered_map<std::string, std::string> animationMap = {}) 
             : ComponentBase::ComponentBase("AnimationComp"), m_AnimationMap(animationMap)
         {
-            m_AnimationData = ResourceManager::GetAnimationData(animationID);
+            m_AnimationData = ResourceManager::Get().GetAnimationData(animationID);
         }
 
         AnimationData* m_AnimationData = nullptr;
@@ -24,7 +24,7 @@ namespace Spoon
 
         void SetAnimationData(const std::string animationID)
         {
-            m_AnimationData = ResourceManager::GetAnimationData(animationID);
+            m_AnimationData = ResourceManager::Get().GetAnimationData(animationID);
         }
 
         void OnReflect() override

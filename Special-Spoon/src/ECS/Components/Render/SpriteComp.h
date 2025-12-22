@@ -1,14 +1,14 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
-#include "Core/ResourceManager.h"
+#include "Core/ResourceManager/ResourceManager.h"
 #include "SFML/Graphics/Sprite.hpp"
 
 namespace Spoon
 {
     struct SpriteComp : public ComponentBase<SpriteComp>
     {
-        SpriteComp(sf::Texture& asset = ResourceManager::GetResource<sf::Texture>("empty"), bool centered = false, std::string textureID = "empty")
+        SpriteComp(sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>("empty"), bool centered = false, std::string textureID = "empty")
         : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID) 
         { 
             if (centered) { CenterOrigin(); } 
@@ -57,7 +57,7 @@ namespace Spoon
             ImGui::Text("Texture ID: %s", m_TextureID.c_str());
 
             ImGui::BeginChild("Texture Explorer");
-            for(const auto& [id, texture] : ResourceManager::GetTextures())
+            for(const auto& [id, texture] : ResourceManager::Get().GetTextures())
             {
                 if(ImGui::ImageButton(id.c_str(), texture, sf::Vector2f(64, 64)))
                 {

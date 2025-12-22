@@ -1,6 +1,6 @@
 #include "Editor.h"
 #include "Core/EntityManager.h"
-#include "Core/ResourceManager.h"
+#include "Core/ResourceManager/ResourceManager.h"
 #include "Core/SceneManager.h"
 #include "System/SystemManager.h"
 
@@ -12,10 +12,16 @@ namespace Spoon
     // Menu flags
     bool NewScene = false;
     bool LoadScene = false;
+
     bool ViewEntities = true;
+
     bool ViewResources = false;
     bool LoadResources = false;
+
     bool AddingComponent = false;
+
+    // Settings
+    bool compDelAskAgain = true;
 
     // ===================================================================
 
@@ -31,8 +37,8 @@ namespace Spoon
 
     void Editor::Run(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
     {
-        if(!workingDir)
-            workingDir = ResourceManager::GetAssetsDir();
+        if (!workingDir)
+            workingDir = ResourceManager::Get().GetAssetsDir();
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -41,6 +47,7 @@ namespace Spoon
                 if (ImGui::MenuItem("New")) NewScene = true;
                 if (ImGui::MenuItem("Load")) LoadScene = true;
                 if (ImGui::MenuItem("Save")) {}
+                if (ImGui::MenuItem("Scene Manifest")) {}
                 ImGui::EndMenu();
             }
 
@@ -50,16 +57,21 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
-            if(ImGui::BeginMenu("Resource Manager"))
+            if (ImGui::BeginMenu("Resource Manager"))
             {
-                if(ImGui::MenuItem("Resource Tree")) ViewResources = !ViewResources;
+                if (ImGui::MenuItem("Resource Tree")) ViewResources = !ViewResources;
                 if (ImGui::MenuItem("Load Resources")) LoadResources = true;
                 ImGui::EndMenu();
             }
 
-            if(ImGui::Button("Play")) 
+            if (ImGui::BeginMenu("Settings"))
+            {
+                ImGui::Checkbox("Confirm component delete", &compDelAskAgain);
+            }
+
+            if (ImGui::Button("Play")) 
                 m_Play = true;
-            if(ImGui::Button("Stop"))
+            if (ImGui::Button("Stop"))
                 Stop();
 
             ImGui::EndMainMenuBar();
@@ -73,6 +85,7 @@ namespace Spoon
         if (NewScene) { NewSceneMenu(s_Manager); }
         if (LoadScene) { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
         if (ViewResources) { ViewResourcesMenu(); }
+        if (LoadResources) { LoadResourcesMenu(); }
     }
 
     void Editor::NewSceneMenu(SceneManager& s_Manager)
@@ -171,7 +184,8 @@ namespace Spoon
             {
                 ImGui::PushID(uuid.ID);
                 const bool is_selected = (selectedID == uuid);
-                if (ImGui::Selectable(name.c_str(), is_selected))
+                std::string displayID = name + "--" + std::to_string(uuid.ID);
+                if (ImGui::Selectable(displayID.c_str(), is_selected))
                 {
                     selectedID = uuid;
                 }
@@ -222,10 +236,14 @@ namespace Spoon
             ImGui::EndListBox();
             ImGui::SameLine(); HelpMarker("A list of all components belonging to this entity");
 
-            if(ImGui::Button("Add Component"))
+            if(ImGui::Button("Add Component") && selectedID != 0)
             {
                 selectedComp = "";
                 AddingComponent = true;
+            }
+            else if(ImGui::Button("Add Component") && selectedID == 0)
+            {
+                ImGui::SetItemTooltip("You must select an entity before adding a new component!");
             }
             if (AddingComponent)
                 AddComponentMenu(selectedID, e_Manager);
@@ -237,10 +255,11 @@ namespace Spoon
 
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-            if(ImGui::BeginPopupModal(popupName))
+            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            if(ImGui::BeginPopupModal(popupName) && compDelAskAgain)
             {
                 ImGui::Text("Are you sure you want to\ndelete this component? This cannot be undone!");
+                ImGui::Checkbox("Don't ask me again", &compDelAskAgain);
                 if(ImGui::Button("Delete")) 
                 { 
                     e_Manager.KillComponent(selectedComponent->GetType(), selectedID);
@@ -322,7 +341,7 @@ namespace Spoon
         }
 
         if(ImGui::Button("Refresh"))
-            workingDir = ResourceManager::GetAssetsDir();
+            workingDir = ResourceManager::Get().GetAssetsDir();
         if(ImGui::Button("Close"))
             ViewResources = false;
 
@@ -367,6 +386,36 @@ namespace Spoon
 
             ImGui::TableNextColumn();
             ImGui::TextUnformatted(node->m_Ext.c_str());
+
+            if (ImGui::BeginPopupContextItem())
+            {
+                ResourceType type = ResourceManager::Get().GetType(node->m_Ext);
+                bool supported = (type != ResourceType::Unknown);
+
+                if (ImGui::Selectable("Add to Scene", false, supported ? 0 : ImGuiSelectableFlags_Disabled))
+                {
+                    switch (type)
+                    {
+                        case ResourceType::Texture: ResourceManager::Get().LoadResource<sf::Texture>(node->m_Name, node->m_Path); break;
+                        case ResourceType::Font: ResourceManager::Get().LoadResource<sf::Font>(node->m_Name, node->m_Path); break;
+                        case ResourceType::Sound: ResourceManager::Get().LoadResource<sf::SoundBuffer>(node->m_Name, node->m_Path); break;
+                        default: break;
+                    }   
+                    ImGui::CloseCurrentPopup();
+                }
+                if (ImGui::Selectable("Remove from Scene", false, supported ? 0 : ImGuiSelectableFlags_Disabled))
+                {
+                    switch (type)
+                    {
+                        case ResourceType::Texture: ResourceManager::Get().RemoveResource<sf::Texture>(node->m_Name); break;
+                        case ResourceType::Font: ResourceManager::Get().RemoveResource<sf::Font>(node->m_Name); break;
+                        case ResourceType::Sound: ResourceManager::Get().RemoveResource<sf::SoundBuffer>(node->m_Name); break;
+                        default: break;
+                    }
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
         }          
         ImGui::PopID();
     }

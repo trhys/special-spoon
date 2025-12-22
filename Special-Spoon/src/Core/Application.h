@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core.h"
-#include "ResourceManager.h"
 #include "SceneManager.h"
 #include "EntityManager.h"
 #include "System/InputSystem.h"
@@ -42,7 +41,6 @@ namespace Spoon
 		bool m_IsRunning = true;
 		bool closePrompt = false;
 		
-		ResourceManager   m_ResourceManager;
 		SceneManager	  m_SceneManager;
 		EntityManager	  m_EntityManager;
 		InputSystem		  m_InputSystem;

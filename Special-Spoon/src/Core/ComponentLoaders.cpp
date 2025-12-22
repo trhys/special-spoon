@@ -1,7 +1,7 @@
 #include "ComponentLoaders.h"
 #include "ECS/ECS.h"
 #include "EntityManager.h"
-#include "ResourceManager.h"
+#include "ResourceManager/ResourceManager.h"
 
 namespace Spoon
 {
@@ -15,7 +15,7 @@ namespace Spoon
     void LoadSpriteComponent(EntityManager& manager, UUID id, const json& comp)
     {
         std::string textureID = comp["TextureID"].get<std::string>();
-        sf::Texture& asset = ResourceManager::GetResource<sf::Texture>(textureID);
+        sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>(textureID);
         
         bool centered = comp.value("Centered", false);
 
@@ -36,7 +36,7 @@ namespace Spoon
     void LoadTextComponent(EntityManager& manager, UUID id, const json& comp)
     {
         std::string fontID = comp["FontID"].get<std::string>();
-        sf::Font& asset = ResourceManager::GetResource<sf::Font>(fontID);
+        sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>(fontID);
         std::string content = comp["Content"].get<std::string>();
         if(comp.contains("CharacterSize"))
         {
