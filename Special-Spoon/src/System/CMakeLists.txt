@@ -4,7 +4,6 @@ target_sources(Special-Spoon
         InputSystem.h
         StateSystem.h
         System.h
-        SystemLoaders.h
         SystemManager.h
 
         Physics/PhysicsSystem.h
@@ -15,5 +14,4 @@ target_sources(Special-Spoon
         Physics/QuadTree.cpp
 
         AnimationSystem.cpp
-        SystemLoaders.cpp
 )

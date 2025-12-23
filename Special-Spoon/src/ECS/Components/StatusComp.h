@@ -7,13 +7,13 @@ namespace Spoon
     struct StatusComp : public ComponentBase<StatusComp>
     {
         StatusComp(bool isActive = true, std::string currentState = "idle")
-            : ComponentBase::ComponentBase("StatusComp"), is_Active(isActive), m_CurrentState(currentState) 
+            : ComponentBase::ComponentBase("Status"), is_Active(isActive), m_CurrentState(currentState) 
         {
         }
 
         bool is_Active;
         std::string m_CurrentState; // Idle, Moving, Attacking, etc. This maps to AnimationMap
-
+        
         void OnReflect() override
         {
             std::string active;
@@ -26,4 +26,6 @@ namespace Spoon
             ImGui::SameLine(); ImGui::Checkbox("##Active", &is_Active);
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StatusComp, is_Active, m_CurrentState)
 }

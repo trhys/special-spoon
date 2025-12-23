@@ -26,6 +26,8 @@ namespace Spoon
 
         if(init) // Inform the editor of systems that may get loaded by the scene manager elsewhere
         {
+            addedSystems.clear();
+            existing.clear();
             for (auto& system : manager.GetSystems())
             {
                 std::string id = system->GetDisplayName();

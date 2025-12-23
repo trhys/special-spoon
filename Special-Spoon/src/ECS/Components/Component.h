@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core/Core.h"
+#include "Core/Serialization/JsonTypeDefs.h"
+
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
 

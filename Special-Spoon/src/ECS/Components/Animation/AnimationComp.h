@@ -8,14 +8,15 @@ namespace Spoon
 {
     struct AnimationComp : public ComponentBase<AnimationComp>
     {
-        AnimationComp() : ComponentBase::ComponentBase("AnimationComp") {}
+        AnimationComp() : ComponentBase::ComponentBase("Animation") {}
         AnimationComp(std::string animationID, std::unordered_map<std::string, std::string> animationMap = {}) 
-            : ComponentBase::ComponentBase("AnimationComp"), m_AnimationMap(animationMap)
+            : ComponentBase::ComponentBase("Animation"), iAnimationID(animationID), m_AnimationMap(animationMap)
         {
             m_AnimationData = ResourceManager::Get().GetAnimationData(animationID);
         }
 
         AnimationData* m_AnimationData = nullptr;
+        std::string iAnimationID;
         std::unordered_map<std::string, std::string> m_AnimationMap; // [key, value] = [state, animationID]
 
         int currentFrame = 0;
@@ -106,4 +107,6 @@ namespace Spoon
             }
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AnimationComp, iAnimationID, m_AnimationMap)
 }

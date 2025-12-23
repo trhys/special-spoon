@@ -1,5 +1,4 @@
 #include "Application.h"
-#include "ComponentLoaders.h"
 #include "ResourceManager/ResourceManager.h"
 #include "Editor/AnimationTool.h"
 

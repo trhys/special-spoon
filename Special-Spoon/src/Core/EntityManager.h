@@ -187,6 +187,8 @@ namespace Spoon
             m_Entities.clear();
         }
 
+        std::unordered_map<UUID, std::string>& GetEntities() { return m_Entities; }
+
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<UUID> m_RecycledIds;

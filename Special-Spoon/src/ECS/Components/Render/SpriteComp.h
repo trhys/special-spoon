@@ -9,13 +9,13 @@ namespace Spoon
     struct SpriteComp : public ComponentBase<SpriteComp>
     {
         SpriteComp(sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>("empty"), bool centered = false, std::string textureID = "empty")
-        : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID) 
+        : ComponentBase::ComponentBase("Sprite"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID) 
         { 
             if (centered) { CenterOrigin(); } 
         }
 
         SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered, std::string& textureID) 
-        : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), m_TextureRect(rect), isCentered(centered), m_TextureID(textureID)
+        : ComponentBase::ComponentBase("Sprite"), m_Sprite(asset), m_TextureRect(rect), isCentered(centered), m_TextureID(textureID)
         {
             m_Sprite.setTextureRect(rect);
             if (centered) { CenterOrigin(); }
@@ -23,7 +23,7 @@ namespace Spoon
                 
         sf::Sprite m_Sprite;
         sf::IntRect m_TextureRect;
-        std::string m_TextureID; // Really only for the inspector - no practical use otherwise
+        std::string m_TextureID;
         bool isCentered;
 
         sf::Vector2f GetPosition() { return m_Sprite.getPosition(); }
@@ -96,4 +96,6 @@ namespace Spoon
             }
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteComp, m_TextureID, isCentered, m_TextureRect)
 }

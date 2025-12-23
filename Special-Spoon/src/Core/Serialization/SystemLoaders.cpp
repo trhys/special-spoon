@@ -1,6 +1,6 @@
 #include "SystemLoaders.h"
-#include "AnimationSystem.h"
-#include "Physics/PhysicsSystem.h"
+#include "System/AnimationSystem.h"
+#include "System/Physics/PhysicsSystem.h"
 
 namespace Spoon
 {

@@ -8,15 +8,25 @@ namespace Spoon
 {
     struct TextComp : public ComponentBase<TextComp>
     {
-        TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("empty"), std::string text = "", unsigned int char_size = 30, sf::Color color = sf::Color::White, bool centered = true)
-            : ComponentBase::ComponentBase("TextComp"), m_Text(asset, text, char_size), isCentered(centered)
+        TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("empty"), std::string text = "",
+            unsigned int char_size = 30, sf::Color color = sf::Color::White, sf::Color outcolor = sf::Color::White, unsigned int olThickness = 0, bool centered = true)
+            : ComponentBase::ComponentBase("Text"), m_Text(asset, text, char_size), isCentered(centered), iText(text),
+             iCharSize(char_size), iColor(color), iOutColor(outcolor), iolThickness(olThickness)
         { 
             m_Text.setFillColor(color);
+            m_Text.setOutlineColor(outcolor);
+            m_Text.setOutlineThickness(olThickness);
             if (centered) { CenterOrigin(); }
         }
 
         sf::Text m_Text;
         bool isCentered;
+        std::string iFontID;
+        std::string iText;
+        unsigned int iCharSize;
+        unsigned int iolThickness;
+        sf::Color iColor;
+        sf::Color iOutColor;
 
         sf::Text& GetText() { return m_Text; }
 
@@ -69,6 +79,7 @@ namespace Spoon
                 
                 if (ImGui::Button("Submit") || changedString)
                 {
+                    iText = newTextBuf;
                     m_Text.setString(newTextBuf);
                     CenterOrigin();
                     ImGui::CloseCurrentPopup();
@@ -85,6 +96,7 @@ namespace Spoon
             ImGui::SeparatorText("Character Size");
             if (ImGui::SliderInt("##CharSize", &charSize, 1, 100))
             {
+                iCharSize = charSize;
                 SetSize(static_cast<unsigned int>(charSize));
                 CenterOrigin();
             }
@@ -106,6 +118,7 @@ namespace Spoon
                 m_Color.g = static_cast<std::uint8_t>(color[1] * 255.0f);
                 m_Color.b = static_cast<std::uint8_t>(color[2] * 255.0f);
                 m_Color.a = static_cast<std::uint8_t>(color[3] * 255.0f);
+                iColor = m_Color;
                 SetColor(m_Color);
             }
 
@@ -123,15 +136,19 @@ namespace Spoon
                 outline_Color.g = static_cast<std::uint8_t>(OLcolor[1] * 255.0f);
                 outline_Color.b = static_cast<std::uint8_t>(OLcolor[2] * 255.0f);
                 outline_Color.a = static_cast<std::uint8_t>(OLcolor[3] * 255.0f);
+                iOutColor = outline_Color;
                 m_Text.setOutlineColor(outline_Color);
             }
 
             float olThickness = m_Text.getOutlineThickness();
             if (ImGui::SliderFloat("Outline Thickness", &olThickness, 0.0f, 50.0f))
             {
+                iolThickness = olThickness;
                 m_Text.setOutlineThickness(olThickness);
                 CenterOrigin();
             }
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextComp, iFontID, isCentered, iCharSize, iColor, iText, iolThickness, iOutColor)
 }

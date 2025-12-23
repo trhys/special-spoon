@@ -7,7 +7,7 @@ namespace Spoon
 {
     struct BlinkComp : public ComponentBase<BlinkComp>
     {
-        BlinkComp(float rate = 2.0f) : ComponentBase::ComponentBase("BlinkComp"), m_Blinkrate(rate) {}
+        BlinkComp(float rate = 2.0f) : ComponentBase::ComponentBase("Blink"), m_Blinkrate(rate) {}
 
         sf::Time m_BlinkTimer;
         float m_Alpha = 255.0f;
@@ -24,4 +24,6 @@ namespace Spoon
             ImGui::InputFloat("Current Blink Rate", &m_Blinkrate, 0.1f);
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BlinkComp, m_Blinkrate)
 }

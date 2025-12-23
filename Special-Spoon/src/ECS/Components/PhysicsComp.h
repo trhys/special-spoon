@@ -8,8 +8,8 @@ namespace Spoon
     struct PhysicsComp : public ComponentBase<PhysicsComp>
     {
     public:
-        PhysicsComp() : ComponentBase::ComponentBase("PhysicsComp") {}
-        PhysicsComp(sf::FloatRect rect) : ComponentBase::ComponentBase("PhysicsComp"), m_CollisionBox(rect) {}
+        PhysicsComp() : ComponentBase::ComponentBase("Physics") {}
+        PhysicsComp(sf::FloatRect rect) : ComponentBase::ComponentBase("Physics"), m_CollisionBox(rect) {}
         ~PhysicsComp() {}
         
         void SetPosition(sf::Vector2f pos) 
@@ -37,8 +37,10 @@ namespace Spoon
             ImGui::Text("Collision detected? : %s", Collided ? "True" : "False");
         }
         
-    private:
         sf::FloatRect m_CollisionBox;
         bool Collided = false;
+
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PhysicsComp, Collided)
 }
