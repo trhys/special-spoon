@@ -31,7 +31,7 @@ namespace Spoon
 
             float tranScale[2] = { m_Transform.getScale().x, m_Transform.getScale().y };
             ImGui::SeparatorText("Scale");
-            if(ImGui::SliderFloat2("##Scale", tranScale, -10.0f, 10.0f, "%.3f", 0.5f))
+            if(ImGui::SliderFloat2("##Scale", tranScale, -10.0f, 10.0f, "%.3f"))
             {
                 sf::Vector2f newScale = { tranScale[0], tranScale[1] };
                 m_Transform.setScale(newScale);
@@ -39,7 +39,7 @@ namespace Spoon
 
             float degrees = m_Transform.getRotation().asDegrees();
             ImGui::SeparatorText("Rotation");
-            if(ImGui::SliderFloat("##Rotation", &degrees, 0.0f, 360.0f, "%.3f", 5.0f))
+            if(ImGui::SliderFloat("##Rotation", &degrees, 0.0f, 360.0f, "%.3f"))
             {
                 m_Transform.setRotation(sf::degrees(degrees));
             }

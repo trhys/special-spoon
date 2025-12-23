@@ -16,8 +16,11 @@ int main(int argc, char** argv)
     SS_DEBUG_LOG("Running application...")
     app->Spoon::Application::Run();
     
+    delete app;
+    app = nullptr;
+
     SS_DEBUG_LOG("Shutting down application...")
     Spoon::Logger::Get().Close();
 
-    delete app;
+    
 }

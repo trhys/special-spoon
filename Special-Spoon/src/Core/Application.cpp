@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "ComponentLoaders.h"
 #include "ResourceManager/ResourceManager.h"
+#include "Editor/AnimationTool.h"
 
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
@@ -96,8 +97,14 @@ namespace Spoon
     void Application::Shutdown()
     {
         m_EntityManager.ClearEntities();
+        m_EntityManager.ClearArrays();
+        m_EntityManager.ClearActionsBuffer();
         ResourceManager::Get().ClearAllResources();
-        m_Window.close();
+        AnimationTool::Get().Shutdown();
+        m_EditorViewport = sf::RenderTexture();
+        m_Window.setActive(false);
+        if(m_Window.isOpen())
+            m_Window.close();
     }
 
     void Application::Run()
@@ -184,8 +191,7 @@ namespace Spoon
             }
             m_Window.display();
         }
-        if(m_Specs.editorEnabled) ImGui::SFML::Shutdown();
+        if(m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
         Shutdown();
-        return;
     }
 }

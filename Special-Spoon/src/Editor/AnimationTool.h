@@ -15,13 +15,10 @@ namespace Spoon
     class AnimationTool
     {
     public:
-        AnimationTool() {}
-        ~AnimationTool() {}
-
         static AnimationTool& Get()
         {
-            static AnimationTool tool;
-            return tool;
+            if (!s_Instance) s_Instance = new AnimationTool();
+            return *s_Instance;
         }
 
         void Update(sf::Time tick);
@@ -29,7 +26,11 @@ namespace Spoon
         void Animate(sf::Time tick);
         bool IsOpen() { return m_isOpen; }
 
+        void Shutdown();
+
     private:
+        AnimationTool() = default;
+        static inline AnimationTool* s_Instance;
         AnimationData* currentData = nullptr;
         SpriteComp previewSprite;  // Holds texture and texture rect
 

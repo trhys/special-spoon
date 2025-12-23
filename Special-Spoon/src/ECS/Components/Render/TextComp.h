@@ -100,7 +100,7 @@ namespace Spoon
                 m_Color.b / 255.0f,
                 m_Color.a / 255.0f
             };
-            if (ImGui::ColorEdit4("Color", color))
+            if (ImGui::ColorEdit4("Fill Color", color))
             {
                 m_Color.r = static_cast<std::uint8_t>(color[0] * 255.0f);
                 m_Color.g = static_cast<std::uint8_t>(color[1] * 255.0f);
@@ -117,7 +117,7 @@ namespace Spoon
                 outline_Color.b / 255.0f,
                 outline_Color.a / 255.0f
             };
-            if (ImGui::ColorEdit4("Color", OLcolor))
+            if (ImGui::ColorEdit4("Outline Color", OLcolor))
             {
                 outline_Color.r = static_cast<std::uint8_t>(OLcolor[0] * 255.0f);
                 outline_Color.g = static_cast<std::uint8_t>(OLcolor[1] * 255.0f);

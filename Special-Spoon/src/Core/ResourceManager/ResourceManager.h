@@ -51,7 +51,7 @@ namespace Spoon
             m_Textures["empty"] = sf::Texture();
             m_Fonts["empty"] = sf::Font();
         }
-        ~ResourceManager() {}
+        ~ResourceManager() { ClearAllResources(); }
 
         static ResourceManager& Get();
 
@@ -85,6 +85,11 @@ namespace Spoon
         const std::unordered_map<std::string, sf::SoundBuffer>& GetSounds()
         {
             return m_SoundBuffers;
+        }
+
+        const std::unordered_map<std::string, AnimationData>& GetAnimations()
+        {
+            return m_Animations;
         }
 
         void ClearAllResources()

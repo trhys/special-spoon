@@ -74,6 +74,7 @@ namespace Spoon
             if (ImGui::BeginMenu("Settings"))
             {
                 ImGui::Checkbox("Confirm component delete", &compDelAskAgain);
+                ImGui::EndMenu();
             }
 
             if (ImGui::Button("Play")) 
@@ -245,14 +246,15 @@ namespace Spoon
             ImGui::EndListBox();
             ImGui::SameLine(); HelpMarker("A list of all components belonging to this entity");
 
-            if(ImGui::Button("Add Component") && selectedID != 0)
+            if(ImGui::Button("Add Component"))
             {
-                selectedComp = "";
-                AddingComponent = true;
-            }
-            else if(ImGui::Button("Add Component") && selectedID == 0)
-            {
-                ImGui::SetItemTooltip("You must select an entity before adding a new component!");
+                if (selectedID == 0)
+                    ImGui::SetItemTooltip("You must select an entity before adding a new component!");
+                else 
+                {
+                    selectedComp = "";
+                    AddingComponent = true;
+                }
             }
             if (AddingComponent)
                 AddComponentMenu(selectedID, e_Manager);

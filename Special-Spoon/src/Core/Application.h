@@ -49,8 +49,9 @@ namespace Spoon
 		Editor 			  m_Editor;
 
 		AppSpecifications m_Specs;
-		sf::RenderWindow  m_Window;
 		sf::RenderTexture m_EditorViewport;
+		sf::RenderWindow  m_Window;
+		
 	};
 
 	//DEFINE IN CLIENT APPLICATION
