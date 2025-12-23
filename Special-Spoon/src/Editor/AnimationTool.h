@@ -44,5 +44,6 @@ namespace Spoon
         bool isFinished = false;
 
         sf::RenderTexture m_Viewport;
+        sf::View m_Camera;
     };
 }

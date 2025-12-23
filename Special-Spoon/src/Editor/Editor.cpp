@@ -1,5 +1,6 @@
 #include "Editor.h"
 #include "AnimationTool.h"
+
 #include "Core/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
 #include "Core/SceneManager.h"
@@ -43,7 +44,7 @@ namespace Spoon
 
         if (ImGui::BeginMainMenuBar())
         {
-            if (ImGui::BeginMenu("Scene"))
+            if (ImGui::BeginMenu("Scene Manager"))
             {
                 if (ImGui::MenuItem("New")) NewScene = true;
                 if (ImGui::MenuItem("Load")) LoadScene = true;
@@ -71,6 +72,12 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("System Manager"))
+            {
+                if (ImGui::MenuItem("Open System Manager")) m_SystemsMenu.Open();
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Settings"))
             {
                 ImGui::Checkbox("Confirm component delete", &compDelAskAgain);
@@ -95,7 +102,8 @@ namespace Spoon
         if (ViewResources) { ViewResourcesMenu(); }
         if (LoadResources) { LoadResourcesMenu(); }
 
-        if (AnimationTool::Get().IsOpen()) { AnimationTool::Get().Update(tick); }
+        if (AnimationTool::Get().IsOpen())  AnimationTool::Get().Update(tick);
+        if (m_SystemsMenu.IsOpen())         m_SystemsMenu.Update(sys_Manager);
     }
 
     void Editor::NewSceneMenu(SceneManager& s_Manager)

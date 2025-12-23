@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SystemsMenu.h"
+
 #include "SFML/System/Time.hpp"
 
 namespace Spoon
@@ -31,6 +33,8 @@ namespace Spoon
         void ViewAssets(AssetNode* node);
         void LoadResourcesMenu();
         
+        SystemsMenu m_SystemsMenu;
+
     private:
         AssetNode* workingDir = nullptr;
         bool m_Play = false;

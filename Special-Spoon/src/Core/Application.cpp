@@ -102,7 +102,7 @@ namespace Spoon
         ResourceManager::Get().ClearAllResources();
         AnimationTool::Get().Shutdown();
         m_EditorViewport = sf::RenderTexture();
-        m_Window.setActive(false);
+        (void)m_Window.setActive(false);
         if(m_Window.isOpen())
             m_Window.close();
     }
@@ -125,6 +125,7 @@ namespace Spoon
                 [&](const sf::Event::MouseButtonPressed& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::MouseButtonReleased& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::MouseMoved& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+                [&](const sf::Event::MouseWheelScrolled& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::TextEntered& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
 
                 [&](const sf::Event::KeyPressed& event) 

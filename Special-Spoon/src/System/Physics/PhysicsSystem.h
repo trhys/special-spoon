@@ -9,13 +9,19 @@ namespace Spoon
     class PhysicsSystem : public ISystem
     {
     public:
-        PhysicsSystem(sf::Vector2f gridSize) { quadtree.BuildTree(gridSize); }
+        PhysicsSystem() : ISystem::ISystem("Physics") {}
         ~PhysicsSystem() {}
 
         void Update(sf::Time tick, EntityManager& manager) override
         {
             // Physics update logic goes here
         }
+
+        void OnInit()
+        {
+            // Get config and build tree
+        }
+
     private:
         Quadtree quadtree;
     };

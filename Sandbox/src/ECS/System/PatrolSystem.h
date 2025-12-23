@@ -6,7 +6,7 @@
 class PatrolSystem : public Spoon::ISystem
 {
 public:
-    PatrolSystem() {}
+    PatrolSystem() : Spoon::ISystem::ISystem("Patrol") {}
     ~PatrolSystem() {}
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override

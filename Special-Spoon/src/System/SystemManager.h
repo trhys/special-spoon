@@ -17,9 +17,30 @@ namespace Spoon
         SystemManager(const SystemManager&) = delete;
         SystemManager& operator=(const SystemManager&) = delete;
 
-        void AddSystem(const json& systemData)
+        void AddSystem(const json* systemData)
         {
-            std::string type = systemData["Type"].get<std::string>();
+            if (systemData)
+            {
+                std::string type = (*systemData)["Type"].get<std::string>();
+                auto& loaderMap = SystemLoaders::GetSysLoaders();
+                auto found = loaderMap.find(type);
+                if(found != loaderMap.end())
+                {
+                    m_Systems.emplace_back(found->second(systemData));
+                }
+                else
+                {
+                    throw std::runtime_error("No system loader registered for type: " + type);
+                }
+            }
+            else
+            {
+                throw std::runtime_error("System data is nullptr! Only use AddSystem if deserializing!");
+            }
+        }
+
+        void AddSystem(const std::string& type, const json* systemData = nullptr)
+        {
             auto& loaderMap = SystemLoaders::GetSysLoaders();
             auto found = loaderMap.find(type);
             if(found != loaderMap.end())
@@ -60,6 +81,8 @@ namespace Spoon
 
         std::unique_ptr<StateSystem>& GetStateSystem() { return m_StateSystem; }
         
+        std::vector<std::unique_ptr<ISystem>>& GetSystems() { return m_Systems; }
+
     private:
         std::vector<std::unique_ptr<ISystem>> m_Systems;
         std::unique_ptr<StateSystem> m_StateSystem = nullptr;

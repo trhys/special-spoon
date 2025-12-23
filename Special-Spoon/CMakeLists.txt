@@ -11,6 +11,7 @@ target_sources(Special-Spoon
 
 add_subdirectory(src/Core)
 add_subdirectory(src/ECS)
+add_subdirectory(src/Editor)
 add_subdirectory(src/System)
 add_subdirectory(src/Utils)
 

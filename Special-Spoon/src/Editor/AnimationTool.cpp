@@ -60,7 +60,7 @@ namespace Spoon
 
             if (ImGui::BeginChild("AT Viewport", ImVec2(640, 640), ImGuiChildFlags_Borders))
             {
-                // Resize viewport if necessary
+                // Resize/Zoom viewport if necessary
                 sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
                 sf::Vector2u viewport2u(
                     std::max(1u, static_cast<unsigned int>(viewportSize.x)),
@@ -68,14 +68,23 @@ namespace Spoon
                 if (m_Viewport.getSize() != viewport2u)
                     if (m_Viewport.resize({ viewport2u }))
                     {
-                        sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
-                        m_Viewport.setView(view);
+                        m_Camera.setSize({ (float)viewport2u.x, (float)viewport2u.y });
+                        m_Viewport.setView(m_Camera);
                     }
-
+                if (ImGui::IsWindowHovered())
+                {
+                    float scrollDelta = ImGui::GetIO().MouseWheel;
+                    if (scrollDelta != 0.0)
+                    {
+                        m_Camera.zoom((scrollDelta > 0) ? 0.9 : 1.1);
+                        m_Viewport.setView(m_Camera);
+                    }
+                }
+                
                 if (m_Playback) Animate(tick);
 
                 m_Viewport.clear(sf::Color(50, 50, 50));
-                previewSprite.m_Sprite.setPosition({ 320.0f, 320.0f });
+                previewSprite.m_Sprite.setPosition(m_Camera.getCenter());
                 previewSprite.CenterOrigin();
                 m_Viewport.draw(previewSprite.m_Sprite);
                 m_Viewport.display();
@@ -86,7 +95,6 @@ namespace Spoon
             ImGui::Checkbox("Loop Animation", &m_Looping);
         }
         ImGui::End();
-
     }
 
     void AnimationTool::Open(AnimationData* data)
