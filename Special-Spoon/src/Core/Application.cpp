@@ -1,5 +1,7 @@
 #include "Application.h"
 #include "ComponentLoaders.h"
+#include "ResourceManager/ResourceManager.h"
+#include "Editor/AnimationTool.h"
 
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
@@ -92,6 +94,19 @@ namespace Spoon
         }
     }
 
+    void Application::Shutdown()
+    {
+        m_EntityManager.ClearEntities();
+        m_EntityManager.ClearArrays();
+        m_EntityManager.ClearActionsBuffer();
+        ResourceManager::Get().ClearAllResources();
+        AnimationTool::Get().Shutdown();
+        m_EditorViewport = sf::RenderTexture();
+        m_Window.setActive(false);
+        if(m_Window.isOpen())
+            m_Window.close();
+    }
+
     void Application::Run()
     {
         sf::RenderStates states;
@@ -99,7 +114,7 @@ namespace Spoon
 
         bool play = true;
         
-        ResourceManager::ScanAssets(m_Specs.assetsDir);
+        ResourceManager::Get().ScanAssets(m_Specs.assetsDir);
         m_SystemManager.InitializeStateSystem(m_SceneManager);
 
         while (m_IsRunning)
@@ -112,8 +127,16 @@ namespace Spoon
                 [&](const sf::Event::MouseMoved& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::TextEntered& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
 
-                [&](const sf::Event::KeyPressed& event) { m_InputSystem.PushKeyPress(event); },
-                [&](const sf::Event::KeyReleased& event) { m_InputSystem.PushKeyRelease(event); },
+                [&](const sf::Event::KeyPressed& event) 
+                { 
+                    m_InputSystem.PushKeyPress(event);
+                    ImGui::SFML::ProcessEvent(m_Window, event);
+                },
+                [&](const sf::Event::KeyReleased& event) 
+                { 
+                    m_InputSystem.PushKeyRelease(event);
+                    ImGui::SFML::ProcessEvent(m_Window, event);
+                },
 
                 [&](const sf::Event::Closed& event) { closePrompt = true; }
             );
@@ -138,41 +161,37 @@ namespace Spoon
 
             if(m_Specs.editorEnabled)
             {
-                if (!play)
-                {
-                    ImGui::Begin("Viewport");
+                ImGui::Begin("Viewport");
 
-                    // Resize viewport if necessary
-                    sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
-                    sf::Vector2u viewport2u(
-                        std::max(1u, static_cast<unsigned int>(viewportSize.x)),
-                        std::max(1u, static_cast<unsigned int>(viewportSize.y)));
-                    if (m_EditorViewport.getSize() != viewport2u)
-                        if (m_EditorViewport.resize({ viewport2u }))
-                        {
-                            sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
-                            m_EditorViewport.setView(view);
-                        }
-                    // Draw to viewport
-                    m_EditorViewport.clear();
-                    m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
-                    m_EditorViewport.display();
+                // Resize viewport if necessary
+                sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
+                sf::Vector2u viewport2u(
+                    std::max(1u, static_cast<unsigned int>(viewportSize.x)),
+                    std::max(1u, static_cast<unsigned int>(viewportSize.y)));
+                if (m_EditorViewport.getSize() != viewport2u)
+                    if (m_EditorViewport.resize({ viewport2u }))
+                    {
+                        sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
+                        m_EditorViewport.setView(view);
+                    }
+                // Draw to viewport
+                m_EditorViewport.clear();
+                m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
+                m_EditorViewport.display();
 
-                    ImGui::Image(m_EditorViewport);
-                    ImGui::End();
-                }
-                m_Editor.Run(m_EntityManager, m_SceneManager, m_SystemManager);
+                ImGui::Image(m_EditorViewport);
+                ImGui::End();
+                
+                m_Editor.Run(tick, m_EntityManager, m_SceneManager, m_SystemManager);
                 ImGui::SFML::Render(m_Window);
             }
-            if (play || !m_Specs.editorEnabled)
+            if (!m_Specs.editorEnabled)
             {
                 m_Renderer.Render(m_Window, states, m_EntityManager);
             }
             m_Window.display();
         }
-        if(m_Specs.editorEnabled) ImGui::SFML::Shutdown();
-        if(m_Window.isOpen())
-            m_Window.close();
-        return;
+        if(m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
+        Shutdown();
     }
 }

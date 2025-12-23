@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core.h"
-#include "ResourceManager.h"
 #include "SceneManager.h"
 #include "EntityManager.h"
 #include "System/InputSystem.h"
@@ -31,6 +30,7 @@ namespace Spoon
 		void Close();
 		void Run();
 		void Update(sf::Time tick);
+		void Shutdown();
 		
 		static Application& Get() { return *s_Instance; }
 
@@ -41,7 +41,6 @@ namespace Spoon
 		bool m_IsRunning = true;
 		bool closePrompt = false;
 		
-		ResourceManager   m_ResourceManager;
 		SceneManager	  m_SceneManager;
 		EntityManager	  m_EntityManager;
 		InputSystem		  m_InputSystem;
@@ -50,8 +49,9 @@ namespace Spoon
 		Editor 			  m_Editor;
 
 		AppSpecifications m_Specs;
-		sf::RenderWindow  m_Window;
 		sf::RenderTexture m_EditorViewport;
+		sf::RenderWindow  m_Window;
+		
 	};
 
 	//DEFINE IN CLIENT APPLICATION

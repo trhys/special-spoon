@@ -1,20 +1,22 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
+#include "Core/ResourceManager/ResourceManager.h"
 #include "SFML/Graphics/Text.hpp"
 
 namespace Spoon
 {
     struct TextComp : public ComponentBase<TextComp>
     {
-        TextComp(sf::Font& asset, std::string text = "", unsigned int char_size = 30, sf::Color color = sf::Color::White, bool centered = true) 
-            : ComponentBase::ComponentBase("TextComp"), m_Text(asset, text, char_size) 
+        TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("empty"), std::string text = "", unsigned int char_size = 30, sf::Color color = sf::Color::White, bool centered = true)
+            : ComponentBase::ComponentBase("TextComp"), m_Text(asset, text, char_size), isCentered(centered)
         { 
             m_Text.setFillColor(color);
             if (centered) { CenterOrigin(); }
         }
 
         sf::Text m_Text;
+        bool isCentered;
 
         sf::Text& GetText() { return m_Text; }
 
@@ -25,8 +27,19 @@ namespace Spoon
         void SetColor(sf::Color color) { m_Text.setFillColor(color); }
         void CenterOrigin() 
         {
-            sf::FloatRect bounds = m_Text.getLocalBounds(); 
-            m_Text.setOrigin({ bounds.size.x / 2.0f, bounds.size.y / 2.0f });
+            if (isCentered)
+            {
+                sf::FloatRect bounds = m_Text.getLocalBounds(); 
+                m_Text.setOrigin({ 
+                    bounds.position.x + (bounds.size.x / 2.0f), 
+                    bounds.position.y + (bounds.size.y / 2.0f) 
+                });
+            }
+            else
+            {
+                m_Text.setOrigin({0.0, 0.0});
+            }
+            
         }
         void SetAlpha(float alpha)
         {
@@ -37,7 +50,88 @@ namespace Spoon
 
         void OnReflect() override
         {
+            std::string text = m_Text.getString();
+            static char newTextBuf[64];
             
+            ImGui::Text("Text: %s", text.c_str());
+            if (ImGui::Button("Edit String"))
+            {
+                strncpy(newTextBuf, text.c_str(), sizeof(newTextBuf));
+                ImGui::OpenPopup("Edit Text String");
+            }
+
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            if (ImGui::BeginPopupModal("Edit Text String"))
+            {
+                bool changedString = ImGui::InputText("##New String", newTextBuf, IM_ARRAYSIZE(newTextBuf), ImGuiInputTextFlags_EnterReturnsTrue);
+                
+                if (ImGui::Button("Submit") || changedString)
+                {
+                    m_Text.setString(newTextBuf);
+                    CenterOrigin();
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+
+            int charSize = static_cast<int>(m_Text.getCharacterSize());
+            ImGui::SeparatorText("Character Size");
+            if (ImGui::SliderInt("##CharSize", &charSize, 1, 100))
+            {
+                SetSize(static_cast<unsigned int>(charSize));
+                CenterOrigin();
+            }
+
+            ImGui::SeparatorText("Center Origin");
+            if(ImGui::Checkbox("Centered", &isCentered)) CenterOrigin();
+
+            ImGui::SeparatorText("Fill Color");
+            sf::Color m_Color = m_Text.getFillColor();
+            float color[4] = {
+                m_Color.r / 255.0f,
+                m_Color.g / 255.0f,
+                m_Color.b / 255.0f,
+                m_Color.a / 255.0f
+            };
+            if (ImGui::ColorEdit4("Fill Color", color))
+            {
+                m_Color.r = static_cast<std::uint8_t>(color[0] * 255.0f);
+                m_Color.g = static_cast<std::uint8_t>(color[1] * 255.0f);
+                m_Color.b = static_cast<std::uint8_t>(color[2] * 255.0f);
+                m_Color.a = static_cast<std::uint8_t>(color[3] * 255.0f);
+                SetColor(m_Color);
+            }
+
+            ImGui::SeparatorText("Outline");
+            sf::Color outline_Color = m_Text.getOutlineColor();
+            float OLcolor[4] = {
+                outline_Color.r / 255.0f,
+                outline_Color.g / 255.0f,
+                outline_Color.b / 255.0f,
+                outline_Color.a / 255.0f
+            };
+            if (ImGui::ColorEdit4("Outline Color", OLcolor))
+            {
+                outline_Color.r = static_cast<std::uint8_t>(OLcolor[0] * 255.0f);
+                outline_Color.g = static_cast<std::uint8_t>(OLcolor[1] * 255.0f);
+                outline_Color.b = static_cast<std::uint8_t>(OLcolor[2] * 255.0f);
+                outline_Color.a = static_cast<std::uint8_t>(OLcolor[3] * 255.0f);
+                m_Text.setOutlineColor(outline_Color);
+            }
+
+            float olThickness = m_Text.getOutlineThickness();
+            if (ImGui::SliderFloat("Outline Thickness", &olThickness, 0.0f, 50.0f))
+            {
+                m_Text.setOutlineThickness(olThickness);
+                CenterOrigin();
+            }
         }
     };
 }

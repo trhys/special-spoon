@@ -13,9 +13,9 @@ public:
 
 void LoadCustomArrays(Spoon::EntityManager& manager)
 {
-	manager.LoadArray<PatrolComp>();
-	manager.LoadArray<MovementComp>();
-	manager.LoadArray<PlayerComp>();
+	manager.LoadArray<PatrolComp>("Patrol");
+	manager.LoadArray<MovementComp>("Movement");
+	manager.LoadArray<PlayerComp>("Player");
 }
 
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)

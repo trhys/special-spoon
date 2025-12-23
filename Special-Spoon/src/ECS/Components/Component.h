@@ -2,6 +2,7 @@
 
 #include "Core/Core.h"
 #include "Imgui/imgui.h"
+#include "Imgui-sfml/imgui-SFML.h"
 
 #include <string>
 

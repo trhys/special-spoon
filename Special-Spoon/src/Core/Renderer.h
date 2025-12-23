@@ -49,6 +49,7 @@ namespace Spoon
                     {
                         TransformComp& transform = manager.GetComponent<TransformComp>(ID);
                         sprite.SetPosition(transform.GetPosition());
+                        sprite.SetScale(transform.GetScale());
                     }
 
                     if(colorArray.m_IdToIndex.count(ID)) 

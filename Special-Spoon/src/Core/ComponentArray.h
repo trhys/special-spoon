@@ -9,10 +9,14 @@ namespace Spoon
     class IComponentArray 
     {
     public:
+        IComponentArray(std::string id) : m_DisplayName(id) {}
+        virtual std::string GetDisplayName() { return m_DisplayName; }
         virtual void Clear() {}
         virtual bool HasEntity(UUID id) = 0;
         virtual void RemoveComponent(UUID id) {}
         virtual Component* GetRawComp(UUID id) = 0;
+
+        std::string m_DisplayName;
     };
 
     template<typename COMP>
@@ -21,6 +25,8 @@ namespace Spoon
         std::vector<COMP> m_Components;
         std::unordered_map<UUID, size_t> m_IdToIndex;
         std::unordered_map<size_t, UUID> m_IndexToId;
+        
+        ComponentArray(std::string id) : IComponentArray::IComponentArray(id) {}
 
         void AddComponent(UUID id, COMP comp)
         {
