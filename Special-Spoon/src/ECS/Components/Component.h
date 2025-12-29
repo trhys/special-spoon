@@ -19,6 +19,10 @@ namespace Spoon
         virtual void OnReflect() {}
         virtual const char* GetType() = 0;
         virtual std::string& GetDisplayName() = 0;
+        virtual json Serialize() = 0;
+
+        virtual bool ActiveGizmo() = 0;
+        virtual void ToggleGizmo() = 0;
     };
 
     template<typename COMP>
@@ -32,11 +36,29 @@ namespace Spoon
             return typeid(COMP).name();
         }
 
-        std::string& GetDisplayName()
+        std::string& GetDisplayName() override
         {
             return m_Name;
         }
 
+        json Serialize() override
+        {
+            json j;
+            nlohmann::to_json(j, *static_cast<COMP*>(this));
+            return j;
+        }
+
+        bool ActiveGizmo() override
+        {
+            return m_gizmoActive;
+        }
+
+        void ToggleGizmo() override
+        {
+            m_gizmoActive = !m_gizmoActive;
+        }
+
         std::string m_Name;
+        bool m_gizmoActive = false;
     };
 }

@@ -62,7 +62,7 @@ namespace Spoon
         }
     }
 
-    void SceneManager::LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager)
+    SceneData* SceneManager::LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager)
     {
         UnloadScene(entityManager, systemManager);
         SS_DEBUG_LOG("Loading scene: " + id)
@@ -162,43 +162,29 @@ namespace Spoon
             // Load entities and components
             for (auto& entity : sceneData["Entities"])
             {
-                Entity newEntity;
-                std::string entityID;
-                try {
-                    
-                    if (entity.contains("ID")) 
-                    { 
-                        entityID = entity["ID"].get<std::string>(); 
-                        SS_DEBUG_LOG("Loading entity: " + entityID)
-                        newEntity = entityManager.CreateEntity(entityID);
-                    }
-                    else 
-                    { 
-                        newEntity = entityManager.CreateEntity(); 
-                        SS_DEBUG_LOG("[WARNING]~~~You are loading an entity without a name!")
-                    }
+                /*try {  */
+                UUID newID = entity["uuid"].get<UUID>();
+                std::string newName = entity["name"].get<std::string>();
+                SS_DEBUG_LOG("Loading entity: " + newID.ToString())
+                entityManager.LoadEntity(newID, newName);
 
-                    for (auto const& [type, data] : entity["Components"].items())
-                    {
-                        SS_DEBUG_LOG("Requesting component type: " + type)
-
-                        auto& loaderMap = ComponentLoaders::GetCompLoaders();
-                        auto found = loaderMap.find(type);
-                        if (found != loaderMap.end())
-                        {
-                            found->second(entityManager, newEntity.GetID(), data);
-                        }
-                        else
-                        {
-                            throw std::runtime_error("No loader found for component type: " + type);
-                        }
-                    }
-                }
-                catch (const std::exception& e)
+                //for (auto const& [type, data] : entity["Components"].items())
+                for (auto const& data : entity["Components"])
                 {
-                    throw std::runtime_error("Failed to load entity: " + entityID + " Error: " + e.what());
+                    std::string type = data["Type"].get<std::string>();
+                    SS_DEBUG_LOG("Requesting component type: " + type)
+                    auto& loaderMap = ComponentLoaders::GetCompLoaders();
+                    auto found = loaderMap.find(type);
+                    if (found != loaderMap.end())
+                    {
+                        found->second(entityManager, newID, data);
+                    }
+                    else
+                    {
+                        throw std::runtime_error("No loader found for component type: " + type);
+                    }
                 }
-            }
+            }      
         }
         catch (const json::exception& e)
         {
@@ -220,6 +206,8 @@ namespace Spoon
             throw std::runtime_error("Failed to load systems for scene: " + id + " Error: " + e.what());
         }
         SS_DEBUG_LOG("Successfully loaded scene: " + id)
+
+        return &m_SceneManifest[id];
     }
 
     void SceneManager::UnloadScene(EntityManager& entityManager, SystemManager& systemManager)
@@ -242,7 +230,7 @@ namespace Spoon
         return m_SceneManifest;
     }
 
-    void SceneManager::CreateScene(const std::string& id)
+    SceneData* SceneManager::CreateScene(const std::string& id)
     {
         std::ifstream inFile(m_ManifestPath);
         if(!inFile.is_open())
@@ -298,5 +286,7 @@ namespace Spoon
         outFile.close();
 
         SS_DEBUG_LOG("Registered new scene --- ID: " + id)
+
+        return &m_SceneManifest[newID];
     }
 }

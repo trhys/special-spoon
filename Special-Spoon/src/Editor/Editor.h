@@ -1,8 +1,9 @@
 #pragma once
 
 #include "SystemsMenu.h"
-
+#include "Core/SceneManager.h"
 #include "SFML/System/Time.hpp"
+#include "TextureRectTool.h"
 
 namespace Spoon
 {
@@ -32,12 +33,17 @@ namespace Spoon
         void ViewResourcesMenu();
         void ViewAssets(AssetNode* node);
         void LoadResourcesMenu();
+
+        void EditTextureRect(SpriteComp& comp);
         
         SystemsMenu m_SystemsMenu;
 
     private:
         AssetNode* workingDir = nullptr;
+        SceneData* m_ActiveScene = nullptr;
         bool m_Play = false;
+
+        TextureRectTool m_TextureRectTool;
     };
 
     void HelpMarker(const char* desc);

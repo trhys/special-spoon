@@ -25,12 +25,12 @@ namespace Spoon
         ~SceneManager() {}
 
         void LoadManifest(std::string manifestPath);
-        void LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager);
+        SceneData* LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager);
 
         void UnloadScene(EntityManager& entityManager, SystemManager& systemManager);
         void Transition(std::string id, EntityManager& eManager, SystemManager& sManager);
 
-        void CreateScene(const std::string& ID);
+        SceneData* CreateScene(const std::string& ID);
 
         const std::unordered_map<std::string, SceneData>& GetManifest();
 

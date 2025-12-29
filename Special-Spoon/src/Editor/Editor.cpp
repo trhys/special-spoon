@@ -4,6 +4,7 @@
 #include "Core/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
 #include "Core/SceneManager.h"
+#include "Core/Serialization/Serializer.h"
 #include "System/SystemManager.h"
 
 #include "Imgui/imgui.h"
@@ -48,7 +49,7 @@ namespace Spoon
             {
                 if (ImGui::MenuItem("New")) NewScene = true;
                 if (ImGui::MenuItem("Load")) LoadScene = true;
-                if (ImGui::MenuItem("Save")) {}
+                if (ImGui::MenuItem("Save")) Serialize(*m_ActiveScene, e_Manager, sys_Manager);
                 if (ImGui::MenuItem("Scene Manifest")) {}
                 ImGui::EndMenu();
             }
@@ -93,8 +94,16 @@ namespace Spoon
         }
 
         ImGui::Begin("Special-Spoon Editor");
-        if (ViewEntities) ViewEntitiesMenu(e_Manager);
-        
+        if (m_ActiveScene)
+        {
+            ImGui::Text("Active Scene ID: %s", m_ActiveScene->ID.c_str());
+            if (ViewEntities) ViewEntitiesMenu(e_Manager);
+        }
+        else
+        {
+            ImGui::Text("Load/Create a scene to view and create entities!");
+        }
+
         ImGui::End();
 
         if (NewScene) { NewSceneMenu(s_Manager); }
@@ -126,14 +135,14 @@ namespace Spoon
 
             if(ImGui::InputText("##ID", newSceneBuf, IM_ARRAYSIZE(newSceneBuf), ImGuiInputTextFlags_EnterReturnsTrue) && strlen(newSceneBuf) > 0 )
             {
-                s_Manager.CreateScene(newSceneBuf);
+                m_ActiveScene = s_Manager.CreateScene(newSceneBuf);
                 newSceneBuf[0] = '\0';
                 ImGui::CloseCurrentPopup();
                 NewScene = false;
             }
             if(ImGui::Button("Submit") && strlen(newSceneBuf) > 0 )
             {
-                s_Manager.CreateScene(newSceneBuf);
+                m_ActiveScene = s_Manager.CreateScene(newSceneBuf);
                 newSceneBuf[0] = '\0';
                 ImGui::CloseCurrentPopup();
                 NewScene = false;
@@ -178,7 +187,7 @@ namespace Spoon
         
         if(ImGui::Button("Open"))
         {
-            s_Manager.LoadScene(selectedScene, e_Manager, sys_Manager);
+            m_ActiveScene = s_Manager.LoadScene(selectedScene, e_Manager, sys_Manager);
             LoadScene = false;
         }
         ImGui::SameLine();
@@ -256,7 +265,7 @@ namespace Spoon
 
             if(ImGui::Button("Add Component"))
             {
-                if (selectedID == 0)
+                if (e_Manager.GetAllEntities().empty())
                     ImGui::SetItemTooltip("You must select an entity before adding a new component!");
                 else 
                 {
@@ -399,13 +408,6 @@ namespace Spoon
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
-
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(node->m_Size.c_str());
-
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(node->m_Ext.c_str());
-
             if (ImGui::BeginPopupContextItem())
             {
                 ResourceType type = ResourceManager::Get().GetType(node->m_Ext);
@@ -415,26 +417,34 @@ namespace Spoon
                 {
                     switch (type)
                     {
-                        case ResourceType::Texture: ResourceManager::Get().LoadResource<sf::Texture>(node->m_Name, node->m_Path); break;
-                        case ResourceType::Font: ResourceManager::Get().LoadResource<sf::Font>(node->m_Name, node->m_Path); break;
-                        case ResourceType::Sound: ResourceManager::Get().LoadResource<sf::SoundBuffer>(node->m_Name, node->m_Path); break;
-                        default: break;
-                    }   
+                    case ResourceType::Texture: ResourceManager::Get().LoadResource<sf::Texture>(node->m_Name, node->m_Path); break;
+                    case ResourceType::Font: ResourceManager::Get().LoadResource<sf::Font>(node->m_Name, node->m_Path); break;
+                    case ResourceType::Sound: ResourceManager::Get().LoadResource<sf::SoundBuffer>(node->m_Name, node->m_Path); break;
+                    default: break;
+                    }
                     ImGui::CloseCurrentPopup();
                 }
                 if (ImGui::Selectable("Remove from Scene", false, supported ? 0 : ImGuiSelectableFlags_Disabled))
                 {
                     switch (type)
                     {
-                        case ResourceType::Texture: ResourceManager::Get().RemoveResource<sf::Texture>(node->m_Name); break;
-                        case ResourceType::Font: ResourceManager::Get().RemoveResource<sf::Font>(node->m_Name); break;
-                        case ResourceType::Sound: ResourceManager::Get().RemoveResource<sf::SoundBuffer>(node->m_Name); break;
-                        default: break;
+                    case ResourceType::Texture: ResourceManager::Get().RemoveResource<sf::Texture>(node->m_Name); break;
+                    case ResourceType::Font: ResourceManager::Get().RemoveResource<sf::Font>(node->m_Name); break;
+                    case ResourceType::Sound: ResourceManager::Get().RemoveResource<sf::SoundBuffer>(node->m_Name); break;
+                    default: break;
                     }
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::EndPopup();
             }
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(node->m_Size.c_str());
+
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(node->m_Ext.c_str());
+
+            
         }          
         ImGui::PopID();
     }
@@ -442,6 +452,11 @@ namespace Spoon
     void Editor::LoadResourcesMenu()
     {
         // TODO
+    }
+
+    void Editor::EditTextureRect(SpriteComp& comp)
+    {
+        m_TextureRectTool.Run(comp);
     }
 
     void HelpMarker(const char* desc)

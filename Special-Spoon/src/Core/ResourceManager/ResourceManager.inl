@@ -14,6 +14,7 @@ namespace Spoon
                     throw std::runtime_error("Failed to load texture from file path: " + file_path.string());
                 }
                 m_Textures.emplace(id, std::move(texture));
+                texturePaths[id] = file_path;
             }
         }
         else if constexpr(std::is_same_v<RESOURCE, sf::Font>)
@@ -27,6 +28,7 @@ namespace Spoon
                     throw std::runtime_error("Failed to load font from file path: " + file_path.string());
                 }
                 m_Fonts.emplace(id, std::move(font));
+                fontPaths[id] = file_path;
             }
         }
         else if constexpr(std::is_same_v<RESOURCE, sf::SoundBuffer>)
@@ -40,6 +42,7 @@ namespace Spoon
                     throw std::runtime_error("Failed to load sound buffer from file path: " + file_path.string());
                 }
                 m_SoundBuffers.emplace(id, std::move(soundBuffer));
+                soundPaths[id] = file_path;
             }
         }
         else

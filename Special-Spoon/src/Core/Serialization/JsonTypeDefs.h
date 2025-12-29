@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ECS/Entity.h"
+#include "ECS/Components/Animation/AnimationData.h"
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
 
@@ -58,5 +60,52 @@ namespace sf
         v.g = static_cast<std::uint8_t>(j.at("G").get<int>());
         v.b = static_cast<std::uint8_t>(j.at("B").get<int>());
         v.a = static_cast<std::uint8_t>(j.at("A").get<int>());
+    }
+}
+
+namespace Spoon
+{
+    inline void to_json(json& j, const UUID& v)
+    {
+        j = v.ToString();
+    }
+
+    inline void from_json(const json& j, UUID& v)
+    {
+        v.ID = UUID::ToID(j.get<std::string>());
+    }
+
+    inline void to_json(json& j, const SpriteCords& v)
+    {
+        j = json{
+            { "x", v.x },
+            { "y", v.y },
+            { "width", v.width },
+            { "height", v.height }
+        };
+    }
+
+    inline void from_json(const json& j, SpriteCords& v)
+    {
+        v.x = j["x"].get<int>();
+        v.y = j["y"].get<int>();
+        v.width = j["width"].get<int>();
+        v.height = j["height"].get<int>();
+    }
+
+    inline void to_json(json& j, const AnimationData& v)
+    {
+        j = json{
+            {"ID", v.ID},
+            {"TextureID", v.textureID},
+            {"SpriteCords", v.spriteCords}
+        };
+    }
+
+    inline void from_json(const json& j, AnimationData& v)
+    {
+        v.ID = j.at("ID").get<std::string>();
+        v.textureID = j.at("TextureID").get<std::string>();
+        v.spriteCords = j.at("SpriteCords").get<std::vector<SpriteCords>>();
     }
 }

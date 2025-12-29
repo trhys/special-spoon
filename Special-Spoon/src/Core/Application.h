@@ -31,6 +31,7 @@ namespace Spoon
 		void Run();
 		void Update(sf::Time tick);
 		void Shutdown();
+		void HandleEditorGizmos();
 		
 		static Application& Get() { return *s_Instance; }
 

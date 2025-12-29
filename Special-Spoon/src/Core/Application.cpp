@@ -106,6 +106,54 @@ namespace Spoon
             m_Window.close();
     }
 
+    void Application::HandleEditorGizmos()
+    {
+        auto& transArray = m_EntityManager.GetArray<TransformComp>();
+        for (auto& comp : transArray.m_Components)
+        {
+            if (comp.ActiveGizmo())
+            {
+                static sf::Vector2f drag;
+                static bool dragging = false;
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+                {
+                    ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
+                    sf::Vector2f relativePos{
+                        static_cast<float>(mousePos.x) - viewportPos.x,
+                        static_cast<float>(mousePos.y) - viewportPos.y
+                    };
+                    sf::Vector2f worldPos = m_EditorViewport.mapPixelToCoords(sf::Vector2i(relativePos));
+                    if (!dragging)
+                    {
+                        drag = {
+                        comp.GetPosition().x - worldPos.x,
+                        comp.GetPosition().y - worldPos.y
+                        };
+                        dragging = true;
+                    }
+                    if (dragging)
+                    {
+                        comp.SetPosition(worldPos + drag);
+                        comp.iPos = comp.GetPosition();
+                        comp.rect.setPosition(comp.GetPosition());
+                    }
+                }
+                else dragging = false;
+                break;
+            }
+        }
+        auto& spriteArray = m_EntityManager.GetArray<SpriteComp>();
+        for (auto& comp : spriteArray.m_Components)
+        {
+            if (comp.ActiveGizmo())
+            {
+                m_Editor.EditTextureRect(comp);
+                break;
+            }
+        }
+    }
+
     void Application::Run()
     {
         sf::RenderStates states;
@@ -174,6 +222,8 @@ namespace Spoon
                         sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
                         m_EditorViewport.setView(view);
                     }
+                HandleEditorGizmos();
+
                 // Draw to viewport
                 m_EditorViewport.clear();
                 m_Renderer.Render(m_EditorViewport, states, m_EntityManager);

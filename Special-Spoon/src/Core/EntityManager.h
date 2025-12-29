@@ -16,12 +16,22 @@ namespace Spoon
         EntityManager() { LoadDefaultArrays(); }
         ~EntityManager() {}
 
-        Entity CreateEntity(std::string debugName = "")
+        void CreateEntity(std::string debugName = "")
         {
             UUID id = GenerateID();
             Entity entity = Entity(id, this);
             m_Entities[id] = debugName;
-            return entity;
+        }
+
+        void LoadEntity(UUID id, std::string name)
+        {
+            auto found = m_Entities.find(id);
+            if (found == m_Entities.end())
+            {
+                m_Entities[id] = name;
+                m_IdCounter++;
+            }
+            else CreateEntity(name);
         }
 
         void KillEntity(UUID id)

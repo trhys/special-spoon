@@ -2,6 +2,7 @@
 
 #include "ECS/Components/Component.h"
 #include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 
 namespace Spoon
 {
@@ -21,7 +22,9 @@ namespace Spoon
 
         sf::Vector2f iPos;
         sf::Vector2f iScale;
-        float iRot;
+        float iRot = 0.0;
+
+        sf::RectangleShape rect;
                 
         const sf::Transform& GetTransform() { return m_Transform.getTransform(); }
         sf::Vector2f GetPosition() { return m_Transform.getPosition(); }
@@ -39,7 +42,15 @@ namespace Spoon
             ImGui::SeparatorText("Position");
             ImGui::Text("X: %s", std::to_string(m_Transform.getPosition().x).c_str());
             ImGui::Text("Y: %s", std::to_string(m_Transform.getPosition().y).c_str());
-
+            if (ImGui::Button(ActiveGizmo() ? "Confirm" : "Edit"))
+            {
+                rect.setOutlineThickness(1.0);
+                rect.setOutlineColor(sf::Color::Red);
+                rect.setFillColor(sf::Color::Transparent);
+                rect.setPosition(m_Transform.getPosition());
+                rect.setSize({ 16.0, 16.0 });
+                ToggleGizmo();
+            }
             float tranScale[2] = { m_Transform.getScale().x, m_Transform.getScale().y };
             ImGui::SeparatorText("Scale");
             if(ImGui::SliderFloat2("##Scale", tranScale, -10.0f, 10.0f, "%.3f"))

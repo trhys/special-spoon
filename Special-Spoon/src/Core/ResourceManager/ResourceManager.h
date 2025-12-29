@@ -77,14 +77,29 @@ namespace Spoon
             return m_Textures;
         }
 
+        const std::unordered_map<std::string, std::filesystem::path>& GetTexturePaths()
+        {
+            return texturePaths;
+        }
+
         const std::unordered_map<std::string, sf::Font>& GetFonts()
         {
             return m_Fonts;
         }
 
+        const std::unordered_map<std::string, std::filesystem::path>& GetFontPaths()
+        {
+            return fontPaths;
+        }
+
         const std::unordered_map<std::string, sf::SoundBuffer>& GetSounds()
         {
             return m_SoundBuffers;
+        }
+
+        const std::unordered_map<std::string, std::filesystem::path>& GetSoundPaths()
+        {
+            return soundPaths;
         }
 
         const std::unordered_map<std::string, AnimationData>& GetAnimations()
@@ -104,9 +119,15 @@ namespace Spoon
 
     private:
         std::unordered_map<std::string, sf::Texture> m_Textures;
+        std::unordered_map<std::string, std::filesystem::path> texturePaths;
+
         std::unordered_map<std::string, sf::Font> m_Fonts;
-        std::unordered_map<std::string, AnimationData> m_Animations;
+        std::unordered_map<std::string, std::filesystem::path> fontPaths;
+
         std::unordered_map<std::string, sf::SoundBuffer> m_SoundBuffers;
+        std::unordered_map<std::string, std::filesystem::path> soundPaths;
+
+        std::unordered_map<std::string, AnimationData> m_Animations;
 
         std::unique_ptr<AssetNode> fileRoot;
     };

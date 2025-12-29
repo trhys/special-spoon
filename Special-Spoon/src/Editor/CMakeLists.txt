@@ -6,4 +6,5 @@ target_sources(Special-Spoon
         Editor.cpp
         SystemsMenu.h
         SystemsMenu.cpp
+        TextureRectTool.h
 )

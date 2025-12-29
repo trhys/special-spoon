@@ -4,6 +4,7 @@
 #include "ECS/Components/Component.h"
 
 #include <cstdint>
+#include <string>
 
 namespace Spoon
 {   
@@ -19,6 +20,10 @@ namespace Spoon
         bool operator!=(const UUID& other) const { return ID != other.ID; }
         bool operator<(const UUID& other) const { return ID < other.ID; }
         bool operator>(const UUID& other) const { return ID > other.ID; }
+
+        // Serialization helpers
+        std::string ToString() const { return std::to_string(ID); }
+        static std::uint64_t ToID(std::string str) { return std::stoull(str); }
     };
 
     class SPOON_API Entity

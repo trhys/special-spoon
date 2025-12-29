@@ -92,6 +92,18 @@ namespace Spoon
                 ImGui::EndPopup();
             }
 
+            if (ImGui::BeginChild("Font Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
+            {
+                for (const auto& [id, font] : ResourceManager::Get().GetFonts())
+                {
+                    if (ImGui::Selectable(id.c_str()))
+                    {
+                        m_Text.setFont(font);
+                    }
+                }
+                ImGui::EndChild();
+            }
+
             int charSize = static_cast<int>(m_Text.getCharacterSize());
             ImGui::SeparatorText("Character Size");
             if (ImGui::SliderInt("##CharSize", &charSize, 1, 100))

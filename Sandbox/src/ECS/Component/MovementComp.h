@@ -11,3 +11,5 @@ struct MovementComp : public Spoon::ComponentBase<MovementComp>
     std::string m_FacingLR; // Left, right
     std::string m_FacingUD; // Up, down
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MovementComp, m_Speed)

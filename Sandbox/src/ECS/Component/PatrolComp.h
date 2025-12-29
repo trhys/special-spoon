@@ -21,3 +21,5 @@ struct PatrolComp : public Spoon::ComponentBase<PatrolComp>
         m_CurrentIdle = 0.0f;
     }
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PatrolComp, m_PointA, m_PointB)
