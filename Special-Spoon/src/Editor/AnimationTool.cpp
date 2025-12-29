@@ -149,4 +149,54 @@ namespace Spoon
     {
         delete this;
     }
+
+    void AnimationTool::CreateNew()
+    {
+        const char* selectorPopup = "Texture Selector";
+        if (!ImGui::IsPopupOpen(selectorPopup))
+            ImGui::OpenPopup(selectorPopup);
+
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        if (ImGui::BeginPopupModal(selectorPopup))
+        {
+            ImGui::Text("Select a texture");
+            ImGui::Separator();
+            static std::string selectedID = "empty";
+            if (ImGui::BeginChild("Texture Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
+            {
+                for (const auto& [id, texture] : ResourceManager::Get().GetTextures())
+                {
+                    if (ImGui::ImageButton(id.c_str(), texture, sf::Vector2f(128, 128)))
+                    {
+                        selectedID = id;
+                    }
+                    ImGui::SameLine();
+                }
+                ImGui::EndChild();
+            }
+
+            if (ImGui::BeginChild("Preview", ImVec2(0, 600), ImGuiChildFlags_Borders))
+            {
+                ImGui::Text("Selected texture id: %s", selectedID.c_str());
+                ImGui::Image(ResourceManager::Get().GetResource<sf::Texture>(selectedID));
+                ImGui::EndChild();
+            }
+
+            if (ImGui::Button("Confirm"))
+            {
+                previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID));
+                selectedID = "empty";
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                selectedID = "empty";
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
 }

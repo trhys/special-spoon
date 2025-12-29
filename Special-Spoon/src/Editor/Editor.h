@@ -4,11 +4,11 @@
 #include "Core/SceneManager.h"
 #include "SFML/System/Time.hpp"
 #include "TextureRectTool.h"
+#include "AnimationTool.h"
 
 namespace Spoon
 {
     class EntityManager;
-    class SceneManager;
     class SystemManager;
     struct AssetNode;
     struct UUID;
@@ -31,9 +31,10 @@ namespace Spoon
         void LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager);
 
         void ViewResourcesMenu();
-        void ViewAssets(AssetNode* node);
         void LoadResourcesMenu();
-
+        void ViewAssets(AssetNode* node);
+        void ShowTree(AssetNode* node);
+        
         void EditTextureRect(SpriteComp& comp);
         
         SystemsMenu m_SystemsMenu;
@@ -44,6 +45,7 @@ namespace Spoon
         bool m_Play = false;
 
         TextureRectTool m_TextureRectTool;
+        AnimationTool   m_AnimationTool;
     };
 
     void HelpMarker(const char* desc);

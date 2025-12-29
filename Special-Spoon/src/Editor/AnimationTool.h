@@ -15,12 +15,6 @@ namespace Spoon
     class AnimationTool
     {
     public:
-        static AnimationTool& Get()
-        {
-            if (!s_Instance) s_Instance = new AnimationTool();
-            return *s_Instance;
-        }
-
         void Update(sf::Time tick);
         void Open(AnimationData* data);
         void Animate(sf::Time tick);
@@ -28,13 +22,14 @@ namespace Spoon
 
         void Shutdown();
 
-    private:
-        AnimationTool() = default;
-        static inline AnimationTool* s_Instance;
-        AnimationData* currentData = nullptr;
-        SpriteComp previewSprite;  // Holds texture and texture rect
+        void CreateNew();
 
+    private:
+        AnimationData* currentData = nullptr;
         bool m_isOpen = false;
+
+        // Animation controls
+        SpriteComp previewSprite;
         bool m_Looping = true;
         bool m_Playback = false;
 
@@ -42,6 +37,8 @@ namespace Spoon
         int currentFrame = 0;
         float elapsedTime = 0.0f;
         bool isFinished = false;
+
+        bool createModal = false;
 
         sf::RenderTexture m_Viewport;
         sf::View m_Camera;

@@ -1,9 +1,7 @@
 #include "Editor.h"
-#include "AnimationTool.h"
-
+#include "Blueprints/Blueprint.h"
 #include "Core/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
-#include "Core/SceneManager.h"
 #include "Core/Serialization/Serializer.h"
 #include "System/SystemManager.h"
 
@@ -57,19 +55,20 @@ namespace Spoon
             if (ImGui::BeginMenu("Entity Manager"))
             {
                 if (ImGui::MenuItem("Entity View")) ViewEntities = !ViewEntities;
+                if (ImGui::MenuItem("Entity Blueprints")) { ImGui::SetTooltip("todo"); }
                 ImGui::EndMenu();
             }
 
             if (ImGui::BeginMenu("Resource Manager"))
             {
                 if (ImGui::MenuItem("Resource Tree")) ViewResources = !ViewResources;
-                if (ImGui::MenuItem("Load Resources")) LoadResources = true;
+                if (ImGui::MenuItem("Load Resources")) LoadResources = !LoadResources;
                 ImGui::EndMenu();
             }
 
             if (ImGui::BeginMenu("Animation Tool"))
             {
-                if (ImGui::MenuItem("Open Animation Tool")) AnimationTool::Get().Open(nullptr);
+                if (ImGui::MenuItem("Open Animation Tool")) { m_AnimationTool.Open(nullptr); } 
                 ImGui::EndMenu();
             }
 
@@ -106,13 +105,13 @@ namespace Spoon
 
         ImGui::End();
 
-        if (NewScene) { NewSceneMenu(s_Manager); }
-        if (LoadScene) { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
-        if (ViewResources) { ViewResourcesMenu(); }
-        if (LoadResources) { LoadResourcesMenu(); }
+        if (NewScene)       { NewSceneMenu(s_Manager); }
+        if (LoadScene)      { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
+        if (ViewResources)  { ViewResourcesMenu(); }
+        if (LoadResources)  { LoadResourcesMenu(); }
 
-        if (AnimationTool::Get().IsOpen())  AnimationTool::Get().Update(tick);
-        if (m_SystemsMenu.IsOpen())         m_SystemsMenu.Update(sys_Manager);
+        if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
+        if (m_SystemsMenu.IsOpen())   m_SystemsMenu.Update(sys_Manager);
     }
 
     void Editor::NewSceneMenu(SceneManager& s_Manager)
@@ -228,14 +227,56 @@ namespace Spoon
             ImGui::OpenPopup("New Entity");
         }
         
-        if (ImGui::BeginPopup("New Entity"))
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        if (ImGui::BeginPopupModal("New Entity"))
         {
+            static const Blueprint* selectedBP = nullptr;
             static char newEntityBuf[64];
             ImGui::InputText("Entity Name", newEntityBuf, IM_ARRAYSIZE(newEntityBuf));
+            ImGui::SameLine(); HelpMarker("It's recommended to give your entity some kind of name here. It's not required but"
+                                          "will make life easier when you've got many entities in the scene. Entites will be"
+                                          "managed by UUID so this name is only for visual reference in the editor");
+            
+            if (ImGui::BeginChild("Blueprint Selector", ImVec2(0, 200), ImGuiChildFlags_Borders))
+            {
+                if (ImGui::BeginCombo("##Blueprints", "none"))
+                {
+                    for (const auto* blueprint : GetBlueprints())
+                    {
+                        if (ImGui::Selectable(blueprint->GetDisplayName().c_str(), selectedBP = blueprint))
+                        {
+                            selectedBP = blueprint;
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+                ImGui::SameLine(); HelpMarker("Optionally, select a blueprint to use for this entity. The selected blueprint will"
+                                              "create the components automatically for that blueprint. See the tooltip for default"
+                                              "blueprints for more info.");
+                ImGui::EndChild();
+            }
+            ImGui::Separator();
             if (ImGui::Button("Submit"))
             {
-                e_Manager.CreateEntity(newEntityBuf);
+                UUID id = e_Manager.CreateEntity(newEntityBuf);
+                if (selectedBP->GetDisplayName() != "None")
+                {
+                    for (const auto& compID : selectedBP->GetComps())
+                    {
+                        e_Manager.GetCreators().at(compID)(id);
+                    }
+                }
                 newEntityBuf[0] = '\0';
+                selectedBP = nullptr;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                newEntityBuf[0] = '\0';
+                selectedBP = nullptr;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
@@ -328,9 +369,11 @@ namespace Spoon
             
             if (ImGui::Button("Submit"))
             {
+                const auto& arrays = manager.GetAllArrays();
                 for (const auto& [type, selected] : compSelections)
                 {
-                    if(selected) manager.GetCreators().at(type)(id);
+                    bool alreadyExists = arrays.at(type)->HasEntity(id);
+                    if(selected && !alreadyExists) manager.GetCreators().at(type)(id);
                     AddingComponent = false;
                     ImGui::CloseCurrentPopup();
                 }
@@ -346,7 +389,7 @@ namespace Spoon
 
     void Editor::ViewResourcesMenu()
     {
-        ImGui::Begin("Resources");
+        ImGui::Begin("Resources", &ViewResources);
         static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg 
             | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable 
             | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
@@ -449,9 +492,132 @@ namespace Spoon
         ImGui::PopID();
     }
 
+    void Editor::ShowTree(AssetNode* node)
+    {
+        ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+        ImGuiTreeNodeFlags leaf_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+        ImGui::PushID(node->m_Path.string().c_str());
+        if(node->isDir)
+        {
+            bool isOpen = ImGui::TreeNodeEx(node->m_Name.c_str(), base_flags);
+            if(isOpen)
+            {
+                for (const auto& child : node->m_Children)
+                {
+                    ShowTree(child.get());
+                }
+                ImGui::TreePop();
+            }
+        }
+        else
+        {
+            ResourceType type = ResourceManager::Get().GetType(node->m_Ext);
+            bool supported = (type != ResourceType::Unknown);
+            ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
+            if (supported && ImGui::BeginDragDropSource())
+            {
+                switch (type)
+                    {
+                    case ResourceType::Texture: ImGui::SetDragDropPayload("LOAD_TEXTURE", node->m_Name.c_str(), node->m_Name.size() +1); break;
+                    case ResourceType::Font: ImGui::SetDragDropPayload("LOAD_FONT", node->m_Name.c_str(), node->m_Name.size() +1); break;
+                    case ResourceType::Sound: ImGui::SetDragDropPayload("LOAD_SOUND", node->m_Name.c_str(), node->m_Name.size() +1); break;
+                    default: break;
+                    }
+                ImGui::EndDragDropSource();
+            }
+        }
+        ImGui::PopID();
+    }
+
     void Editor::LoadResourcesMenu()
     {
-        // TODO
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::Begin("Resource Loading Menu", &LoadResources);
+
+        static std::string selTexture = "";
+        static std::string selFont = "";
+        static std::string selSound = "";
+
+        float windowWidth = ImGui::GetContentRegionAvail().x;
+        float listWidth = 150.0f;
+
+        if (ImGui::BeginTable("Resources Menu", 2, ImGuiTableFlags_Resizable))
+        {
+            ImGui::TableNextColumn();
+            ShowTree(workingDir);
+
+            ImGui::TableNextColumn();
+            if (ImGui::BeginChild("Textures", ImVec2(windowWidth/2, 250)))
+            {
+                if (ImGui::BeginListBox("##Loaded Textures", ImVec2(listWidth, 200)))
+                {
+                    for (const auto& [id, texture] : ResourceManager::Get().GetTextures())
+                    {
+                        if (ImGui::Selectable(id.c_str(), selTexture == id))
+                        {
+                            selTexture = id;
+                        }
+                    }
+                    ImGui::EndListBox();
+                    if (ImGui::BeginDragDropTarget())
+                    {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_TEXTURE"))
+                        {
+                            const char* textureID = (const char*)payload->Data;
+                            ResourceManager::Get().LoadResource<sf::Texture>(textureID);
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+                }
+                ImGui::SameLine(); ImGui::Image(ResourceManager::Get().GetResource<sf::Texture>(selTexture), ImVec2(128, 128));
+                ImGui::EndChild();
+            }
+
+            ImGui::Separator();
+            if (ImGui::BeginChild("Fonts", ImVec2(windowWidth/2, 250)))
+            {
+                if (ImGui::BeginListBox("##Loaded Fonts", ImVec2(listWidth, 200)))
+                {
+                    for (const auto& [id, font] : ResourceManager::Get().GetFonts())
+                    {
+                        if (ImGui::Selectable(id.c_str(), selFont == id))
+                        {
+                            selFont = id;
+                        }
+                    }
+                    ImGui::EndListBox();
+                    if (ImGui::BeginDragDropTarget())
+                    {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_FONT"))
+                        {
+                            const char* fontID = (const char*)payload->Data;
+                            ResourceManager::Get().LoadResource<sf::Font>(fontID);
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+                }
+                ImGui::SameLine(); ImGui::Image(ResourceManager::Get().GetFontPreview(selFont), ImVec2(128, 128));
+                ImGui::EndChild();
+            }
+
+            ImGui::Separator();
+            if (ImGui::BeginListBox("Loaded Sounds", ImVec2(listWidth, 200)))
+            {
+                for (const auto& [id, sound] : ResourceManager::Get().GetSounds())
+                {
+                    if (ImGui::Selectable(id.c_str()))
+                    {
+                        //todo
+                    }
+                }
+                ImGui::EndListBox();
+            }
+            ImGui::EndTable();
+        }
+        ImGui::End();
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)

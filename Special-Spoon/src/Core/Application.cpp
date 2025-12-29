@@ -99,7 +99,6 @@ namespace Spoon
         m_EntityManager.ClearArrays();
         m_EntityManager.ClearActionsBuffer();
         ResourceManager::Get().ClearAllResources();
-        AnimationTool::Get().Shutdown();
         m_EditorViewport = sf::RenderTexture();
         (void)m_Window.setActive(false);
         if(m_Window.isOpen())
@@ -219,7 +218,6 @@ namespace Spoon
                 if (m_EditorViewport.getSize() != viewport2u)
                     if (m_EditorViewport.resize({ viewport2u }))
                     {
-                        //sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
                         sf::Vector2f oldCenter = m_Camera.getCenter();
                         m_Camera.setSize({ (float)viewport2u.x, (float)viewport2u.y });
                         m_Camera.setCenter(oldCenter);
