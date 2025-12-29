@@ -14,6 +14,7 @@ target_sources(Special-Spoon
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp
         ResourceManager/ResourceManager.inl
+        ResourceManager/SystemFont/Jersey_10/SystemFont.h
 
         Serialization/ComponentLoaders.h
         Serialization/ComponentLoaders.cpp

@@ -8,7 +8,7 @@ namespace Spoon
 {
     struct TextComp : public ComponentBase<TextComp>
     {
-        TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("empty"), std::string text = "",
+        TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("Default"), std::string text = "",
             unsigned int char_size = 30, sf::Color color = sf::Color::White, sf::Color outcolor = sf::Color::White, unsigned int olThickness = 0, bool centered = true)
             : ComponentBase::ComponentBase("Text"), m_Text(asset, text, char_size), isCentered(centered), iText(text),
              iCharSize(char_size), iColor(color), iOutColor(outcolor), iolThickness(olThickness)
@@ -93,13 +93,17 @@ namespace Spoon
             }
 
             if (ImGui::BeginChild("Font Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
-            {
+            {   
                 for (const auto& [id, font] : ResourceManager::Get().GetFonts())
                 {
+                    ImGui::PushID(id.c_str());
+                    ImGui::Image(ResourceManager::Get().GetFontPreview(id));
+                    ImGui::SameLine();
                     if (ImGui::Selectable(id.c_str()))
                     {
                         m_Text.setFont(font);
                     }
+                    ImGui::PopID();
                 }
                 ImGui::EndChild();
             }

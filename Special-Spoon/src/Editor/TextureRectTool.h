@@ -40,10 +40,29 @@ namespace Spoon
                             m_Viewport.setView(m_Camera);
                         }
                     }
+                    static sf::Vector2f scrollDrag;
+                    static bool scrolling = false;
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && ImGui::IsWindowHovered())
                     {
-                        // todo - scroll window
+                        ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+                        ImVec2 mousePos = ImGui::GetIO().MousePos;
+                        sf::Vector2i relativeMouse(
+                            static_cast<int>(mousePos.x - viewportPos.x),
+                            static_cast<int>(mousePos.y - viewportPos.y)
+                        );
+                        sf::Vector2f worldMouse = m_Viewport.mapPixelToCoords(relativeMouse);
+                        if (!scrolling)
+                        {
+                            scrollDrag = worldMouse;
+                            scrolling = true;
+                        }
+                        if (scrolling)
+                        {
+                            m_Camera.move(scrollDrag - worldMouse);
+                            scrollDrag = m_Viewport.mapPixelToCoords(relativeMouse);
+                        }
                     }
+                    else scrolling = false;
 
                     static sf::Vector2f drag;
                     static bool dragging = false;

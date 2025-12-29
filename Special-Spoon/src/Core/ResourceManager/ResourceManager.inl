@@ -27,6 +27,7 @@ namespace Spoon
                 {
                     throw std::runtime_error("Failed to load font from file path: " + file_path.string());
                 }
+                GenerateFontPreview(id, font);
                 m_Fonts.emplace(id, std::move(font));
                 fontPaths[id] = file_path;
             }

@@ -79,9 +79,6 @@ namespace Spoon
 
         for (auto& [id, data] : ResourceManager::Get().GetAnimations())
         {
-            /*json asset;
-            asset["ID"] = id;
-            asset["FilePath"] = path;*/
             json j;
             to_json(j, data);
             sceneAssets["Animations"].push_back(j);

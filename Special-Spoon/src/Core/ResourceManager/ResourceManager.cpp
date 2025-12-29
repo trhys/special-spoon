@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include "SystemFont/Jersey_10/SystemFont.h"
 
 namespace Spoon
 {
@@ -108,5 +109,45 @@ namespace Spoon
         {
             throw std::runtime_error("AnimationID: " + id + " not found.");
         }
+    }
+
+    void ResourceManager::InitDefaultAssets()
+    {
+        m_Textures["empty"] = sf::Texture();
+        sf::Font& font = m_Fonts["Default"];
+        if (!font.openFromMemory(Jersey10_Regular_ttf, Jersey10_Regular_ttf_len))
+        {
+            throw std::runtime_error("Failed to load system font!");
+        }
+        GenerateFontPreview("Default", font);
+    }
+
+    void ResourceManager::GenerateFontPreview(const std::string& id, sf::Font& font)
+    {
+        sf::RenderTexture fontViewer({200, 40});
+        fontViewer.clear(sf::Color::Transparent);
+        sf::Text text(font, id, 24);
+        fontViewer.draw(text);
+        fontViewer.display();
+        m_FontPreviews[id] = fontViewer.getTexture();
+    }
+
+    sf::Texture& ResourceManager::GetFontPreview(const std::string& id)
+    {
+        auto found = m_FontPreviews.find(id);
+        if (found != m_FontPreviews.end())
+            return found->second;
+        else
+            return m_FontPreviews.at("Default");
+    }
+
+    void ResourceManager::ClearAllResources()
+    {
+        m_Textures.clear();
+        m_Fonts.clear();
+        m_Animations.clear();
+        m_SoundBuffers.clear();
+
+        InitDefaultAssets();
     }
 }

@@ -162,13 +162,11 @@ namespace Spoon
             // Load entities and components
             for (auto& entity : sceneData["Entities"])
             {
-                /*try {  */
                 UUID newID = entity["uuid"].get<UUID>();
                 std::string newName = entity["name"].get<std::string>();
                 SS_DEBUG_LOG("Loading entity: " + newID.ToString())
                 entityManager.LoadEntity(newID, newName);
 
-                //for (auto const& [type, data] : entity["Components"].items())
                 for (auto const& data : entity["Components"])
                 {
                     std::string type = data["Type"].get<std::string>();
@@ -213,7 +211,7 @@ namespace Spoon
     void SceneManager::UnloadScene(EntityManager& entityManager, SystemManager& systemManager)
     {
         SS_DEBUG_LOG("Unloading current scene...")
-        //ResourceManager::Get().ClearAllResources();
+        ResourceManager::Get().ClearAllResources();
         entityManager.ClearArrays();
         entityManager.ClearEntities();
         systemManager.ClearSystems();

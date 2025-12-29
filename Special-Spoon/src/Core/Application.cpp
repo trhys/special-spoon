@@ -219,9 +219,45 @@ namespace Spoon
                 if (m_EditorViewport.getSize() != viewport2u)
                     if (m_EditorViewport.resize({ viewport2u }))
                     {
-                        sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
-                        m_EditorViewport.setView(view);
+                        //sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
+                        sf::Vector2f oldCenter = m_Camera.getCenter();
+                        m_Camera.setSize({ (float)viewport2u.x, (float)viewport2u.y });
+                        m_Camera.setCenter(oldCenter);
+                        m_EditorViewport.setView(m_Camera);
                     }
+                if (ImGui::IsWindowHovered())
+                {
+                    float scrollDelta = ImGui::GetIO().MouseWheel;
+                    if (scrollDelta != 0.0)
+                    {
+                        m_Camera.zoom((scrollDelta > 0) ? 0.9 : 1.1);
+                        m_EditorViewport.setView(m_Camera);
+                    }
+                }
+                static sf::Vector2f mouseDrag;
+                static bool dragging = false;
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && ImGui::IsWindowHovered())
+                {
+                    ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+                    ImVec2 mousePos = ImGui::GetIO().MousePos;
+                    sf::Vector2i relativeMouse(
+                        static_cast<int>(mousePos.x - viewportPos.x),
+                        static_cast<int>(mousePos.y - viewportPos.y)
+                    );
+                    sf::Vector2f worldMouse = m_EditorViewport.mapPixelToCoords(relativeMouse);
+                    if (!dragging)
+                    {
+                        mouseDrag = worldMouse;
+                        dragging = true;
+                    }
+                    if (dragging)
+                    {
+                        m_Camera.move(mouseDrag - worldMouse);
+                        mouseDrag = m_EditorViewport.mapPixelToCoords(relativeMouse);
+                    }
+                }
+                else dragging = false;
+
                 HandleEditorGizmos();
 
                 // Draw to viewport
