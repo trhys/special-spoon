@@ -241,11 +241,11 @@ namespace Spoon
             
             if (ImGui::BeginChild("Blueprint Selector", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                if (ImGui::BeginCombo("##Blueprints", "none"))
+                if (ImGui::BeginCombo("##Blueprints", selectedBP ? selectedBP->GetDisplayName().c_str() : "None"))
                 {
                     for (const auto* blueprint : GetBlueprints())
                     {
-                        if (ImGui::Selectable(blueprint->GetDisplayName().c_str(), selectedBP = blueprint))
+                        if (ImGui::Selectable(blueprint->GetDisplayName().c_str(), selectedBP == blueprint))
                         {
                             selectedBP = blueprint;
                         }
@@ -360,9 +360,9 @@ namespace Spoon
         {
             if (ImGui::BeginChild("Available Components", ImVec2(0, 200)))
             {
-                for (const auto& [type, array] : manager.GetAllArrays())
+                for (const auto& [type, creator] : manager.GetCreators())
                 {
-                    ImGui::Checkbox(array->GetDisplayName().c_str(), &compSelections[type]);
+                    ImGui::Checkbox(type.c_str(), &compSelections[type]);
                 }
                 ImGui::EndChild();
             }
@@ -374,9 +374,9 @@ namespace Spoon
                 {
                     bool alreadyExists = arrays.at(type)->HasEntity(id);
                     if(selected && !alreadyExists) manager.GetCreators().at(type)(id);
-                    AddingComponent = false;
-                    ImGui::CloseCurrentPopup();
                 }
+                AddingComponent = false;
+                ImGui::CloseCurrentPopup();
             }
             if(ImGui::Button("Cancel"))
             {

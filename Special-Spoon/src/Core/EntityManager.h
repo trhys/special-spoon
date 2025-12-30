@@ -102,7 +102,7 @@ namespace Spoon
             std::string name = typeid(COMP).name();
             SS_DEBUG_LOG("[ENTITY MANAGER] Loading component array: " + name)
             m_Arrays[name] = std::make_unique<ComponentArray<COMP>>(displayName);
-            m_CompCreators[name] = [this](UUID id) { this->MakeComponent<COMP>(id); };
+            m_CompCreators[displayName] = [this](UUID id) { this->MakeComponent<COMP>(id); };
         }
 
         template<typename COMP>
