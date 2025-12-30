@@ -517,13 +517,11 @@ namespace Spoon
             ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
             if (supported && ImGui::BeginDragDropSource())
             {
-                AssetPayload payload(node->m_Name, node->m_Path);
-
                 switch (type)
                     {
-                    case ResourceType::Texture: ImGui::SetDragDropPayload("LOAD_TEXTURE", &payload, sizeof(payload)); break;
-                    case ResourceType::Font: ImGui::SetDragDropPayload("LOAD_FONT", &payload, sizeof(payload)); break;
-                    case ResourceType::Sound: ImGui::SetDragDropPayload("LOAD_SOUND", &payload, sizeof(payload)); break;
+                    case ResourceType::Texture: ImGui::SetDragDropPayload("LOAD_TEXTURE", &node, sizeof(AssetNode*)); break;
+                    case ResourceType::Font: ImGui::SetDragDropPayload("LOAD_FONT", &node, sizeof(AssetNode*)); break;
+                    case ResourceType::Sound: ImGui::SetDragDropPayload("LOAD_SOUND", &node, sizeof(AssetNode*)); break;
                     default: break;
                     }
                 ImGui::EndDragDropSource();
@@ -568,8 +566,8 @@ namespace Spoon
                     {
                         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_TEXTURE"))
                         {
-                            const AssetPayload* assetPL = (const AssetPayload*)payload->Data;
-                            ResourceManager::Get().LoadResource<sf::Texture>(assetPL->id, assetPL->path);
+                            const AssetNode* assetPtr = (const AssetNode*)payload->Data;
+                            ResourceManager::Get().LoadResource<sf::Texture>(assetPtr->m_Name, assetPtr->m_Path);
                         }
                         ImGui::EndDragDropTarget();
                     }
@@ -595,8 +593,8 @@ namespace Spoon
                     {
                         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_FONT"))
                         {
-                            const AssetPayload* assetPL = (const AssetPayload*)payload->Data;
-                            ResourceManager::Get().LoadResource<sf::Font>(assetPL->id, assetPL->path);
+                            const AssetNode* assetPtr = (const AssetNode*)payload->Data;
+                            ResourceManager::Get().LoadResource<sf::Font>(assetPtr->m_Name, assetPtr->m_Path);
                         }
                         ImGui::EndDragDropTarget();
                     }

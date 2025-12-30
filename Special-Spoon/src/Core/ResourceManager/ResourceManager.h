@@ -43,13 +43,6 @@ namespace Spoon
         std::vector<std::unique_ptr<AssetNode>> m_Children;
     };
 
-    struct AssetPayload
-    {
-        AssetPayload(std::string name, std::filesystem::path path) : id(name), path(path) {}
-        std::string id;
-        std::filesystem::path path;
-    };
-
     class SPOON_API ResourceManager
     {
     public:
