@@ -65,8 +65,8 @@ namespace Spoon
         template<typename RESOURCE>
         RESOURCE& GetResource(std::string id);
 
-        void LoadAnimationData(const std::string id, const AnimationData& animationData);
-        AnimationData* GetAnimationData(const std::string id);
+        void LoadAnimationData(const std::string& id, const AnimationData& animationData);
+        AnimationData* GetAnimationData(const std::string& id);
 
         const std::unordered_map<std::string, sf::Texture>& GetTextures() { return m_Textures; }
         const std::unordered_map<std::string, std::filesystem::path>& GetTexturePaths() { return texturePaths; }

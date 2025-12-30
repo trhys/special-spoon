@@ -2,6 +2,8 @@
 
 #include "Core/Core.h"
 #include "ECS/Components/Render/SpriteComp.h"
+#include "Viewport.h"
+
 #include "SFML/Graphics.hpp"
 
 namespace Spoon
@@ -20,49 +22,7 @@ namespace Spoon
 
                 if (ImGui::BeginChild("TRE Viewport", ImVec2(640, 640), ImGuiChildFlags_Borders))
                 {
-                    // Resize/Zoom viewport if necessary
-                    sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
-                    sf::Vector2u viewport2u(
-                        std::max(1u, static_cast<unsigned int>(viewportSize.x)),
-                        std::max(1u, static_cast<unsigned int>(viewportSize.y)));
-                    if (m_Viewport.getSize() != viewport2u)
-                        if (m_Viewport.resize({ viewport2u }))
-                        {
-                            m_Camera.setSize({ (float)viewport2u.x, (float)viewport2u.y });
-                            m_Viewport.setView(m_Camera);
-                        }
-                    if (ImGui::IsWindowHovered())
-                    {
-                        float scrollDelta = ImGui::GetIO().MouseWheel;
-                        if (scrollDelta != 0.0)
-                        {
-                            m_Camera.zoom((scrollDelta > 0) ? 0.9 : 1.1);
-                            m_Viewport.setView(m_Camera);
-                        }
-                    }
-                    static sf::Vector2f scrollDrag;
-                    static bool scrolling = false;
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && ImGui::IsWindowHovered())
-                    {
-                        ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-                        ImVec2 mousePos = ImGui::GetIO().MousePos;
-                        sf::Vector2i relativeMouse(
-                            static_cast<int>(mousePos.x - viewportPos.x),
-                            static_cast<int>(mousePos.y - viewportPos.y)
-                        );
-                        sf::Vector2f worldMouse = m_Viewport.mapPixelToCoords(relativeMouse);
-                        if (!scrolling)
-                        {
-                            scrollDrag = worldMouse;
-                            scrolling = true;
-                        }
-                        if (scrolling)
-                        {
-                            m_Camera.move(scrollDrag - worldMouse);
-                            scrollDrag = m_Viewport.mapPixelToCoords(relativeMouse);
-                        }
-                    }
-                    else scrolling = false;
+                    RenderViewport(m_Viewport, m_Camera);
 
                     static sf::Vector2f drag;
                     static bool dragging = false;

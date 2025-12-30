@@ -48,14 +48,14 @@ namespace Spoon
                 if (ImGui::MenuItem("New")) NewScene = true;
                 if (ImGui::MenuItem("Load")) LoadScene = true;
                 if (ImGui::MenuItem("Save")) Serialize(*m_ActiveScene, e_Manager, sys_Manager);
-                if (ImGui::MenuItem("Scene Manifest")) {}
+                if (ImGui::MenuItem("Scene Manifest")) ImGui::SetTooltip("todo");
                 ImGui::EndMenu();
             }
 
             if (ImGui::BeginMenu("Entity Manager"))
             {
                 if (ImGui::MenuItem("Entity View")) ViewEntities = !ViewEntities;
-                if (ImGui::MenuItem("Entity Blueprints")) { ImGui::SetTooltip("todo"); }
+                if (ImGui::MenuItem("Entity Blueprints")) ImGui::SetTooltip("todo");
                 ImGui::EndMenu();
             }
 
@@ -74,7 +74,7 @@ namespace Spoon
 
             if (ImGui::BeginMenu("System Manager"))
             {
-                if (ImGui::MenuItem("Open System Manager")) m_SystemsMenu.Open();
+                if (ImGui::MenuItem("Open System Manager", nullptr, false, m_ActiveScene != nullptr)) m_SystemsMenu.Open();
                 ImGui::EndMenu();
             }
 

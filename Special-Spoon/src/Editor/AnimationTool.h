@@ -23,24 +23,33 @@ namespace Spoon
         void Shutdown();
 
         void CreateNew();
+        void EditTool();
 
     private:
         AnimationData* currentData = nullptr;
         bool m_isOpen = false;
 
-        // Animation controls
+        // Animation/Editor controls
         SpriteComp previewSprite;
+        SpriteComp editorSprite;
         bool m_Looping = true;
         bool m_Playback = false;
+        bool autoPlayEnabled = true;
+        int frameIndex = 0;
 
         // Animation Component pieces
         int currentFrame = 0;
         float elapsedTime = 0.0f;
         bool isFinished = false;
 
+        // Menu flags
         bool createModal = false;
+        bool editTool = false;
 
         sf::RenderTexture m_Viewport;
         sf::View m_Camera;
+
+        sf::RenderTexture m_EditorTool;
+        sf::View m_EditorCamera;
     };
 }

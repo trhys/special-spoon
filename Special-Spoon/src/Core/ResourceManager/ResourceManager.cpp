@@ -89,7 +89,7 @@ namespace Spoon
         }
     }
 
-    void ResourceManager::LoadAnimationData(const std::string id, const AnimationData& animationData)
+    void ResourceManager::LoadAnimationData(const std::string& id, const AnimationData& animationData)
     {
         auto found = m_Animations.find(id);
         if(found == m_Animations.end())
@@ -98,7 +98,7 @@ namespace Spoon
         }
     }
 
-    AnimationData* ResourceManager::GetAnimationData(const std::string id)
+    AnimationData* ResourceManager::GetAnimationData(const std::string& id)
     {
         auto found = m_Animations.find(id);
         if(found != m_Animations.end())

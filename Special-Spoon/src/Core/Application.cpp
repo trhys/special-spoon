@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "ResourceManager/ResourceManager.h"
 #include "Editor/AnimationTool.h"
-
+#include "Editor/Viewport.h"
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
 
@@ -191,7 +191,7 @@ namespace Spoon
             // Update systems
             sf::Time tick = clock.restart();
 
-            if(m_Specs.editorEnabled)
+            if (m_Specs.editorEnabled)
             {
                 ImGui::SFML::Update(m_Window, tick);
                 if (closePrompt)
@@ -200,61 +200,17 @@ namespace Spoon
                 play = m_Editor.Play();
             }
 
-            if(play) Application::Update(tick);
+            if (play) Application::Update(tick);
             else m_InputSystem.ClearEvents();
 
             // Rendering
             m_Window.clear();
 
-            if(m_Specs.editorEnabled)
+            if (m_Specs.editorEnabled)
             {
                 ImGui::Begin("Viewport");
 
-                // Resize viewport if necessary
-                sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
-                sf::Vector2u viewport2u(
-                    std::max(1u, static_cast<unsigned int>(viewportSize.x)),
-                    std::max(1u, static_cast<unsigned int>(viewportSize.y)));
-                if (m_EditorViewport.getSize() != viewport2u)
-                    if (m_EditorViewport.resize({ viewport2u }))
-                    {
-                        sf::Vector2f oldCenter = m_Camera.getCenter();
-                        m_Camera.setSize({ (float)viewport2u.x, (float)viewport2u.y });
-                        m_Camera.setCenter(oldCenter);
-                        m_EditorViewport.setView(m_Camera);
-                    }
-                if (ImGui::IsWindowHovered())
-                {
-                    float scrollDelta = ImGui::GetIO().MouseWheel;
-                    if (scrollDelta != 0.0)
-                    {
-                        m_Camera.zoom((scrollDelta > 0) ? 0.9 : 1.1);
-                        m_EditorViewport.setView(m_Camera);
-                    }
-                }
-                static sf::Vector2f mouseDrag;
-                static bool dragging = false;
-                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && ImGui::IsWindowHovered())
-                {
-                    ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-                    ImVec2 mousePos = ImGui::GetIO().MousePos;
-                    sf::Vector2i relativeMouse(
-                        static_cast<int>(mousePos.x - viewportPos.x),
-                        static_cast<int>(mousePos.y - viewportPos.y)
-                    );
-                    sf::Vector2f worldMouse = m_EditorViewport.mapPixelToCoords(relativeMouse);
-                    if (!dragging)
-                    {
-                        mouseDrag = worldMouse;
-                        dragging = true;
-                    }
-                    if (dragging)
-                    {
-                        m_Camera.move(mouseDrag - worldMouse);
-                        mouseDrag = m_EditorViewport.mapPixelToCoords(relativeMouse);
-                    }
-                }
-                else dragging = false;
+                RenderViewport(m_EditorViewport, m_Camera);
 
                 HandleEditorGizmos();
 
@@ -269,10 +225,11 @@ namespace Spoon
                 m_Editor.Run(tick, m_EntityManager, m_SceneManager, m_SystemManager);
                 ImGui::SFML::Render(m_Window);
             }
-            if (!m_Specs.editorEnabled)
+            else if (!m_Specs.editorEnabled)
             {
                 m_Renderer.Render(m_Window, states, m_EntityManager);
             }
+
             m_Window.display();
         }
         if(m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);

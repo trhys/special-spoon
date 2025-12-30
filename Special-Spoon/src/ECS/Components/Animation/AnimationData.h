@@ -9,6 +9,8 @@ namespace Spoon
 {
     struct SpriteCords
     {
+        SpriteCords() = default;
+        SpriteCords(int x, int y, int width, int height) : x(x), y(y), width(width), height(height) {}
         int x;
         int y;
         int width;

@@ -7,6 +7,8 @@ target_sources(Special-Spoon
         SystemsMenu.h
         SystemsMenu.cpp
         TextureRectTool.h
-
+        Viewport.h
+        Viewport.cpp
+        
         Blueprints/Blueprint.h
 )
