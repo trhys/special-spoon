@@ -517,11 +517,13 @@ namespace Spoon
             ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
             if (supported && ImGui::BeginDragDropSource())
             {
+                AssetPayload payload(node->m_Name, node->m_Path);
+
                 switch (type)
                     {
-                    case ResourceType::Texture: ImGui::SetDragDropPayload("LOAD_TEXTURE", node->m_Name.c_str(), node->m_Name.size() +1); break;
-                    case ResourceType::Font: ImGui::SetDragDropPayload("LOAD_FONT", node->m_Name.c_str(), node->m_Name.size() +1); break;
-                    case ResourceType::Sound: ImGui::SetDragDropPayload("LOAD_SOUND", node->m_Name.c_str(), node->m_Name.size() +1); break;
+                    case ResourceType::Texture: ImGui::SetDragDropPayload("LOAD_TEXTURE", &payload, sizeof(payload)); break;
+                    case ResourceType::Font: ImGui::SetDragDropPayload("LOAD_FONT", &payload, sizeof(payload)); break;
+                    case ResourceType::Sound: ImGui::SetDragDropPayload("LOAD_SOUND", &payload, sizeof(payload)); break;
                     default: break;
                     }
                 ImGui::EndDragDropSource();
@@ -537,8 +539,8 @@ namespace Spoon
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
         ImGui::Begin("Resource Loading Menu", &LoadResources);
 
-        static std::string selTexture = "";
-        static std::string selFont = "";
+        static std::string selTexture = "empty";
+        static std::string selFont = "Default";
         static std::string selSound = "";
 
         float windowWidth = ImGui::GetContentRegionAvail().x;
@@ -566,8 +568,8 @@ namespace Spoon
                     {
                         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_TEXTURE"))
                         {
-                            const char* textureID = (const char*)payload->Data;
-                            ResourceManager::Get().LoadResource<sf::Texture>(textureID);
+                            const AssetPayload* assetPL = (const AssetPayload*)payload->Data;
+                            ResourceManager::Get().LoadResource<sf::Texture>(assetPL->id, assetPL->path);
                         }
                         ImGui::EndDragDropTarget();
                     }
@@ -593,8 +595,8 @@ namespace Spoon
                     {
                         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_FONT"))
                         {
-                            const char* fontID = (const char*)payload->Data;
-                            ResourceManager::Get().LoadResource<sf::Font>(fontID);
+                            const AssetPayload* assetPL = (const AssetPayload*)payload->Data;
+                            ResourceManager::Get().LoadResource<sf::Font>(assetPL->id, assetPL->path);
                         }
                         ImGui::EndDragDropTarget();
                     }
@@ -608,10 +610,10 @@ namespace Spoon
             {
                 for (const auto& [id, sound] : ResourceManager::Get().GetSounds())
                 {
-                    if (ImGui::Selectable(id.c_str()))
-                    {
-                        //todo
-                    }
+                    //if (ImGui::Selectable(id.c_str()))
+                    //{
+                    //    //todo
+                    //}
                 }
                 ImGui::EndListBox();
             }
