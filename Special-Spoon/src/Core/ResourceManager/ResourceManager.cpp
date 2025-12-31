@@ -124,12 +124,30 @@ namespace Spoon
 
     void ResourceManager::GenerateFontPreview(const std::string& id, sf::Font& font)
     {
-        sf::RenderTexture fontViewer({200, 40});
-        fontViewer.clear(sf::Color::Transparent);
         sf::Text text(font, id, 24);
+        sf::FloatRect bounds = text.getLocalBounds();
+        float padding = 10.0f;
+        sf::Vector2u size = {
+            static_cast<unsigned int>(bounds.size.x + padding),
+            static_cast<unsigned int>(bounds.size.y + padding)
+        };
+        sf::Vector2f center = {
+            static_cast<float>(size.x / 2),
+            static_cast<float>(size.y / 2)
+        };
+        sf::Vector2f glyphCenter = {
+            bounds.position.x + (bounds.size.x / 2.0f),
+            bounds.position.y + (bounds.size.y / 2.0f)
+        };
+        if (size.x == 0 || size.y == 0) size = { 1, 1 };
+        sf::RenderTexture fontViewer(size);
+        text.setOrigin(glyphCenter);
+        text.setPosition(center);
+        fontViewer.clear(sf::Color::Transparent);
         fontViewer.draw(text);
         fontViewer.display();
         m_FontPreviews[id] = fontViewer.getTexture();
+        m_FontPreviews[id].setSmooth(true);
     }
 
     sf::Texture& ResourceManager::GetFontPreview(const std::string& id)
@@ -149,5 +167,40 @@ namespace Spoon
         m_SoundBuffers.clear();
 
         InitDefaultAssets();
+    }
+
+    void ResourceManager::PopulateLib(AssetNode* node, std::vector<AssetNode*>& library, const std::string& type)
+    {
+        for (auto& child : node->m_Children)
+        {
+            if (child->isDir) PopulateLib(child.get(), library, type);
+            else if (child->m_Ext == type) library.push_back(child.get());
+        }
+    }
+
+    const std::vector<AssetNode*> ResourceManager::GetAssetLibrary(const std::string& type)
+    {
+        std::vector<AssetNode*> library;
+        for (auto& node : fileRoot->m_Children)
+        {
+            PopulateLib(node.get(), library, type);
+        }
+        return library;
+    }
+
+    sf::Texture& ResourceManager::GetThumbnail(AssetNode* node)
+    {
+        auto found = m_Thumbnails.find(node->m_Name);
+        if (found == m_Thumbnails.end())
+        {
+            sf::Texture texture;
+            if (!texture.loadFromFile(node->m_Path))
+            {
+                texture = GetResource<sf::Texture>("empty");
+            }
+            texture.setSmooth(true);
+            m_Thumbnails.emplace(node->m_Name, std::move(texture));
+        }
+        return m_Thumbnails.at(node->m_Name);
     }
 }

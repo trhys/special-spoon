@@ -1,8 +1,15 @@
 #include "Editor.h"
-#include "Blueprints/Blueprint.h"
+
+#include "Menus/SceneMenus.h"
+#include "Menus/EntityMenus.h"
+#include "Utils/EditorSettings.h"
+#include "Utils/Helpmarker.h"
+
 #include "Core/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
+#include "Core/SceneManager.h"
 #include "Core/Serialization/Serializer.h"
+
 #include "System/SystemManager.h"
 
 #include "Imgui/imgui.h"
@@ -10,22 +17,6 @@
 
 namespace Spoon
 {
-    // Menu flags
-    bool NewScene = false;
-    bool LoadScene = false;
-
-    bool ViewEntities = true;
-
-    bool ViewResources = false;
-    bool LoadResources = false;
-
-    bool AddingComponent = false;
-
-    // Settings
-    bool compDelAskAgain = true;
-
-    // ===================================================================
-
     void Editor::Stop() 
     {
         m_Play = false;
@@ -80,7 +71,7 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Settings"))
             {
-                ImGui::Checkbox("Confirm component delete", &compDelAskAgain);
+                ImGui::Checkbox("Confirm component delete", &EditorSettings::Get().compDelAskAgain);
                 ImGui::EndMenu();
             }
 
@@ -105,286 +96,13 @@ namespace Spoon
 
         ImGui::End();
 
-        if (NewScene)       { NewSceneMenu(s_Manager); }
-        if (LoadScene)      { LoadSceneMenu(e_Manager, s_Manager, sys_Manager); }
+        if (NewScene)       { NewSceneMenu(s_Manager, this); }
+        if (LoadScene)      { LoadSceneMenu(e_Manager, s_Manager, sys_Manager, this); }
         if (ViewResources)  { ViewResourcesMenu(); }
         if (LoadResources)  { LoadResourcesMenu(); }
 
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
         if (m_SystemsMenu.IsOpen())   m_SystemsMenu.Update(sys_Manager);
-    }
-
-    void Editor::NewSceneMenu(SceneManager& s_Manager)
-    {
-        // Always center this window when appearing
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-        const char* popupId = "New Scene";
-        static char newSceneBuf[64] = {0};
-        if (!ImGui::IsPopupOpen(popupId))
-            ImGui::OpenPopup(popupId);
-
-        if(ImGui::BeginPopupModal(popupId, &NewScene, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::Text("Enter scene ID: "); ImGui::SameLine();
-
-            if (ImGui::IsWindowAppearing())
-                ImGui::SetKeyboardFocusHere();
-
-            if(ImGui::InputText("##ID", newSceneBuf, IM_ARRAYSIZE(newSceneBuf), ImGuiInputTextFlags_EnterReturnsTrue) && strlen(newSceneBuf) > 0 )
-            {
-                m_ActiveScene = s_Manager.CreateScene(newSceneBuf);
-                newSceneBuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
-                NewScene = false;
-            }
-            if(ImGui::Button("Submit") && strlen(newSceneBuf) > 0 )
-            {
-                m_ActiveScene = s_Manager.CreateScene(newSceneBuf);
-                newSceneBuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
-                NewScene = false;
-            }
-            ImGui::SetItemDefaultFocus();
-            ImGui::SameLine();
-
-            if(ImGui::Button("Cancel"))
-            {
-                newSceneBuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
-                NewScene = false;
-            }
-            ImGui::EndPopup();
-        }
-    }
-
-    void Editor::LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
-    {
-        // Always center this window when appearing
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-        ImGui::Begin("Load Scene", &LoadScene);
-        const auto& scenes = s_Manager.GetManifest();
-        static std::string selectedScene = "";
-
-        if (ImGui::BeginListBox("Scene Manifest"))
-        {
-            for (const auto& [name, sceneData] : scenes)
-            {
-                const bool is_selected = (selectedScene == name);
-                if (ImGui::Selectable(name.c_str(), is_selected))
-                    selectedScene = name;
-
-                if (is_selected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndListBox();
-            ImGui::SameLine(); HelpMarker("A list of available scenes in the manifest");
-        }
-        
-        if(ImGui::Button("Open"))
-        {
-            m_ActiveScene = s_Manager.LoadScene(selectedScene, e_Manager, sys_Manager);
-            LoadScene = false;
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Cancel")) 
-            LoadScene = false;
-        
-        ImGui::End();
-    }
-
-    void Editor::ViewEntitiesMenu(EntityManager& e_Manager)
-    {
-        // Display a selectable list of active entities
-        const auto& entities = e_Manager.GetAllEntities();
-        static UUID selectedID = 0;
-        static std::string selectedComp = "";
-
-        ImGui::SeparatorText("Entities");
-        if (ImGui::BeginListBox("##Entities"))
-        {
-            for (const auto& [uuid, name] : entities)
-            {
-                ImGui::PushID(uuid.ID);
-                const bool is_selected = (selectedID == uuid);
-                std::string displayID = name + "--" + std::to_string(uuid.ID);
-                if (ImGui::Selectable(displayID.c_str(), is_selected))
-                {
-                    selectedID = uuid;
-                }
-                if (is_selected)
-                    ImGui::SetItemDefaultFocus();
-                ImGui::PopID();
-            }
-            ImGui::EndListBox();
-            ImGui::SameLine(); HelpMarker("A list of all active entities in the scene");
-        }
-        if (ImGui::Button("Add Entity"))
-        {
-            ImGui::OpenPopup("New Entity");
-        }
-        
-        // Always center this window when appearing
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        if (ImGui::BeginPopupModal("New Entity"))
-        {
-            static const Blueprint* selectedBP = nullptr;
-            static char newEntityBuf[64];
-            ImGui::InputText("Entity Name", newEntityBuf, IM_ARRAYSIZE(newEntityBuf));
-            ImGui::SameLine(); HelpMarker("It's recommended to give your entity some kind of name here. It's not required but"
-                                          "will make life easier when you've got many entities in the scene. Entites will be"
-                                          "managed by UUID so this name is only for visual reference in the editor");
-            
-            if (ImGui::BeginChild("Blueprint Selector", ImVec2(0, 200), ImGuiChildFlags_Borders))
-            {
-                if (ImGui::BeginCombo("##Blueprints", selectedBP ? selectedBP->GetDisplayName().c_str() : "None"))
-                {
-                    for (const auto* blueprint : GetBlueprints())
-                    {
-                        if (ImGui::Selectable(blueprint->GetDisplayName().c_str(), selectedBP == blueprint))
-                        {
-                            selectedBP = blueprint;
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-                ImGui::SameLine(); HelpMarker("Optionally, select a blueprint to use for this entity. The selected blueprint will"
-                                              "create the components automatically for that blueprint. See the tooltip for default"
-                                              "blueprints for more info.");
-                ImGui::EndChild();
-            }
-            ImGui::Separator();
-            if (ImGui::Button("Submit"))
-            {
-                UUID id = e_Manager.CreateEntity(newEntityBuf);
-                if (selectedBP->GetDisplayName() != "None")
-                {
-                    for (const auto& compID : selectedBP->GetComps())
-                    {
-                        e_Manager.GetCreators().at(compID)(id);
-                    }
-                }
-                newEntityBuf[0] = '\0';
-                selectedBP = nullptr;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
-                newEntityBuf[0] = '\0';
-                selectedBP = nullptr;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-        
-        ImGui::SeparatorText("Component Inspector");
-        Component* selectedComponent = nullptr;
-        if(ImGui::BeginListBox("##Components"))
-        {
-            for(auto comp : e_Manager.GetAllComponentsOfEntity(selectedID))
-            {
-                ImGui::PushID(comp->GetDisplayName().c_str());
-                const bool compSelected = (selectedComp == comp->GetDisplayName());
-                if(ImGui::Selectable(comp->GetDisplayName().c_str(), compSelected))
-                {
-                    selectedComp = comp->GetDisplayName();
-                }
-                if (compSelected)
-                {
-                    selectedComponent = comp;
-                    ImGui::SetItemDefaultFocus();
-                }
-                ImGui::PopID();
-            }
-            ImGui::EndListBox();
-            ImGui::SameLine(); HelpMarker("A list of all components belonging to this entity");
-
-            if(ImGui::Button("Add Component"))
-            {
-                if (e_Manager.GetAllEntities().empty())
-                    ImGui::SetItemTooltip("You must select an entity before adding a new component!");
-                else 
-                {
-                    selectedComp = "";
-                    AddingComponent = true;
-                }
-            }
-            if (AddingComponent)
-                AddComponentMenu(selectedID, e_Manager);
-
-            ImGui::SameLine();
-            const char* popupName = "Delete?";
-            if(ImGui::Button("Delete")) 
-                ImGui::OpenPopup(popupName);
-
-            // Always center this window when appearing
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-            if(ImGui::BeginPopupModal(popupName) && compDelAskAgain)
-            {
-                ImGui::Text("Are you sure you want to\ndelete this component? This cannot be undone!");
-                ImGui::Checkbox("Don't ask me again", &compDelAskAgain);
-                if(ImGui::Button("Delete")) 
-                { 
-                    e_Manager.KillComponent(selectedComponent->GetType(), selectedID);
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
-                ImGui::EndPopup();
-            }
-        }
-        if(selectedComponent)
-        {
-            ImGui::SeparatorText("Inspector");
-            if(ImGui::BeginChild("Component Inspector"))
-            {
-                selectedComponent->OnReflect();
-                ImGui::EndChild();
-            }
-        }
-    }
-
-    void Editor::AddComponentMenu(UUID id, EntityManager& manager)
-    {
-        const char* compAdd = "Add Component";
-        if(!ImGui::IsPopupOpen(compAdd))
-            ImGui::OpenPopup(compAdd);
-        static std::unordered_map<std::string, bool> compSelections;
-
-        if(ImGui::BeginPopupModal(compAdd))
-        {
-            if (ImGui::BeginChild("Available Components", ImVec2(0, 200)))
-            {
-                for (const auto& [type, creator] : manager.GetCreators())
-                {
-                    ImGui::Checkbox(type.c_str(), &compSelections[type]);
-                }
-                ImGui::EndChild();
-            }
-            
-            if (ImGui::Button("Submit"))
-            {
-                const auto& arrays = manager.GetAllArrays();
-                for (const auto& [type, selected] : compSelections)
-                {
-                    bool alreadyExists = arrays.at(type)->HasEntity(id);
-                    if(selected && !alreadyExists) manager.GetCreators().at(type)(id);
-                }
-                AddingComponent = false;
-                ImGui::CloseCurrentPopup();
-            }
-            if(ImGui::Button("Cancel"))
-            {
-                AddingComponent = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
     }
 
     void Editor::ViewResourcesMenu()
@@ -576,18 +294,7 @@ namespace Spoon
 
                 // Get aspect ratio for texture preview
                 sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(selTexture);
-                ImVec2 space = ImGui::GetContentRegionAvail();
-                sf::Vector2u texSize = texture.getSize();
-                float aspect = (float)texSize.x / (float)texSize.y;
-                float displayWidth = space.x;
-                float displayHeight = space.x / aspect;
-                if (displayHeight > space.y) 
-                {
-                    displayHeight = space.y;
-                    displayWidth = space.y * aspect;
-                }
-
-                ImGui::Image(texture, ImVec2(displayWidth, displayHeight));
+                ImGui::Image(texture, GetAspectRatio(texture));
                 ImGui::EndChild();
             }
 
@@ -617,18 +324,7 @@ namespace Spoon
 
                 // Get aspect ratio for font preview
                 sf::Texture& texture = ResourceManager::Get().GetFontPreview(selFont);
-                ImVec2 space = ImGui::GetContentRegionAvail();
-                sf::Vector2u texSize = texture.getSize();
-                float aspect = (float)texSize.x / (float)texSize.y;
-                float displayWidth = space.x;
-                float displayHeight = space.x / aspect;
-                if (displayHeight > space.y) 
-                {
-                    displayHeight = space.y;
-                    displayWidth = space.y * aspect;
-                }
-                
-                ImGui::Image(texture, ImVec2(displayWidth, displayHeight));
+                ImGui::Image(texture, GetAspectRatio(texture));
                 ImGui::EndChild();
             }
 
@@ -655,17 +351,5 @@ namespace Spoon
     void Editor::EditTextureRect(SpriteComp& comp)
     {
         m_TextureRectTool.Run(comp);
-    }
-
-    void HelpMarker(const char* desc)
-    {
-        ImGui::TextDisabled("(?)");
-        if (ImGui::BeginItemTooltip())
-        {
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted(desc);
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
     }
 }

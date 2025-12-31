@@ -1,14 +1,17 @@
 target_sources(Special-Spoon
     PRIVATE
-        AnimationTool.h
-        AnimationTool.cpp
         Editor.h
         Editor.cpp
-        SystemsMenu.h
-        SystemsMenu.cpp
-        TextureRectTool.h
-        Viewport.h
-        Viewport.cpp
-        
+
         Blueprints/Blueprint.h
+
+        Tools/AnimationTool.h
+        Tools/AnimationTool.cpp
+        Tools/TextureRectTool.h
+
+        Utils/Helpmarker.h        
+        Utils/Viewport.h
+        Utils/Viewport.cpp
 )
+
+add_subdirectory(Menus)

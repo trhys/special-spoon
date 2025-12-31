@@ -33,19 +33,35 @@ namespace Spoon
                 static_cast<int>(mousePos.x - viewportPos.x),
                 static_cast<int>(mousePos.y - viewportPos.y)
             );
-            sf::Vector2f worldMouse = viewport.target.mapPixelToCoords(relativeMouse);
             if (!viewport.state.dragging)
             {
-                viewport.state.mouseDrag = worldMouse;
+                viewport.state.mouseDrag = viewport.target.mapPixelToCoords(relativeMouse);
                 viewport.state.dragging = true;
             }
-            if (viewport.state.dragging)
+            else if (viewport.state.dragging)
             {
-                viewport.camera.move(viewport.state.mouseDrag - worldMouse);
-                viewport.state.mouseDrag = viewport.target.mapPixelToCoords(relativeMouse);
+                sf::Vector2f currentMouse = viewport.target.mapPixelToCoords(relativeMouse);
+                viewport.camera.move(viewport.state.mouseDrag - currentMouse);
+                viewport.target.setView(viewport.camera);
             }
-            viewport.target.setView(viewport.camera);
         }
         else viewport.state.dragging = false;
+    }
+
+    ImVec2 GetAspectRatio(sf::Texture& texture)
+    {
+        ImVec2 space = ImGui::GetContentRegionAvail();
+        sf::Vector2u texSize = texture.getSize();
+        if (texSize.x == 0 || texSize.y == 0)
+            return ImVec2(32, 32);
+        float aspect = (float)texSize.x / (float)texSize.y;
+        float displayWidth = space.x;
+        float displayHeight = space.x / aspect;
+        if (displayHeight > space.y) 
+        {
+            displayHeight = space.y;
+            displayWidth = space.y * aspect;
+        }
+        return ImVec2(displayWidth, displayHeight);
     }
 }

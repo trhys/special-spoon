@@ -1,0 +1,9 @@
+target_sources(Special-Spoon
+    PRIVATE
+    EntityMenus.h
+    EntityMenus.cpp
+    SceneMenus.h
+    SceneMenus.cpp
+    SystemsMenu.h
+    SystemsMenu.cpp
+)

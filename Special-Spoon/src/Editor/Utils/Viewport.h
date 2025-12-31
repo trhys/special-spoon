@@ -21,4 +21,5 @@ namespace Spoon
     };
 
     void RenderViewport(Viewport& viewport);
+    ImVec2 GetAspectRatio(sf::Texture& texture);
 }

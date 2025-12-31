@@ -3,9 +3,11 @@
 #include "Core.h"
 #include "SceneManager.h"
 #include "EntityManager.h"
+#include "Renderer.h"
+
 #include "System/InputSystem.h"
 #include "System/SystemManager.h"
-#include "Renderer.h"
+
 #include "Editor/Editor.h"
 
 #include "SFML/Graphics.hpp"

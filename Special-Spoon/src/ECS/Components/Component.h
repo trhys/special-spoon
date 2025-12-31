@@ -3,6 +3,8 @@
 #include "Core/Core.h"
 #include "Core/Serialization/JsonTypeDefs.h"
 
+#include "Editor/Utils/Helpmarker.h"
+
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
 

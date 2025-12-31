@@ -159,24 +159,36 @@ namespace Spoon
         {
             ImGui::Text("Select a texture");
             ImGui::Separator();
-            static std::string selectedID = "empty";
+            static AssetNode* selectedNode = nullptr;
             if (ImGui::BeginChild("Texture Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                for (const auto& [id, texture] : ResourceManager::Get().GetTextures())
+                for (const auto& node : ResourceManager::Get().GetAssetLibrary("Image file"))
                 {
-                    if (ImGui::ImageButton(id.c_str(), texture, sf::Vector2f(128, 128)))
+                    ImGui::PushID(node->m_Name.c_str());
+                    if (ImGui::ImageButton(node->m_Name.c_str(), ResourceManager::Get().GetThumbnail(node), ImVec2(128, 128)))
                     {
-                        selectedID = id;
+                        selectedNode = node;
                     }
                     ImGui::SameLine();
+                    ImGui::PopID();
                 }
                 ImGui::EndChild();
             }
 
             if (ImGui::BeginChild("Preview", ImVec2(0, 600), ImGuiChildFlags_Borders))
             {
-                ImGui::Text("Selected texture id: %s", selectedID.c_str());
-                ImGui::Image(ResourceManager::Get().GetResource<sf::Texture>(selectedID));
+                if (selectedNode)
+                {
+                    ImGui::Text("Selected texture id: %s", selectedNode->m_Name.c_str());
+
+                    // Get aspect ratio for texture preview
+                    sf::Texture& texture = ResourceManager::Get().GetThumbnail(selectedNode);
+                    ImGui::Image(texture, GetAspectRatio(texture));
+                }
+                else
+                {
+                    ImGui::Text("No texture selected");
+                }
                 ImGui::EndChild();
             }
             if (ImGui::InputText("Animation ID", newAnimDatabuf, IM_ARRAYSIZE(newAnimDatabuf), ImGuiInputTextFlags_CharsNoBlank)) {}
@@ -184,6 +196,7 @@ namespace Spoon
             ImGui::BeginDisabled(!bufferValid);
             if (ImGui::Button("Confirm"))
             {
+                std::string selectedID = selectedNode->m_Name;
                 previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
                 previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
                 editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
@@ -197,7 +210,7 @@ namespace Spoon
 
                 newAnimDatabuf[0] = '\0';
                 rect = sf::IntRect();
-                selectedID = "empty";
+                selectedNode = nullptr;
                 createModal = false;
                 editTool = true;
                 ImGui::CloseCurrentPopup();
@@ -207,7 +220,7 @@ namespace Spoon
             if (ImGui::Button("Cancel"))
             {
                 newAnimDatabuf[0] = '\0';
-                selectedID = "empty";
+                selectedNode = nullptr;
                 createModal = false;
                 ImGui::CloseCurrentPopup();
             }

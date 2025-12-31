@@ -1,7 +1,8 @@
 #include "Application.h"
 #include "ResourceManager/ResourceManager.h"
-#include "Editor/AnimationTool.h"
-#include "Editor/Viewport.h"
+
+#include "Editor/Utils/Viewport.h"
+
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
 

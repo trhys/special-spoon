@@ -87,6 +87,10 @@ namespace Spoon
         
         AssetNode* GetAssetsDir() { return fileRoot.get(); }
 
+        void PopulateLib(AssetNode* node, std::vector<AssetNode*>& library, const std::string& type);
+        const std::vector<AssetNode*> GetAssetLibrary(const std::string& type);
+        sf::Texture& GetThumbnail(AssetNode* node);
+
     private:
         std::unordered_map<std::string, sf::Texture> m_Textures;
         std::unordered_map<std::string, std::filesystem::path> texturePaths;
@@ -101,6 +105,7 @@ namespace Spoon
         std::unordered_map<std::string, AnimationData> m_Animations;
 
         std::unique_ptr<AssetNode> fileRoot;
+        std::unordered_map<std::string, sf::Texture> m_Thumbnails;
     };
 }
 
