@@ -1,5 +1,4 @@
 #include "AnimationTool.h"
-#include "Viewport.h"
 
 namespace Spoon
 {
@@ -67,14 +66,14 @@ namespace Spoon
 
             if (ImGui::BeginChild("AT Viewport", ImVec2(640, 640), ImGuiChildFlags_Borders))
             {
-                RenderViewport(m_Viewport, m_Camera);
+                RenderViewport(m_MainVP);
                 if (m_Playback) Animate(tick);
 
-                m_Viewport.clear(sf::Color(50, 50, 50));
+                m_MainVP.target.clear(sf::Color(50, 50, 50));
                 previewSprite.CenterOrigin();
-                m_Viewport.draw(previewSprite.m_Sprite);
-                m_Viewport.display();
-                ImGui::Image(m_Viewport);
+                m_MainVP.target.draw(previewSprite.m_Sprite);
+                m_MainVP.target.display();
+                ImGui::Image(m_MainVP.target);
                 ImGui::EndChild();
             }
             ImGui::Checkbox("Loop Animation", &m_Looping);
@@ -92,13 +91,14 @@ namespace Spoon
         elapsedTime = 0.0f;
         isFinished = false;
         m_isOpen = true;
+        rect = sf::IntRect();
 
         if (currentData)
         {
             previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID));
-            previewSprite.m_Sprite.setPosition(m_Camera.getCenter());
+            previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
             editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID));
-            editorSprite.m_Sprite.setPosition(m_EditorCamera.getCenter());
+            editorSprite.m_Sprite.setPosition(m_EditorVP.camera.getCenter());
             SpriteCords& sc = currentData->spriteCords[0];
             previewSprite.SetTextureRect(sf::IntRect({ sc.x, sc.y }, { sc.width, sc.height }));
             previewSprite.CenterOrigin();
@@ -106,9 +106,9 @@ namespace Spoon
         else
         {
             previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
-            previewSprite.m_Sprite.setPosition(m_Camera.getCenter());
+            previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
             editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
-            editorSprite.m_Sprite.setPosition(m_EditorCamera.getCenter());
+            editorSprite.m_Sprite.setPosition(m_EditorVP.camera.getCenter());
         }
         m_Playback = autoPlayEnabled;
     }
@@ -185,9 +185,9 @@ namespace Spoon
             if (ImGui::Button("Confirm"))
             {
                 previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
-                previewSprite.m_Sprite.setPosition(m_Camera.getCenter());
+                previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
                 editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
-                editorSprite.m_Sprite.setPosition(m_EditorCamera.getCenter());
+                editorSprite.m_Sprite.setPosition(m_EditorVP.camera.getCenter());
 
                 AnimationData data;
                 data.ID = newAnimDatabuf;
@@ -196,6 +196,7 @@ namespace Spoon
                 currentData = ResourceManager::Get().GetAnimationData(data.ID);
 
                 newAnimDatabuf[0] = '\0';
+                rect = sf::IntRect();
                 selectedID = "empty";
                 createModal = false;
                 editTool = true;
@@ -220,14 +221,27 @@ namespace Spoon
         {
             if (ImGui::BeginChild("##Viewport", ImVec2(0, 600), ImGuiChildFlags_Borders))
             {
-                RenderViewport(m_EditorTool, m_EditorCamera);
-                static sf::IntRect rect;
+                RenderViewport(m_EditorVP);
+                
                 static sf::Vector2f drag;
                 static bool dragging = false;
 
                 ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-                ImGui::Image(m_EditorTool);
 
+                sf::RectangleShape rectPreview;
+                rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
+                rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
+                rectPreview.setFillColor(sf::Color::Transparent);
+                rectPreview.setOutlineColor(sf::Color::Red);
+                rectPreview.setOutlineThickness(1.0);
+
+                m_EditorVP.target.clear(sf::Color(50, 50, 50));
+                editorSprite.CenterOrigin();
+                m_EditorVP.target.draw(editorSprite.m_Sprite);
+                m_EditorVP.target.draw(rectPreview);
+                m_EditorVP.target.display();
+                ImGui::Image(m_EditorVP.target);
+                
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
                 {
                     ImVec2 mousePos = ImGui::GetIO().MousePos;
@@ -235,7 +249,7 @@ namespace Spoon
                         static_cast<int>(mousePos.x - viewportPos.x),
                         static_cast<int>(mousePos.y - viewportPos.y)
                     );
-                    sf::Vector2f worldMouse = m_EditorTool.mapPixelToCoords(relativeMouse);
+                    sf::Vector2f worldMouse = m_EditorVP.target.mapPixelToCoords(relativeMouse);
                     if (!dragging)
                     {
                         drag = worldMouse;
@@ -251,18 +265,8 @@ namespace Spoon
                 }
                 else dragging = false;
 
-                sf::RectangleShape rectPreview;
-                rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
-                rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
-                rectPreview.setFillColor(sf::Color::Transparent);
-                rectPreview.setOutlineColor(sf::Color::Red);
-                rectPreview.setOutlineThickness(1.0);
-
-                m_EditorTool.clear(sf::Color(50, 50, 50));
-                editorSprite.CenterOrigin();
-                m_EditorTool.draw(editorSprite.m_Sprite);
-                m_EditorTool.draw(rectPreview);
-                m_EditorTool.display();
+                
+                ImGui::EndChild();
             }
 
             ImGui::Separator();

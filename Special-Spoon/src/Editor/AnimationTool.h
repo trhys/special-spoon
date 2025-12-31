@@ -4,6 +4,7 @@
 #include "ECS/Components/Animation/AnimationComp.h"
 #include "ECS/Components/Animation/AnimationData.h"
 #include "ECS/Components/Render/SpriteComp.h"
+#include "Viewport.h"
 #include "SFML/Graphics.hpp"
 
 namespace Spoon
@@ -32,6 +33,7 @@ namespace Spoon
         // Animation/Editor controls
         SpriteComp previewSprite;
         SpriteComp editorSprite;
+        sf::IntRect rect;
         bool m_Looping = true;
         bool m_Playback = false;
         bool autoPlayEnabled = true;
@@ -46,10 +48,7 @@ namespace Spoon
         bool createModal = false;
         bool editTool = false;
 
-        sf::RenderTexture m_Viewport;
-        sf::View m_Camera;
-
-        sf::RenderTexture m_EditorTool;
-        sf::View m_EditorCamera;
+        Viewport m_MainVP;
+        Viewport m_EditorVP;
     };
 }

@@ -1,14 +1,24 @@
 #pragma once
 
+#include "SFML/Graphics.hpp"
+
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
 
-namespace sf
-{
-    class View;
-}
-
 namespace Spoon
 {
-    void RenderViewport(sf::RenderTexture& target, sf::View& camera);
+    struct ViewportState
+    {
+        sf::Vector2f mouseDrag;
+        bool dragging = false;
+    };
+
+    struct Viewport
+    {
+        sf::RenderTexture target;
+        sf::View camera;
+        ViewportState state;
+    };
+
+    void RenderViewport(Viewport& viewport);
 }

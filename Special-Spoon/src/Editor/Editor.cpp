@@ -534,7 +534,7 @@ namespace Spoon
     {
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
         ImGui::Begin("Resource Loading Menu", &LoadResources);
 
         static std::string selTexture = "empty";
@@ -544,15 +544,15 @@ namespace Spoon
         float windowWidth = ImGui::GetContentRegionAvail().x;
         float listWidth = 150.0f;
 
-        if (ImGui::BeginTable("Resources Menu", 2, ImGuiTableFlags_Resizable))
+        if (ImGui::BeginTable("Resources Menu", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV))
         {
             ImGui::TableNextColumn();
             ShowTree(workingDir);
 
             ImGui::TableNextColumn();
-            if (ImGui::BeginChild("Textures", ImVec2(windowWidth/2, 250)))
+            if (ImGui::BeginChild("Textures", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
             {
-                if (ImGui::BeginListBox("##Loaded Textures", ImVec2(listWidth, 200)))
+                if (ImGui::BeginListBox("##Loaded Textures", ImVec2(listWidth, -1)))
                 {
                     for (const auto& [id, texture] : ResourceManager::Get().GetTextures())
                     {
@@ -572,14 +572,28 @@ namespace Spoon
                         ImGui::EndDragDropTarget();
                     }
                 }
-                ImGui::SameLine(); ImGui::Image(ResourceManager::Get().GetResource<sf::Texture>(selTexture), ImVec2(128, 128));
+                ImGui::SameLine();
+
+                // Get aspect ratio for texture preview
+                sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(selTexture);
+                ImVec2 space = ImGui::GetContentRegionAvail();
+                sf::Vector2u texSize = texture.getSize();
+                float aspect = (float)texSize.x / (float)texSize.y;
+                float displayWidth = space.x;
+                float displayHeight = space.x / aspect;
+                if (displayHeight > space.y) 
+                {
+                    displayHeight = space.y;
+                    displayWidth = space.y * aspect;
+                }
+
+                ImGui::Image(texture, ImVec2(displayWidth, displayHeight));
                 ImGui::EndChild();
             }
 
-            ImGui::Separator();
-            if (ImGui::BeginChild("Fonts", ImVec2(windowWidth/2, 250)))
+            if (ImGui::BeginChild("Fonts", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
             {
-                if (ImGui::BeginListBox("##Loaded Fonts", ImVec2(listWidth, 200)))
+                if (ImGui::BeginListBox("##Loaded Fonts", ImVec2(listWidth, -1)))
                 {
                     for (const auto& [id, font] : ResourceManager::Get().GetFonts())
                     {
@@ -593,27 +607,45 @@ namespace Spoon
                     {
                         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_FONT"))
                         {
-                            const AssetNode* assetPtr = (const AssetNode*)payload->Data;
+                            AssetNode* assetPtr = *(AssetNode**)payload->Data;
                             ResourceManager::Get().LoadResource<sf::Font>(assetPtr->m_Name, assetPtr->m_Path);
                         }
                         ImGui::EndDragDropTarget();
                     }
                 }
-                ImGui::SameLine(); ImGui::Image(ResourceManager::Get().GetFontPreview(selFont), ImVec2(128, 128));
+                ImGui::SameLine(); 
+
+                // Get aspect ratio for font preview
+                sf::Texture& texture = ResourceManager::Get().GetFontPreview(selFont);
+                ImVec2 space = ImGui::GetContentRegionAvail();
+                sf::Vector2u texSize = texture.getSize();
+                float aspect = (float)texSize.x / (float)texSize.y;
+                float displayWidth = space.x;
+                float displayHeight = space.x / aspect;
+                if (displayHeight > space.y) 
+                {
+                    displayHeight = space.y;
+                    displayWidth = space.y * aspect;
+                }
+                
+                ImGui::Image(texture, ImVec2(displayWidth, displayHeight));
                 ImGui::EndChild();
             }
 
-            ImGui::Separator();
-            if (ImGui::BeginListBox("Loaded Sounds", ImVec2(listWidth, 200)))
+            if (ImGui::BeginChild("Sounds", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
             {
-                for (const auto& [id, sound] : ResourceManager::Get().GetSounds())
+                if (ImGui::BeginListBox("Loaded Sounds", ImVec2(listWidth, -1)))
                 {
-                    //if (ImGui::Selectable(id.c_str()))
-                    //{
-                    //    //todo
-                    //}
+                    for (const auto& [id, sound] : ResourceManager::Get().GetSounds())
+                    {
+                        //if (ImGui::Selectable(id.c_str()))
+                        //{
+                        //    //todo
+                        //}
+                    }
+                    ImGui::EndListBox();
                 }
-                ImGui::EndListBox();
+                ImGui::EndChild();
             }
             ImGui::EndTable();
         }

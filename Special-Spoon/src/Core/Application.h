@@ -50,8 +50,7 @@ namespace Spoon
 		Editor 			  m_Editor;
 
 		AppSpecifications m_Specs;
-		sf::View 		  m_Camera;
-		sf::RenderTexture m_EditorViewport;
+		Viewport		  m_Viewport;
 		sf::RenderWindow  m_Window;
 		
 	};

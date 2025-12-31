@@ -15,26 +15,42 @@ namespace Spoon
 		{
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 			if (ImGui::Begin("Texture Rect Editor"))
 			{
                 static sf::IntRect rect;
 
                 if (ImGui::BeginChild("TRE Viewport", ImVec2(640, 640), ImGuiChildFlags_Borders))
                 {
-                    RenderViewport(m_Viewport, m_Camera);
+                    RenderViewport(m_Viewport);
 
                     static sf::Vector2f drag;
                     static bool dragging = false;
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsWindowHovered())
+
+                    ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+
+                    sf::RectangleShape rectPreview;
+                    rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
+                    rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
+                    rectPreview.setFillColor(sf::Color::Transparent);
+                    rectPreview.setOutlineColor(sf::Color::Red);
+                    rectPreview.setOutlineThickness(1.0);
+
+                    m_Viewport.target.clear(sf::Color(50, 50, 50));
+                    m_Viewport.target.draw(sf::Sprite(comp.m_Sprite.getTexture()));
+                    m_Viewport.target.draw(rectPreview);
+                    m_Viewport.target.display();
+
+                    ImGui::Image(m_Viewport.target);
+
+                    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
                     {
-                        ImVec2 viewportPos = ImGui::GetCursorScreenPos();
                         ImVec2 mousePos = ImGui::GetIO().MousePos;
                         sf::Vector2i relativeMouse(
                             static_cast<int>(mousePos.x - viewportPos.x),
                             static_cast<int>(mousePos.y - viewportPos.y)
                         );
-                        sf::Vector2f worldMouse = m_Viewport.mapPixelToCoords(relativeMouse);
+                        sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
                         if (!dragging)
                         {
                             drag = worldMouse;
@@ -50,24 +66,18 @@ namespace Spoon
                     }
                     else dragging = false;
 
-                    sf::RectangleShape rectPreview;
-                    rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
-                    rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
-                    rectPreview.setFillColor(sf::Color::Transparent);
-                    rectPreview.setOutlineColor(sf::Color::Red);
-                    rectPreview.setOutlineThickness(1.0);
-
-                    m_Viewport.clear(sf::Color(50, 50, 50));
-                    m_Viewport.draw(sf::Sprite(comp.m_Sprite.getTexture()));
-                    m_Viewport.draw(rectPreview);
-                    m_Viewport.display();
-
-                    ImGui::Image(m_Viewport);
                     ImGui::EndChild();
                 }
                 if (ImGui::Button("Confirm"))
                 {
                     comp.SetTextureRect(rect);
+                    rect = sf::IntRect();
+                    comp.ToggleGizmo();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    rect = sf::IntRect();
                     comp.ToggleGizmo();
                 }
             }
@@ -75,7 +85,6 @@ namespace Spoon
 		}
 
 	private:
-		sf::RenderTexture m_Viewport;
-		sf::View m_Camera;
+		Viewport m_Viewport;
 	};
 }

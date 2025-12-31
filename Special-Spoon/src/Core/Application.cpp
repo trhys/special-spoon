@@ -32,7 +32,7 @@ namespace Spoon
             ImGuiIO& io = ImGui::GetIO();
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
 
-            m_EditorViewport = sf::RenderTexture({1280, 720});
+            m_Viewport.target = sf::RenderTexture({1280, 720});
         }
         m_SceneManager.LoadManifest(m_Specs.dataDir.string());
     }
@@ -99,7 +99,7 @@ namespace Spoon
         m_EntityManager.ClearArrays();
         m_EntityManager.ClearActionsBuffer();
         ResourceManager::Get().ClearAllResources();
-        m_EditorViewport = sf::RenderTexture();
+        m_Viewport.target = sf::RenderTexture();
         (void)m_Window.setActive(false);
         if(m_Window.isOpen())
             m_Window.close();
@@ -122,7 +122,7 @@ namespace Spoon
                         static_cast<float>(mousePos.x) - viewportPos.x,
                         static_cast<float>(mousePos.y) - viewportPos.y
                     };
-                    sf::Vector2f worldPos = m_EditorViewport.mapPixelToCoords(sf::Vector2i(relativePos));
+                    sf::Vector2f worldPos = m_Viewport.target.mapPixelToCoords(sf::Vector2i(relativePos));
                     if (!dragging)
                     {
                         drag = {
@@ -210,16 +210,16 @@ namespace Spoon
             {
                 ImGui::Begin("Viewport");
 
-                RenderViewport(m_EditorViewport, m_Camera);
+                RenderViewport(m_Viewport);
 
                 HandleEditorGizmos();
 
                 // Draw to viewport
-                m_EditorViewport.clear();
-                m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
-                m_EditorViewport.display();
+                m_Viewport.target.clear();
+                m_Renderer.Render(m_Viewport.target, states, m_EntityManager);
+                m_Viewport.target.display();
 
-                ImGui::Image(m_EditorViewport);
+                ImGui::Image(m_Viewport.target);
                 ImGui::End();
                 
                 m_Editor.Run(tick, m_EntityManager, m_SceneManager, m_SystemManager);
