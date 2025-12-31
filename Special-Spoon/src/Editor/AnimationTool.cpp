@@ -72,13 +72,8 @@ namespace Spoon
 
                 m_Viewport.clear(sf::Color(50, 50, 50));
                 previewSprite.CenterOrigin();
-                try {
-                    m_Viewport.draw(previewSprite.m_Sprite);
-                    m_Viewport.display();
-                }
-                catch(const std::exception& e) {
-                    Reset();
-                }
+                m_Viewport.draw(previewSprite.m_Sprite);
+                m_Viewport.display();
                 ImGui::Image(m_Viewport);
                 ImGui::EndChild();
             }
@@ -107,6 +102,13 @@ namespace Spoon
             SpriteCords& sc = currentData->spriteCords[0];
             previewSprite.SetTextureRect(sf::IntRect({ sc.x, sc.y }, { sc.width, sc.height }));
             previewSprite.CenterOrigin();
+        }
+        else
+        {
+            previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
+            previewSprite.m_Sprite.setPosition(m_Camera.getCenter());
+            editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
+            editorSprite.m_Sprite.setPosition(m_EditorCamera.getCenter());
         }
         m_Playback = autoPlayEnabled;
     }
@@ -182,9 +184,9 @@ namespace Spoon
             ImGui::BeginDisabled(!bufferValid);
             if (ImGui::Button("Confirm"))
             {
-                previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID));
+                previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
                 previewSprite.m_Sprite.setPosition(m_Camera.getCenter());
-                editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID));
+                editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
                 editorSprite.m_Sprite.setPosition(m_EditorCamera.getCenter());
 
                 AnimationData data;
@@ -216,49 +218,54 @@ namespace Spoon
     {
         if (ImGui::Begin("Edit Tool", &editTool))
         {
-            RenderViewport(m_EditorTool, m_EditorCamera);
-            static sf::IntRect rect;
-            static sf::Vector2f drag;
-            static bool dragging = false;
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsWindowHovered())
+            if (ImGui::BeginChild("##Viewport", ImVec2(0, 600), ImGuiChildFlags_Borders))
             {
+                RenderViewport(m_EditorTool, m_EditorCamera);
+                static sf::IntRect rect;
+                static sf::Vector2f drag;
+                static bool dragging = false;
+
                 ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-                ImVec2 mousePos = ImGui::GetIO().MousePos;
-                sf::Vector2i relativeMouse(
-                    static_cast<int>(mousePos.x - viewportPos.x),
-                    static_cast<int>(mousePos.y - viewportPos.y)
-                );
-                sf::Vector2f worldMouse = m_EditorTool.mapPixelToCoords(relativeMouse);
-                if (!dragging)
+                ImGui::Image(m_EditorTool);
+
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
                 {
-                    drag = worldMouse;
-                    dragging = true;
+                    ImVec2 mousePos = ImGui::GetIO().MousePos;
+                    sf::Vector2i relativeMouse(
+                        static_cast<int>(mousePos.x - viewportPos.x),
+                        static_cast<int>(mousePos.y - viewportPos.y)
+                    );
+                    sf::Vector2f worldMouse = m_EditorTool.mapPixelToCoords(relativeMouse);
+                    if (!dragging)
+                    {
+                        drag = worldMouse;
+                        dragging = true;
+                    }
+                    if (dragging)
+                    {
+                        rect.position.x = std::min(drag.x, worldMouse.x);
+                        rect.position.y = std::min(drag.y, worldMouse.y);
+                        rect.size.x = std::abs(worldMouse.x - drag.x);
+                        rect.size.y = std::abs(worldMouse.y - drag.y);
+                    }
                 }
-                if (dragging)
-                {
-                    rect.position.x = std::min(drag.x, worldMouse.x);
-                    rect.position.y = std::min(drag.y, worldMouse.y);
-                    rect.size.x = std::abs(worldMouse.x - drag.x);
-                    rect.size.y = std::abs(worldMouse.y - drag.y);
-                }
+                else dragging = false;
+
+                sf::RectangleShape rectPreview;
+                rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
+                rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
+                rectPreview.setFillColor(sf::Color::Transparent);
+                rectPreview.setOutlineColor(sf::Color::Red);
+                rectPreview.setOutlineThickness(1.0);
+
+                m_EditorTool.clear(sf::Color(50, 50, 50));
+                editorSprite.CenterOrigin();
+                m_EditorTool.draw(editorSprite.m_Sprite);
+                m_EditorTool.draw(rectPreview);
+                m_EditorTool.display();
             }
-            else dragging = false;
 
-            sf::RectangleShape rectPreview;
-            rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
-            rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
-            rectPreview.setFillColor(sf::Color::Transparent);
-            rectPreview.setOutlineColor(sf::Color::Red);
-            rectPreview.setOutlineThickness(1.0);
-
-            m_EditorTool.clear(sf::Color(50, 50, 50));
-            editorSprite.CenterOrigin();
-            m_EditorTool.draw(editorSprite.m_Sprite);
-            m_EditorTool.draw(rectPreview);
-            m_EditorTool.display();
-
-            ImGui::Image(m_EditorTool);
-
+            ImGui::Separator();
             if (ImGui::Button("Add Frame"))
             {
                 SpriteCords cords(
@@ -306,9 +313,4 @@ namespace Spoon
     }
 
     void AnimationTool::Shutdown() { delete this; }
-
-    void AnimationTool::Reset()
-    {
-        previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
-    }
 }
