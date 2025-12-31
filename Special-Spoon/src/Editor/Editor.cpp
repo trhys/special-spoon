@@ -566,7 +566,7 @@ namespace Spoon
                     {
                         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_TEXTURE"))
                         {
-                            const AssetNode* assetPtr = (const AssetNode*)payload->Data;
+                            AssetNode* assetPtr = *(AssetNode**)payload->Data;
                             ResourceManager::Get().LoadResource<sf::Texture>(assetPtr->m_Name, assetPtr->m_Path);
                         }
                         ImGui::EndDragDropTarget();

@@ -72,9 +72,13 @@ namespace Spoon
 
                 m_Viewport.clear(sf::Color(50, 50, 50));
                 previewSprite.CenterOrigin();
-                m_Viewport.draw(previewSprite.m_Sprite);
-                m_Viewport.display();
-
+                try {
+                    m_Viewport.draw(previewSprite.m_Sprite);
+                    m_Viewport.display();
+                }
+                catch(const std::exception& e) {
+                    Reset();
+                }
                 ImGui::Image(m_Viewport);
                 ImGui::EndChild();
             }
@@ -112,7 +116,7 @@ namespace Spoon
         // This block is pretty much completely copy/pasted from the renderer with
         // just a few unnecessary lines cut out 
 
-        if(currentData != nullptr && !isFinished)
+        if(currentData != nullptr && !isFinished && !currentData->spriteCords.empty())
         {
             elapsedTime += tick.asSeconds();
             while(elapsedTime >= currentData->frameRate)
@@ -144,7 +148,7 @@ namespace Spoon
         if (!ImGui::IsPopupOpen(selectorPopup))
             ImGui::OpenPopup(selectorPopup);
 
-        static char* newAnimDatabuf;
+        static char newAnimDatabuf[64];
 
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -302,4 +306,9 @@ namespace Spoon
     }
 
     void AnimationTool::Shutdown() { delete this; }
+
+    void AnimationTool::Reset()
+    {
+        previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
+    }
 }

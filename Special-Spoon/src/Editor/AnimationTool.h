@@ -21,6 +21,7 @@ namespace Spoon
         bool IsOpen() { return m_isOpen; }
 
         void Shutdown();
+        void Reset();
 
         void CreateNew();
         void EditTool();
