@@ -224,7 +224,7 @@ namespace Spoon
             LoadArray<FadeComp>("Fade");
             LoadArray<AnimationComp>("Animation");
             LoadArray<StateActionComp>("StateAction");
-            LoadArray<RenderLayer>("Layer");
+            LoadArray<RenderLayer>("RenderLayer");
         }
     };
 }

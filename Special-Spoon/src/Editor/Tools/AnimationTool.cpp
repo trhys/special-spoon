@@ -6,6 +6,9 @@ namespace Spoon
     {
         static bool OpenAnimation = false;
 
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
         if (ImGui::Begin("Animation Tool", &m_isOpen, ImGuiWindowFlags_MenuBar))
         {
             if (ImGui::BeginMenuBar())
@@ -63,22 +66,125 @@ namespace Spoon
                 if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
                 ImGui::EndPopup();
             }
-
-            if (ImGui::BeginChild("AT Viewport", ImVec2(640, 640), ImGuiChildFlags_Borders))
+            if (ImGui::BeginTable("##animtool", 2, ImGuiTableFlags_BordersV))
             {
-                RenderViewport(m_MainVP);
-                if (m_Playback) Animate(tick);
+                ImGui::TableNextColumn();
+                if (ImGui::BeginChild("AT Viewport", ImVec2(640, 640), ImGuiChildFlags_Borders))
+                {
+                    RenderViewport(m_MainVP);
+                    if (m_Playback) Animate(tick);
+                    else
+                    {
+                        SpriteCords& sc = currentData->spriteCords[currentFrame];
+                        previewSprite.SetTextureRect(sf::IntRect({ sc.x, sc.y }, { sc.width, sc.height }));
+                    }
+                    m_MainVP.target.clear(sf::Color(50, 50, 50));
+                    previewSprite.CenterOrigin();
+                    m_MainVP.target.draw(previewSprite.m_Sprite);
+                    m_MainVP.target.display();
+                    ImGui::Image(m_MainVP.target);
+                    ImGui::EndChild();
+                }
+                ImGui::Checkbox("Loop Animation", &m_Looping);
 
-                m_MainVP.target.clear(sf::Color(50, 50, 50));
-                previewSprite.CenterOrigin();
-                m_MainVP.target.draw(previewSprite.m_Sprite);
-                m_MainVP.target.display();
-                ImGui::Image(m_MainVP.target);
-                ImGui::EndChild();
+                ImGui::TableNextColumn();
+                if (currentData)
+                {
+                    if (ImGui::BeginChild("##Viewport", ImVec2(0, 600), ImGuiChildFlags_Borders))
+                    {
+                        RenderViewport(m_EditorVP);
+
+                        static sf::Vector2f drag;
+                        static bool dragging = false;
+
+                        ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+
+                        sf::RectangleShape rectPreview;
+                        rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
+                        rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
+                        rectPreview.setFillColor(sf::Color::Transparent);
+                        rectPreview.setOutlineColor(sf::Color::Red);
+                        rectPreview.setOutlineThickness(1.0);
+
+                        m_EditorVP.target.clear(sf::Color(50, 50, 50));
+                        editorSprite.CenterOrigin();
+                        m_EditorVP.target.draw(editorSprite.m_Sprite);
+                        m_EditorVP.target.draw(rectPreview);
+                        m_EditorVP.target.display();
+                        ImGui::Image(m_EditorVP.target);
+
+                        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
+                        {
+                            ImVec2 mousePos = ImGui::GetIO().MousePos;
+                            sf::Vector2i relativeMouse(
+                                static_cast<int>(mousePos.x - viewportPos.x),
+                                static_cast<int>(mousePos.y - viewportPos.y)
+                            );
+                            sf::Vector2f worldMouse = m_EditorVP.target.mapPixelToCoords(relativeMouse);
+                            if (!dragging)
+                            {
+                                drag = worldMouse;
+                                dragging = true;
+                            }
+                            if (dragging)
+                            {
+                                rect.position.x = std::min(drag.x, worldMouse.x);
+                                rect.position.y = std::min(drag.y, worldMouse.y);
+                                rect.size.x = std::abs(worldMouse.x - drag.x);
+                                rect.size.y = std::abs(worldMouse.y - drag.y);
+                            }
+                        }
+                        else dragging = false;
+
+
+                        ImGui::EndChild();
+                    }
+
+                    ImGui::Separator();
+                    if (ImGui::Button("Add Frame"))
+                    {
+                        SpriteCords cords(
+                            rect.position.x,
+                            rect.position.y,
+                            rect.size.x,
+                            rect.size.y
+                        );
+                        currentData->spriteCords.push_back(cords);
+                    }
+                    ImGui::SameLine();
+                    ImGui::BeginDisabled(currentData->spriteCords.empty());
+                    if (ImGui::Button("Update Frame"))
+                    {
+                        SpriteCords cords(
+                            rect.position.x,
+                            rect.position.y,
+                            rect.size.x,
+                            rect.size.y
+                        );
+                        currentData->spriteCords[frameIndex] = cords;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Delete Frame"))
+                    {
+                        auto& cords = currentData->spriteCords;
+                        cords.erase(cords.begin() + frameIndex);
+                        if (currentFrame >= (int)cords.size() && !cords.empty())
+                        {
+                            currentFrame = (int)cords.size() - 1;
+                        }
+                        frameIndex = currentFrame;
+                    }
+
+                    if (!currentData->spriteCords.empty())
+                        if (ImGui::SliderInt("Frame index", &frameIndex, 0, (int)currentData->spriteCords.size() - 1))
+                        {
+                            m_Playback = false;
+                            currentFrame = frameIndex;
+                        }
+                    ImGui::EndDisabled();
+                }
+                ImGui::EndTable();
             }
-            ImGui::Checkbox("Loop Animation", &m_Looping);
-            ImGui::SameLine();
-            if (ImGui::Button("Edit")) editTool = true;
         }
         ImGui::End();
     }
@@ -93,14 +199,17 @@ namespace Spoon
         m_isOpen = true;
         rect = sf::IntRect();
 
-        if (currentData)
+        if (currentData && ResourceManager::Get().GetTextures().count(data->textureID))
         {
             previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID));
             previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
             editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID));
             editorSprite.m_Sprite.setPosition(m_EditorVP.camera.getCenter());
-            SpriteCords& sc = currentData->spriteCords[0];
-            previewSprite.SetTextureRect(sf::IntRect({ sc.x, sc.y }, { sc.width, sc.height }));
+            if (!currentData->spriteCords.empty())
+            {
+                SpriteCords& sc = currentData->spriteCords[0];
+                previewSprite.SetTextureRect(sf::IntRect({ sc.x, sc.y }, { sc.width, sc.height }));
+            }
             previewSprite.CenterOrigin();
         }
         else
@@ -197,6 +306,10 @@ namespace Spoon
             if (ImGui::Button("Confirm"))
             {
                 std::string selectedID = selectedNode->m_Name;
+                if (!ResourceManager::Get().GetTextures().count(selectedID))
+                {
+                    ResourceManager::Get().LoadResource<sf::Texture>(selectedNode->m_Name, selectedNode->m_Path);
+                }
                 previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
                 previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
                 editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
@@ -230,103 +343,12 @@ namespace Spoon
 
     void AnimationTool::EditTool()
     {
-        if (ImGui::Begin("Edit Tool", &editTool))
+        /*if (ImGui::Begin("Edit Tool", &editTool))
         {
-            if (ImGui::BeginChild("##Viewport", ImVec2(0, 600), ImGuiChildFlags_Borders))
-            {
-                RenderViewport(m_EditorVP);
-                
-                static sf::Vector2f drag;
-                static bool dragging = false;
-
-                ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-
-                sf::RectangleShape rectPreview;
-                rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
-                rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
-                rectPreview.setFillColor(sf::Color::Transparent);
-                rectPreview.setOutlineColor(sf::Color::Red);
-                rectPreview.setOutlineThickness(1.0);
-
-                m_EditorVP.target.clear(sf::Color(50, 50, 50));
-                editorSprite.CenterOrigin();
-                m_EditorVP.target.draw(editorSprite.m_Sprite);
-                m_EditorVP.target.draw(rectPreview);
-                m_EditorVP.target.display();
-                ImGui::Image(m_EditorVP.target);
-                
-                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
-                {
-                    ImVec2 mousePos = ImGui::GetIO().MousePos;
-                    sf::Vector2i relativeMouse(
-                        static_cast<int>(mousePos.x - viewportPos.x),
-                        static_cast<int>(mousePos.y - viewportPos.y)
-                    );
-                    sf::Vector2f worldMouse = m_EditorVP.target.mapPixelToCoords(relativeMouse);
-                    if (!dragging)
-                    {
-                        drag = worldMouse;
-                        dragging = true;
-                    }
-                    if (dragging)
-                    {
-                        rect.position.x = std::min(drag.x, worldMouse.x);
-                        rect.position.y = std::min(drag.y, worldMouse.y);
-                        rect.size.x = std::abs(worldMouse.x - drag.x);
-                        rect.size.y = std::abs(worldMouse.y - drag.y);
-                    }
-                }
-                else dragging = false;
-
-                
-                ImGui::EndChild();
-            }
-
-            ImGui::Separator();
-            if (ImGui::Button("Add Frame"))
-            {
-                SpriteCords cords(
-                    rect.position.x,
-                    rect.position.y,
-                    rect.size.x,
-                    rect.size.y
-                );
-                currentData->spriteCords.push_back(cords);
-            }
-            ImGui::SameLine();
-            ImGui::BeginDisabled(currentData->spriteCords.empty());
-            if (ImGui::Button("Update Frame"))
-            {
-                SpriteCords cords(
-                    rect.position.x,
-                    rect.position.y,
-                    rect.size.x,
-                    rect.size.y
-                );
-                currentData->spriteCords[frameIndex] = cords;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Delete Frame"))
-            {
-                auto& cords = currentData->spriteCords;
-                cords.erase(cords.begin() + currentFrame);
-                if (frameIndex >= (int)cords.size() && !cords.empty())
-                {
-                    frameIndex = (int)cords.size() - 1;
-                }
-                currentFrame = frameIndex;
-            }
-
-            if (!currentData->spriteCords.empty()) 
-                if (ImGui::SliderInt("Frame index", &frameIndex, 0, (int)currentData->spriteCords.size() - 1))
-                {
-                    m_Playback = false;
-                    currentFrame = frameIndex;
-                }
-            ImGui::EndDisabled();
+            
 
             ImGui::End();
-        }
+        }*/
     }
 
     void AnimationTool::Shutdown() { delete this; }

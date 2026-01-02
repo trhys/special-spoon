@@ -77,7 +77,7 @@ namespace Spoon
             if (ImGui::Button("Submit"))
             {
                 UUID id = e_Manager.CreateEntity(newEntityBuf);
-                if (selectedBP->GetDisplayName() != "None")
+                if (selectedBP)
                 {
                     for (const auto& compID : selectedBP->GetComps())
                     {
@@ -186,11 +186,15 @@ namespace Spoon
             if (ImGui::Button("Submit"))
             {
                 const auto& arrays = manager.GetAllArrays();
-                for (const auto& [type, selected] : compSelections)
+                for (const auto& [type, array] : arrays)
                 {
-                    bool alreadyExists = arrays.at(type)->HasEntity(id);
-                    if(selected && !alreadyExists) manager.GetCreators().at(type)(id);
+                    if (compSelections[array->GetDisplayName()])
+                    {
+                        bool alreadyExists = array->HasEntity(id);
+                        if (!alreadyExists) manager.GetCreators().at(array->GetDisplayName())(id);
+                    }
                 }
+                
                 AddingComponent = false;
                 ImGui::CloseCurrentPopup();
             }
