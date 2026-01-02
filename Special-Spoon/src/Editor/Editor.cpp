@@ -8,12 +8,9 @@
 #include "Utils/EditorSettings.h"
 #include "Utils/Helpmarker.h"
 
-#include "Core/EntityManager.h"
+#include "Core/Application.h"
 #include "Core/ResourceManager/ResourceManager.h"
-#include "Core/SceneManager.h"
 #include "Core/Serialization/Serializer.h"
-
-#include "System/SystemManager.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
@@ -37,11 +34,22 @@ namespace Spoon
 
         if (ImGui::BeginMainMenuBar())
         {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New Project")) ImGui::SetTooltip("todo");
+                if (ImGui::MenuItem("Open Project")) ImGui::SetTooltip("todo");
+                if (ImGui::MenuItem("Save Project")) ImGui::SetTooltip("todo");
+                ImGui::Separator();
+                if (ImGui::MenuItem("Exit")) Application::Get().Close();
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Scene Manager"))
             {
-                if (ImGui::MenuItem("New")) NewScene = true;
-                if (ImGui::MenuItem("Load")) LoadScene = true;
-                if (ImGui::MenuItem("Save")) Serialize(*m_ActiveScene, e_Manager, sys_Manager);
+                if (ImGui::MenuItem("New Scene")) NewScene = true;
+                if (ImGui::MenuItem("Open Scene")) LoadScene = true;
+                if (ImGui::MenuItem("Save Scene")) ImGui::OpenPopup("Prompt Serialize");
+                ImGui::Separator();
                 if (ImGui::MenuItem("Scene Manifest")) ViewSceneManifest = !ViewSceneManifest;
                 ImGui::EndMenu();
             }
@@ -115,10 +123,37 @@ namespace Spoon
 
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
+
+        if (ImGui::BeginPopupModal("Prompt Serialize", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        { 
+            ImGui::Text("Do you want to save the active scene?\n This will overwrite the existing scene file.");
+            ImGui::Separator();
+
+            if (ImGui::Button("Yes"))
+            {
+                if (m_ActiveScene)
+                {
+                    Serialize(*m_ActiveScene, e_Manager, sys_Manager);
+                }
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)
     {
         m_TextureRectTool.Run(comp);
+    }
+
+    void Editor::Shutdown()
+    {
+        m_AnimationTool.Shutdown();
+        m_TextureRectTool.Shutdown();
     }
 }

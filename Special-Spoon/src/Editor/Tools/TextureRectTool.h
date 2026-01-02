@@ -83,6 +83,11 @@ namespace Spoon
             ImGui::End();
 		}
 
+        void Shutdown()
+        {
+            m_Viewport.target = sf::RenderTexture();
+        }
+
 	private:
 		Viewport m_Viewport;
 	};

@@ -38,6 +38,7 @@ namespace Spoon
 		static Application& Get() { return *s_Instance; }
 
 		EntityManager& GetEntityManager() { return m_EntityManager; }
+		SystemManager& GetSystemManager() { return m_SystemManager; }
 
 	private:
 		static Application* s_Instance;

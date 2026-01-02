@@ -2,10 +2,8 @@
 #include "Editor/Utils/EditorSettings.h"
 #include "Editor/Utils/Helpmarker.h"
 
-#include "Core/SceneManager.h"
-#include "Core/EntityManager.h"
-
-#include "System/SystemManager.h"
+#include "Core/Application.h"
+#include "Core/Serialization/Serializer.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
@@ -14,16 +12,57 @@ namespace Spoon
 {
     void NewSceneMenu(SceneManager& s_Manager, Editor* editor)
     {
+        if (editor->GetActiveScene())
+        {
+            if (!ImGui::IsPopupOpen("Prompt Save Before New Scene"))
+                ImGui::OpenPopup("Prompt Save Before New Scene");
+        }
+        else
+        {
+            if (!ImGui::IsPopupOpen("New Scene"))
+                ImGui::OpenPopup("New Scene");
+        }
+
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-        const char* popupId = "New Scene";
-        static char newSceneBuf[64] = {0};
-        if (!ImGui::IsPopupOpen(popupId))
-            ImGui::OpenPopup(popupId);
+        // Prompt to save current scene before creating new scene
+        if (ImGui::BeginPopupModal("Prompt Save Before New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Do you want to save the active scene before creating a new scene?\n"
+                        "This will overwrite any existing scene file.");
+            ImGui::Separator();
+            if (ImGui::Button("Save and Continue"))
+            {
+                if (editor->GetActiveScene())
+                {
+                    Serialize(*editor->GetActiveScene(), Application::Get().GetEntityManager(), Application::Get().GetSystemManager());
+                    editor->SetActiveScene(nullptr);
+                }
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
 
-        if(ImGui::BeginPopupModal(popupId, &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+            if (ImGui::Button("Continue Without Saving"))
+            {
+                editor->SetActiveScene(nullptr);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("All unsaved changes will be lost!");
+            ImGui::EndPopup();
+        }
+
+        // Create new scene
+        static char newSceneBuf[64] = {0};
+        if(ImGui::BeginPopupModal("New Scene", &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Enter scene ID: "); ImGui::SameLine();
 
@@ -63,7 +102,7 @@ namespace Spoon
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-        ImGui::Begin("Load Scene", &editor->LoadScene);
+        ImGui::Begin("Load Scene", &editor->LoadScene, ImGuiWindowFlags_AlwaysAutoResize);
         const auto& scenes = s_Manager.GetManifest();
         static std::string selectedScene = "";
 
@@ -104,7 +143,7 @@ namespace Spoon
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-        ImGui::Begin("Scene Manifest", &editor->ViewSceneManifest);
+        ImGui::Begin("Scene Manifest", &editor->ViewSceneManifest, ImGuiWindowFlags_AlwaysAutoResize);
         const auto& scenes = s_Manager.GetManifest();
 
         if (ImGui::BeginListBox("Scene Manifest"))
@@ -133,6 +172,7 @@ namespace Spoon
             }
         }
         ImGui::SameLine(); HelpMarker("Open delete mode to select scenes to delete from the manifest");
+
         if (ImGui::BeginPopupModal("Confirm Delete Scenes", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Are you sure you want to delete the selected scenes?\nThis action cannot be undone."

@@ -159,14 +159,15 @@ namespace Spoon
             return m_FontPreviews.at("Default");
     }
 
-    void ResourceManager::ClearAllResources()
+    void ResourceManager::ClearAllResources(bool clearDefaults)
     {
         m_Textures.clear();
         m_Fonts.clear();
         m_Animations.clear();
         m_SoundBuffers.clear();
 
-        InitDefaultAssets();
+        if (!clearDefaults)
+            InitDefaultAssets();
     }
 
     void ResourceManager::PopulateLib(AssetNode* node, std::vector<AssetNode*>& library, const std::string& type)

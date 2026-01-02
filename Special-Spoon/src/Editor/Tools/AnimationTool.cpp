@@ -370,5 +370,10 @@ namespace Spoon
         }
     }
 
-    void AnimationTool::Shutdown() { delete this; }
+    void AnimationTool::Shutdown()
+    {
+        currentData = nullptr;
+        m_MainVP.target = sf::RenderTexture();
+        m_EditorVP.target = sf::RenderTexture();
+    }
 }

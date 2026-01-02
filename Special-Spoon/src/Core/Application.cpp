@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "ResourceManager/ResourceManager.h"
+#include "Serialization/Serializer.h"
 
 #include "Editor/Utils/Viewport.h"
 
@@ -53,6 +54,14 @@ namespace Spoon
                 ImGui::Text("Are you sure you want to exit?");
                 ImGui::Separator();
 
+                if (ImGui::Button("Save and Exit"))
+                {
+                    if (m_Editor.GetActiveScene())
+                    {
+                        Serialize(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
+                        SerializeManifest(m_SceneManager);
+                    }
+                }
                 if(ImGui::Button("Yes")) 
                 { 
                     m_IsRunning = false;
@@ -96,11 +105,16 @@ namespace Spoon
 
     void Application::Shutdown()
     {
-        m_EntityManager.ClearEntities();
-        m_EntityManager.ClearArrays();
-        m_EntityManager.ClearActionsBuffer();
-        ResourceManager::Get().ClearAllResources();
+        m_EntityManager.Shutdown();
+        m_Editor.Shutdown();
+
+        if(m_Specs.editorEnabled) 
+            ImGui::SFML::Shutdown(m_Window);
+
         m_Viewport.target = sf::RenderTexture();
+
+        ResourceManager::Get().ClearAllResources(true);
+
         (void)m_Window.setActive(false);
         if(m_Window.isOpen())
             m_Window.close();
@@ -233,7 +247,6 @@ namespace Spoon
 
             m_Window.display();
         }
-        if(m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
         Shutdown();
     }
 }

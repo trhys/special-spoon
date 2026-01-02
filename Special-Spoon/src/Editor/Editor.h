@@ -23,9 +23,11 @@ namespace Spoon
 
         void SetActiveScene(SceneData* scene) { m_ActiveScene = scene; }
         void SetWorkingDir(AssetNode* dir) { workingDir = dir; }
-        
+
         SceneData* GetActiveScene() { return m_ActiveScene; }
         AssetNode* GetWorkingDir() { return workingDir; }
+
+        void Shutdown();
 
         // Menu flags
         bool NewScene = false;

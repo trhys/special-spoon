@@ -27,6 +27,7 @@ namespace Spoon
         // =====================================================================================
         void LoadManifest(std::string manifestPath);
         const std::unordered_map<std::string, SceneData>& GetManifest();
+        const std::filesystem::path& GetManifestPath() { return m_ManifestPath; }
 
         // Scene data is deserialized/serialized via Serializer.h
         // Load scene deserializes scene data into EntityManager and SystemManager

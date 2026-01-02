@@ -21,5 +21,6 @@ target_sources(Special-Spoon
         Serialization/SystemLoaders.h
         Serialization/SystemLoaders.cpp
         Serialization/Serializer.h
+        Serialization/Serializer.cpp
         Serialization/JsonTypeDefs.h
 )

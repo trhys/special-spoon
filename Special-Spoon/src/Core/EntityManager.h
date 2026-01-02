@@ -198,6 +198,15 @@ namespace Spoon
             m_Entities.clear();
         }
 
+        void Shutdown()
+        {
+            m_Arrays.clear();
+            m_Entities.clear();
+            m_ActionsBuffer.clear();
+            m_RecycledIds.clear();
+            m_IdCounter = 0;
+        }
+
         std::unordered_map<UUID, std::string>& GetEntities() { return m_Entities; }
 
     private:
