@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Menus/SystemsMenu.h"
 #include "Tools/AnimationTool.h"
 #include "Tools/TextureRectTool.h"
 
@@ -17,31 +16,25 @@ namespace Spoon
     class Editor
     {
     public:
-        Editor() {}
-        ~Editor() {}
-
         void Stop();
         bool Play();
-
-        void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);
-
-        void ViewResourcesMenu();
-        void LoadResourcesMenu();
-        void ViewAssets(AssetNode* node);
-        void ShowTree(AssetNode* node);
-        
+        void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);       
         void EditTextureRect(SpriteComp& comp);
-        
-        SystemsMenu m_SystemsMenu;
 
         void SetActiveScene(SceneData* scene) { m_ActiveScene = scene; }
+        void SetWorkingDir(AssetNode* dir) { workingDir = dir; }
+        
+        SceneData* GetActiveScene() { return m_ActiveScene; }
+        AssetNode* GetWorkingDir() { return workingDir; }
 
         // Menu flags
         bool NewScene = false;
         bool LoadScene = false;
+        bool ViewSceneManifest = false;
         bool ViewEntities = true;
         bool ViewResources = false;
         bool LoadResources = false;
+        bool ViewSystemsMenu = false;
 
     private:
         AssetNode* workingDir = nullptr;

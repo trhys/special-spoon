@@ -2,20 +2,9 @@
 
 namespace Spoon
 {
+    class Editor;
     class SystemManager;
 
-    class SystemsMenu
-    {
-    public:
-        SystemsMenu() {}
-        ~SystemsMenu() {}
-
-        void Open();
-        bool IsOpen();
-        void ReloadSystems();
-        void Update(SystemManager& manager);
-    private:
-        bool isOpen = false;
-        bool init = true;
-    };
+    void ReloadSystems();
+    void SystemsMenu(SystemManager& manager, Editor* editor);
 }

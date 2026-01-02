@@ -15,7 +15,6 @@ namespace Spoon
         EditorSettings& operator=(EditorSettings&&) = delete;
 
         bool compDelAskAgain = true;        // Ask before deleting component in entity inspector
-        bool autoPlayEnabled = true;        // Automatically play animation when loaded in animation tool
 
     private:
         EditorSettings() = default;

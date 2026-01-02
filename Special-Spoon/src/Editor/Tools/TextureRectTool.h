@@ -27,8 +27,6 @@ namespace Spoon
                     static sf::Vector2f drag;
                     static bool dragging = false;
 
-                    ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-
                     sf::RectangleShape rectPreview;
                     rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
                     rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
@@ -42,6 +40,7 @@ namespace Spoon
                     m_Viewport.target.display();
 
                     ImGui::Image(m_Viewport.target);
+                    ImVec2 viewportPos = ImGui::GetItemRectMin();
 
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
                     {

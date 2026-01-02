@@ -223,10 +223,7 @@ namespace Spoon
         LoadScene(id, eManager, sManager);
     }
 
-    const std::unordered_map<std::string, SceneData>& SceneManager::GetManifest()
-    {
-        return m_SceneManifest;
-    }
+    const std::unordered_map<std::string, SceneData>& SceneManager::GetManifest() { return m_SceneManifest; }
 
     SceneData* SceneManager::CreateScene(const std::string& id)
     {
@@ -286,5 +283,52 @@ namespace Spoon
         SS_DEBUG_LOG("Registered new scene --- ID: " + id)
 
         return &m_SceneManifest[newID];
+    }
+
+    void SceneManager::DeleteScene(const std::string& id)
+    {
+        m_SceneManifest.erase(id);
+        std::ifstream inFile(m_ManifestPath);
+        if(!inFile.is_open())
+        {
+            throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
+        }
+        json manifest = json::parse(inFile);
+        inFile.close();
+
+        auto& scenes = manifest["Scenes"];
+        scenes.erase(std::remove_if(scenes.begin(), scenes.end(),
+            [&id](const json& scene)
+            {
+                return scene["ID"].get<std::string>() == id;
+            }), scenes.end());
+
+        std::ofstream outFile(m_ManifestPath);
+        if(!outFile.is_open())
+        {
+            throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
+        }
+        outFile << manifest.dump(4);
+        outFile.close();
+
+        SS_DEBUG_LOG("Deleted scene from manifest --- ID: " + id)
+
+        std::ifstream dataFile((std::filesystem::path(m_DataDir) / "scene" / (id + "_data.json")).generic_string());
+        if(dataFile.is_open())
+        {
+            dataFile.close();
+            std::filesystem::remove((std::filesystem::path(m_DataDir) / "scene" / (id + "_data.json")));
+            SS_DEBUG_LOG("Deleted scene data file for scene --- ID: " + id)
+        }
+
+        std::ifstream resFile((std::filesystem::path(m_DataDir) / "scene" / (id + "_resources.json")).generic_string());
+        if(resFile.is_open())
+        {
+            resFile.close();
+            std::filesystem::remove((std::filesystem::path(m_DataDir) / "scene" / (id + "_resources.json")));
+            SS_DEBUG_LOG("Deleted scene resource file for scene --- ID: " + id)
+        }
+
+        SS_DEBUG_LOG("Deleted scene data/asset files --- ID: " + id)
     }
 }

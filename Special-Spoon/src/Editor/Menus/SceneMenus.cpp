@@ -93,4 +93,82 @@ namespace Spoon
         
         ImGui::End();
     }
+
+    void SceneManifestMenu(SceneManager& s_Manager, Editor* editor)
+    {
+        static bool deletingScenes = false;
+        static bool confirmDeleteScenes = false;
+        static std::unordered_map<std::string, bool> scenesToDelete;
+
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+        ImGui::Begin("Scene Manifest", &editor->ViewSceneManifest);
+        const auto& scenes = s_Manager.GetManifest();
+
+        if (ImGui::BeginListBox("Scene Manifest"))
+        {
+            int index = 0;
+            for (const auto& [name, sceneData] : scenes)
+            {
+                ImGui::Text("Scene #%d : %s", index, sceneData.ID.c_str());
+                if (deletingScenes)
+                {
+                    ImGui::SameLine();
+                    ImGui::Checkbox(("##delete" + sceneData.ID).c_str(), &scenesToDelete[sceneData.ID]);
+                }
+                index++;
+            }
+            ImGui::EndListBox();
+        }
+        if (ImGui::Button(deletingScenes ? "Confirm Delete" : "Delete Scenes"))
+        {
+            if (!deletingScenes)
+                deletingScenes = true;
+            else
+            {
+                confirmDeleteScenes = true;
+                ImGui::OpenPopup("Confirm Delete Scenes");
+            }
+        }
+        ImGui::SameLine(); HelpMarker("Open delete mode to select scenes to delete from the manifest");
+        if (ImGui::BeginPopupModal("Confirm Delete Scenes", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Are you sure you want to delete the selected scenes?\nThis action cannot be undone."
+                        "Scene data and resource files will be permanently removed from disk.");
+            ImGui::Separator();
+
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+            if (ImGui::Button("Yes", ImVec2(120, 0)))
+            {
+                auto activeScene = editor->GetActiveScene();
+                for (const auto& [sceneID, toDelete] : scenesToDelete)
+                {
+                    if (toDelete)
+                    {
+                        s_Manager.DeleteScene(sceneID);
+                        if (activeScene && activeScene->ID == sceneID)
+                            editor->SetActiveScene(nullptr);
+                    }
+                }
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::PopStyleColor();
+            
+            ImGui::SameLine();
+            if (ImGui::Button("No", ImVec2(120, 0)))
+            {
+                scenesToDelete.clear();
+                deletingScenes = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        if(ImGui::Button("Close"))
+            editor->ViewSceneManifest = false;
+
+        ImGui::End();
+    }
 }

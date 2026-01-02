@@ -24,7 +24,6 @@ namespace Spoon
         void Shutdown();
 
         void CreateNew();
-        void EditTool();
 
     private:
         AnimationData* currentData = nullptr;
@@ -36,7 +35,6 @@ namespace Spoon
         sf::IntRect rect;
         bool m_Looping = true;
         bool m_Playback = false;
-        bool autoPlayEnabled = true;
         int frameIndex = 0;
 
         // Animation Component pieces
@@ -47,6 +45,10 @@ namespace Spoon
         // Menu flags
         bool createModal = false;
         bool editTool = false;
+
+        // Settings
+        bool autoPlayEnabled = true;
+        bool showToolTips = true;
 
         Viewport m_MainVP;
         Viewport m_EditorVP;

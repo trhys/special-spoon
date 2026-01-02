@@ -23,6 +23,17 @@ namespace Spoon
                 if (ImGui::BeginMenu("Settings"))
                 {
                     ImGui::Checkbox("Autoplay animation", &autoPlayEnabled);
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) 
+                    {
+                        ImGui::SetTooltip("Checked if you want animations to automatically play when loaded");
+                    }
+
+                    ImGui::Checkbox("Show tooltips", &showToolTips);
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) 
+                    {
+                        ImGui::SetTooltip("Checked if you want to display tooltips when hovering");
+                    }
+
                     ImGui::EndMenu();
                 }
 
@@ -48,7 +59,6 @@ namespace Spoon
                 OpenAnimation = false;
             }
             if (createModal) CreateNew();
-            if (editTool) EditTool();
 
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -75,17 +85,22 @@ namespace Spoon
                     if (m_Playback) Animate(tick);
                     else
                     {
-                        SpriteCords& sc = currentData->spriteCords[currentFrame];
-                        previewSprite.SetTextureRect(sf::IntRect({ sc.x, sc.y }, { sc.width, sc.height }));
+                        if (!currentData->spriteCords.empty())
+                        {
+                            SpriteCords& sc = currentData->spriteCords[currentFrame];
+                            previewSprite.SetTextureRect(sf::IntRect({ sc.x, sc.y }, { sc.width, sc.height }));
+                        }
+                        else previewSprite.SetTextureRect(sf::IntRect());
+                        
                     }
                     m_MainVP.target.clear(sf::Color(50, 50, 50));
-                    previewSprite.CenterOrigin();
                     m_MainVP.target.draw(previewSprite.m_Sprite);
                     m_MainVP.target.display();
                     ImGui::Image(m_MainVP.target);
                     ImGui::EndChild();
                 }
                 ImGui::Checkbox("Loop Animation", &m_Looping);
+                ImGui::SameLine(); HelpMarker("Checked if you want the animation to continue playing when finished");
 
                 ImGui::TableNextColumn();
                 if (currentData)
@@ -97,8 +112,6 @@ namespace Spoon
                         static sf::Vector2f drag;
                         static bool dragging = false;
 
-                        ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-
                         sf::RectangleShape rectPreview;
                         rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
                         rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
@@ -107,12 +120,13 @@ namespace Spoon
                         rectPreview.setOutlineThickness(1.0);
 
                         m_EditorVP.target.clear(sf::Color(50, 50, 50));
-                        editorSprite.CenterOrigin();
                         m_EditorVP.target.draw(editorSprite.m_Sprite);
                         m_EditorVP.target.draw(rectPreview);
                         m_EditorVP.target.display();
-                        ImGui::Image(m_EditorVP.target);
 
+                        ImGui::Image(m_EditorVP.target);
+                        ImVec2 viewportPos = ImGui::GetItemRectMin();
+                        
                         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
                         {
                             ImVec2 mousePos = ImGui::GetIO().MousePos;
@@ -151,8 +165,12 @@ namespace Spoon
                         );
                         currentData->spriteCords.push_back(cords);
                     }
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips) 
+                        ImGui::SetTooltip("Adds a new frame from drawn preview rect. This is pushed to the back of the loop");
+
                     ImGui::SameLine();
                     ImGui::BeginDisabled(currentData->spriteCords.empty());
+
                     if (ImGui::Button("Update Frame"))
                     {
                         SpriteCords cords(
@@ -163,6 +181,9 @@ namespace Spoon
                         );
                         currentData->spriteCords[frameIndex] = cords;
                     }
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips) 
+                        ImGui::SetTooltip("Updates current selected frame index");
+
                     ImGui::SameLine();
                     if (ImGui::Button("Delete Frame"))
                     {
@@ -174,13 +195,21 @@ namespace Spoon
                         }
                         frameIndex = currentFrame;
                     }
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips) 
+                        ImGui::SetTooltip("Deletes current selected frame index");
 
-                    if (!currentData->spriteCords.empty())
-                        if (ImGui::SliderInt("Frame index", &frameIndex, 0, (int)currentData->spriteCords.size() - 1))
-                        {
-                            m_Playback = false;
-                            currentFrame = frameIndex;
-                        }
+                    if (ImGui::SliderInt("Frame index", &frameIndex, 0, (int)currentData->spriteCords.size() - 1))
+                    {
+                        m_Playback = false;
+                        currentFrame = frameIndex;
+                    }
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips) 
+                        ImGui::SetTooltip("Selects active frame. Modifying this will end playback");
+
+                    if (ImGui::InputFloat("Framerate", &currentData->frameRate, 0.01f, 1.0f)) {}
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips) 
+                        ImGui::SetTooltip("Updates the animation frame rate. Higher value slows the playback speed. Hold ctrl while incrementing to increase by 1");
+
                     ImGui::EndDisabled();
                 }
                 ImGui::EndTable();
@@ -339,16 +368,6 @@ namespace Spoon
             }
             ImGui::EndPopup();
         }
-    }
-
-    void AnimationTool::EditTool()
-    {
-        /*if (ImGui::Begin("Edit Tool", &editTool))
-        {
-            
-
-            ImGui::End();
-        }*/
     }
 
     void AnimationTool::Shutdown() { delete this; }

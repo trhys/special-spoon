@@ -1,24 +1,14 @@
 #include "SystemsMenu.h"
 #include "System/SystemManager.h"
+#include "Editor/Editor.h"
 
 namespace Spoon
 {
-    void SystemsMenu::Open()
-    {
-        isOpen = true;
-    }
+    static bool init = true;
 
-    bool SystemsMenu::IsOpen()
-    {
-        return isOpen;
-    }
+    void ReloadSystems() { init = true; }
 
-    void SystemsMenu::ReloadSystems()
-    {
-        init = true;
-    }
-
-    void SystemsMenu::Update(SystemManager& manager)
+    void SystemsMenu(SystemManager& manager, Editor* editor)
     {
         static std::unordered_map<std::string, bool> addedSystems;
         static bool editedSystems = false;
@@ -37,7 +27,7 @@ namespace Spoon
             init = false;
         }
 
-        ImGui::Begin("System Manager", &isOpen, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("System Manager", &editor->ViewSystemsMenu, ImGuiWindowFlags_MenuBar);
         if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("Options"))
