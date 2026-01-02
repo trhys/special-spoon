@@ -47,7 +47,7 @@ namespace Spoon
     {
     public:
         ResourceManager() { InitDefaultAssets(); }
-        ~ResourceManager() { ClearAllResources(); }
+        ~ResourceManager() { ClearAllResources(true); }
 
         static ResourceManager& Get();
 

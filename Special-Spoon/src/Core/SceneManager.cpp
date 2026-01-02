@@ -50,8 +50,8 @@ namespace Spoon
 
                 SceneData paths;
                 paths.ID = scene.value("ID", "UnknownID");
-                paths.ResourceFiles = scene.value("Resources", "");
-                paths.DataFiles = scene.value("Data", "");
+                paths.ResourceFiles = scene.value("ResourceFiles", "");
+                paths.DataFiles = scene.value("DataFiles", "");
                 m_SceneManifest[paths.ID] = paths;
                 SS_DEBUG_LOG("Registered scene in manifest: " + paths.ID)
             }

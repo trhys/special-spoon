@@ -102,6 +102,7 @@ namespace Spoon
                     if (ImGui::Selectable(id.c_str()))
                     {
                         m_Text.setFont(font);
+                        iFontID = id;
                     }
                     ImGui::PopID();
                 }

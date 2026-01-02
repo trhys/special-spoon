@@ -194,8 +194,8 @@ namespace Spoon
                 // Get aspect ratio for texture preview
                 sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(selTexture);
                 ImGui::Image(texture, GetAspectRatio(texture));
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
 
             if (ImGui::BeginChild("Fonts", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
             {
@@ -224,8 +224,8 @@ namespace Spoon
                 // Get aspect ratio for font preview
                 sf::Texture& texture = ResourceManager::Get().GetFontPreview(selFont);
                 ImGui::Image(texture, GetAspectRatio(texture));
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
 
             if (ImGui::BeginChild("Sounds", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
             {
@@ -249,8 +249,8 @@ namespace Spoon
                         ImGui::EndDragDropTarget();
                     }
                 }
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
             ImGui::EndTable();
         }
         ImGui::End();

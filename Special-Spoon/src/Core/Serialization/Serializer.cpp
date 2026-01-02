@@ -1,6 +1,7 @@
 #include "Serializer.h"
 #include "Core/EntityManager.h"
 #include "Core/SceneManager.h"
+#include "System/SystemManager.h"
 
 #include "nlohmann/json.hpp"
 
@@ -37,6 +38,12 @@ namespace Spoon
         }
 
         scenedata["Systems"] = json::array();
+        for (auto& system : s_Manager.GetSystems())
+        {
+            json sys;
+            sys["Type"] = system->GetDisplayName();
+            scenedata["Systems"].push_back(sys);
+        }
 
         data << scenedata.dump(4);
         data.close();

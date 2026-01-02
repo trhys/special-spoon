@@ -5,8 +5,8 @@ namespace Spoon
 {
     ResourceManager& ResourceManager::Get()
     {
-        static ResourceManager manager;
-        return manager;
+        static ResourceManager* manager = new ResourceManager();
+        return *manager;
     }
 
     std::filesystem::path ResourceManager::Normalize(std::filesystem::path p)
@@ -115,7 +115,7 @@ namespace Spoon
     {
         m_Textures["empty"] = sf::Texture();
         sf::Texture texture;
-        if (!texture.loadFromFile("assets/Textures/special-spoon-logo.png"))
+        if (!texture.loadFromFile("assets/Textures/special-spoon.png"))
         {
             throw std::runtime_error("Failed to load default texture!");
         }
