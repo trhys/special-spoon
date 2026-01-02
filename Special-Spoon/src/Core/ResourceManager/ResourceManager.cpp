@@ -114,6 +114,13 @@ namespace Spoon
     void ResourceManager::InitDefaultAssets()
     {
         m_Textures["empty"] = sf::Texture();
+        sf::Texture texture;
+        if (!texture.loadFromFile("assets/Textures/special-spoon-logo.png"))
+        {
+            throw std::runtime_error("Failed to load default texture!");
+        }
+        m_Textures.emplace("special-spoon-logo", std::move(texture));
+
         sf::Font& font = m_Fonts["Default"];
         if (!font.openFromMemory(Jersey10_Regular_ttf, Jersey10_Regular_ttf_len))
         {

@@ -44,11 +44,13 @@ namespace Spoon
         if(m_Specs.editorEnabled)
         {
             const char* popup = "Close";
-            ImGui::OpenPopup(popup);
+            if (!ImGui::IsPopupOpen(popup))
+                ImGui::OpenPopup(popup);
 
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
             if(ImGui::BeginPopupModal(popup, &closePrompt, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 ImGui::Text("Are you sure you want to exit?");
@@ -60,20 +62,29 @@ namespace Spoon
                     {
                         Serialize(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
                         SerializeManifest(m_SceneManager);
+                        m_IsRunning = false;
+                        closePrompt = false;
+                        ImGui::CloseCurrentPopup();
                     }
                 }
-                if(ImGui::Button("Yes")) 
-                { 
-                    m_IsRunning = false;
+                ImGui::SameLine();
+                if(ImGui::Button("Cancel"))
+                {
+                    closePrompt = false;
                     ImGui::CloseCurrentPopup();
                 }
 
-                ImGui::SameLine();
-                if(ImGui::Button("No"))
-                {
-                    ImGui::CloseCurrentPopup();
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+                if(ImGui::Button("Exit Without Saving")) 
+                { 
+                    m_IsRunning = false;
                     closePrompt = false;
+                    ImGui::CloseCurrentPopup();
                 }
+                ImGui::PopStyleColor();
+                if(ImGui::IsItemHovered())
+                    ImGui::SetTooltip("All unsaved changes will be lost!");
+                
                 ImGui::EndPopup();
             }
         }
@@ -231,7 +242,22 @@ namespace Spoon
 
                 // Draw to viewport
                 m_Viewport.target.clear();
-                m_Renderer.Render(m_Viewport.target, states, m_EntityManager);
+
+                if (m_Editor.GetActiveScene() && !m_EntityManager.GetEntities().empty())
+                    m_Renderer.Render(m_Viewport.target, states, m_EntityManager);
+
+                // Draw logo if no scene is loaded or scene is empty
+                else
+                {
+                    const auto& logoTex = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-logo");
+                    sf::Sprite logoSprite(logoTex);
+                    sf::Vector2f logoCenter(logoTex.getSize().x / 2.0f, logoTex.getSize().y / 2.0f);
+                    sf::Vector2f viewportCenter(m_Viewport.target.getSize().x / 2.0f, m_Viewport.target.getSize().y / 2.0f);
+                    logoSprite.setOrigin(logoCenter);
+                    logoSprite.setPosition(viewportCenter);
+                    m_Viewport.target.draw(logoSprite);
+                }
+
                 m_Viewport.target.display();
 
                 ImGui::Image(m_Viewport.target);
