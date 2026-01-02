@@ -12,6 +12,11 @@ namespace Spoon
 {
     static bool AddingComponent = false;
 
+    void SelectEntity(UUID id)
+    {
+        static UUID selectedID = id;
+    }
+    
     void ViewEntitiesMenu(EntityManager& e_Manager)
     {
         // Display a selectable list of active entities

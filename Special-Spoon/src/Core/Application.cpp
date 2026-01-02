@@ -245,9 +245,7 @@ namespace Spoon
 
                 if (m_Editor.GetActiveScene() && !m_EntityManager.GetEntities().empty())
                     m_Renderer.Render(m_Viewport.target, states, m_EntityManager);
-
-                // Draw logo if no scene is loaded or scene is empty
-                else
+                else // Draw logo if no scene is loaded or scene is empty
                 {
                     const auto& logoTex = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-logo");
                     sf::Sprite logoSprite(logoTex);
@@ -257,10 +255,33 @@ namespace Spoon
                     logoSprite.setPosition(viewportCenter);
                     m_Viewport.target.draw(logoSprite);
                 }
-
                 m_Viewport.target.display();
 
                 ImGui::Image(m_Viewport.target);
+
+                // Raycast to grab entities on the viewport
+                if (ImGui::IsItemHovered() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+                {
+                    static UUID selectedID;
+                    ImVec2 viewportPos = ImGui::GetItemRectMin();
+                    ImVec2 mousePos = ImGui::GetIO().MousePos;
+                    sf::Vector2i relativeMouse(
+                        static_cast<int>(mousePos.x - viewportPos.x),
+                        static_cast<int>(mousePos.y - viewportPos.y)
+                    );
+                    sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
+                    std::vector<UUID> entities = m_EntityManager.RayPick(worldMouse);
+                    if (!entities.empty())
+                    {
+                        auto it = std::find(entities.begin(), entities.end(), selectedID);
+                        if (it != entities.end() && std::next(it) != entities.end())
+                            selectedID = *(std::next(it));
+                        else
+                            selectedID = entities.front();
+                    }
+                    m_Editor.PickEntity(selectedID);
+                }
+
                 ImGui::End();
                 
                 m_Editor.Run(tick, m_EntityManager, m_SceneManager, m_SystemManager);

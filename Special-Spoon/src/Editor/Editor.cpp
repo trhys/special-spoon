@@ -151,6 +151,11 @@ namespace Spoon
         m_TextureRectTool.Run(comp);
     }
 
+    void Editor::PickEntity(UUID id)
+    {
+        SelectEntity(id);
+    }
+
     void Editor::Shutdown()
     {
         m_AnimationTool.Shutdown();

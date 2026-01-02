@@ -20,6 +20,7 @@ namespace Spoon
         bool Play();
         void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);       
         void EditTextureRect(SpriteComp& comp);
+        void PickEntity(UUID id);
 
         void SetActiveScene(SceneData* scene) { m_ActiveScene = scene; }
         void SetWorkingDir(AssetNode* dir) { workingDir = dir; }

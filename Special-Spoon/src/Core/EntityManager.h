@@ -209,6 +209,44 @@ namespace Spoon
 
         std::unordered_map<UUID, std::string>& GetEntities() { return m_Entities; }
 
+        std::vector<UUID> RayPick(sf::Vector2f worldMouse)
+        {
+            std::vector<UUID> pickedEntities;
+
+            auto& transArray = GetArray<TransformComp>();
+            auto& spriteArray = GetArray<SpriteComp>();
+            auto& textArray = GetArray<TextComp>();
+
+            for (size_t index = 0; index < transArray.m_Components.size(); index++)
+            {
+                TransformComp& transform = transArray.m_Components[index];
+                UUID id = transArray.m_IndexToId[index];
+            
+                if (!spriteArray.HasEntity(id))
+                {
+                    if (textArray.HasEntity(id))
+                    {
+                        TextComp& textComp = GetComponent<TextComp>(id);
+                        sf::FloatRect bounds = textComp.m_Text.getGlobalBounds();
+                        if (bounds.contains(worldMouse))
+                        {
+                            pickedEntities.push_back(id);
+                        }
+                    }
+                    continue;
+                }
+
+                SpriteComp& spriteComp = GetComponent<SpriteComp>(id);
+                sf::FloatRect bounds = spriteComp.m_Sprite.getGlobalBounds();
+                if (bounds.contains(worldMouse))
+                {
+                    pickedEntities.push_back(id);
+                }
+            }
+
+            return pickedEntities;
+        }
+
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<UUID> m_RecycledIds;
