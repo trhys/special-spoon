@@ -1,12 +1,10 @@
 target_sources(Special-Spoon
     PRIVATE
         Application.cpp
-        ComponentLoaders.cpp
         SceneManager.cpp    
 
         Application.h
         ComponentArray.h
-        ComponentLoaders.h
         Core.h
         EntityManager.h
         EntryPoint.h
@@ -16,4 +14,13 @@ target_sources(Special-Spoon
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp
         ResourceManager/ResourceManager.inl
+        ResourceManager/SystemFont/Jersey_10/SystemFont.h
+
+        Serialization/ComponentLoaders.h
+        Serialization/ComponentLoaders.cpp
+        Serialization/SystemLoaders.h
+        Serialization/SystemLoaders.cpp
+        Serialization/Serializer.h
+        Serialization/Serializer.cpp
+        Serialization/JsonTypeDefs.h
 )

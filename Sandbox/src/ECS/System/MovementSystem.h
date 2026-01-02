@@ -5,8 +5,8 @@
 class MovementSystem : public Spoon::ISystem
 {
 public:
-    MovementSystem() {};
-    ~MovementSystem() {};
+    MovementSystem() : Spoon::ISystem::ISystem("Movement") {}
+    ~MovementSystem() {}
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {

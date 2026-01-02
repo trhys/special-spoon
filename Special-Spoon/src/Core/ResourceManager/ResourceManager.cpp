@@ -1,11 +1,12 @@
 #include "ResourceManager.h"
+#include "SystemFont/Jersey_10/SystemFont.h"
 
 namespace Spoon
 {
     ResourceManager& ResourceManager::Get()
     {
-        static ResourceManager manager;
-        return manager;
+        static ResourceManager* manager = new ResourceManager();
+        return *manager;
     }
 
     std::filesystem::path ResourceManager::Normalize(std::filesystem::path p)
@@ -88,7 +89,7 @@ namespace Spoon
         }
     }
 
-    void ResourceManager::LoadAnimationData(const std::string id, const AnimationData& animationData)
+    void ResourceManager::LoadAnimationData(const std::string& id, const AnimationData& animationData)
     {
         auto found = m_Animations.find(id);
         if(found == m_Animations.end())
@@ -97,7 +98,7 @@ namespace Spoon
         }
     }
 
-    AnimationData* ResourceManager::GetAnimationData(const std::string id)
+    AnimationData* ResourceManager::GetAnimationData(const std::string& id)
     {
         auto found = m_Animations.find(id);
         if(found != m_Animations.end())
@@ -108,5 +109,106 @@ namespace Spoon
         {
             throw std::runtime_error("AnimationID: " + id + " not found.");
         }
+    }
+
+    void ResourceManager::InitDefaultAssets()
+    {
+        m_Textures["empty"] = sf::Texture();
+        sf::Texture texture;
+        if (!texture.loadFromFile("assets/Textures/special-spoon.png"))
+        {
+            throw std::runtime_error("Failed to load default texture!");
+        }
+        m_Textures.emplace("special-spoon-logo", std::move(texture));
+
+        sf::Font& font = m_Fonts["Default"];
+        if (!font.openFromMemory(Jersey10_Regular_ttf, Jersey10_Regular_ttf_len))
+        {
+            throw std::runtime_error("Failed to load system font!");
+        }
+        GenerateFontPreview("Default", font);
+    }
+
+    void ResourceManager::GenerateFontPreview(const std::string& id, sf::Font& font)
+    {
+        sf::Text text(font, id, 24);
+        sf::FloatRect bounds = text.getLocalBounds();
+        float padding = 10.0f;
+        sf::Vector2u size = {
+            static_cast<unsigned int>(bounds.size.x + padding),
+            static_cast<unsigned int>(bounds.size.y + padding)
+        };
+        sf::Vector2f center = {
+            static_cast<float>(size.x / 2),
+            static_cast<float>(size.y / 2)
+        };
+        sf::Vector2f glyphCenter = {
+            bounds.position.x + (bounds.size.x / 2.0f),
+            bounds.position.y + (bounds.size.y / 2.0f)
+        };
+        if (size.x == 0 || size.y == 0) size = { 1, 1 };
+        sf::RenderTexture fontViewer(size);
+        text.setOrigin(glyphCenter);
+        text.setPosition(center);
+        fontViewer.clear(sf::Color::Transparent);
+        fontViewer.draw(text);
+        fontViewer.display();
+        m_FontPreviews[id] = fontViewer.getTexture();
+        m_FontPreviews[id].setSmooth(true);
+    }
+
+    sf::Texture& ResourceManager::GetFontPreview(const std::string& id)
+    {
+        auto found = m_FontPreviews.find(id);
+        if (found != m_FontPreviews.end())
+            return found->second;
+        else
+            return m_FontPreviews.at("Default");
+    }
+
+    void ResourceManager::ClearAllResources(bool clearDefaults)
+    {
+        m_Textures.clear();
+        m_Fonts.clear();
+        m_Animations.clear();
+        m_SoundBuffers.clear();
+
+        if (!clearDefaults)
+            InitDefaultAssets();
+    }
+
+    void ResourceManager::PopulateLib(AssetNode* node, std::vector<AssetNode*>& library, const std::string& type)
+    {
+        for (auto& child : node->m_Children)
+        {
+            if (child->isDir) PopulateLib(child.get(), library, type);
+            else if (child->m_Ext == type) library.push_back(child.get());
+        }
+    }
+
+    const std::vector<AssetNode*> ResourceManager::GetAssetLibrary(const std::string& type)
+    {
+        std::vector<AssetNode*> library;
+        for (auto& node : fileRoot->m_Children)
+        {
+            PopulateLib(node.get(), library, type);
+        }
+        return library;
+    }
+
+    sf::Texture& ResourceManager::GetThumbnail(AssetNode* node)
+    {
+        auto found = m_Thumbnails.find(node->m_Name);
+        if (found == m_Thumbnails.end())
+        {
+            sf::Texture texture;
+            if (!texture.loadFromFile(node->m_Path))
+            {
+                texture = GetResource<sf::Texture>("empty");
+            }
+            texture.setSmooth(true);
+            m_Thumbnails.emplace(node->m_Name, std::move(texture));
+        }
+        return m_Thumbnails.at(node->m_Name);
     }
 }

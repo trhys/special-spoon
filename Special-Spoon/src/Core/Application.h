@@ -3,9 +3,11 @@
 #include "Core.h"
 #include "SceneManager.h"
 #include "EntityManager.h"
+#include "Renderer.h"
+
 #include "System/InputSystem.h"
 #include "System/SystemManager.h"
-#include "Renderer.h"
+
 #include "Editor/Editor.h"
 
 #include "SFML/Graphics.hpp"
@@ -31,10 +33,12 @@ namespace Spoon
 		void Run();
 		void Update(sf::Time tick);
 		void Shutdown();
+		void HandleEditorGizmos();
 		
 		static Application& Get() { return *s_Instance; }
 
 		EntityManager& GetEntityManager() { return m_EntityManager; }
+		SystemManager& GetSystemManager() { return m_SystemManager; }
 
 	private:
 		static Application* s_Instance;
@@ -49,7 +53,7 @@ namespace Spoon
 		Editor 			  m_Editor;
 
 		AppSpecifications m_Specs;
-		sf::RenderTexture m_EditorViewport;
+		Viewport		  m_Viewport;
 		sf::RenderWindow  m_Window;
 		
 	};

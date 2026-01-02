@@ -9,7 +9,7 @@ namespace Spoon
     class AnimationSystem : public ISystem
     {
     public: 
-        AnimationSystem() {}
+        AnimationSystem() : ISystem::ISystem("Animation") {}
         ~AnimationSystem() {}
 
         void Update(sf::Time tick, EntityManager& manager) override;

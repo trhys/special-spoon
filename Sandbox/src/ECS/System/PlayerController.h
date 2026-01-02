@@ -7,7 +7,7 @@
 class PlayerController : public Spoon::ISystem
 {
 public:
-    PlayerController() {}
+    PlayerController() : Spoon::ISystem::ISystem("Player Controller") {}
     ~PlayerController() {}
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override

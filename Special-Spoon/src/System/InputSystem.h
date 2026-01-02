@@ -13,7 +13,7 @@ namespace Spoon
     class InputSystem : public ISystem
     {
     public:
-        InputSystem() {}
+        InputSystem() : ISystem::ISystem("Input") {}
         ~InputSystem() {}
 
         void PushKeyPress(const sf::Event::KeyPressed& keyPress)

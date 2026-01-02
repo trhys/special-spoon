@@ -21,7 +21,7 @@ namespace Spoon
         SystemLoaders() {}
         ~SystemLoaders() {}
 
-        using Loader = std::function<std::unique_ptr<ISystem>(const json& systemData)>;
+        using Loader = std::function<std::unique_ptr<ISystem>(const json* systemData)>;
 
         static std::unordered_map<std::string, Loader>& GetSysLoaders()
         {

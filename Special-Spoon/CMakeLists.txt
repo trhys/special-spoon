@@ -3,14 +3,11 @@ add_library(Special-Spoon SHARED)
 target_sources(Special-Spoon
     PRIVATE
         src/Spoon.h
-        src/Editor/Editor.h
-        src/Editor/Editor.cpp
-        src/Editor/AnimationTool.h
-        src/Editor/AnimationTool.cpp
 )
 
 add_subdirectory(src/Core)
 add_subdirectory(src/ECS)
+add_subdirectory(src/Editor)
 add_subdirectory(src/System)
 add_subdirectory(src/Utils)
 

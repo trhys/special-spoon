@@ -10,7 +10,7 @@ namespace Spoon
     class StateSystem : public ISystem
     {
     public:
-        StateSystem(SceneManager& manager, SystemManager& system) : r_SceneManager(manager), r_SystemManager(system) {}
+        StateSystem(SceneManager& manager, SystemManager& system) : ISystem::ISystem("State"), r_SceneManager(manager), r_SystemManager(system) {}
         ~StateSystem() {}
 
         void Update(sf::Time tick, EntityManager& manager) override

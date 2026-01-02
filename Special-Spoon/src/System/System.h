@@ -9,9 +9,12 @@ namespace Spoon
     class ISystem
     {
     public:
-        ISystem() {}
+        ISystem(std::string name) : m_DisplayName(name) {}
         virtual ~ISystem() {}
 
         virtual void Update(sf::Time tick, EntityManager& manager) = 0;
+
+        std::string m_DisplayName;
+        std::string& GetDisplayName() { return m_DisplayName; }
     };
 }

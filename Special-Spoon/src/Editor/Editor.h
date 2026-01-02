@@ -1,40 +1,50 @@
 #pragma once
 
+#include "Tools/AnimationTool.h"
+#include "Tools/TextureRectTool.h"
+
 #include "SFML/System/Time.hpp"
 
 namespace Spoon
 {
     class EntityManager;
-    class SceneManager;
     class SystemManager;
+    class SceneManager;
     struct AssetNode;
-    struct UUID;
+    struct SceneData;
     
     class Editor
     {
     public:
-        Editor() {}
-        ~Editor() {}
-
         void Stop();
         bool Play();
+        void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);       
+        void EditTextureRect(SpriteComp& comp);
+        void PickEntity(UUID id);
 
-        void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);
+        void SetActiveScene(SceneData* scene) { m_ActiveScene = scene; }
+        void SetWorkingDir(AssetNode* dir) { workingDir = dir; }
 
-        void ViewEntitiesMenu(EntityManager& manager);
-        void AddComponentMenu(UUID id, EntityManager& manager);
+        SceneData* GetActiveScene() { return m_ActiveScene; }
+        AssetNode* GetWorkingDir() { return workingDir; }
 
-        void NewSceneMenu(SceneManager& s_Manager);
-        void LoadSceneMenu(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager);
+        void Shutdown();
 
-        void ViewResourcesMenu();
-        void ViewAssets(AssetNode* node);
-        void LoadResourcesMenu();
-        
+        // Menu flags
+        bool NewScene = false;
+        bool LoadScene = false;
+        bool ViewSceneManifest = false;
+        bool ViewEntities = true;
+        bool ViewResources = false;
+        bool LoadResources = false;
+        bool ViewSystemsMenu = false;
+
     private:
         AssetNode* workingDir = nullptr;
+        SceneData* m_ActiveScene = nullptr;
         bool m_Play = false;
-    };
 
-    void HelpMarker(const char* desc);
+        TextureRectTool m_TextureRectTool;
+        AnimationTool   m_AnimationTool;
+    };
 }

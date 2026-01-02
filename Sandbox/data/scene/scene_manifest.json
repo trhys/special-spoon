@@ -1,14 +1,5 @@
 {
   "Scenes": [
-    {
-      "ID": "MainMenu",
-      "Resources": "data/scene/MainMenu_res.json",
-      "Data": "data/scene/MainMenu_data.json"
-    },
-    {
-      "ID": "Arena",
-      "Resources": "data/scene/Arena_res.json",
-      "Data": "data/scene/Arena_data.json"
-    }
+    
   ]
 }

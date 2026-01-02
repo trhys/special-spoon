@@ -9,43 +9,43 @@ namespace Spoon
     struct SpriteComp : public ComponentBase<SpriteComp>
     {
         SpriteComp(sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>("empty"), bool centered = false, std::string textureID = "empty")
-        : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID) 
-        { 
-            if (centered) { CenterOrigin(); } 
+            : ComponentBase::ComponentBase("Sprite"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID)
+        {
+            if (centered) { CenterOrigin(); }
         }
 
-        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered, std::string& textureID) 
-        : ComponentBase::ComponentBase("SpriteComp"), m_Sprite(asset), m_TextureRect(rect), isCentered(centered), m_TextureID(textureID)
+        SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered, std::string& textureID)
+            : ComponentBase::ComponentBase("Sprite"), m_Sprite(asset), m_TextureRect(rect), isCentered(centered), m_TextureID(textureID)
         {
             m_Sprite.setTextureRect(rect);
             if (centered) { CenterOrigin(); }
         }
-                
+
         sf::Sprite m_Sprite;
         sf::IntRect m_TextureRect;
-        std::string m_TextureID; // Really only for the inspector - no practical use otherwise
+        std::string m_TextureID;
         bool isCentered;
 
         sf::Vector2f GetPosition() { return m_Sprite.getPosition(); }
         sf::FloatRect GetBoundingBox() { return m_Sprite.getGlobalBounds(); }
 
-        void SetTextureRect(const sf::IntRect& rect) { m_Sprite.setTextureRect(rect); }
+        void SetTextureRect(const sf::IntRect& rect) { m_Sprite.setTextureRect(rect); m_TextureRect = rect; }
         void SetColor(sf::Color color) { m_Sprite.setColor(color); }
         void SetScale(sf::Vector2f scale) { m_Sprite.setScale(scale); }
         void SetPosition(sf::Vector2f pos) { m_Sprite.setPosition(pos); }
-        void CenterOrigin() 
+        void CenterOrigin()
         {
-            sf::Vector2f size = (m_TextureRect.size.x != 0 && m_TextureRect.size.y != 0) 
-                ? sf::Vector2f(m_TextureRect.size) 
+            sf::Vector2f size = (m_TextureRect.size.x != 0 && m_TextureRect.size.y != 0)
+                ? sf::Vector2f(m_TextureRect.size)
                 : m_Sprite.getLocalBounds().size;
 
             if (isCentered)
             {
-                m_Sprite.setOrigin({(size.x / 2.0f), (size.y / 2.0f)});
+                m_Sprite.setOrigin({ (size.x / 2.0f), (size.y / 2.0f) });
             }
             else
             {
-                m_Sprite.setOrigin({0.0, 0.0});
+                m_Sprite.setOrigin({ 0.0, 0.0 });
             }
         }
         void SetAlpha(float alpha)
@@ -59,11 +59,11 @@ namespace Spoon
         {
             ImGui::Text("Texture ID: %s", m_TextureID.c_str());
 
-            if(ImGui::BeginChild("Texture Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
+            if (ImGui::BeginChild("Texture Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                for(const auto& [id, texture] : ResourceManager::Get().GetTextures())
+                for (const auto& [id, texture] : ResourceManager::Get().GetTextures())
                 {
-                    if(ImGui::ImageButton(id.c_str(), texture, sf::Vector2f(64, 64)))
+                    if (ImGui::ImageButton(id.c_str(), texture, sf::Vector2f(64, 64)))
                     {
                         m_Sprite.setTexture(texture, true);
                         m_TextureID = id;
@@ -75,8 +75,13 @@ namespace Spoon
                 ImGui::EndChild();
             }
 
+            if (ImGui::Button(!ActiveGizmo() ? "Set Texture Rect" : "Cancel"))
+            {
+                ToggleGizmo();
+            }
+
             ImGui::SeparatorText("Center Origin");
-            if(ImGui::Checkbox("Centered", &isCentered)) CenterOrigin();
+            if (ImGui::Checkbox("Centered", &isCentered)) CenterOrigin();
 
             ImGui::SeparatorText("Color Selector");
             sf::Color m_Color = m_Sprite.getColor();
@@ -96,4 +101,6 @@ namespace Spoon
             }
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteComp, m_TextureID, isCentered, m_TextureRect)
 }

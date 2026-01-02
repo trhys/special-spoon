@@ -1,7 +1,8 @@
 #include "Application.h"
-#include "ComponentLoaders.h"
 #include "ResourceManager/ResourceManager.h"
-#include "Editor/AnimationTool.h"
+#include "Serialization/Serializer.h"
+
+#include "Editor/Utils/Viewport.h"
 
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
@@ -33,7 +34,7 @@ namespace Spoon
             ImGuiIO& io = ImGui::GetIO();
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
 
-            m_EditorViewport = sf::RenderTexture({1280, 720});
+            m_Viewport.target = sf::RenderTexture({1280, 720});
         }
         m_SceneManager.LoadManifest(m_Specs.dataDir.string());
     }
@@ -43,28 +44,47 @@ namespace Spoon
         if(m_Specs.editorEnabled)
         {
             const char* popup = "Close";
-            ImGui::OpenPopup(popup);
+            if (!ImGui::IsPopupOpen(popup))
+                ImGui::OpenPopup(popup);
 
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
             if(ImGui::BeginPopupModal(popup, &closePrompt, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 ImGui::Text("Are you sure you want to exit?");
                 ImGui::Separator();
 
-                if(ImGui::Button("Yes")) 
-                { 
-                    m_IsRunning = false;
+                if (ImGui::Button("Save and Exit"))
+                {
+                    if (m_Editor.GetActiveScene())
+                    {
+                        Serialize(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
+                        SerializeManifest(m_SceneManager);
+                        m_IsRunning = false;
+                        closePrompt = false;
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                ImGui::SameLine();
+                if(ImGui::Button("Cancel"))
+                {
+                    closePrompt = false;
                     ImGui::CloseCurrentPopup();
                 }
 
-                ImGui::SameLine();
-                if(ImGui::Button("No"))
-                {
-                    ImGui::CloseCurrentPopup();
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+                if(ImGui::Button("Exit Without Saving")) 
+                { 
+                    m_IsRunning = false;
                     closePrompt = false;
+                    ImGui::CloseCurrentPopup();
                 }
+                ImGui::PopStyleColor();
+                if(ImGui::IsItemHovered())
+                    ImGui::SetTooltip("All unsaved changes will be lost!");
+                
                 ImGui::EndPopup();
             }
         }
@@ -96,15 +116,67 @@ namespace Spoon
 
     void Application::Shutdown()
     {
-        m_EntityManager.ClearEntities();
-        m_EntityManager.ClearArrays();
-        m_EntityManager.ClearActionsBuffer();
-        ResourceManager::Get().ClearAllResources();
-        AnimationTool::Get().Shutdown();
-        m_EditorViewport = sf::RenderTexture();
-        m_Window.setActive(false);
+        m_EntityManager.Shutdown();
+        m_Editor.Shutdown();
+
+        if(m_Specs.editorEnabled) 
+            ImGui::SFML::Shutdown(m_Window);
+
+        m_Viewport.target = sf::RenderTexture();
+
+        ResourceManager::Get().ClearAllResources(true);
+
+        (void)m_Window.setActive(false);
         if(m_Window.isOpen())
             m_Window.close();
+    }
+
+    void Application::HandleEditorGizmos()
+    {
+        auto& transArray = m_EntityManager.GetArray<TransformComp>();
+        for (auto& comp : transArray.m_Components)
+        {
+            if (comp.ActiveGizmo())
+            {
+                static sf::Vector2f drag;
+                static bool dragging = false;
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+                {
+                    ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
+                    sf::Vector2f relativePos{
+                        static_cast<float>(mousePos.x) - viewportPos.x,
+                        static_cast<float>(mousePos.y) - viewportPos.y
+                    };
+                    sf::Vector2f worldPos = m_Viewport.target.mapPixelToCoords(sf::Vector2i(relativePos));
+                    if (!dragging)
+                    {
+                        drag = {
+                        comp.GetPosition().x - worldPos.x,
+                        comp.GetPosition().y - worldPos.y
+                        };
+                        dragging = true;
+                    }
+                    if (dragging)
+                    {
+                        comp.SetPosition(worldPos + drag);
+                        comp.iPos = comp.GetPosition();
+                        comp.rect.setPosition(comp.GetPosition());
+                    }
+                }
+                else dragging = false;
+                break;
+            }
+        }
+        auto& spriteArray = m_EntityManager.GetArray<SpriteComp>();
+        for (auto& comp : spriteArray.m_Components)
+        {
+            if (comp.ActiveGizmo())
+            {
+                m_Editor.EditTextureRect(comp);
+                break;
+            }
+        }
     }
 
     void Application::Run()
@@ -125,6 +197,7 @@ namespace Spoon
                 [&](const sf::Event::MouseButtonPressed& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::MouseButtonReleased& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::MouseMoved& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+                [&](const sf::Event::MouseWheelScrolled& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::TextEntered& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
 
                 [&](const sf::Event::KeyPressed& event) 
@@ -144,7 +217,7 @@ namespace Spoon
             // Update systems
             sf::Time tick = clock.restart();
 
-            if(m_Specs.editorEnabled)
+            if (m_Specs.editorEnabled)
             {
                 ImGui::SFML::Update(m_Window, tick);
                 if (closePrompt)
@@ -153,45 +226,74 @@ namespace Spoon
                 play = m_Editor.Play();
             }
 
-            if(play) Application::Update(tick);
+            if (play) Application::Update(tick);
             else m_InputSystem.ClearEvents();
 
             // Rendering
             m_Window.clear();
 
-            if(m_Specs.editorEnabled)
+            if (m_Specs.editorEnabled)
             {
                 ImGui::Begin("Viewport");
 
-                // Resize viewport if necessary
-                sf::Vector2f viewportSize = ImGui::GetContentRegionAvail();
-                sf::Vector2u viewport2u(
-                    std::max(1u, static_cast<unsigned int>(viewportSize.x)),
-                    std::max(1u, static_cast<unsigned int>(viewportSize.y)));
-                if (m_EditorViewport.getSize() != viewport2u)
-                    if (m_EditorViewport.resize({ viewport2u }))
-                    {
-                        sf::View view(sf::FloatRect({ 0.f, 0.f }, { (float)viewport2u.x, (float)viewport2u.y }));
-                        m_EditorViewport.setView(view);
-                    }
-                // Draw to viewport
-                m_EditorViewport.clear();
-                m_Renderer.Render(m_EditorViewport, states, m_EntityManager);
-                m_EditorViewport.display();
+                RenderViewport(m_Viewport);
 
-                ImGui::Image(m_EditorViewport);
+                HandleEditorGizmos();
+
+                // Draw to viewport
+                m_Viewport.target.clear();
+
+                if (m_Editor.GetActiveScene() && !m_EntityManager.GetEntities().empty())
+                    m_Renderer.Render(m_Viewport.target, states, m_EntityManager);
+                else // Draw logo if no scene is loaded or scene is empty
+                {
+                    const auto& logoTex = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-logo");
+                    sf::Sprite logoSprite(logoTex);
+                    sf::Vector2f logoCenter(logoTex.getSize().x / 2.0f, logoTex.getSize().y / 2.0f);
+                    sf::Vector2f viewportCenter(m_Viewport.target.getSize().x / 2.0f, m_Viewport.target.getSize().y / 2.0f);
+                    logoSprite.setOrigin(logoCenter);
+                    logoSprite.setPosition(viewportCenter);
+                    m_Viewport.target.draw(logoSprite);
+                }
+                m_Viewport.target.display();
+
+                ImGui::Image(m_Viewport.target);
+
+                // Raycast to grab entities on the viewport
+                if (ImGui::IsItemHovered() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+                {
+                    static UUID selectedID;
+                    ImVec2 viewportPos = ImGui::GetItemRectMin();
+                    ImVec2 mousePos = ImGui::GetIO().MousePos;
+                    sf::Vector2i relativeMouse(
+                        static_cast<int>(mousePos.x - viewportPos.x),
+                        static_cast<int>(mousePos.y - viewportPos.y)
+                    );
+                    sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
+                    std::vector<UUID> entities = m_EntityManager.RayPick(worldMouse);
+                    if (!entities.empty())
+                    {
+                        auto it = std::find(entities.begin(), entities.end(), selectedID);
+                        if (it != entities.end() && std::next(it) != entities.end())
+                            selectedID = *(std::next(it));
+                        else
+                            selectedID = entities.front();
+                    }
+                    m_Editor.PickEntity(selectedID);
+                }
+
                 ImGui::End();
                 
                 m_Editor.Run(tick, m_EntityManager, m_SceneManager, m_SystemManager);
                 ImGui::SFML::Render(m_Window);
             }
-            if (!m_Specs.editorEnabled)
+            else if (!m_Specs.editorEnabled)
             {
                 m_Renderer.Render(m_Window, states, m_EntityManager);
             }
+
             m_Window.display();
         }
-        if(m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
         Shutdown();
     }
 }

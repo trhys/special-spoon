@@ -78,6 +78,16 @@ namespace Spoon
                     target.draw(text.m_Text, states);
                 }
             }
+
+            // Editor gizmos
+
+            for (auto& comp : transformArray.m_Components)
+            {
+                if (comp.ActiveGizmo())
+                {
+                    target.draw(comp.rect, states);
+                }
+            }
         }
 
     private:

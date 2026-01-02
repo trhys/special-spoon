@@ -15,4 +15,6 @@ namespace Spoon
 			ImGui::InputInt("Layer", &m_Layer);
 		}
 	};
+
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RenderLayer, m_Layer)
 }

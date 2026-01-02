@@ -46,12 +46,8 @@ namespace Spoon
     class SPOON_API ResourceManager
     {
     public:
-        ResourceManager() 
-        {
-            m_Textures["empty"] = sf::Texture();
-            m_Fonts["empty"] = sf::Font();
-        }
-        ~ResourceManager() { ClearAllResources(); }
+        ResourceManager() { InitDefaultAssets(); }
+        ~ResourceManager() { ClearAllResources(true); }
 
         static ResourceManager& Get();
 
@@ -69,46 +65,47 @@ namespace Spoon
         template<typename RESOURCE>
         RESOURCE& GetResource(std::string id);
 
-        void LoadAnimationData(const std::string id, const AnimationData& animationData);
-        AnimationData* GetAnimationData(const std::string id);
+        void LoadAnimationData(const std::string& id, const AnimationData& animationData);
+        AnimationData* GetAnimationData(const std::string& id);
 
-        const std::unordered_map<std::string, sf::Texture>& GetTextures()
-        {
-            return m_Textures;
-        }
+        const std::unordered_map<std::string, sf::Texture>& GetTextures() { return m_Textures; }
+        const std::unordered_map<std::string, std::filesystem::path>& GetTexturePaths() { return texturePaths; }
 
-        const std::unordered_map<std::string, sf::Font>& GetFonts()
-        {
-            return m_Fonts;
-        }
+        const std::unordered_map<std::string, sf::Font>& GetFonts() { return m_Fonts; }
+        const std::unordered_map<std::string, std::filesystem::path>& GetFontPaths() { return fontPaths; }
 
-        const std::unordered_map<std::string, sf::SoundBuffer>& GetSounds()
-        {
-            return m_SoundBuffers;
-        }
+        const std::unordered_map<std::string, sf::SoundBuffer>& GetSounds() { return m_SoundBuffers; }
+        const std::unordered_map<std::string, std::filesystem::path>& GetSoundPaths() { return soundPaths; }
 
-        const std::unordered_map<std::string, AnimationData>& GetAnimations()
-        {
-            return m_Animations;
-        }
+        const std::unordered_map<std::string, AnimationData>& GetAnimations() { return m_Animations; }
 
-        void ClearAllResources()
-        {
-            m_Textures.clear();
-            m_Fonts.clear();
-            m_Animations.clear();
-            m_SoundBuffers.clear();
-        }
+        void InitDefaultAssets();
+        void ClearAllResources(bool clearDefaults = false);
+
+        void GenerateFontPreview(const std::string& id, sf::Font& font);
+        sf::Texture& GetFontPreview(const std::string& id);
         
         AssetNode* GetAssetsDir() { return fileRoot.get(); }
 
+        void PopulateLib(AssetNode* node, std::vector<AssetNode*>& library, const std::string& type);
+        const std::vector<AssetNode*> GetAssetLibrary(const std::string& type);
+        sf::Texture& GetThumbnail(AssetNode* node);
+
     private:
         std::unordered_map<std::string, sf::Texture> m_Textures;
+        std::unordered_map<std::string, std::filesystem::path> texturePaths;
+
         std::unordered_map<std::string, sf::Font> m_Fonts;
-        std::unordered_map<std::string, AnimationData> m_Animations;
+        std::unordered_map<std::string, std::filesystem::path> fontPaths;
+        std::unordered_map<std::string, sf::Texture> m_FontPreviews;
+
         std::unordered_map<std::string, sf::SoundBuffer> m_SoundBuffers;
+        std::unordered_map<std::string, std::filesystem::path> soundPaths;
+
+        std::unordered_map<std::string, AnimationData> m_Animations;
 
         std::unique_ptr<AssetNode> fileRoot;
+        std::unordered_map<std::string, sf::Texture> m_Thumbnails;
     };
 }
 

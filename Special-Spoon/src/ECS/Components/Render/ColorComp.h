@@ -7,7 +7,7 @@ namespace Spoon
 {
     struct ColorComp : public ComponentBase<ColorComp>
     {
-        ColorComp(sf::Color color = sf::Color::White) : ComponentBase::ComponentBase("ColorComp"), m_Color(color) {}
+        ColorComp(sf::Color color = sf::Color::White) : ComponentBase::ComponentBase("Color"), m_Color(color) {}
 
         sf::Color m_Color;
 
@@ -33,4 +33,6 @@ namespace Spoon
             }
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ColorComp, m_Color)
 }

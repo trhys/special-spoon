@@ -16,12 +16,23 @@ namespace Spoon
         EntityManager() { LoadDefaultArrays(); }
         ~EntityManager() {}
 
-        Entity CreateEntity(std::string debugName = "")
+        UUID CreateEntity(std::string debugName = "")
         {
             UUID id = GenerateID();
             Entity entity = Entity(id, this);
             m_Entities[id] = debugName;
-            return entity;
+            return id;
+        }
+
+        void LoadEntity(UUID id, std::string name)
+        {
+            auto found = m_Entities.find(id);
+            if (found == m_Entities.end())
+            {
+                m_Entities[id] = name;
+                m_IdCounter++;
+            }
+            else CreateEntity(name);
         }
 
         void KillEntity(UUID id)
@@ -91,7 +102,7 @@ namespace Spoon
             std::string name = typeid(COMP).name();
             SS_DEBUG_LOG("[ENTITY MANAGER] Loading component array: " + name)
             m_Arrays[name] = std::make_unique<ComponentArray<COMP>>(displayName);
-            m_CompCreators[name] = [this](UUID id) { this->MakeComponent<COMP>(id); };
+            m_CompCreators[displayName] = [this](UUID id) { this->MakeComponent<COMP>(id); };
         }
 
         template<typename COMP>
@@ -187,6 +198,55 @@ namespace Spoon
             m_Entities.clear();
         }
 
+        void Shutdown()
+        {
+            m_Arrays.clear();
+            m_Entities.clear();
+            m_ActionsBuffer.clear();
+            m_RecycledIds.clear();
+            m_IdCounter = 0;
+        }
+
+        std::unordered_map<UUID, std::string>& GetEntities() { return m_Entities; }
+
+        std::vector<UUID> RayPick(sf::Vector2f worldMouse)
+        {
+            std::vector<UUID> pickedEntities;
+
+            auto& transArray = GetArray<TransformComp>();
+            auto& spriteArray = GetArray<SpriteComp>();
+            auto& textArray = GetArray<TextComp>();
+
+            for (size_t index = 0; index < transArray.m_Components.size(); index++)
+            {
+                TransformComp& transform = transArray.m_Components[index];
+                UUID id = transArray.m_IndexToId[index];
+            
+                if (!spriteArray.HasEntity(id))
+                {
+                    if (textArray.HasEntity(id))
+                    {
+                        TextComp& textComp = GetComponent<TextComp>(id);
+                        sf::FloatRect bounds = textComp.m_Text.getGlobalBounds();
+                        if (bounds.contains(worldMouse))
+                        {
+                            pickedEntities.push_back(id);
+                        }
+                    }
+                    continue;
+                }
+
+                SpriteComp& spriteComp = GetComponent<SpriteComp>(id);
+                sf::FloatRect bounds = spriteComp.m_Sprite.getGlobalBounds();
+                if (bounds.contains(worldMouse))
+                {
+                    pickedEntities.push_back(id);
+                }
+            }
+
+            return pickedEntities;
+        }
+
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<UUID> m_RecycledIds;
@@ -211,7 +271,7 @@ namespace Spoon
             LoadArray<FadeComp>("Fade");
             LoadArray<AnimationComp>("Animation");
             LoadArray<StateActionComp>("StateAction");
-            LoadArray<RenderLayer>("Layer");
+            LoadArray<RenderLayer>("RenderLayer");
         }
     };
 }

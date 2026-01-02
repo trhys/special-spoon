@@ -11,9 +11,9 @@ namespace Spoon
 {
     struct InputComp : public ComponentBase<InputComp>
     {
-        InputComp() : ComponentBase::ComponentBase("InputComp") {}
+        InputComp() : ComponentBase::ComponentBase("Input") {}
         InputComp(const std::unordered_map<std::string, std::string>& keyBindings)
-            : ComponentBase::ComponentBase("InputComp"), m_KeyBindings(keyBindings) 
+            : ComponentBase::ComponentBase("Input"), m_KeyBindings(keyBindings) 
             {
                 for (const auto& pair : keyBindings)
                 {
@@ -64,9 +64,10 @@ namespace Spoon
                     {
                         if(keyStringbuf[0] != '\0' && actionStringbuf[0] != '\0')
                         {
+                            std::string oldKey = currentKey;
                             currentKey = keyStringbuf;
                             m_KeyBindings[keyStringbuf] = actionStringbuf;
-                            m_KeyBindings.erase(currentKey);
+                            m_KeyBindings.erase(oldKey);
                             keyStringbuf[0] = '\0';
                             actionStringbuf[0] = '\0';
                             ImGui::CloseCurrentPopup();
@@ -110,4 +111,6 @@ namespace Spoon
             }
         }
     };
+
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InputComp, m_KeyBindings)
 }

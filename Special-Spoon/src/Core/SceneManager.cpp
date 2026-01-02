@@ -1,9 +1,8 @@
 #include "SceneManager.h"
-#include "ResourceManager/ResourceManager.h"
 #include "EntityManager.h"
-#include "ComponentLoaders.h"
+#include "ResourceManager/ResourceManager.h"
+#include "Serialization/ComponentLoaders.h"
 #include "System/SystemManager.h"
-#include "System/SystemLoaders.h"
 #include "Utils/Macros.h"
 
 #include "nlohmann/json.hpp"
@@ -51,8 +50,8 @@ namespace Spoon
 
                 SceneData paths;
                 paths.ID = scene.value("ID", "UnknownID");
-                paths.ResourceFiles = scene.value("Resources", "");
-                paths.DataFiles = scene.value("Data", "");
+                paths.ResourceFiles = scene.value("ResourceFiles", "");
+                paths.DataFiles = scene.value("DataFiles", "");
                 m_SceneManifest[paths.ID] = paths;
                 SS_DEBUG_LOG("Registered scene in manifest: " + paths.ID)
             }
@@ -63,7 +62,7 @@ namespace Spoon
         }
     }
 
-    void SceneManager::LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager)
+    SceneData* SceneManager::LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager)
     {
         UnloadScene(entityManager, systemManager);
         SS_DEBUG_LOG("Loading scene: " + id)
@@ -163,43 +162,27 @@ namespace Spoon
             // Load entities and components
             for (auto& entity : sceneData["Entities"])
             {
-                Entity newEntity;
-                std::string entityID;
-                try {
-                    
-                    if (entity.contains("ID")) 
-                    { 
-                        entityID = entity["ID"].get<std::string>(); 
-                        SS_DEBUG_LOG("Loading entity: " + entityID)
-                        newEntity = entityManager.CreateEntity(entityID);
-                    }
-                    else 
-                    { 
-                        newEntity = entityManager.CreateEntity(); 
-                        SS_DEBUG_LOG("[WARNING]~~~You are loading an entity without a name!")
-                    }
+                UUID newID = entity["uuid"].get<UUID>();
+                std::string newName = entity["name"].get<std::string>();
+                SS_DEBUG_LOG("Loading entity: " + newID.ToString())
+                entityManager.LoadEntity(newID, newName);
 
-                    for (auto const& [type, data] : entity["Components"].items())
-                    {
-                        SS_DEBUG_LOG("Requesting component type: " + type)
-
-                        auto& loaderMap = ComponentLoaders::GetCompLoaders();
-                        auto found = loaderMap.find(type);
-                        if (found != loaderMap.end())
-                        {
-                            found->second(entityManager, newEntity.GetID(), data);
-                        }
-                        else
-                        {
-                            throw std::runtime_error("No loader found for component type: " + type);
-                        }
-                    }
-                }
-                catch (const std::exception& e)
+                for (auto const& data : entity["Components"])
                 {
-                    throw std::runtime_error("Failed to load entity: " + entityID + " Error: " + e.what());
+                    std::string type = data["Type"].get<std::string>();
+                    SS_DEBUG_LOG("Requesting component type: " + type)
+                    auto& loaderMap = ComponentLoaders::GetCompLoaders();
+                    auto found = loaderMap.find(type);
+                    if (found != loaderMap.end())
+                    {
+                        found->second(entityManager, newID, data);
+                    }
+                    else
+                    {
+                        throw std::runtime_error("No loader found for component type: " + type);
+                    }
                 }
-            }
+            }      
         }
         catch (const json::exception& e)
         {
@@ -212,7 +195,7 @@ namespace Spoon
             {
                 std::string systemID = system["Type"].get<std::string>();
                 SS_DEBUG_LOG("Loading system: " + systemID)
-                systemManager.AddSystem(system);
+                systemManager.AddSystem(&system);
                 SS_DEBUG_LOG("Successfully loaded system: " + systemID)
             }
         }
@@ -221,12 +204,14 @@ namespace Spoon
             throw std::runtime_error("Failed to load systems for scene: " + id + " Error: " + e.what());
         }
         SS_DEBUG_LOG("Successfully loaded scene: " + id)
+
+        return &m_SceneManifest[id];
     }
 
     void SceneManager::UnloadScene(EntityManager& entityManager, SystemManager& systemManager)
     {
         SS_DEBUG_LOG("Unloading current scene...")
-        //ResourceManager::Get().ClearAllResources();
+        ResourceManager::Get().ClearAllResources();
         entityManager.ClearArrays();
         entityManager.ClearEntities();
         systemManager.ClearSystems();
@@ -238,12 +223,9 @@ namespace Spoon
         LoadScene(id, eManager, sManager);
     }
 
-    const std::unordered_map<std::string, SceneData>& SceneManager::GetManifest()
-    {
-        return m_SceneManifest;
-    }
+    const std::unordered_map<std::string, SceneData>& SceneManager::GetManifest() { return m_SceneManifest; }
 
-    void SceneManager::CreateScene(const std::string& id)
+    SceneData* SceneManager::CreateScene(const std::string& id)
     {
         std::ifstream inFile(m_ManifestPath);
         if(!inFile.is_open())
@@ -299,5 +281,54 @@ namespace Spoon
         outFile.close();
 
         SS_DEBUG_LOG("Registered new scene --- ID: " + id)
+
+        return &m_SceneManifest[newID];
+    }
+
+    void SceneManager::DeleteScene(const std::string& id)
+    {
+        m_SceneManifest.erase(id);
+        std::ifstream inFile(m_ManifestPath);
+        if(!inFile.is_open())
+        {
+            throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
+        }
+        json manifest = json::parse(inFile);
+        inFile.close();
+
+        auto& scenes = manifest["Scenes"];
+        scenes.erase(std::remove_if(scenes.begin(), scenes.end(),
+            [&id](const json& scene)
+            {
+                return scene["ID"].get<std::string>() == id;
+            }), scenes.end());
+
+        std::ofstream outFile(m_ManifestPath);
+        if(!outFile.is_open())
+        {
+            throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
+        }
+        outFile << manifest.dump(4);
+        outFile.close();
+
+        SS_DEBUG_LOG("Deleted scene from manifest --- ID: " + id)
+
+        std::ifstream dataFile((std::filesystem::path(m_DataDir) / "scene" / (id + "_data.json")).generic_string());
+        if(dataFile.is_open())
+        {
+            dataFile.close();
+            std::filesystem::remove((std::filesystem::path(m_DataDir) / "scene" / (id + "_data.json")));
+            SS_DEBUG_LOG("Deleted scene data file for scene --- ID: " + id)
+        }
+
+        std::ifstream resFile((std::filesystem::path(m_DataDir) / "scene" / (id + "_resources.json")).generic_string());
+        if(resFile.is_open())
+        {
+            resFile.close();
+            std::filesystem::remove((std::filesystem::path(m_DataDir) / "scene" / (id + "_resources.json")));
+            SS_DEBUG_LOG("Deleted scene resource file for scene --- ID: " + id)
+        }
+
+        SS_DEBUG_LOG("Deleted scene data/asset files --- ID: " + id)
     }
 }
