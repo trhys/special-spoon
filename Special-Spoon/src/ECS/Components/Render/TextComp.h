@@ -34,6 +34,7 @@ namespace Spoon
         void SetFont(sf::Font& font) { m_Text.setFont(font); }
         void SetSize(unsigned int size) { m_Text.setCharacterSize(size); }
         void SetPosition(sf::Vector2f pos) { m_Text.setPosition(pos); }
+        void SetRotation(float rot) { m_Text.setRotation(sf::degrees(rot)); }
         void SetColor(sf::Color color) { m_Text.setFillColor(color); }
         void CenterOrigin() 
         {

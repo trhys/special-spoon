@@ -33,6 +33,7 @@ namespace Spoon
         void SetColor(sf::Color color) { m_Sprite.setColor(color); }
         void SetScale(sf::Vector2f scale) { m_Sprite.setScale(scale); }
         void SetPosition(sf::Vector2f pos) { m_Sprite.setPosition(pos); }
+        void SetRotation(float rot) { m_Sprite.setRotation(sf::degrees(rot)); }
         void CenterOrigin()
         {
             sf::Vector2f size = (m_TextureRect.size.x != 0 && m_TextureRect.size.y != 0)

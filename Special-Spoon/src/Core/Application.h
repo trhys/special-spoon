@@ -40,6 +40,8 @@ namespace Spoon
 		EntityManager& GetEntityManager() { return m_EntityManager; }
 		SystemManager& GetSystemManager() { return m_SystemManager; }
 		Renderer& GetRenderer()			  { return m_Renderer; }
+		Viewport& GetViewport()		  	  { return m_Viewport; }
+		sf::RenderWindow& GetWindow()     { return m_Window; }
 
 	private:
 		static Application* s_Instance;

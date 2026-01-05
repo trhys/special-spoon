@@ -59,6 +59,7 @@ namespace Spoon
                         TransformComp& transform = manager.GetComponent<TransformComp>(ID);
                         sprite.SetPosition(transform.GetPosition());
                         sprite.SetScale(transform.GetScale());
+                        sprite.SetRotation(transform.m_Transform.getRotation().asDegrees());
                     }
 
                     if(colorArray.m_IdToIndex.count(ID)) 
@@ -79,6 +80,7 @@ namespace Spoon
                     {
                         TransformComp& transform = manager.GetComponent<TransformComp>(ID);
                         text.SetPosition(transform.GetPosition());
+                        text.SetRotation(transform.m_Transform.getRotation().asDegrees());
                     }
 
                     if(colorArray.m_IdToIndex.count(ID)) 

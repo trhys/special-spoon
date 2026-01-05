@@ -38,4 +38,3 @@ Spoon::Application* Spoon::CreateApp()
 	spec.windowName = "Sandbox";
 	return new Sandbox(spec);
 }
-

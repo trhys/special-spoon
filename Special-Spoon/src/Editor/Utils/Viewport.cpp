@@ -28,6 +28,7 @@ namespace Spoon
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && ImGui::IsWindowHovered())
         {
             ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+            viewport.state.viewportPos = viewportPos;
             ImVec2 mousePos = ImGui::GetIO().MousePos;
             sf::Vector2i relativeMouse(
                 static_cast<int>(mousePos.x - viewportPos.x),

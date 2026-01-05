@@ -11,6 +11,7 @@ namespace Spoon
     {
         sf::Vector2f mouseDrag;
         bool dragging = false;
+        sf::Vector2f viewportPos;
     };
 
     struct Viewport
