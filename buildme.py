@@ -13,7 +13,7 @@ def get(packages):
     try:
         subprocess.run(["apt-get", "--version"], capture_output=True, check=True)
         pkg_manager_check = "dpkg-query"
-        pkg_manager_update = "apt-update"
+        pkg_manager_update = ["apt", "update"]
         pkg_manager_install = "apt-get"
         check_args = ["-s"]
     except FileNotFoundError:
@@ -39,7 +39,7 @@ def get(packages):
     if missing_packages:
         print("\nThe following packages need to be installed:")
         print(", ".join(missing_packages))
-        subprocess.run([pkg_manager_update])
+        subprocess.run(pkg_manager_update)
         install_command = [pkg_manager_install, "install", "-y"] + missing_packages
         print(f"Running command: {' '.join(install_command)}")
         
@@ -117,7 +117,7 @@ def buildme():
 if __name__ == "__main__":
 
     required_packages = ["libxrandr-dev", "libxcursor-dev", "libxi-dev", "libudev-dev",
-        "libopengl-dev", "libgl-dev", "libharfbuzz-dev", "libogg-dev", "libvorbis-dev", "libflac-dev"]
+        "libopengl-dev", "libgl-dev", "libharfbuzz-dev", "libogg-dev", "libvorbis-dev", "libflac-dev", "libmbedtls-dev"]
     
     get(required_packages)
     getsubmodules()
