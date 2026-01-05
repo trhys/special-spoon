@@ -1,5 +1,5 @@
 #include "Serializer.h"
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 #include "Core/SceneManager.h"
 #include "System/SystemManager.h"
 

@@ -15,6 +15,7 @@ namespace Spoon
         EditorSettings& operator=(EditorSettings&&) = delete;
 
         bool compDelAskAgain = true;        // Ask before deleting component in entity inspector
+        bool displayEditorMetrics = true;   // Display editor metrics window
 
     private:
         EditorSettings() = default;

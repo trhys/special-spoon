@@ -33,6 +33,7 @@ namespace Spoon
         // Menu flags
         bool NewScene = false;
         bool LoadScene = false;
+        bool SaveScene = false;
         bool ViewSceneManifest = false;
         bool ViewEntities = true;
         bool ViewResources = false;

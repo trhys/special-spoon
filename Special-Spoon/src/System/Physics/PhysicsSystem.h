@@ -2,7 +2,7 @@
 
 #include "System/System.h"
 #include "QuadTree.h"
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 
 namespace Spoon
 {

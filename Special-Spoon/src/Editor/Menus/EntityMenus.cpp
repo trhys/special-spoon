@@ -3,7 +3,7 @@
 #include "Editor/Utils/Helpmarker.h"
 #include "Editor/Blueprints/Blueprint.h"
 
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"

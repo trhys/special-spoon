@@ -1,5 +1,5 @@
 #include "ComponentLoaders.h"
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 #include "ECS/ECS.h"
 #include "Core/ResourceManager/ResourceManager.h"
 #include "Core/Serialization/JsonTypeDefs.h"

@@ -2,7 +2,7 @@
 
 #include "Core.h"
 #include "SceneManager.h"
-#include "EntityManager.h"
+#include "EntityManager/EntityManager.h"
 #include "Renderer.h"
 
 #include "System/InputSystem.h"
@@ -39,6 +39,7 @@ namespace Spoon
 
 		EntityManager& GetEntityManager() { return m_EntityManager; }
 		SystemManager& GetSystemManager() { return m_SystemManager; }
+		Renderer& GetRenderer()			  { return m_Renderer; }
 
 	private:
 		static Application* s_Instance;

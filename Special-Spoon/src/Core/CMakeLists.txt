@@ -6,10 +6,13 @@ target_sources(Special-Spoon
         Application.h
         ComponentArray.h
         Core.h
-        EntityManager.h
         EntryPoint.h
         Renderer.h
         SceneManager.h
+
+        EntityManager/EntityManager.h
+        EntityManager/EntityManager.inl
+        EntityManager/EntityManager.cpp
 
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp
