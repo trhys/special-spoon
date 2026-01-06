@@ -28,9 +28,7 @@ namespace Spoon
         void KillEntity(UUID id);                           // Removes an entity and recycles its UUID
         void ClearEntities();                               // Removes all entities
 
-        // todo: #41 one of these is redundant but im not sure which one
         const std::unordered_map<UUID, std::string>& GetAllEntities() { return m_Entities; }
-        std::unordered_map<UUID, std::string>& GetEntities() { return m_Entities; }
     
     public:
         // ===========================================

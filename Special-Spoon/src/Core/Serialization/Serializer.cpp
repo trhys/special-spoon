@@ -20,7 +20,7 @@ namespace Spoon
         json scenedata;
         scenedata["Entities"] = json::array();
 
-        for (auto& [id, name] : e_Manager.GetEntities())
+        for (auto& [id, name] : e_Manager.GetAllEntities())
         {
             json ent;
             ent["uuid"] = id;

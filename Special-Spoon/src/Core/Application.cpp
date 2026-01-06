@@ -193,7 +193,7 @@ namespace Spoon
                 // Draw to viewport
                 m_Viewport.target.clear();
 
-                if (m_Editor.GetActiveScene() && !m_EntityManager.GetEntities().empty())
+                if (m_Editor.GetActiveScene() && !m_EntityManager.GetAllEntities().empty())
                     m_Renderer.Render(m_Viewport.target, states, m_EntityManager);
                 else // Draw logo if no scene is loaded or scene is empty
                 {
