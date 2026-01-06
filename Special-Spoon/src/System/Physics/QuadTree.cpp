@@ -1,5 +1,5 @@
 #include "QuadTree.h"
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 
 #include <optional>
 #include <iterator>

@@ -48,7 +48,7 @@ namespace Spoon
             {
                 if (ImGui::MenuItem("New Scene")) NewScene = true;
                 if (ImGui::MenuItem("Open Scene")) LoadScene = true;
-                if (ImGui::MenuItem("Save Scene")) ImGui::OpenPopup("Prompt Serialize");
+                if (ImGui::MenuItem("Save Scene", nullptr, false, m_ActiveScene != nullptr)) SaveScene = true;
                 ImGui::Separator();
                 if (ImGui::MenuItem("Scene Manifest")) ViewSceneManifest = !ViewSceneManifest;
                 ImGui::EndMenu();
@@ -82,6 +82,7 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Settings"))
             {
+                ImGui::Checkbox("Display performance metrics", &EditorSettings::Get().displayEditorMetrics);
                 ImGui::Checkbox("Confirm component delete", &EditorSettings::Get().compDelAskAgain);
                 ImGui::EndMenu();
             }
@@ -105,13 +106,25 @@ namespace Spoon
             ImGui::Text("Load/Create a scene to view and create entities!");
         }
 
-        ImGui::Separator();
-        // todo 
+        if (&EditorSettings::Get().displayEditorMetrics)
+        {
+            ImGui::SeparatorText("Performance Metrics");
+            ImGui::Text("AVG FPS: %.1f", ImGui::GetIO().Framerate);
+            ImGui::Text("Current FPS: %.1f", 1.f / tick.asSeconds());
+            ImGui::Text("Draw Calls: %d", Application::Get().GetRenderer().GetDrawCalls());
+            ImGui::SameLine(); HelpMarker("Number of draw calls submitted to the GPU per frame.\n This only counts draws called from the Renderer.\n"
+                                          "External draws (e.g. ImGui) are not counted.");
+            ImGui::Text("Draw Time: %.2f ms", Application::Get().GetRenderer().GetDrawTime());
+            ImGui::SameLine(); HelpMarker("Time spent in the Renderer drawing all renderables this frame.");
+        }
+        else ImGui::Separator();
+
         ImGui::End();
 
         // Scene menus
         if (NewScene)           { NewSceneMenu(s_Manager, this); }
         if (LoadScene)          { LoadSceneMenu(e_Manager, s_Manager, sys_Manager, this); }
+        if (SaveScene)          { SaveSceneMenu(e_Manager, sys_Manager, this); }
         if (ViewSceneManifest)  { SceneManifestMenu(s_Manager, this); }
 
         // System menu
@@ -123,27 +136,6 @@ namespace Spoon
 
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
-
-        if (ImGui::BeginPopupModal("Prompt Serialize", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-        { 
-            ImGui::Text("Do you want to save the active scene?\n This will overwrite the existing scene file.");
-            ImGui::Separator();
-
-            if (ImGui::Button("Yes"))
-            {
-                if (m_ActiveScene)
-                {
-                    Serialize(*m_ActiveScene, e_Manager, sys_Manager);
-                }
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("No"))
-            {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)

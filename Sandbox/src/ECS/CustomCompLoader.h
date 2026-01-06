@@ -6,14 +6,22 @@
 
 void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
 {
-    sf::Vector2f pointA(comp["PointA"]["x"].get<float>(), comp["PointA"]["y"].get<float>());
-    sf::Vector2f pointB(comp["PointB"]["x"].get<float>(), comp["PointB"]["y"].get<float>());
+    std::vector<sf::Vector2f> patrolPoints;
+    if (comp.contains("PatrolPoints"))
+    {
+        for (const auto& point : comp["PatrolPoints"])
+        {
+            float x = point["x"].get<float>();
+            float y = point["y"].get<float>();
+            patrolPoints.emplace_back(x, y);
+        }
+    }
     if (comp.contains("IdleTime"))
     {
         float idleTime = comp["IdleTime"].get<float>();
-        manager.MakeComponent<PatrolComp>(id, pointA, pointB, idleTime);
+        manager.MakeComponent<PatrolComp>(id, patrolPoints, idleTime);
     }
-    else { manager.MakeComponent<PatrolComp>(id, pointA, pointB); }
+    else { manager.MakeComponent<PatrolComp>(id, patrolPoints, 0.0f); }
 
 }
 

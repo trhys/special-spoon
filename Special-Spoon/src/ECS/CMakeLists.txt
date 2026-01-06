@@ -20,4 +20,5 @@ target_sources(Special-Spoon
         ECS.h
         Entity.h
         Entity.inl
+        UUID.h
 )
