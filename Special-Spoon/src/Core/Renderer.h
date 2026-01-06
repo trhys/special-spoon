@@ -16,9 +16,6 @@ namespace Spoon
     class Renderer
     {
     public:
-        Renderer() {}
-        ~Renderer() {}
-
         void Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager)
         {
             // Renderer metrics
@@ -94,24 +91,28 @@ namespace Spoon
             }
 
             // Editor gizmos
-            for (auto& comp : transformArray.m_Components)
+            for (auto& gizmo : m_GizmoRects)
             {
-                if (comp.ActiveGizmo())
-                {
-                    target.draw(comp.rect, states);
-                    m_DrawCalls++;
-                }
+                target.draw(gizmo, states);
+                m_DrawCalls++;
             }
+            ClearActiveGizmos();
 
             // Return metrics
             m_DrawTime = static_cast<float>(drawClock.getElapsedTime().asMilliseconds());
         }
 
+        // Metrics
         int GetDrawCalls() const { return m_DrawCalls; }
         float GetDrawTime() const { return m_DrawTime; }
 
+        // Editor gizmos
+        void AddActiveGizmo(const sf::RectangleShape& rect) { m_GizmoRects.push_back(rect); }
+        void ClearActiveGizmos() { m_GizmoRects.clear(); }
+
     private:
         std::vector<Renderable> m_Renderables;
+        std::vector<sf::RectangleShape> m_GizmoRects;
         int m_DrawCalls = 0;
         float m_DrawTime = 0.f;
     };

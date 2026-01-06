@@ -33,13 +33,13 @@ namespace Spoon
 		void Run();
 		void Update(sf::Time tick);
 		void Shutdown();
-		void HandleEditorGizmos();
 		
 		static Application& Get() { return *s_Instance; }
 
 		EntityManager& GetEntityManager() { return m_EntityManager; }
 		SystemManager& GetSystemManager() { return m_SystemManager; }
 		Renderer& GetRenderer()			  { return m_Renderer; }
+		Editor& GetEditor()				  { return m_Editor; }
 		Viewport& GetViewport()		  	  { return m_Viewport; }
 		sf::RenderWindow& GetWindow()     { return m_Window; }
 

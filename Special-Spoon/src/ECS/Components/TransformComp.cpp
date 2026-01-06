@@ -23,7 +23,7 @@ namespace Spoon
         {
             rect.setOutlineThickness(1.0);
             rect.setOutlineColor(sf::Color::Red);
-            rect.setFillColor(sf::Color::Transparent);
+            rect.setFillColor(sf::Color(255, 0, 0, 100));
             rect.setPosition(m_Transform.getPosition());
             rect.setSize({ 16.0, 16.0 });
             ToggleGizmo();
@@ -79,5 +79,6 @@ namespace Spoon
             }
         }
         else dragging = false;
+        Application::Get().GetRenderer().AddActiveGizmo(rect);
     }
 }

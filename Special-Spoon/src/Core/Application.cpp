@@ -131,54 +131,6 @@ namespace Spoon
             m_Window.close();
     }
 
-    void Application::HandleEditorGizmos()
-    {
-        auto& transArray = m_EntityManager.GetArray<TransformComp>(TransformComp::Name);
-        for (auto& comp : transArray.m_Components)
-        {
-            if (comp.ActiveGizmo())
-            {
-                static sf::Vector2f drag;
-                static bool dragging = false;
-                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-                {
-                    ImVec2 viewportPos = ImGui::GetCursorScreenPos();
-                    sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
-                    sf::Vector2f relativePos{
-                        static_cast<float>(mousePos.x) - viewportPos.x,
-                        static_cast<float>(mousePos.y) - viewportPos.y
-                    };
-                    sf::Vector2f worldPos = m_Viewport.target.mapPixelToCoords(sf::Vector2i(relativePos));
-                    if (!dragging)
-                    {
-                        drag = {
-                        comp.GetPosition().x - worldPos.x,
-                        comp.GetPosition().y - worldPos.y
-                        };
-                        dragging = true;
-                    }
-                    if (dragging)
-                    {
-                        comp.SetPosition(worldPos + drag);
-                        comp.iPos = comp.GetPosition();
-                        comp.rect.setPosition(comp.GetPosition());
-                    }
-                }
-                else dragging = false;
-                break;
-            }
-        }
-        auto& spriteArray = m_EntityManager.GetArray<SpriteComp>(SpriteComp::Name);
-        for (auto& comp : spriteArray.m_Components)
-        {
-            if (comp.ActiveGizmo())
-            {
-                m_Editor.EditTextureRect(comp);
-                break;
-            }
-        }
-    }
-
     void Application::Run()
     {
         sf::RenderStates states;
@@ -237,8 +189,6 @@ namespace Spoon
                 ImGui::Begin("Viewport");
 
                 RenderViewport(m_Viewport);
-
-                HandleEditorGizmos();
 
                 // Draw to viewport
                 m_Viewport.target.clear();

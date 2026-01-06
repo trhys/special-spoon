@@ -16,11 +16,11 @@ namespace Spoon
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-			if (ImGui::Begin("Texture Rect Editor"))
+			if (ImGui::Begin("Texture Rect Editor", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 			{
                 static sf::IntRect rect;
 
-                if (ImGui::BeginChild("TRE Viewport", ImVec2(640, 640), ImGuiChildFlags_Borders))
+                if (ImGui::BeginChild("##TRE Viewport", ImVec2(0, 640), ImGuiChildFlags_Borders))
                 {
                     RenderViewport(m_Viewport);
 
@@ -67,14 +67,14 @@ namespace Spoon
 
                     ImGui::EndChild();
                 }
-                if (ImGui::Button("Confirm"))
+                if (ImGui::Button("Confirm", ImVec2(120, 0)))
                 {
                     comp.SetTextureRect(rect);
                     rect = sf::IntRect();
                     comp.ToggleGizmo();
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("Cancel"))
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
                 {
                     rect = sf::IntRect();
                     comp.ToggleGizmo();
