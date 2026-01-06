@@ -12,28 +12,30 @@ namespace Spoon
 {
     void NewSceneMenu(SceneManager& s_Manager, Editor* editor)
     {
-        static bool firstOpen = true;
-
-        if (firstOpen)
+        if (!ImGui::IsPopupOpen("New Scene") && !ImGui::IsPopupOpen("Prompt Save Before New Scene"))
         {
             if (editor->GetActiveScene())
-            {
-                ImGui::OpenPopup("Prompt Save Before New Scene"); 
-                firstOpen = false;
-            }
+                ImGui::OpenPopup("Prompt Save Before New Scene");
             else
-            {
                 ImGui::OpenPopup("New Scene");
-                firstOpen = false;
-            }  
         }
+
+        // Static buffer to hold new scene ID +
+        // Helper lambda to clear and close popup
+        static char newSceneBuf[64] = {0};
+        auto clear = [&]()
+        {
+            newSceneBuf[0] = '\0';
+            editor->NewScene = false;
+            ImGui::CloseCurrentPopup();
+        };
 
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
         // Prompt to save current scene before creating new scene
-        if (ImGui::BeginPopupModal("Prompt Save Before New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal("Prompt Save Before New Scene", &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Do you want to save the active scene before creating a new scene?\n"
                         "This will overwrite any existing scene file.");
@@ -45,20 +47,20 @@ namespace Spoon
                     Serialize(*editor->GetActiveScene(), Application::Get().GetEntityManager(), Application::Get().GetSystemManager());
                     editor->SetActiveScene(nullptr);
                 }
+                ImGui::CloseCurrentPopup();
                 ImGui::OpenPopup("New Scene");
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel"))
             {
-                editor->NewScene = false;
-                firstOpen = true;
-                ImGui::CloseCurrentPopup();
+                clear();
             }
 
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
             if (ImGui::Button("Continue Without Saving"))
             {
                 editor->SetActiveScene(nullptr);
+                ImGui::CloseCurrentPopup();
                 ImGui::OpenPopup("New Scene");
             }
             ImGui::PopStyleColor();
@@ -68,7 +70,6 @@ namespace Spoon
         }
 
         // Create new scene
-        static char newSceneBuf[64] = {0};
         if(ImGui::BeginPopupModal("New Scene", &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Enter scene ID: "); ImGui::SameLine();
@@ -79,27 +80,19 @@ namespace Spoon
             if(ImGui::InputText("##ID", newSceneBuf, IM_ARRAYSIZE(newSceneBuf), ImGuiInputTextFlags_EnterReturnsTrue) && strlen(newSceneBuf) > 0 )
             {
                 editor->SetActiveScene(s_Manager.CreateScene(newSceneBuf));
-                newSceneBuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
-                editor->NewScene = false;
+                clear();
             }
             if(ImGui::Button("Submit") && strlen(newSceneBuf) > 0 )
             {
                 editor->SetActiveScene(s_Manager.CreateScene(newSceneBuf));
-                newSceneBuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
-                editor->NewScene = false;
-                firstOpen = true;
+                clear();
             }
             ImGui::SetItemDefaultFocus();
             ImGui::SameLine();
 
             if(ImGui::Button("Cancel"))
             {
-                newSceneBuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
-                editor->NewScene = false;
-                firstOpen = true;
+                clear();
             }
             ImGui::EndPopup();
         }
@@ -147,10 +140,10 @@ namespace Spoon
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        ImGui::OpenPopup("Prompt Serialize");
-        editor->SaveScene = false;
+        if (!ImGui::IsPopupOpen("Prompt Serialize"))
+            ImGui::OpenPopup("Prompt Serialize");
 
-        if (ImGui::BeginPopupModal("Prompt Serialize", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal("Prompt Serialize", &editor->SaveScene, ImGuiWindowFlags_AlwaysAutoResize))
         { 
             ImGui::Text("Do you want to save the active scene?\n This will overwrite the existing scene file.");
             ImGui::Separator();

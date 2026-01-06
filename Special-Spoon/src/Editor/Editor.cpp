@@ -82,7 +82,11 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Settings"))
             {
+                ImGui::SeparatorText("Editor Settings");
                 ImGui::Checkbox("Display performance metrics", &EditorSettings::Get().displayEditorMetrics);
+                ImGui::Checkbox("Display ImGui metrics", &EditorSettings::Get().displayImGuiMetrics);
+
+                ImGui::SeparatorText("Prompt Settings");
                 ImGui::Checkbox("Confirm component delete", &EditorSettings::Get().compDelAskAgain);
                 ImGui::EndMenu();
             }
@@ -106,7 +110,8 @@ namespace Spoon
             ImGui::Text("Load/Create a scene to view and create entities!");
         }
 
-        if (&EditorSettings::Get().displayEditorMetrics)
+        // Displays metrics and debug info
+        if (EditorSettings::Get().displayEditorMetrics)
         {
             ImGui::SeparatorText("Performance Metrics");
             ImGui::Text("AVG FPS: %.1f", ImGui::GetIO().Framerate);
@@ -118,6 +123,9 @@ namespace Spoon
             ImGui::SameLine(); HelpMarker("Time spent in the Renderer drawing all renderables this frame.");
         }
         else ImGui::Separator();
+        ImGui::SeparatorText("ImGui Metrics");
+        if (EditorSettings::Get().displayImGuiMetrics)
+            ImGui::ShowMetricsWindow(&EditorSettings::Get().displayImGuiMetrics);
 
         ImGui::End();
 

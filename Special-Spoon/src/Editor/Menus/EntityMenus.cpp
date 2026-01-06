@@ -11,17 +11,19 @@
 namespace Spoon
 {
     static bool AddingComponent = false;
+    static UUID selectedID = 0;
+    static bool changedSelection = false;
 
     void SelectEntity(UUID id)
     {
-        static UUID selectedID = id;
+        selectedID = id;
+        changedSelection = true;
     }
     
     void ViewEntitiesMenu(EntityManager& e_Manager)
     {
         // Display a selectable list of active entities
         const auto& entities = e_Manager.GetAllEntities();
-        static UUID selectedID = 0;
         static std::string selectedComp = "";
 
         ImGui::SeparatorText("Entities");
@@ -38,6 +40,11 @@ namespace Spoon
                 }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
+                if (selectedID == uuid && changedSelection)
+                {
+                    ImGui::SetScrollHereY();
+                    changedSelection = false;
+                }
                 ImGui::PopID();
             }
             ImGui::EndListBox();
