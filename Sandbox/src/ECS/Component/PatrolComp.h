@@ -60,6 +60,14 @@ struct PatrolComp : public Spoon::ComponentBase<PatrolComp>
         if (ActiveGizmo())
         {
             AddPatrolPoint();
+            for (auto& point : m_PatrolPoints)
+            {
+                sf::RectangleShape rect;
+                rect.setFillColor(sf::Color(255, 0, 0, 150));
+                rect.setSize(sf::Vector2f(50.f, 50.f));
+                rect.setPosition(point);
+                Spoon::Application::Get().GetRenderer().AddActiveGizmo(rect);
+            }
         }
     }
 

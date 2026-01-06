@@ -19,6 +19,13 @@ public:
             PatrolComp& patrol = patrolArray.m_Components[in];
             Spoon::UUID entity = patrolArray.m_IndexToId[in];
             
+            if (!patrol.m_PatrolPoints.empty())
+            {
+                patrol.m_Destination = patrol.m_PatrolPoints[patrol.m_CurrentPointIndex];
+            }
+            else
+                continue;
+            
             if(movementArray.m_IdToIndex.count(entity) &&
                 transformArray.m_IdToIndex.count(entity))
             {
