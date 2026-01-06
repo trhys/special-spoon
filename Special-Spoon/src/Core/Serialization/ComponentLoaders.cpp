@@ -25,7 +25,7 @@ namespace Spoon
     {
         auto tcomp = comp.get<TextComp>();
         sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>(tcomp.iFontID);
-        manager.MakeComponent<TextComp>(id, asset, tcomp.iText, tcomp.iCharSize,
+        manager.MakeComponent<TextComp>(id, asset, tcomp.iFontID, tcomp.iText, tcomp.iCharSize,
              tcomp.iColor, tcomp.iOutColor, tcomp.iolThickness, tcomp.isCentered);
     }
 

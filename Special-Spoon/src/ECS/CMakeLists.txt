@@ -6,6 +6,7 @@ target_sources(Special-Spoon
         Components/StateActionComp.h
         Components/StatusComp.h
         Components/TransformComp.h
+        Components/TransformComp.cpp
 
         Components/Animation/AnimationComp.h
         Components/Animation/AnimationData.h

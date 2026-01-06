@@ -8,7 +8,7 @@ namespace Spoon
 {
     struct TextComp : public ComponentBase<TextComp>
     {
-        TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("Default"), std::string text = "",
+        TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("Default"), std::string id = "Default", std::string text = "",
             unsigned int char_size = 30, sf::Color color = sf::Color::White, sf::Color outcolor = sf::Color::White, unsigned int olThickness = 0, bool centered = true)
             : ComponentBase::ComponentBase("Text"), m_Text(asset, text, char_size), isCentered(centered), iText(text),
              iCharSize(char_size), iColor(color), iOutColor(outcolor), iolThickness(olThickness)

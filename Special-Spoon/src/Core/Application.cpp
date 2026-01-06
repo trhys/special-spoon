@@ -179,19 +179,6 @@ namespace Spoon
         }
     }
 
-    void Application::HandleEditorGizmos()
-    {
-        auto& spriteArray = m_EntityManager.GetArray<SpriteComp>();
-        for (auto& comp : spriteArray.m_Components)
-        {
-            if (comp.ActiveGizmo())
-            {
-                m_Editor.EditTextureRect(comp);
-                break;
-            }
-        }
-    }
-
     void Application::Run()
     {
         sf::RenderStates states;

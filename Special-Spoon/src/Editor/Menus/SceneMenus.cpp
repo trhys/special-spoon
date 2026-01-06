@@ -12,17 +12,20 @@ namespace Spoon
 {
     void NewSceneMenu(SceneManager& s_Manager, Editor* editor)
     {
-        if (!ImGui::IsPopupOpen("Prompt Save Before New Scene") && !ImGui::IsPopupOpen("New Scene"))
+        static bool firstOpen = true;
+
+        if (firstOpen)
         {
             if (editor->GetActiveScene())
-        {
-            if (!ImGui::IsPopupOpen("Prompt Save Before New Scene"))
-                ImGui::OpenPopup("Prompt Save Before New Scene");
-        }
+            {
+                ImGui::OpenPopup("Prompt Save Before New Scene"); 
+                firstOpen = false;
+            }
             else
-        {
-            if (!ImGui::IsPopupOpen("New Scene"))
+            {
                 ImGui::OpenPopup("New Scene");
+                firstOpen = false;
+            }  
         }
 
         // Always center this window when appearing
@@ -48,6 +51,7 @@ namespace Spoon
             if (ImGui::Button("Cancel"))
             {
                 editor->NewScene = false;
+                firstOpen = true;
                 ImGui::CloseCurrentPopup();
             }
 
@@ -85,6 +89,7 @@ namespace Spoon
                 newSceneBuf[0] = '\0';
                 ImGui::CloseCurrentPopup();
                 editor->NewScene = false;
+                firstOpen = true;
             }
             ImGui::SetItemDefaultFocus();
             ImGui::SameLine();
@@ -94,6 +99,7 @@ namespace Spoon
                 newSceneBuf[0] = '\0';
                 ImGui::CloseCurrentPopup();
                 editor->NewScene = false;
+                firstOpen = true;
             }
             ImGui::EndPopup();
         }
