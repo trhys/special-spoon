@@ -1,5 +1,5 @@
 #include "SceneManager.h"
-#include "EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 #include "ResourceManager/ResourceManager.h"
 #include "Serialization/ComponentLoaders.h"
 #include "System/SystemManager.h"

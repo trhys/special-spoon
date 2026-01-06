@@ -4,8 +4,9 @@
 
 struct PlayerComp : public Spoon::ComponentBase<PlayerComp>
 {
-    PlayerComp() : ComponentBase::ComponentBase("PlayerComp") {}
+    PlayerComp() : ComponentBase::ComponentBase(PlayerComp::Name) {}
 
+    static constexpr const char* Name = "Player";
     bool empty;
 };
 

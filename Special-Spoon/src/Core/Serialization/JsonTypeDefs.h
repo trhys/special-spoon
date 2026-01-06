@@ -65,6 +65,8 @@ namespace sf
 
 namespace Spoon
 {
+    struct UUID;
+    
     inline void to_json(json& j, const UUID& v)
     {
         j = v.ToString();

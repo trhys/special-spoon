@@ -4,6 +4,7 @@
 #include "Tools/TextureRectTool.h"
 
 #include "SFML/System/Time.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 
 namespace Spoon
 {
@@ -20,7 +21,7 @@ namespace Spoon
         bool Play();
         void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);       
         void EditTextureRect(SpriteComp& comp);
-        void PickEntity(UUID id);
+        void PickEntity(UUID id, EntityManager& e_Manager);
 
         void SetActiveScene(SceneData* scene) { m_ActiveScene = scene; }
         void SetWorkingDir(AssetNode* dir) { workingDir = dir; }
@@ -33,11 +34,14 @@ namespace Spoon
         // Menu flags
         bool NewScene = false;
         bool LoadScene = false;
+        bool SaveScene = false;
         bool ViewSceneManifest = false;
         bool ViewEntities = true;
         bool ViewResources = false;
         bool LoadResources = false;
         bool ViewSystemsMenu = false;
+
+        sf::RectangleShape m_SelectionRect;
 
     private:
         AssetNode* workingDir = nullptr;

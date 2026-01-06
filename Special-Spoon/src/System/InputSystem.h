@@ -2,7 +2,7 @@
 
 #include "System.h"
 #include "ECS/ECS.h"
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 
 #include "SFML/Window/Event.hpp"
 
@@ -31,7 +31,7 @@ namespace Spoon
         void Update(sf::Time tick, EntityManager& manager) override
         {
             manager.ClearActionsBuffer();
-            auto& inputArray = manager.GetArray<InputComp>();
+            auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
 
             for(size_t in = 0; in < inputArray.m_Components.size(); in++)
             {

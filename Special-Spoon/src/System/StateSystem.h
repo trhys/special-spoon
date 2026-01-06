@@ -15,7 +15,7 @@ namespace Spoon
 
         void Update(sf::Time tick, EntityManager& manager) override
         {
-            auto& stateActionArray = manager.GetArray<StateActionComp>();
+            auto& stateActionArray = manager.GetArray<StateActionComp>(StateActionComp::Name);
             for(size_t in = 0; in < stateActionArray.m_Components.size(); in++)
             {
                 StateActionComp& stateComp = stateActionArray.m_Components[in];

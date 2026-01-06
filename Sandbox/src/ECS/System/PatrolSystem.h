@@ -11,9 +11,9 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
-        auto& patrolArray = manager.GetArray<PatrolComp>();
-        auto& movementArray = manager.GetArray<MovementComp>();
-        auto& transformArray = manager.GetArray<Spoon::TransformComp>();
+        auto& patrolArray = manager.GetArray<PatrolComp>(PatrolComp::Name);
+        auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+        auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
         for(size_t in = 0; in < patrolArray.m_Components.size(); in++)
         {
             PatrolComp& patrol = patrolArray.m_Components[in];
@@ -26,14 +26,7 @@ public:
                 Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(entity);
 
                 sf::Vector2f target;
-                if(patrol.m_MovingToA)
-                {
-                    target = patrol.m_PointA - transComp.GetPosition();
-                }
-                else if(patrol.m_MovingToB)
-                {
-                    target = patrol.m_PointB - transComp.GetPosition();
-                }
+                target = patrol.m_Destination - transComp.GetPosition();
                 float normal = std::sqrt(target.x * target.x + target.y * target.y);
 
                 if(normal > 0)
@@ -48,7 +41,7 @@ public:
                     patrol.m_CurrentIdle += tick.asSeconds();
                     if(patrol.m_CurrentIdle > patrol.m_IdleTime)
                     {
-                        patrol.TurnAround();
+                        patrol.NextPoint();
                     }
                 }
             }

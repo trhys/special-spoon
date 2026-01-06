@@ -10,8 +10,8 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
-        auto& movementArray = manager.GetArray<MovementComp>();
-        auto& transformArray = manager.GetArray<Spoon::TransformComp>();
+        auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+        auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
 
         for(size_t index = 0; index < movementArray.m_Components.size(); index++)
         {

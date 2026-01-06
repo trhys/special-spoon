@@ -6,9 +6,10 @@ namespace Spoon
 {
     struct StateActionComp : public ComponentBase<StateActionComp>
     {
-        StateActionComp() : ComponentBase::ComponentBase("StateAction") {}
-        StateActionComp(std::unordered_map<std::string, std::string> stateActions) : ComponentBase::ComponentBase("StateAction"), m_Actions(stateActions) {}
+        StateActionComp() : ComponentBase::ComponentBase(Name) {}
+        StateActionComp(std::unordered_map<std::string, std::string> stateActions) : ComponentBase::ComponentBase(Name), m_Actions(stateActions) {}
 
+        static constexpr const char* Name = "StateAction";
         std::unordered_map<std::string, std::string> m_Actions;
         
         void OnReflect() override

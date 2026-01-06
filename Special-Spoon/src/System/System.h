@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Core.h"
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 #include "SFML/System/Time.hpp"
 
 namespace Spoon

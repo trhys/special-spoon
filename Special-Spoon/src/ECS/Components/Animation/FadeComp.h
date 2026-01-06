@@ -7,8 +7,9 @@ namespace Spoon
 {
     struct FadeComp : public ComponentBase<FadeComp>
     {
-        FadeComp(float rate = 2.0f) : ComponentBase::ComponentBase("Fade"), m_FadeRate(rate) {}
+        FadeComp(float rate = 2.0f) : ComponentBase::ComponentBase(Name), m_FadeRate(rate) {}
 
+        static constexpr const char* Name = "Fade";
         sf::Time m_FadeTimer;
         float m_Alpha;
         float m_FadeRate;

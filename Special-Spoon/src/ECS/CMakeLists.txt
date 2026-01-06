@@ -6,6 +6,7 @@ target_sources(Special-Spoon
         Components/StateActionComp.h
         Components/StatusComp.h
         Components/TransformComp.h
+        Components/TransformComp.cpp
 
         Components/Animation/AnimationComp.h
         Components/Animation/AnimationData.h
@@ -13,6 +14,7 @@ target_sources(Special-Spoon
         Components/Animation/FadeComp.h
 
         Components/Render/SpriteComp.h
+        Components/Render/SpriteComp.cpp
         Components/Render/TextComp.h
         Components/Render/ColorComp.h
         Components/Render/RenderLayer.h
@@ -20,4 +22,5 @@ target_sources(Special-Spoon
         ECS.h
         Entity.h
         Entity.inl
+        UUID.h
 )

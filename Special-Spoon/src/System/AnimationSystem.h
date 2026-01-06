@@ -2,7 +2,7 @@
 
 #include "System.h"
 #include "ECS/ECS.h"
-#include "Core/EntityManager.h"
+#include "Core/EntityManager/EntityManager.h"
 
 namespace Spoon
 {

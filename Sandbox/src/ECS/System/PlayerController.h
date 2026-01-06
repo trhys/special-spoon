@@ -12,9 +12,9 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
-        auto& playerArray = manager.GetArray<PlayerComp>();
-        auto& movementArray = manager.GetArray<MovementComp>();
-        auto& statusArray = manager.GetArray<Spoon::StatusComp>();
+        auto& playerArray = manager.GetArray<PlayerComp>(PlayerComp::Name);
+        auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+        auto& statusArray = manager.GetArray<Spoon::StatusComp>(Spoon::StatusComp::Name);
         auto& actionBuffer = manager.GetActionsBuffer();
 
         for(size_t index = 0; index < playerArray.m_Components.size(); index++)

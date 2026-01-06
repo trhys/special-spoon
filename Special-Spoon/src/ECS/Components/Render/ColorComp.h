@@ -7,8 +7,9 @@ namespace Spoon
 {
     struct ColorComp : public ComponentBase<ColorComp>
     {
-        ColorComp(sf::Color color = sf::Color::White) : ComponentBase::ComponentBase("Color"), m_Color(color) {}
+        ColorComp(sf::Color color = sf::Color::White) : ComponentBase::ComponentBase(Name), m_Color(color) {}
 
+        static constexpr const char* Name = "Color";
         sf::Color m_Color;
 
         void SetColor(sf::Color color) { m_Color = color; }

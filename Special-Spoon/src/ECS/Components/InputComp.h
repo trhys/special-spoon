@@ -11,9 +11,9 @@ namespace Spoon
 {
     struct InputComp : public ComponentBase<InputComp>
     {
-        InputComp() : ComponentBase::ComponentBase("Input") {}
+        InputComp() : ComponentBase::ComponentBase(Name) {}
         InputComp(const std::unordered_map<std::string, std::string>& keyBindings)
-            : ComponentBase::ComponentBase("Input"), m_KeyBindings(keyBindings) 
+            : ComponentBase::ComponentBase(Name), m_KeyBindings(keyBindings) 
             {
                 for (const auto& pair : keyBindings)
                 {
@@ -21,6 +21,7 @@ namespace Spoon
                 }
             }
 
+        static constexpr const char* Name = "Input";
         std::unordered_map<std::string, std::string> m_KeyBindings;
         std::unordered_map<std::string, bool> m_KeyStates;
 
