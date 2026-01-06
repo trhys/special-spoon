@@ -229,7 +229,7 @@ namespace Spoon
                         else
                             selectedID = entities.front();
                     }
-                    m_Editor.PickEntity(selectedID);
+                    m_Editor.PickEntity(selectedID, m_EntityManager);
                 }
 
                 ImGui::End();

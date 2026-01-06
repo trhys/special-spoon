@@ -151,9 +151,9 @@ namespace Spoon
         m_TextureRectTool.Run(comp);
     }
 
-    void Editor::PickEntity(UUID id)
+    void Editor::PickEntity(UUID id, EntityManager& e_Manager)
     {
-        SelectEntity(id);
+        SelectEntity(id, this, e_Manager);
     }
 
     void Editor::Shutdown()
