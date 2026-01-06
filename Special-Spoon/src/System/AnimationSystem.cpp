@@ -43,10 +43,10 @@ namespace Spoon
     void AnimationSystem::Update(sf::Time tick, EntityManager& manager)
     {
         // Default animation components
-        auto& fadeArray = manager.GetArray<FadeComp>();
-        auto& blinkArray = manager.GetArray<BlinkComp>();
-        auto& spriteArray = manager.GetArray<SpriteComp>();
-        auto& textArray = manager.GetArray<TextComp>();
+        auto& fadeArray = manager.GetArray<FadeComp>(FadeComp::Name);
+        auto& blinkArray = manager.GetArray<BlinkComp>(BlinkComp::Name);
+        auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
+        auto& textArray = manager.GetArray<TextComp>(TextComp::Name);
 
         for(size_t in = 0; in < fadeArray.m_Components.size(); in++)
         {
@@ -93,8 +93,8 @@ namespace Spoon
         }
 
         // AnimationComp based animations (defined by scene_data.json files)
-        auto& animationArray = manager.GetArray<AnimationComp>();
-        auto& statusArray = manager.GetArray<StatusComp>();
+        auto& animationArray = manager.GetArray<AnimationComp>(AnimationComp::Name);
+        auto& statusArray = manager.GetArray<StatusComp>(StatusComp::Name);
         
         for(size_t in = 0; in < animationArray.m_Components.size(); in++)
         {

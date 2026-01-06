@@ -5,8 +5,9 @@
 struct PatrolComp : public Spoon::ComponentBase<PatrolComp>
 {    
     PatrolComp(std::vector<sf::Vector2f> patrolPoints = {}, float idleTime = 0.0f) 
-     : ComponentBase::ComponentBase("PatrolComp"), m_PatrolPoints(patrolPoints), m_IdleTime(idleTime) {}
+     : ComponentBase::ComponentBase(PatrolComp::Name), m_PatrolPoints(patrolPoints), m_IdleTime(idleTime) {}
 
+    static constexpr const char* Name = "Patrol";
     float m_IdleTime;
     float m_CurrentIdle = 0.0f;
 

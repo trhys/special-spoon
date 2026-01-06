@@ -44,7 +44,7 @@ namespace Spoon
     void Quadtree::Populate(EntityManager& manager)
     {
         for(auto& leaf : m_GridNodes) { leaf.collision_buffer.clear(); }
-        for(auto& entity : manager.GetAllEntitiesWithComponent<PhysicsComp>())
+        for(auto& entity : manager.GetAllEntitiesWithComponent<PhysicsComp>(PhysicsComp::Name))
         {
             PhysicsComp& phys = manager.GetComponent<PhysicsComp>(entity);
             sf::FloatRect entityBox = phys.GetCollisionBox();

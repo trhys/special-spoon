@@ -28,7 +28,7 @@ namespace Spoon
 
             // Begin sorting renderables by layer
             m_Renderables.clear();
-            auto& layerArray = manager.GetArray<RenderLayer>();
+            auto& layerArray = manager.GetArray<RenderLayer>(RenderLayer::Name);
             for(size_t index = 0; index < layerArray.m_Components.size(); index++)
             {
                 RenderLayer& renderLayer = layerArray.m_Components[index];
@@ -40,10 +40,10 @@ namespace Spoon
                 [](Renderable& a, Renderable& b){ return a.m_Layer < b.m_Layer; });
 
             // Get component arrays
-            auto& transformArray = manager.GetArray<TransformComp>();
-            auto& spriteArray = manager.GetArray<SpriteComp>();
-            auto& textArray = manager.GetArray<TextComp>();
-            auto& colorArray = manager.GetArray<ColorComp>();
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
+            auto& textArray = manager.GetArray<TextComp>(TextComp::Name);
+            auto& colorArray = manager.GetArray<ColorComp>(ColorComp::Name);
 
             for(auto& renderable : m_Renderables)
             {

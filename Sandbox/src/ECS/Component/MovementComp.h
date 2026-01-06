@@ -4,8 +4,9 @@
 
 struct MovementComp : public Spoon::ComponentBase<MovementComp>
 {
-    MovementComp(float speed = 0) : ComponentBase::ComponentBase("MovementComp"), m_Speed(speed) {}
+    MovementComp(float speed = 0) : ComponentBase::ComponentBase(MovementComp::Name), m_Speed(speed) {}
 
+    static constexpr const char* Name = "Movement";
     float m_Speed;
     sf::Vector2f m_Velocity;
     std::string m_FacingLR; // Left, right

@@ -6,8 +6,9 @@ namespace Spoon
 {
 	struct RenderLayer : public ComponentBase<RenderLayer>
 	{
-		RenderLayer(int layer = 0) : ComponentBase::ComponentBase("RenderLayer"), m_Layer(layer) {}
+		RenderLayer(int layer = 0) : ComponentBase::ComponentBase(Name), m_Layer(layer) {}
 
+		static constexpr const char* Name = "RenderLayer";
 		int m_Layer;
 
 		void OnReflect() override

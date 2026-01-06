@@ -55,13 +55,22 @@ namespace Spoon
             ImGui::OpenPopup("New Entity");
         }
         
+        // Static variables for new entity popup +
+        // Helper lambda to clear and close popup
+        static const Blueprint* selectedBP = nullptr;
+        static char newEntityBuf[64];
+        auto clear = [&]()
+        {
+            newEntityBuf[0] = '\0';
+            selectedBP = nullptr;
+            ImGui::CloseCurrentPopup();
+        };
+
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
         if (ImGui::BeginPopupModal("New Entity"))
         {
-            static const Blueprint* selectedBP = nullptr;
-            static char newEntityBuf[64];
             ImGui::InputText("Entity Name", newEntityBuf, IM_ARRAYSIZE(newEntityBuf));
             ImGui::SameLine(); HelpMarker("It's recommended to give your entity some kind of name here. It's not required but"
                                           "will make life easier when you've got many entities in the scene. Entites will be"
@@ -96,16 +105,12 @@ namespace Spoon
                         e_Manager.GetCreators().at(compID)(id);
                     }
                 }
-                newEntityBuf[0] = '\0';
-                selectedBP = nullptr;
-                ImGui::CloseCurrentPopup();
+                clear();
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel"))
             {
-                newEntityBuf[0] = '\0';
-                selectedBP = nullptr;
-                ImGui::CloseCurrentPopup();
+                clear();
             }
             ImGui::EndPopup();
         }
@@ -183,34 +188,57 @@ namespace Spoon
         if(!ImGui::IsPopupOpen(compAdd))
             ImGui::OpenPopup(compAdd);
         static std::unordered_map<std::string, bool> compSelections;
+        static ImGuiTextFilter filter;
 
-        if(ImGui::BeginPopupModal(compAdd))
+        if(ImGui::BeginPopupModal(compAdd, &AddingComponent, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            if (ImGui::BeginChild("Available Components", ImVec2(0, 200)))
+            // Clear selections/filter and set focus on first open
+            if (ImGui::IsWindowAppearing())
             {
-                for (const auto& [type, creator] : manager.GetCreators())
+                compSelections.clear();
+                filter.Clear();
+                ImGui::SetKeyboardFocusHere();
+            }
+
+            // Filter box
+            filter.Draw("Search");
+            ImGui::SameLine(); HelpMarker("Type to filter components by name");
+            ImGui::Separator();
+
+            const auto& arrays = manager.GetAllArrays();
+            if (ImGui::BeginChild("##Available Components", ImVec2(0, 300)))
+            {
+                for (const auto& [type, array] : arrays)
                 {
+                    if (!filter.PassFilter(type.c_str()))
+                        continue;
+
+                    ImGui::PushID(type.c_str());
+                    bool alreadyHas = array->HasEntity(id);
+                    if (alreadyHas)
+                        compSelections[type] = true;
+                    ImGui::BeginDisabled(alreadyHas);
                     ImGui::Checkbox(type.c_str(), &compSelections[type]);
+                    ImGui::EndDisabled();
+                    ImGui::PopID();
                 }
                 ImGui::EndChild();
             }
             
-            if (ImGui::Button("Submit"))
+            if (ImGui::Button("Submit", ImVec2(120, 0)))
             {
-                const auto& arrays = manager.GetAllArrays();
                 for (const auto& [type, array] : arrays)
                 {
-                    if (compSelections[array->GetDisplayName()])
+                    if (compSelections[type] && !array->HasEntity(id))
                     {
-                        bool alreadyExists = array->HasEntity(id);
-                        if (!alreadyExists) manager.GetCreators().at(array->GetDisplayName())(id);
+                        manager.GetCreators().at(type)(id);
                     }
                 }
                 
                 AddingComponent = false;
                 ImGui::CloseCurrentPopup();
             }
-            if(ImGui::Button("Cancel"))
+            if(ImGui::Button("Cancel", ImVec2(120, 0)))
             {
                 AddingComponent = false;
                 ImGui::CloseCurrentPopup();

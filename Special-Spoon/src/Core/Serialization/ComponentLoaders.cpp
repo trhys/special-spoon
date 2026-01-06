@@ -85,18 +85,18 @@ namespace Spoon
     void RegisterDefaultLoaders()
     {
         SS_DEBUG_LOG("[COMPONENT] Registering default component loaders...")
-        ComponentLoaders::RegisterCompLoader("Transform", &LoadTransformComponent);
-        ComponentLoaders::RegisterCompLoader("Sprite", &LoadSpriteComponent);
-        ComponentLoaders::RegisterCompLoader("Text", &LoadTextComponent);
-        ComponentLoaders::RegisterCompLoader("Animation", &LoadAnimationComponent);
-        ComponentLoaders::RegisterCompLoader("Status", &LoadStatusComponent);
-        ComponentLoaders::RegisterCompLoader("Blink", &LoadBlinkComponent);
-        ComponentLoaders::RegisterCompLoader("Fade", &LoadFadeComponent);
-        ComponentLoaders::RegisterCompLoader("Input", &LoadInputComponent);
-        ComponentLoaders::RegisterCompLoader("StateAction", &LoadStateActionComponent);
-        ComponentLoaders::RegisterCompLoader("RenderLayer", &LoadRenderLayer);
-        ComponentLoaders::RegisterCompLoader("Physics", &LoadPhysicsComponent);
-        ComponentLoaders::RegisterCompLoader("Color", &LoadColorComponent);
+        ComponentLoaders::RegisterCompLoader(TransformComp::Name, &LoadTransformComponent);
+        ComponentLoaders::RegisterCompLoader(SpriteComp::Name, &LoadSpriteComponent);
+        ComponentLoaders::RegisterCompLoader(TextComp::Name, &LoadTextComponent);
+        ComponentLoaders::RegisterCompLoader(AnimationComp::Name, &LoadAnimationComponent);
+        ComponentLoaders::RegisterCompLoader(StatusComp::Name, &LoadStatusComponent);
+        ComponentLoaders::RegisterCompLoader(BlinkComp::Name, &LoadBlinkComponent);
+        ComponentLoaders::RegisterCompLoader(FadeComp::Name, &LoadFadeComponent);
+        ComponentLoaders::RegisterCompLoader(InputComp::Name, &LoadInputComponent);
+        ComponentLoaders::RegisterCompLoader(StateActionComp::Name, &LoadStateActionComponent);
+        ComponentLoaders::RegisterCompLoader(RenderLayer::Name, &LoadRenderLayer);
+        ComponentLoaders::RegisterCompLoader(PhysicsComp::Name, &LoadPhysicsComponent);
+        ComponentLoaders::RegisterCompLoader(ColorComp::Name, &LoadColorComponent);
     }
 
     namespace

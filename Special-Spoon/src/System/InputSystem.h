@@ -31,7 +31,7 @@ namespace Spoon
         void Update(sf::Time tick, EntityManager& manager) override
         {
             manager.ClearActionsBuffer();
-            auto& inputArray = manager.GetArray<InputComp>();
+            auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
 
             for(size_t in = 0; in < inputArray.m_Components.size(); in++)
             {

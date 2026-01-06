@@ -38,7 +38,7 @@ void LoadPlayerComp(Spoon::EntityManager& manager, Spoon::UUID id, const nlohman
 
 void RegisterCustomLoaders()
 {
-    Spoon::ComponentLoaders::RegisterCompLoader("PatrolComp", &LoadPatrolComponent);
-    Spoon::ComponentLoaders::RegisterCompLoader("Movement", &LoadMovementComp);
-    Spoon::ComponentLoaders::RegisterCompLoader("PlayerComp", &LoadPlayerComp);
+    Spoon::ComponentLoaders::RegisterCompLoader(PatrolComp::Name, &LoadPatrolComponent);
+    Spoon::ComponentLoaders::RegisterCompLoader(MovementComp::Name, &LoadMovementComp);
+    Spoon::ComponentLoaders::RegisterCompLoader(PlayerComp::Name, &LoadPlayerComp);
 }

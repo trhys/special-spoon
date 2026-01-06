@@ -7,8 +7,9 @@ namespace Spoon
 {
     struct BlinkComp : public ComponentBase<BlinkComp>
     {
-        BlinkComp(float rate = 2.0f) : ComponentBase::ComponentBase("Blink"), m_Blinkrate(rate) {}
+        BlinkComp(float rate = 2.0f) : ComponentBase::ComponentBase(Name), m_Blinkrate(rate) {}
 
+        static constexpr const char* Name = "Blink";
         sf::Time m_BlinkTimer;
         float m_Alpha = 255.0f;
         float m_Blinkrate;

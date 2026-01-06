@@ -11,9 +11,9 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
-        auto& patrolArray = manager.GetArray<PatrolComp>();
-        auto& movementArray = manager.GetArray<MovementComp>();
-        auto& transformArray = manager.GetArray<Spoon::TransformComp>();
+        auto& patrolArray = manager.GetArray<PatrolComp>(PatrolComp::Name);
+        auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+        auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
         for(size_t in = 0; in < patrolArray.m_Components.size(); in++)
         {
             PatrolComp& patrol = patrolArray.m_Components[in];

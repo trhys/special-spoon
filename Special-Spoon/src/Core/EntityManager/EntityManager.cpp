@@ -6,18 +6,18 @@ namespace Spoon
     void EntityManager::LoadDefaultArrays()
     {
         SS_DEBUG_LOG("Loading default component arrays")
-        LoadArray<TransformComp>("Transform");
-        LoadArray<InputComp>("Input");
-        LoadArray<StatusComp>("Status");
-        LoadArray<SpriteComp>("Sprite");
-        LoadArray<TextComp>("Text");
-        LoadArray<ColorComp>("Color");
-        LoadArray<PhysicsComp>("Physics");
-        LoadArray<BlinkComp>("Blink");
-        LoadArray<FadeComp>("Fade");
-        LoadArray<AnimationComp>("Animation");
-        LoadArray<StateActionComp>("StateAction");
-        LoadArray<RenderLayer>("RenderLayer");
+        LoadArray<TransformComp>(TransformComp::Name);
+        LoadArray<InputComp>(InputComp::Name);
+        LoadArray<StatusComp>(StatusComp::Name);
+        LoadArray<SpriteComp>(SpriteComp::Name);
+        LoadArray<TextComp>(TextComp::Name);
+        LoadArray<ColorComp>(ColorComp::Name);
+        LoadArray<PhysicsComp>(PhysicsComp::Name);
+        LoadArray<BlinkComp>(BlinkComp::Name);
+        LoadArray<FadeComp>(FadeComp::Name);
+        LoadArray<AnimationComp>(AnimationComp::Name);
+        LoadArray<StateActionComp>(StateActionComp::Name);
+        LoadArray<RenderLayer>(RenderLayer::Name);
     }
 
     // ===========================================
@@ -130,9 +130,9 @@ namespace Spoon
     {
         std::vector<UUID> pickedEntities;
 
-        auto& transArray = GetArray<TransformComp>();
-        auto& spriteArray = GetArray<SpriteComp>();
-        auto& textArray = GetArray<TextComp>();
+        auto& transArray = GetArray<TransformComp>(TransformComp::Name);
+        auto& spriteArray = GetArray<SpriteComp>(SpriteComp::Name);
+        auto& textArray = GetArray<TextComp>(TextComp::Name);
 
         for (size_t index = 0; index < transArray.m_Components.size(); index++)
         {

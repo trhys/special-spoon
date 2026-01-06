@@ -8,10 +8,11 @@ namespace Spoon
     struct PhysicsComp : public ComponentBase<PhysicsComp>
     {
     public:
-        PhysicsComp() : ComponentBase::ComponentBase("Physics") {}
-        PhysicsComp(sf::FloatRect rect) : ComponentBase::ComponentBase("Physics"), m_CollisionBox(rect) {}
-        ~PhysicsComp() {}
-        
+        PhysicsComp() : ComponentBase::ComponentBase(Name) {}
+        PhysicsComp(sf::FloatRect rect) : ComponentBase::ComponentBase(Name), m_CollisionBox(rect) {}
+
+        static constexpr const char* Name = "Physics";
+
         void SetPosition(sf::Vector2f pos) 
         { 
             m_CollisionBox.position.x = pos.x;

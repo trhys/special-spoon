@@ -133,7 +133,7 @@ namespace Spoon
 
     void Application::HandleEditorGizmos()
     {
-        auto& transArray = m_EntityManager.GetArray<TransformComp>();
+        auto& transArray = m_EntityManager.GetArray<TransformComp>(TransformComp::Name);
         for (auto& comp : transArray.m_Components)
         {
             if (comp.ActiveGizmo())
@@ -168,7 +168,7 @@ namespace Spoon
                 break;
             }
         }
-        auto& spriteArray = m_EntityManager.GetArray<SpriteComp>();
+        auto& spriteArray = m_EntityManager.GetArray<SpriteComp>(SpriteComp::Name);
         for (auto& comp : spriteArray.m_Components)
         {
             if (comp.ActiveGizmo())

@@ -50,11 +50,14 @@ namespace Spoon
 
         // Load a component array for a specific component type
         template<typename COMP>
-        void LoadArray(std::string displayName);
+        void LoadArray(const std::string& displayName);
 
+        // ===========================================
+        // CURRENTLY REFACTORING TO USE DISPLAY NAMES INSTEAD OF TYPEIDS
         // Get a reference to a specific component array
         template<typename COMP>
-        ComponentArray<COMP>& GetArray();
+        ComponentArray<COMP>& GetArray(const std::string& displayName);
+        // ===========================================
 
         // Get a specific component of an entity
         template<typename COMP>
@@ -62,7 +65,7 @@ namespace Spoon
 
         // Get all entities that have a specific component
         template<typename COMP>
-        std::vector<UUID> GetAllEntitiesWithComponent();
+        std::vector<UUID> GetAllEntitiesWithComponent(const std::string& displayName);
 
         // Get all components of a specific entity
         std::vector<Component*> GetAllComponentsOfEntity(UUID id);

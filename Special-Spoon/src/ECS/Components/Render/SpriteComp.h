@@ -9,18 +9,19 @@ namespace Spoon
     struct SpriteComp : public ComponentBase<SpriteComp>
     {
         SpriteComp(sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>("empty"), bool centered = false, std::string textureID = "empty")
-            : ComponentBase::ComponentBase("Sprite"), m_Sprite(asset), isCentered(centered), m_TextureID(textureID)
+            : ComponentBase::ComponentBase(Name), m_Sprite(asset), isCentered(centered), m_TextureID(textureID)
         {
             if (centered) { CenterOrigin(); }
         }
 
         SpriteComp(sf::Texture& asset, const sf::IntRect& rect, bool centered, std::string& textureID)
-            : ComponentBase::ComponentBase("Sprite"), m_Sprite(asset), m_TextureRect(rect), isCentered(centered), m_TextureID(textureID)
+            : ComponentBase::ComponentBase(Name), m_Sprite(asset), m_TextureRect(rect), isCentered(centered), m_TextureID(textureID)
         {
             m_Sprite.setTextureRect(rect);
             if (centered) { CenterOrigin(); }
         }
 
+        static constexpr const char* Name = "Sprite";
         sf::Sprite m_Sprite;
         sf::IntRect m_TextureRect;
         std::string m_TextureID;

@@ -8,8 +8,8 @@ namespace Spoon
 {
     struct TransformComp : public ComponentBase<TransformComp>
     {
-        TransformComp() : ComponentBase::ComponentBase("Transform") {}
-        TransformComp(sf::Vector2f pos, sf::Vector2f scale, float rotation) : ComponentBase::ComponentBase("Transform"), iPos(pos), iScale(scale), iRot(rotation)
+        TransformComp() : ComponentBase::ComponentBase(Name) {}
+        TransformComp(sf::Vector2f pos, sf::Vector2f scale, float rotation) : ComponentBase::ComponentBase(Name), iPos(pos), iScale(scale), iRot(rotation)
         {
             SetPosition(pos);
             SetScale(scale);
@@ -18,6 +18,7 @@ namespace Spoon
         ~TransformComp() {}
 
         // Core members
+        static constexpr const char* Name = "Transform";
         sf::Transformable m_Transform;
         sf::Vector2f m_CurrentPosition;
 
