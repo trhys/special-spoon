@@ -28,41 +28,44 @@ public:
 
             movement.m_Velocity = { 0.0, 0.0 };
 
-            auto found = actionBuffer.find(ID);
-            if (found != actionBuffer.end())
-            {
-                std::string triggeredAction = found->second;
-                status.m_CurrentState = triggeredAction;
-            }
+            // CURRENTLY REFACTORING ACTION SYSTEM =============================
+            // auto found = actionBuffer.find(ID);
+            // if (found != actionBuffer.end())
+            // {
+            //     std::string triggeredAction = found->second;
+            //     status.m_CurrentState = triggeredAction;
+            // }
 
-            for(const auto& keyState : input.m_KeyStates)
-            {
-                if(keyState.second)
-                {
-                    std::string keypressed = keyState.first;
-                    std::string action = input.m_KeyBindings[keypressed];
+            // for(const auto& keyState : input.m_KeyStates)
+            // {
+            //     if(keyState.second)
+            //     {
+            //         std::string keypressed = keyState.first;
+            //         std::string action = input.m_KeyBindings[keypressed];
 
-                    if(action == "MoveUp")
-                    {
-                        movement.m_Velocity.y -= movement.m_Speed;
-                    }
-                    else if(action == "MoveDown")
-                    {
-                        movement.m_Velocity.y += movement.m_Speed;
-                    }
-                    else if(action == "MoveLeft")
-                    {
-                        movement.m_Velocity.x -= movement.m_Speed;
-                    }
-                    else if (action == "MoveRight")
-                    {
-                        movement.m_Velocity.x += movement.m_Speed;
-                    }
-                }
-            }
+            //         if(action == "MoveUp")
+            //         {
+            //             movement.m_Velocity.y -= movement.m_Speed;
+            //         }
+            //         else if(action == "MoveDown")
+            //         {
+            //             movement.m_Velocity.y += movement.m_Speed;
+            //         }
+            //         else if(action == "MoveLeft")
+            //         {
+            //             movement.m_Velocity.x -= movement.m_Speed;
+            //         }
+            //         else if (action == "MoveRight")
+            //         {
+            //             movement.m_Velocity.x += movement.m_Speed;
+            //         }
+            //     }
+            // }
+            // ==================================================================
+
             if (movement.m_Velocity == sf::Vector2f{ 0.0, 0.0 })
             {
-                status.m_CurrentState = "Player-IdleFront";
+                status.m_CurrentState = "Player-Idle" + std::string(movement.m_Facing.m_Direction);
             }
         }
     }

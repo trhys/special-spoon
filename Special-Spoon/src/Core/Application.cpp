@@ -143,6 +143,9 @@ namespace Spoon
 
         while (m_IsRunning)
         {
+            // Clear action queue
+            m_ActionQueue.Clear();
+            
             // Event polling
             m_Window.handleEvents
             (

@@ -26,10 +26,11 @@ public:
                 transComp.SetPosition(sf::Vector2f(targetX, targetY));
 
                 // Determine direction of travel
-                if(moveComp.m_Velocity.x > 0) { moveComp.m_FacingLR = "Right"; }
-                else { moveComp.m_FacingLR = "Left"; }
-                if(moveComp.m_Velocity.y > 0) { moveComp.m_FacingUD = "Up"; }
-                else { moveComp.m_FacingUD = "Down"; }
+                if(moveComp.m_Velocity.x != 0 || moveComp.m_Velocity.y != 0)
+                {
+                    moveComp.m_Facing.m_Angle = std::atan2(moveComp.m_Velocity.y, moveComp.m_Velocity.x) * 180.f / 3.14159f;
+                    moveComp.m_Facing.UpdateDirection();
+                }
             }
             else
             {

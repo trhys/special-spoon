@@ -3,6 +3,7 @@ target_sources(Special-Spoon
         Application.cpp
         SceneManager.cpp    
 
+        ActionQueue.h
         Application.h
         ComponentArray.h
         Core.h
@@ -14,6 +15,8 @@ target_sources(Special-Spoon
         EntityManager/EntityManager.inl
         EntityManager/EntityManager.cpp
 
+        Registers/ActionRegistry.h
+        
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp
         ResourceManager/ResourceManager.inl

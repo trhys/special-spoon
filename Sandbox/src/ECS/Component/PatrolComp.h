@@ -8,10 +8,14 @@ struct PatrolComp : public Spoon::ComponentBase<PatrolComp>
      : ComponentBase::ComponentBase(PatrolComp::Name), m_PatrolPoints(patrolPoints), m_IdleTime(idleTime) {}
 
     static constexpr const char* Name = "Patrol";
+
+    // Core members
     float m_IdleTime;
     float m_CurrentIdle = 0.0f;
-
     std::vector<sf::Vector2f> m_PatrolPoints;
+
+    // Runtime members
+    bool isPatrolling = true;
     sf::Vector2f m_Destination;
     int m_CurrentPointIndex = 0;
 

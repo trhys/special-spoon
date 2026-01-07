@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "ActionQueue.h"
 #include "SceneManager.h"
 #include "EntityManager/EntityManager.h"
 #include "Renderer.h"
@@ -42,6 +43,7 @@ namespace Spoon
 		Editor& GetEditor()				  { return m_Editor; }
 		Viewport& GetViewport()		  	  { return m_Viewport; }
 		sf::RenderWindow& GetWindow()     { return m_Window; }
+		ActionQueue& GetActionQueue()     { return m_ActionQueue; }
 
 	private:
 		static Application* s_Instance;
@@ -54,6 +56,7 @@ namespace Spoon
 		SystemManager	  m_SystemManager;
 		Renderer		  m_Renderer;
 		Editor 			  m_Editor;
+		ActionQueue	  	  m_ActionQueue;
 
 		AppSpecifications m_Specs;
 		Viewport		  m_Viewport;
