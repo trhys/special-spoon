@@ -46,7 +46,7 @@ namespace Spoon
         for(auto& leaf : m_GridNodes) { leaf.collision_buffer.clear(); }
         for(auto& entity : manager.GetAllEntitiesWithComponent<PhysicsComp>(PhysicsComp::Name))
         {
-            PhysicsComp& phys = manager.GetComponent<PhysicsComp>(entity);
+            PhysicsComp& phys = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
             sf::FloatRect entityBox = phys.GetCollisionBox();
             for(auto& leaf : m_GridNodes)
             {
@@ -86,8 +86,8 @@ namespace Spoon
         {
             UUID entityA = pair.first;
             UUID entityB = pair.second;
-            PhysicsComp& physA = manager.GetComponent<PhysicsComp>(entityA);
-            PhysicsComp& physB = manager.GetComponent<PhysicsComp>(entityB);
+            PhysicsComp& physA = manager.GetComponent<PhysicsComp>(entityA, PhysicsComp::Name);
+            PhysicsComp& physB = manager.GetComponent<PhysicsComp>(entityB, PhysicsComp::Name);
 
             if(const std::optional collision = physA.GetCollisionBox().findIntersection(physB.GetCollisionBox()))
             {

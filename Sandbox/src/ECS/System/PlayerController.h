@@ -22,9 +22,9 @@ public:
             PlayerComp& player = playerArray.m_Components[index];
             Spoon::UUID ID = playerArray.m_IndexToId[index];
 
-            Spoon::StatusComp& status = manager.GetComponent<Spoon::StatusComp>(ID);
-            MovementComp& movement = manager.GetComponent<MovementComp>(ID);
-            Spoon::InputComp& input = manager.GetComponent<Spoon::InputComp>(ID);
+            Spoon::StatusComp& status = manager.GetComponent<Spoon::StatusComp>(ID, Spoon::StatusComp::Name);
+            MovementComp& movement = manager.GetComponent<MovementComp>(ID, MovementComp::Name);
+            Spoon::InputComp& input = manager.GetComponent<Spoon::InputComp>(ID, Spoon::InputComp::Name);
 
             movement.m_Velocity = { 0.0, 0.0 };
 

@@ -57,13 +57,13 @@ namespace Spoon
             {
                 if(spriteArray.m_IdToIndex.count(id))
                 {
-                    SpriteComp& spriteComp = manager.GetComponent<SpriteComp>(id);
+                    SpriteComp& spriteComp = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
                     FadeAnimation(tick, fadecomp);
                     spriteComp.SetAlpha(fadecomp.m_Alpha);
                 }
                 else if (textArray.m_IdToIndex.count(id))
                 {
-                    TextComp& textComp = manager.GetComponent<TextComp>(id);
+                    TextComp& textComp = manager.GetComponent<TextComp>(id, TextComp::Name);
                     FadeAnimation(tick, fadecomp);
                     textComp.SetAlpha(fadecomp.m_Alpha);
                 }
@@ -79,13 +79,13 @@ namespace Spoon
             {
                 if (spriteArray.m_IdToIndex.count(id))
                 {
-                    SpriteComp& spriteComp = manager.GetComponent<SpriteComp>(id);
+                    SpriteComp& spriteComp = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
                     BlinkAnimation(tick, blinkcomp);
                     spriteComp.SetAlpha(blinkcomp.m_Alpha);
                 }
                 else if (textArray.m_IdToIndex.count(id))
                 {
-                    TextComp& textComp = manager.GetComponent<TextComp>(id);
+                    TextComp& textComp = manager.GetComponent<TextComp>(id, TextComp::Name);
                     BlinkAnimation(tick, blinkcomp);
                     textComp.SetAlpha(blinkcomp.m_Alpha);
                 }

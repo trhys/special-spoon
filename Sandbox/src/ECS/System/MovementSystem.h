@@ -20,7 +20,7 @@ public:
 
             if(transformArray.m_IdToIndex.count(ID))
             {
-                Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(ID);
+                Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(ID, Spoon::TransformComp::Name);
                 float targetX = transComp.GetPosition().x + moveComp.m_Velocity.x * tick.asSeconds();
                 float targetY = transComp.GetPosition().y + moveComp.m_Velocity.y * tick.asSeconds();
                 transComp.SetPosition(sf::Vector2f(targetX, targetY));

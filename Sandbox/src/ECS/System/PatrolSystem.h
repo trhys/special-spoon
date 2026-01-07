@@ -29,8 +29,8 @@ public:
             if(movementArray.m_IdToIndex.count(entity) &&
                 transformArray.m_IdToIndex.count(entity))
             {
-                MovementComp& moveComp = manager.GetComponent<MovementComp>(entity);
-                Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(entity);
+                MovementComp& moveComp = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
+                Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(entity, Spoon::TransformComp::Name);
 
                 sf::Vector2f target;
                 target = patrol.m_Destination - transComp.GetPosition();

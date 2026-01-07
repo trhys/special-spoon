@@ -35,7 +35,7 @@ namespace Spoon
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
         // Prompt to save current scene before creating new scene
-        if (ImGui::BeginPopupModal("Prompt Save Before New Scene", &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal("Prompt Save Before New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Do you want to save the active scene before creating a new scene?\n"
                         "This will overwrite any existing scene file.");
@@ -70,7 +70,7 @@ namespace Spoon
         }
 
         // Create new scene
-        if(ImGui::BeginPopupModal("New Scene", &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
+        if(ImGui::BeginPopupModal("New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Enter scene ID: "); ImGui::SameLine();
 

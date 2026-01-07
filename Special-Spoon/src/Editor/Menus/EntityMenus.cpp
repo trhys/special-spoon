@@ -36,14 +36,14 @@ namespace Spoon
         auto& textArray = manager.GetArray<TextComp>(TextComp::Name);
         if (spriteArray.m_IdToIndex.count(id))
         {
-            SpriteComp& sprite = manager.GetComponent<SpriteComp>(id);
+            SpriteComp& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
             sf::FloatRect bounds = sprite.m_Sprite.getGlobalBounds();
             editor->m_SelectionRect.setPosition(sf::Vector2f(bounds.position.x, bounds.position.y));
             editor->m_SelectionRect.setSize(sf::Vector2f(bounds.size.x, bounds.size.y));
         }
         else if (textArray.m_IdToIndex.count(id))
         {
-            TextComp& text = manager.GetComponent<TextComp>(id);
+            TextComp& text = manager.GetComponent<TextComp>(id, TextComp::Name);
             sf::FloatRect bounds = text.m_Text.getGlobalBounds();
             editor->m_SelectionRect.setPosition(sf::Vector2f(bounds.position.x, bounds.position.y));
             editor->m_SelectionRect.setSize(sf::Vector2f(bounds.size.x, bounds.size.y));

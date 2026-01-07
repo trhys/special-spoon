@@ -11,75 +11,75 @@ namespace Spoon
         sf::Vector2f pos = comp["iPos"].get<sf::Vector2f>();
         sf::Vector2f scale = comp["iScale"].get<sf::Vector2f>();
         float rot = comp["iRot"].get<float>();
-        manager.MakeComponent<TransformComp>(id, pos, scale, rot);
+        manager.MakeComponent<TransformComp>(id, TransformComp::Name, pos, scale, rot);
     }
 
     void LoadSpriteComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto scomp = comp.get<SpriteComp>();
         sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>(scomp.m_TextureID);
-        manager.MakeComponent<SpriteComp>(id, asset, scomp.m_TextureRect, scomp.isCentered, scomp.m_TextureID);
+        manager.MakeComponent<SpriteComp>(id, SpriteComp::Name, asset, scomp.m_TextureRect, scomp.isCentered, scomp.m_TextureID);
     }
 
     void LoadTextComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto tcomp = comp.get<TextComp>();
         sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>(tcomp.iFontID);
-        manager.MakeComponent<TextComp>(id, asset, tcomp.iFontID, tcomp.iText, tcomp.iCharSize,
+        manager.MakeComponent<TextComp>(id, TextComp::Name, asset, tcomp.iFontID, tcomp.iText, tcomp.iCharSize,
              tcomp.iColor, tcomp.iOutColor, tcomp.iolThickness, tcomp.isCentered);
     }
 
     void LoadAnimationComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto acomp = comp.get<AnimationComp>();
-        manager.MakeComponent<AnimationComp>(id, acomp.iAnimationID, acomp.m_AnimationMap);
+        manager.MakeComponent<AnimationComp>(id, AnimationComp::Name, acomp.iAnimationID, acomp.m_AnimationMap);
     }
 
     void LoadStatusComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto status = comp.get<StatusComp>();
-        manager.MakeComponent<StatusComp>(id, status.is_Active, status.m_CurrentState);
+        manager.MakeComponent<StatusComp>(id, StatusComp::Name, status.is_Active, status.m_CurrentState);
     }
 
     void LoadBlinkComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto blink = comp.get<BlinkComp>();
-        manager.MakeComponent<BlinkComp>(id, blink.m_Blinkrate);
+        manager.MakeComponent<BlinkComp>(id, BlinkComp::Name, blink.m_Blinkrate);
     }
 
     void LoadFadeComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto fade = comp.get<FadeComp>();
-        manager.MakeComponent<FadeComp>(id, fade.m_FadeRate);
+        manager.MakeComponent<FadeComp>(id, FadeComp::Name, fade.m_FadeRate);
     }
 
     void LoadInputComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto input = comp.get<InputComp>();
-        manager.MakeComponent<InputComp>(id, input.m_KeyBindings);
+        manager.MakeComponent<InputComp>(id, InputComp::Name, input.m_KeyBindings);
     }
 
     void LoadStateActionComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto component = comp.get<StateActionComp>();
-        manager.MakeComponent<StateActionComp>(id, component.m_Actions);
+        manager.MakeComponent<StateActionComp>(id, StateActionComp::Name, component.m_Actions);
     }
 
     void LoadRenderLayer(EntityManager& manager, UUID id, const json& comp)
     {
         auto renderlayer = comp.get<RenderLayer>();
-        manager.MakeComponent<RenderLayer>(id, renderlayer.m_Layer);
+        manager.MakeComponent<RenderLayer>(id, RenderLayer::Name, renderlayer.m_Layer);
     }
 
     void LoadPhysicsComponent(EntityManager& manager, UUID id, const json& comp)
     {
-        manager.MakeComponent<PhysicsComp>(id);
+        manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
     }
 
     void LoadColorComponent(EntityManager& manager, UUID id, const json& comp)
     {
         sf::Color color = comp.get<sf::Color>();
-        manager.MakeComponent<ColorComp>(id, color);
+        manager.MakeComponent<ColorComp>(id, ColorComp::Name, color);
     }
 
     void RegisterDefaultLoaders()

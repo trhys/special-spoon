@@ -19,21 +19,21 @@ void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nl
     if (comp.contains("IdleTime"))
     {
         float idleTime = comp["IdleTime"].get<float>();
-        manager.MakeComponent<PatrolComp>(id, patrolPoints, idleTime);
+        manager.MakeComponent<PatrolComp>(id, PatrolComp::Name, patrolPoints, idleTime);
     }
-    else { manager.MakeComponent<PatrolComp>(id, patrolPoints, 0.0f); }
+    else { manager.MakeComponent<PatrolComp>(id, PatrolComp::Name, patrolPoints, 0.0f); }
 
 }
 
 void LoadMovementComp(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
 {
     float speed = comp["Speed"].get<float>();
-    manager.MakeComponent<MovementComp>(id, speed);
+    manager.MakeComponent<MovementComp>(id, MovementComp::Name, speed);
 }
 
 void LoadPlayerComp(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
 {
-    manager.MakeComponent<PlayerComp>(id);
+    manager.MakeComponent<PlayerComp>(id, PlayerComp::Name);
 }
 
 void RegisterCustomLoaders()

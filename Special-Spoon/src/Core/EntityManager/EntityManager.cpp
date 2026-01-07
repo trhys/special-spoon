@@ -143,7 +143,7 @@ namespace Spoon
             {
                 if (textArray.HasEntity(id))
                 {
-                    TextComp& textComp = GetComponent<TextComp>(id);
+                    TextComp& textComp = GetComponent<TextComp>(id, TextComp::Name);
                     sf::FloatRect bounds = textComp.m_Text.getGlobalBounds();
                     if (bounds.contains(worldMouse))
                     {
@@ -153,7 +153,7 @@ namespace Spoon
                 continue;
             }
 
-            SpriteComp& spriteComp = GetComponent<SpriteComp>(id);
+            SpriteComp& spriteComp = GetComponent<SpriteComp>(id, SpriteComp::Name);
             sf::FloatRect bounds = spriteComp.m_Sprite.getGlobalBounds();
             if (bounds.contains(worldMouse))
             {
