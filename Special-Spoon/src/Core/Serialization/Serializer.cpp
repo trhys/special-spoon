@@ -1,6 +1,7 @@
 #include "Serializer.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "Core/SceneManager.h"
+#include "Core/Application.h"
 #include "System/SystemManager.h"
 
 #include "nlohmann/json.hpp"
@@ -9,12 +10,14 @@ using json = nlohmann::json;
 
 namespace Spoon
 {
-    void Serialize(SceneData scene, EntityManager& e_Manager, SystemManager& s_Manager)
+    void SerializeScene(SceneData scene, EntityManager& e_Manager, SystemManager& s_Manager)
     {
+        auto* project = Application::Get().GetProjectManager().GetCurrentProject();
+
         std::ofstream data(scene.DataFiles, std::ios::out | std::ios::trunc);
         if (!data.is_open())
         {
-            throw std::runtime_error("Failed to open scene data file at path: " + scene.DataFiles);
+            throw std::runtime_error("Failed to open scene data file at path: " + scene.DataFiles.string());
         }
 
         json scenedata;
@@ -51,7 +54,7 @@ namespace Spoon
         std::ofstream assets(scene.ResourceFiles, std::ios::out | std::ios::trunc);
         if (!assets.is_open())
         {
-            throw std::runtime_error("Failed to open scene resource file at path: " + scene.ResourceFiles);
+            throw std::runtime_error("Failed to open scene resource file at path: " + scene.ResourceFiles.string());
         }
 
         json sceneAssets;
@@ -64,7 +67,14 @@ namespace Spoon
         {
             json asset;
             asset["ID"] = id;
-            asset["FilePath"] = path;
+            if (project && !project->assetsPath.empty())
+            {
+                asset["FilePath"] = std::filesystem::relative(path, project->assetsPath);
+            }
+            else
+            {
+                asset["FilePath"] = path;
+            }
             sceneAssets["Textures"].push_back(asset);
         }
 
@@ -72,7 +82,14 @@ namespace Spoon
         {
             json asset;
             asset["ID"] = id;
-            asset["FilePath"] = path;
+            if (project && !project->assetsPath.empty())
+            {
+                asset["FilePath"] = std::filesystem::relative(path, project->assetsPath);
+            }
+            else
+            {
+                asset["FilePath"] = path;
+            }
             sceneAssets["Fonts"].push_back(asset);
         }
 
@@ -80,7 +97,14 @@ namespace Spoon
         {
             json asset;
             asset["ID"] = id;
-            asset["FilePath"] = path;
+            if (project && !project->assetsPath.empty())
+            {
+                asset["FilePath"] = std::filesystem::relative(path, project->assetsPath);
+            }
+            else
+            {
+                asset["FilePath"] = path;
+            }
             sceneAssets["Sounds"].push_back(asset);
         }
 
@@ -110,8 +134,9 @@ namespace Spoon
         {
             json sceneJson;
             sceneJson["ID"] = scene.ID;
-            sceneJson["ResourceFiles"] = scene.ResourceFiles;
-            sceneJson["DataFiles"] = scene.DataFiles;
+            auto manifestDir = s_Manager.GetManifestPath().parent_path();
+            sceneJson["ResourceFiles"] = std::filesystem::relative(scene.ResourceFiles, manifestDir);
+            sceneJson["DataFiles"] = std::filesystem::relative(scene.DataFiles, manifestDir);
             manifestData["Scenes"].push_back(sceneJson);
         }
 

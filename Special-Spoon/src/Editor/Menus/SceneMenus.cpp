@@ -44,7 +44,7 @@ namespace Spoon
             {
                 if (editor->GetActiveScene())
                 {
-                    Serialize(*editor->GetActiveScene(), Application::Get().GetEntityManager(), Application::Get().GetSystemManager());
+                    SerializeScene(*editor->GetActiveScene(), Application::Get().GetEntityManager(), Application::Get().GetSystemManager());
                     editor->SetActiveScene(nullptr);
                 }
                 ImGui::CloseCurrentPopup();
@@ -152,7 +152,7 @@ namespace Spoon
             {
                 if (editor->GetActiveScene())
                 {
-                    Serialize(*editor->GetActiveScene(), e_Manager, sys_Manager);
+                    SerializeScene(*editor->GetActiveScene(), e_Manager, sys_Manager);
                 }
                 editor->SaveScene = false;
                 ImGui::CloseCurrentPopup();

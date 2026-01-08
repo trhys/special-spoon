@@ -1,15 +1,16 @@
 target_sources(Special-Spoon
     PRIVATE
-        Application.cpp
-        SceneManager.cpp    
-
         ActionQueue.h
         Application.h
+        Application.cpp
         ComponentArray.h
         Core.h
         EntryPoint.h
+        ProjectManager.h
+        ProjectManager.cpp
         Renderer.h
         SceneManager.h
+        SceneManager.cpp
 
         EntityManager/EntityManager.h
         EntityManager/EntityManager.inl

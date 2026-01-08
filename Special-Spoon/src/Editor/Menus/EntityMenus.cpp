@@ -197,10 +197,10 @@ namespace Spoon
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-            if(ImGui::BeginPopupModal(popupName) && EditorSettings::Get().compDelAskAgain)
+            if(ImGui::BeginPopupModal(popupName) && !EditorSettings::Get().skipAskBeforeDeleteComp)
             {
                 ImGui::Text("Are you sure you want to\ndelete this component? This cannot be undone!");
-                ImGui::Checkbox("Don't ask me again", &EditorSettings::Get().compDelAskAgain);
+                ImGui::Checkbox("Don't ask me again", &EditorSettings::Get().skipAskBeforeDeleteComp);
                 if(ImGui::Button("Delete")) 
                 { 
                     e_Manager.KillComponent(selectedComponent->GetType(), selectedID);

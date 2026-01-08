@@ -32,6 +32,9 @@ target_include_directories(ImGui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/Imgui
 )
 
+# Alias the lib for ImGuiFileDialog
+add_library(imgui::imgui ALIAS ImGui)
+
 # SFML SETUP =====================
 
 add_subdirectory(vendor/SFML)
@@ -58,6 +61,16 @@ set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Imgui" CACHE PATH "Imgui top-l
 add_subdirectory(vendor/Imgui-sfml)
 
 target_link_libraries(Special-Spoon PUBLIC ImGui-SFML)
+
+# IMGUIFILEDIALOG ====================
+
+add_subdirectory(vendor/ImGuiFileDialog)
+
+target_include_directories(ImGuiFileDialog PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/Imgui
+)
+
+target_link_libraries(Special-Spoon PRIVATE ImGuiFileDialog)
 
 # END LIBS SETUP =====================
 

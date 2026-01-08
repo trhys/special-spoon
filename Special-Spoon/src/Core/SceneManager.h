@@ -13,19 +13,18 @@ namespace Spoon
     
     struct SceneData
     {
-        std::string ID;             // Scene Identifier
-        std::string ResourceFiles;  // Associated Resources
-        std::string DataFiles;      // Associated Data Files
+        std::string ID;                         // Scene Identifier
+        std::filesystem::path ResourceFiles;    // Associated Resources
+        std::filesystem::path DataFiles;        // Associated Data Files
     };
 
     class SPOON_API SceneManager
     {
     public:
         // The scene manifest is a mapping of scene IDs to their data
-        // This is loaded from disk at startup from the application constructor
-        // Set path from AppSpecifications dataDir
+        // This is loaded from disk in the project manager
         // =====================================================================================
-        void LoadManifest(std::string manifestPath);
+        void LoadManifest(const std::filesystem::path& manifestPath);
         const std::unordered_map<std::string, SceneData>& GetManifest();
         const std::filesystem::path& GetManifestPath() { return m_ManifestPath; }
 
@@ -52,7 +51,7 @@ namespace Spoon
 
     private:
         std::unordered_map<std::string, SceneData> m_SceneManifest;
-        std::string m_DataDir;
+        std::filesystem::path m_DataDir;
         std::filesystem::path m_ManifestPath;
     };
 }

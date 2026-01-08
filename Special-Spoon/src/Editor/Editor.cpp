@@ -32,18 +32,42 @@ namespace Spoon
         if (!workingDir)
             workingDir = ResourceManager::Get().GetAssetsDir();
 
+        if (!m_CurrentProject && !ImGui::IsPopupOpen("No Project Loaded"))
+            ImGui::OpenPopup("No Project Loaded");
+
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        if (ImGui::BeginPopupModal("No Project Loaded", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("No project is currently loaded. Please create or open a project to continue.");
+            if (ImGui::Button("Create"))
+            {
+                NewProject = true;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Open"))
+            {
+                OpenProject = true;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New Project")) ImGui::SetTooltip("todo");
-                if (ImGui::MenuItem("Open Project")) ImGui::SetTooltip("todo");
-                if (ImGui::MenuItem("Save Project")) ImGui::SetTooltip("todo");
+                if (ImGui::MenuItem("New Project")) NewProject = true;
+                if (ImGui::MenuItem("Open Project")) OpenProject = true;
+                if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) SaveProject = true;
                 ImGui::Separator();
                 if (ImGui::MenuItem("Exit")) Application::Get().Close();
                 ImGui::EndMenu();
             }
 
+            ImGui::BeginDisabled(m_CurrentProject == nullptr);
             if (ImGui::BeginMenu("Scene Manager"))
             {
                 if (ImGui::MenuItem("New Scene")) NewScene = true;
@@ -79,6 +103,7 @@ namespace Spoon
                 if (ImGui::MenuItem("Open System Manager", nullptr, false, m_ActiveScene != nullptr)) ViewSystemsMenu = !ViewSystemsMenu;
                 ImGui::EndMenu();
             }
+            ImGui::EndDisabled();
 
             if (ImGui::BeginMenu("Settings"))
             {
@@ -86,8 +111,9 @@ namespace Spoon
                 ImGui::Checkbox("Display performance metrics", &EditorSettings::Get().displayEditorMetrics);
                 ImGui::Checkbox("Display ImGui metrics", &EditorSettings::Get().displayImGuiMetrics);
 
-                ImGui::SeparatorText("Prompt Settings");
-                ImGui::Checkbox("Confirm component delete", &EditorSettings::Get().compDelAskAgain);
+                ImGui::SeparatorText("Global Prompt Settings");
+                ImGui::Checkbox("Confirm component delete", &EditorSettings::Get().skipAskBeforeDeleteComp);
+                ImGui::Checkbox("Confirm project save", &EditorSettings::Get().skipProjectSavePrompt);
                 ImGui::EndMenu();
             }
 
@@ -128,6 +154,11 @@ namespace Spoon
             ImGui::ShowMetricsWindow(&EditorSettings::Get().displayImGuiMetrics);
 
         ImGui::End();
+
+        // Project menus
+        if (NewProject)         { Application::Get().GetProjectManager().CreateNew(this); }
+        if (OpenProject)        { Application::Get().GetProjectManager().LoadProject(this); }
+        if (SaveProject)        { Application::Get().GetProjectManager().SaveProject(this); }
 
         // Scene menus
         if (NewScene)           { NewSceneMenu(s_Manager, this); }

@@ -50,8 +50,11 @@ namespace Spoon
         RegisterDefaultLoaders();
         RegisterDefaultSystems();
 
+        // REFACTORING : Will probably get rid of this as 
+        // manifest init will happen at project load
+
         // Load scene manifest (depends on registered loaders)
-        m_SceneManager.LoadManifest(m_Specs.dataDir.string());
+        //m_SceneManager.LoadManifest(m_Specs.dataDir.string());
     }
 
     void Application::Close()
@@ -75,7 +78,7 @@ namespace Spoon
                 {
                     if (m_Editor.GetActiveScene())
                     {
-                        Serialize(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
+                        SerializeScene(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
                         SerializeManifest(m_SceneManager);
                         m_IsRunning = false;
                         closePrompt = false;
@@ -158,8 +161,9 @@ namespace Spoon
 
         bool play = true;
         
-        ResourceManager::Get().ScanAssets(m_Specs.assetsDir);
-        m_SystemManager.InitializeStateSystem(m_SceneManager);
+        // REFACTORING : Will likely move this to project load step in editor
+        //ResourceManager::Get().ScanAssets(m_Specs.assetsDir);
+        m_SystemManager.InitializeStateSystem();
 
         while (m_IsRunning)
         {
