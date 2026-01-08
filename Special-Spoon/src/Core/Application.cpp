@@ -14,17 +14,25 @@ namespace Spoon
 {        
     Application* Application::s_Instance = nullptr;
 
+    // Forward declarations for registration functions
+    void RegisterDefaultLoaders();
+    void RegisterDefaultSystems();
+
     Application::Application(const AppSpecifications& specs)
         : m_Specs(specs)
     {
+        // Make sure only one instance of Application exists
         SS_INSTANCE_ASSERT(s_Instance)
         s_Instance = this;
 
+        // Create the application window
         m_Window.create(m_Specs.mode, m_Specs.windowName);
         if (!m_Window.isOpen())
         {
             throw std::runtime_error("Failed to create application window.");
         }
+
+        // Initialize ImGui if in editor mode
         if(m_Specs.editorEnabled)
         {
             if(!ImGui::SFML::Init(m_Window))
@@ -36,6 +44,13 @@ namespace Spoon
 
             m_Viewport.target = sf::RenderTexture({1280, 720});
         }
+
+        // Register built-in registries before loading any scenes
+        ActionRegistry::Get().RegisterBuiltIns();
+        RegisterDefaultLoaders();
+        RegisterDefaultSystems();
+
+        // Load scene manifest (depends on registered loaders)
         m_SceneManager.LoadManifest(m_Specs.dataDir.string());
     }
 
@@ -68,21 +83,21 @@ namespace Spoon
                     }
                 }
                 ImGui::SameLine();
-                if(ImGui::Button("Cancel"))
+                if (ImGui::Button("Cancel"))
                 {
                     closePrompt = false;
                     ImGui::CloseCurrentPopup();
                 }
 
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
-                if(ImGui::Button("Exit Without Saving")) 
+                if (ImGui::Button("Exit Without Saving")) 
                 { 
                     m_IsRunning = false;
                     closePrompt = false;
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::PopStyleColor();
-                if(ImGui::IsItemHovered())
+                if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("All unsaved changes will be lost!");
                 
                 ImGui::EndPopup();
@@ -98,18 +113,25 @@ namespace Spoon
         m_SystemManager.UpdateSystems(tick, m_EntityManager);
         m_SystemManager.UpdateState(tick, m_EntityManager);
 
-        if(m_SystemManager.GetStateSystem()->IsQuitRequested())
+        StateSystem* stateSystem = m_SystemManager.GetStateSystem();
+        
+        if (!stateSystem)
         {
-            m_SystemManager.GetStateSystem()->ConsumeQuitFlag();
-            if(m_Specs.editorEnabled)
-            {
-                m_Editor.Stop();
-            }
+            throw std::runtime_error("Failed to get state system from system manager.");
+        }
+
+        // Handle quit request
+        if (stateSystem->IsQuitRequested())
+        {
+            stateSystem->ConsumeQuitFlag();
+            if (m_Specs.editorEnabled) m_Editor.Stop();
             else closePrompt = true;
         }
-        if(m_SystemManager.GetStateSystem()->IsSceneChangeRequested())
+        
+        // Handle scene change request
+        if (stateSystem->IsSceneChangeRequested())
         {
-            std::string newState = m_SystemManager.GetStateSystem()->ConsumeChangeRequest();
+            std::string newState = stateSystem->ConsumeChangeRequest();
             m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
         }
     }
@@ -119,16 +141,14 @@ namespace Spoon
         m_EntityManager.Shutdown();
         m_Editor.Shutdown();
 
-        if(m_Specs.editorEnabled) 
-            ImGui::SFML::Shutdown(m_Window);
+        if (m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
 
         m_Viewport.target = sf::RenderTexture();
 
         ResourceManager::Get().ClearAllResources(true);
 
         (void)m_Window.setActive(false);
-        if(m_Window.isOpen())
-            m_Window.close();
+        if (m_Window.isOpen()) m_Window.close();
     }
 
     void Application::Run()
@@ -158,12 +178,12 @@ namespace Spoon
                 [&](const sf::Event::KeyPressed& event) 
                 { 
                     m_InputSystem.PushKeyPress(event);
-                    ImGui::SFML::ProcessEvent(m_Window, event);
+                    if (m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event);
                 },
                 [&](const sf::Event::KeyReleased& event) 
                 { 
                     m_InputSystem.PushKeyRelease(event);
-                    ImGui::SFML::ProcessEvent(m_Window, event);
+                    if (m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event);
                 },
 
                 [&](const sf::Event::Closed& event) { closePrompt = true; }

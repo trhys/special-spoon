@@ -1,7 +1,7 @@
 #include "SceneManager.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "ResourceManager/ResourceManager.h"
-#include "Serialization/ComponentLoaders.h"
+#include "Core/Registers/Component/ComponentRegistry.h"
 #include "System/SystemManager.h"
 #include "Utils/Macros.h"
 
@@ -171,7 +171,7 @@ namespace Spoon
                 {
                     std::string type = data["Type"].get<std::string>();
                     SS_DEBUG_LOG("Requesting component type: " + type)
-                    auto& loaderMap = ComponentLoaders::GetCompLoaders();
+                    auto& loaderMap = ComponentRegistry::Get().GetLoaders();
                     auto found = loaderMap.find(type);
                     if (found != loaderMap.end())
                     {

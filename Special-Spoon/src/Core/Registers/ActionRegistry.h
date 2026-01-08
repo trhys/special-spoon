@@ -17,10 +17,11 @@ namespace Spoon
     namespace BuiltInActions
     {
         constexpr uint32_t None = 0;
-        constexpr uint32_t Idle = 1;
-        constexpr uint32_t Move = 2;
-        constexpr uint32_t Attack = 3;
-        constexpr uint32_t Interact = 4;
+        constexpr uint32_t Quit = 1;
+        constexpr uint32_t Idle = 2;
+        constexpr uint32_t Move = 3;
+        constexpr uint32_t Attack = 4;
+        constexpr uint32_t Interact = 5;
 
         constexpr uint32_t BeginCustomRange = 1000;
     }
@@ -43,6 +44,7 @@ namespace Spoon
         void RegisterBuiltIns()
         {
             RegisterAction("None", BuiltInActions::None);
+            RegisterAction("Quit", BuiltInActions::Quit);
             RegisterAction("Idle", BuiltInActions::Idle);
             RegisterAction("Move", BuiltInActions::Move);
             RegisterAction("Attack", BuiltInActions::Attack);

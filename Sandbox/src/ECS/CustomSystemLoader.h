@@ -21,7 +21,7 @@ std::unique_ptr<Spoon::ISystem> LoadPlayerController(const nlohmann::json* syste
 
 void RegisterCustomSystems()
 {
-    Spoon::SystemLoaders::RegisterSysLoader("Patrol", &LoadPatrolSystem);
-    Spoon::SystemLoaders::RegisterSysLoader("Movement", &LoadMovementSystem);
-    Spoon::SystemLoaders::RegisterSysLoader("Player Controller", &LoadPlayerController);
+    Spoon::SystemRegistry::Get().RegisterLoader("Patrol", &LoadPatrolSystem);
+    Spoon::SystemRegistry::Get().RegisterLoader("Movement", &LoadMovementSystem);
+    Spoon::SystemRegistry::Get().RegisterLoader("Player Controller", &LoadPlayerController);
 }

@@ -4,7 +4,7 @@
 #include "StateSystem.h"
 #include "InputSystem.h"
 
-#include "Core/Serialization/SystemLoaders.h"
+#include "Core/Registers/System/SystemRegistry.h"
 
 #include <memory>
 
@@ -24,7 +24,7 @@ namespace Spoon
             if (systemData)
             {
                 std::string type = (*systemData)["Type"].get<std::string>();
-                auto& loaderMap = SystemLoaders::GetSysLoaders();
+                auto& loaderMap = SystemRegistry::Get().GetLoaders();
                 auto found = loaderMap.find(type);
                 if(found != loaderMap.end())
                 {
@@ -43,7 +43,7 @@ namespace Spoon
 
         void AddSystem(const std::string& type, const json* systemData = nullptr)
         {
-            auto& loaderMap = SystemLoaders::GetSysLoaders();
+            auto& loaderMap = SystemRegistry::Get().GetLoaders();
             auto found = loaderMap.find(type);
             if(found != loaderMap.end())
             {
@@ -76,12 +76,12 @@ namespace Spoon
             }
         }
 
-        void InitializeStateSystem(SceneManager& manager)
+        void InitializeStateSystem()
         {
-            m_StateSystem = std::make_unique<StateSystem>(manager, *this);
+            m_StateSystem = std::make_unique<StateSystem>();
         }
 
-        std::unique_ptr<StateSystem>& GetStateSystem() { return m_StateSystem; }
+        StateSystem* GetStateSystem() { return m_StateSystem.get(); }
         
         std::vector<std::unique_ptr<ISystem>>& GetSystems() { return m_Systems; }
 

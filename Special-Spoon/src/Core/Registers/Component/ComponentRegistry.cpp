@@ -1,4 +1,4 @@
-#include "ComponentLoaders.h"
+#include "ComponentRegistry.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "ECS/ECS.h"
 #include "Core/ResourceManager/ResourceManager.h"
@@ -86,30 +86,17 @@ namespace Spoon
     void RegisterDefaultLoaders()
     {
         SS_DEBUG_LOG("[COMPONENT] Registering default component loaders...")
-        ComponentLoaders::RegisterCompLoader(TransformComp::Name, &LoadTransformComponent);
-        ComponentLoaders::RegisterCompLoader(SpriteComp::Name, &LoadSpriteComponent);
-        ComponentLoaders::RegisterCompLoader(TextComp::Name, &LoadTextComponent);
-        ComponentLoaders::RegisterCompLoader(AnimationComp::Name, &LoadAnimationComponent);
-        ComponentLoaders::RegisterCompLoader(StatusComp::Name, &LoadStatusComponent);
-        ComponentLoaders::RegisterCompLoader(BlinkComp::Name, &LoadBlinkComponent);
-        ComponentLoaders::RegisterCompLoader(FadeComp::Name, &LoadFadeComponent);
-        ComponentLoaders::RegisterCompLoader(InputComp::Name, &LoadInputComponent);
-        ComponentLoaders::RegisterCompLoader(StateActionComp::Name, &LoadStateActionComponent);
-        ComponentLoaders::RegisterCompLoader(RenderLayer::Name, &LoadRenderLayer);
-        ComponentLoaders::RegisterCompLoader(PhysicsComp::Name, &LoadPhysicsComponent);
-        ComponentLoaders::RegisterCompLoader(ColorComp::Name, &LoadColorComponent);
-    }
-
-    namespace
-    {
-        class RegisterDefaultLoadersHelper
-        {
-        public:
-            RegisterDefaultLoadersHelper()
-            {
-                RegisterDefaultLoaders();
-            }
-    };
-        static RegisterDefaultLoadersHelper s_RegisterDefaultLoadersHelper;
+        ComponentRegistry::Get().RegisterLoader(TransformComp::Name, &LoadTransformComponent);
+        ComponentRegistry::Get().RegisterLoader(SpriteComp::Name, &LoadSpriteComponent);
+        ComponentRegistry::Get().RegisterLoader(TextComp::Name, &LoadTextComponent);
+        ComponentRegistry::Get().RegisterLoader(AnimationComp::Name, &LoadAnimationComponent);
+        ComponentRegistry::Get().RegisterLoader(StatusComp::Name, &LoadStatusComponent);
+        ComponentRegistry::Get().RegisterLoader(BlinkComp::Name, &LoadBlinkComponent);
+        ComponentRegistry::Get().RegisterLoader(FadeComp::Name, &LoadFadeComponent);
+        ComponentRegistry::Get().RegisterLoader(InputComp::Name, &LoadInputComponent);
+        ComponentRegistry::Get().RegisterLoader(StateActionComp::Name, &LoadStateActionComponent);
+        ComponentRegistry::Get().RegisterLoader(RenderLayer::Name, &LoadRenderLayer);
+        ComponentRegistry::Get().RegisterLoader(PhysicsComp::Name, &LoadPhysicsComponent);
+        ComponentRegistry::Get().RegisterLoader(ColorComp::Name, &LoadColorComponent);
     }
 }
