@@ -56,8 +56,8 @@ namespace Spoon
     void LoadInputComponent(EntityManager& manager, UUID id, const json& comp)
     {
         // todo: #45 fix this
-        // auto input = comp.get<InputComp>();
-        // manager.MakeComponent<InputComp>(id, InputComp::Name, input.m_KeyBindings);
+         auto input = comp.get<InputComp>();
+         manager.MakeComponent<InputComp>(id, InputComp::Name, input.m_KeyBindings);
     }
 
     void LoadStateActionComponent(EntityManager& manager, UUID id, const json& comp)

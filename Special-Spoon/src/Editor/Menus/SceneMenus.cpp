@@ -154,11 +154,13 @@ namespace Spoon
                 {
                     Serialize(*editor->GetActiveScene(), e_Manager, sys_Manager);
                 }
+                editor->SaveScene = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
             if (ImGui::Button("No"))
             {
+				editor->SaveScene = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
