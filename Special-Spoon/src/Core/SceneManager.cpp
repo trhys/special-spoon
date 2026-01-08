@@ -264,8 +264,8 @@ namespace Spoon
         newSceneJSON =
         {
             {"ID", newScene.ID},
-            {"ResourceFiles", newScene.ResourceFiles.string()},
-            {"DataFiles", newScene.DataFiles.string()}
+            {"ResourceFiles", newScene.ResourceFiles},
+            {"DataFiles", newScene.DataFiles}
         };
         manifest["Scenes"].push_back(newSceneJSON);
 
