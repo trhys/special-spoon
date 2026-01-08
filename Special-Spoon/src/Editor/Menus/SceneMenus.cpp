@@ -221,9 +221,9 @@ namespace Spoon
                 {
                     if (toDelete)
                     {
-                        s_Manager.DeleteScene(sceneID);
                         if (activeScene && activeScene->ID == sceneID)
                             editor->SetActiveScene(nullptr);
+                        s_Manager.DeleteScene(sceneID);
                     }
                 }
                 ImGui::CloseCurrentPopup();
