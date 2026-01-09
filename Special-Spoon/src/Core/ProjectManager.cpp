@@ -19,26 +19,63 @@ namespace Spoon
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        ImGui::Begin("Create New Project", &editor->NewProject, ImGuiWindowFlags_AlwaysAutoResize);
-
-        static char newProjectBuf[64] = "";
-        ImGui::InputText("Project Name", newProjectBuf, IM_ARRAYSIZE(newProjectBuf));
-        if (ImGui::Button("Confirm"))
+        if (ImGui::Begin("Create New Project", &editor->NewProject, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            if (strlen(newProjectBuf) == 0)
-                return;
-            Project newProject;
-            newProject.ID = std::string(newProjectBuf);
-            newProject.filePath = std::filesystem::path("projects/") / (newProject.ID + ".json");
-            newProject.dataPath = std::filesystem::path("projects/") / newProject.ID / "data/";
-            newProject.assetsPath = std::filesystem::path("projects/") / newProject.ID / "assets/";
-            newProject.version = "1.0";
+            static char newProjectBuf[64] = "";
+            if (ImGui::InputText("Project Name", newProjectBuf, IM_ARRAYSIZE(newProjectBuf))) {}
+            if (ImGui::Button("Confirm"))
+            {
+                if (strlen(newProjectBuf) == 0)
+                {
+                    ImGui::End();
+                    return;
+                }
+                    
+                Project newProject;
+                newProject.ID = std::string(newProjectBuf);
 
-            ResourceManager::Get().ScanAssets(newProject.assetsPath);
-            Application::Get().GetSceneManager().LoadManifest(newProject.dataPath.string());
-            m_CurrentProject = std::make_unique<Project>(newProject);
-            editor->SetCurrentProject(m_CurrentProject.get());
-            editor->NewProject = false;
+                // Create dirs
+				std::filesystem::create_directories("projects/");
+                newProject.filePath = std::filesystem::path("projects/") / (newProject.ID + ".json");
+                std::ofstream newProj(newProject.filePath);
+                if (!newProj.is_open())
+                {
+                    // Handle error: unable to create project file
+					if (!ImGui::IsPopupOpen("Error Creating Project File"))
+                        ImGui::OpenPopup("Error Creating Project File");
+                    if (ImGui::BeginPopupModal("Error Creating Project File", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+                    {
+                        ImGui::Text("Failed to create project file at path: %s", newProject.filePath.string().c_str());
+                        if (ImGui::Button("OK"))
+                        {
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::End();
+                    return;
+                }
+                newProject.dataPath = std::filesystem::path("projects/") / newProject.ID / "data/";
+                std::filesystem::create_directories(newProject.dataPath);
+                newProject.assetsPath = std::filesystem::path("projects/") / newProject.ID / "assets/";
+                std::filesystem::create_directories(newProject.assetsPath);
+                newProject.version = "1.0";
+
+                // Dump data to JSON
+                json projectJson;
+                projectJson["ID"] = newProject.ID;
+                projectJson["DataPath"] = newProject.dataPath;
+                projectJson["AssetsPath"] = newProject.assetsPath;
+                projectJson["Version"] = newProject.version;
+                newProj << projectJson.dump(4);
+                newProj.close();
+
+                ResourceManager::Get().ScanAssets(newProject.assetsPath);
+                Application::Get().GetSceneManager().LoadManifest(newProject.dataPath);
+                m_CurrentProject = std::make_unique<Project>(newProject);
+                editor->SetCurrentProject(m_CurrentProject.get());
+                editor->NewProject = false;
+            }
         }
         ImGui::End();
     }

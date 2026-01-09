@@ -134,9 +134,9 @@ namespace Spoon
         {
             json sceneJson;
             sceneJson["ID"] = scene.ID;
-            auto manifestDir = s_Manager.GetManifestPath().parent_path();
-            sceneJson["ResourceFiles"] = std::filesystem::relative(scene.ResourceFiles, manifestDir);
-            sceneJson["DataFiles"] = std::filesystem::relative(scene.DataFiles, manifestDir);
+            //auto manifestDir = s_Manager.GetManifestPath().parent_path();
+            sceneJson["ResourceFiles"] = scene.ResourceFiles;
+            sceneJson["DataFiles"] = scene.DataFiles;
             manifestData["Scenes"].push_back(sceneJson);
         }
 

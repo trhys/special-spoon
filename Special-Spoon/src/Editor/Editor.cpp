@@ -33,7 +33,8 @@ namespace Spoon
             workingDir = ResourceManager::Get().GetAssetsDir();
 
         if (!m_CurrentProject && !ImGui::IsPopupOpen("No Project Loaded"))
-            ImGui::OpenPopup("No Project Loaded");
+            if (!NewProject && !OpenProject)
+                ImGui::OpenPopup("No Project Loaded");
 
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();

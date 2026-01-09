@@ -54,8 +54,8 @@ namespace Spoon
                 paths.ID = scene.value("ID", "UnknownID");
                 auto resourcePath = scene.value("ResourceFiles", "");
                 auto dataPath = scene.value("DataFiles", "");
-                paths.ResourceFiles = manifestDir / resourcePath;
-                paths.DataFiles = manifestDir / dataPath;
+                paths.ResourceFiles = resourcePath;
+                paths.DataFiles = dataPath;
                 m_SceneManifest[paths.ID] = paths;
                 SS_DEBUG_LOG("Registered scene in manifest: " + paths.ID)
             }
@@ -254,6 +254,8 @@ namespace Spoon
         std::string newID = id;
         std::replace(newID.begin(), newID.end(), ' ', '_');
         std::filesystem::path sceneDir = m_ManifestPath.parent_path() / "scenes" / newID;
+        std::filesystem::create_directories(sceneDir);
+        
 
         SceneData newScene;
         newScene.ID = newID;
