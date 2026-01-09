@@ -6,6 +6,7 @@
 
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
+#include "Utils/UserConfig.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
@@ -13,6 +14,7 @@
 namespace Spoon 
 {        
     Application* Application::s_Instance = nullptr;
+    UserConfig config = LoadUserConfig();
 
     // Forward declarations for registration functions
     void RegisterDefaultLoaders();
@@ -49,12 +51,6 @@ namespace Spoon
         ActionRegistry::Get().RegisterBuiltIns();
         RegisterDefaultLoaders();
         RegisterDefaultSystems();
-
-        // REFACTORING : Will probably get rid of this as 
-        // manifest init will happen at project load
-
-        // Load scene manifest (depends on registered loaders)
-        //m_SceneManager.LoadManifest(m_Specs.dataDir.string());
     }
 
     void Application::Close()
@@ -80,6 +76,7 @@ namespace Spoon
                     {
                         SerializeScene(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
                         SerializeManifest(m_SceneManager);
+                        SaveUserConfig(config);
                         m_IsRunning = false;
                         closePrompt = false;
                         ImGui::CloseCurrentPopup();
@@ -97,6 +94,7 @@ namespace Spoon
                 { 
                     m_IsRunning = false;
                     closePrompt = false;
+                    SaveUserConfig(config);
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::PopStyleColor();
@@ -161,10 +159,8 @@ namespace Spoon
 
         bool play = true;
         
-        // REFACTORING : Will likely move this to project load step in editor
-        //ResourceManager::Get().ScanAssets(m_Specs.assetsDir);
         m_SystemManager.InitializeStateSystem();
-
+        
         while (m_IsRunning)
         {
             // Clear action queue

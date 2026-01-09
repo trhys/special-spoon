@@ -3,5 +3,7 @@ target_sources(Special-Spoon
         KeyMappings.h
         Logger.h
         Macros.h
-        MemoryUtils.h    
+        MemoryUtils.h
+        UserConfig.h
+        UserConfig.cpp
 )

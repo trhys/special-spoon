@@ -304,9 +304,17 @@ namespace Spoon
 
     void SceneManager::DeleteScene(const std::string& id)
     {
-        std::filesystem::path sceneData = m_SceneManifest[id].DataFiles;
-        std::filesystem::path sceneResources = m_SceneManifest[id].ResourceFiles;
+        // Get scene path
+        std::filesystem::path scenePath = m_ManifestPath.parent_path() / "scenes" / id;
+        if(!std::filesystem::exists(scenePath))
+        {
+            throw std::runtime_error("The scene you are trying to delete does not exist on disk! : " + id);
+        }
+
+        // Remove from manifest map
         m_SceneManifest.erase(id);
+
+        // Read/Write manifest to remove scene entry
         std::ifstream inFile(m_ManifestPath);
         if(!inFile.is_open())
         {
@@ -332,21 +340,8 @@ namespace Spoon
 
         SS_DEBUG_LOG("Deleted scene from manifest --- ID: " + id)
 
-        std::ifstream dataFile(sceneData);
-        if(dataFile.is_open())
-        {
-            dataFile.close();
-            std::filesystem::remove(sceneData);
-            SS_DEBUG_LOG("Deleted scene data file for scene --- ID: " + id)
-        }
-
-        std::ifstream resFile(sceneResources);
-        if(resFile.is_open())
-        {
-            resFile.close();
-            std::filesystem::remove(sceneResources);
-            SS_DEBUG_LOG("Deleted scene resource file for scene --- ID: " + id)
-        }
+        // Delete scene directory and all contents
+        std::filesystem::remove_all(scenePath);
 
         SS_DEBUG_LOG("Deleted scene data/asset files --- ID: " + id)
     }

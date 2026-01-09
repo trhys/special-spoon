@@ -21,9 +21,6 @@ namespace Spoon
 		sf::VideoMode mode = sf::VideoMode::getDesktopMode();
 		std::string windowName = "Special Spoon";
 		bool editorEnabled = true;
-		// REFACTORING : Moving these to project manager
-		// std::filesystem::path assetsDir = "assets/";
-		// std::filesystem::path dataDir = "data/";
 	};
 
 	class SPOON_API Application

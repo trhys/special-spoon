@@ -67,6 +67,7 @@ namespace Spoon
                 projectJson["DataPath"] = newProject.dataPath;
                 projectJson["AssetsPath"] = newProject.assetsPath;
                 projectJson["Version"] = newProject.version;
+                projectJson["RecentFiles"] = newProject.recentFiles;
                 newProj << projectJson.dump(4);
                 newProj.close();
 
@@ -136,6 +137,7 @@ namespace Spoon
             newProject.dataPath = projectJson.value("DataPath", "");
             newProject.assetsPath = projectJson.value("AssetsPath", "");
             newProject.version = projectJson.value("Version", "1.0");
+            newProject.recentFiles = projectJson.value("RecentFiles", std::vector<std::filesystem::path>{});
 
             Application::Get().GetSceneManager().LoadManifest(newProject.dataPath.string());
             ResourceManager::Get().ScanAssets(newProject.assetsPath);
