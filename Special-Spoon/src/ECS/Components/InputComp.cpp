@@ -40,8 +40,8 @@ namespace Spoon
 
             if(ImGui::BeginPopup(editWindow))
             {   
-                ImGui::BeginChild("Available Keys");
-                if (ImGui::BeginListBox("##keylist"))
+                ImGui::BeginChild("Available Keys", ImVec2(200, 300), true);
+                if (ImGui::BeginListBox("##keylist", ImVec2(-FLT_MIN, -FLT_MIN)))
                 {
                     for (int k = static_cast<int>(sf::Keyboard::Key::A); k <= static_cast<int>(sf::Keyboard::KeyCount); k++)
                     {
@@ -64,8 +64,10 @@ namespace Spoon
                 }
                 ImGui::EndChild();
                 
-                ImGui::BeginChild("Available Actions");
-                if (ImGui::BeginListBox("##actionlist"))
+                ImGui::SameLine();
+                
+                ImGui::BeginChild("Available Actions", ImVec2(200, 300), true);
+                if (ImGui::BeginListBox("##actionlist", ImVec2(-FLT_MIN, -FLT_MIN)))
                 {
                     for (const auto& [name, id] : ActionRegistry::Get().m_NameToID)
                     {
@@ -83,6 +85,7 @@ namespace Spoon
                     ImGui::EndListBox();
                 }
                 ImGui::EndChild();
+                
                 if(ImGui::Button("Submit"))
                 {
                     m_KeyBindings.erase(currentKey);
@@ -111,8 +114,8 @@ namespace Spoon
             ImGui::OpenPopup(newBindWindow);
         if (ImGui::BeginPopup(newBindWindow))
         {
-            ImGui::BeginChild("Available Keys");
-            if (ImGui::BeginListBox("##keylist"))
+            ImGui::BeginChild("Available Keys", ImVec2(200, 300), true);
+            if (ImGui::BeginListBox("##keylist", ImVec2(-FLT_MIN, -FLT_MIN)))
             {
                 for (int k = static_cast<int>(sf::Keyboard::Key::A); k <= static_cast<int>(sf::Keyboard::KeyCount); k++)
                 {
@@ -135,8 +138,10 @@ namespace Spoon
             }
             ImGui::EndChild();
             
-            ImGui::BeginChild("Available Actions");
-            if (ImGui::BeginListBox("##actionlist"))
+            ImGui::SameLine();
+            
+            ImGui::BeginChild("Available Actions", ImVec2(200, 300), true);
+            if (ImGui::BeginListBox("##actionlist", ImVec2(-FLT_MIN, -FLT_MIN)))
             {
                 for (const auto& [name, id] : ActionRegistry::Get().m_NameToID)
                 {
@@ -154,6 +159,7 @@ namespace Spoon
                 ImGui::EndListBox();
             }
             ImGui::EndChild();
+            
             if(ImGui::Button("Submit"))
             {
                 m_KeyBindings[editKey] = ActionType{ editAction };
