@@ -2,6 +2,7 @@ target_sources(Special-Spoon
     PRIVATE
         AnimationSystem.h
         InputSystem.h
+        InputSystem.cpp
         StateSystem.h
         System.h
         SystemManager.h

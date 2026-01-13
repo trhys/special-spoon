@@ -1,7 +1,8 @@
 #include "SceneManager.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "Core/Application.h"
 #include "ResourceManager/ResourceManager.h"
-#include "Serialization/ComponentLoaders.h"
+#include "Core/Registers/Component/ComponentRegistry.h"
 #include "System/SystemManager.h"
 #include "Utils/Macros.h"
 
@@ -13,10 +14,10 @@ using json = nlohmann::json;
 
 namespace Spoon
 {
-    void SceneManager::LoadManifest(std::string manifestPath)
+    void SceneManager::LoadManifest(const std::filesystem::path& manifestPath)
     {
-        m_DataDir = manifestPath;
-        m_ManifestPath = std::filesystem::path(manifestPath) / "scene" / "scene_manifest.json";
+        //m_DataDir = manifestPath;
+        m_ManifestPath = manifestPath / "scene_manifest.json";
         if(!std::filesystem::exists(m_ManifestPath.parent_path()))
         {
             std::filesystem::create_directories(m_ManifestPath.parent_path());
@@ -43,6 +44,7 @@ namespace Spoon
         path.close();
         if(manifest.contains("Scenes") && manifest["Scenes"].is_array())
         {
+            auto manifestDir = m_ManifestPath.parent_path();
             for(auto& scene : manifest["Scenes"])
             {
                 if(!scene.is_object())
@@ -50,8 +52,10 @@ namespace Spoon
 
                 SceneData paths;
                 paths.ID = scene.value("ID", "UnknownID");
-                paths.ResourceFiles = scene.value("ResourceFiles", "");
-                paths.DataFiles = scene.value("DataFiles", "");
+                auto resourcePath = scene.value("ResourceFiles", "");
+                auto dataPath = scene.value("DataFiles", "");
+                paths.ResourceFiles = resourcePath;
+                paths.DataFiles = dataPath;
                 m_SceneManifest[paths.ID] = paths;
                 SS_DEBUG_LOG("Registered scene in manifest: " + paths.ID)
             }
@@ -77,18 +81,23 @@ namespace Spoon
         std::ifstream resources(found->second.ResourceFiles);
         if(!resources.is_open())
         {
-            throw std::runtime_error("Failed to open scene resource file at path: " + found->second.ResourceFiles);
+            throw std::runtime_error("Failed to open scene resource file at path: " + found->second.ResourceFiles.string());
         }
 
         json resourceData;
         resourceData = json::parse(resources);
 
+        auto* project = Application::Get().GetProjectManager().GetCurrentProject();
+        
         // Load textures
         for(auto& resource : resourceData["Textures"])
         {
             std::string resID = resource["ID"].get<std::string>();
-            std::string filePath = resource["FilePath"].get<std::string>();
-            ResourceManager::Get().LoadResource<sf::Texture>(resID, filePath);
+            std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
+            
+            // Resolve path relative to project assets directory
+            auto fullPath = project ? project->assetsPath / filePath : filePath;
+            ResourceManager::Get().LoadResource<sf::Texture>(resID, fullPath);
             SS_DEBUG_LOG("Loaded texture resource with ID: " +  resID)
         }
 
@@ -97,8 +106,11 @@ namespace Spoon
             for(auto& resource : resourceData["Fonts"])
             {
                 std::string resID = resource["ID"].get<std::string>();
-                std::string filePath = resource["FilePath"].get<std::string>();
-                ResourceManager::Get().LoadResource<sf::Font>(resID, filePath);
+                std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
+
+                // Resolve path relative to project assets directory
+                auto fullPath = project ? project->assetsPath / filePath : filePath;
+                ResourceManager::Get().LoadResource<sf::Font>(resID, fullPath);
                 SS_DEBUG_LOG("Loaded font resource with ID: " +  resID)
             }
         }
@@ -139,8 +151,11 @@ namespace Spoon
             for(auto& resource : resourceData["Sounds"])
             {
                 std::string resID = resource["ID"].get<std::string>();
-                std::string filePath = resource["FilePath"].get<std::string>();
-                ResourceManager::Get().LoadResource<sf::SoundBuffer>(resID, filePath);
+                std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
+
+                // Resolve path relative to project assets directory
+                auto fullPath = project ? project->assetsPath / filePath : filePath;
+                ResourceManager::Get().LoadResource<sf::SoundBuffer>(resID, fullPath);
                 SS_DEBUG_LOG("Loaded sound resource with ID: " +  resID)
             }
         }
@@ -153,7 +168,7 @@ namespace Spoon
         std::ifstream data(found->second.DataFiles);
         if(!data.is_open()) 
         {
-            throw std::runtime_error("Failed to open scene data file at path: " + found->second.DataFiles);
+            throw std::runtime_error("Failed to open scene data file at path: " + found->second.DataFiles.string());
         }
 
         json sceneData;
@@ -171,7 +186,7 @@ namespace Spoon
                 {
                     std::string type = data["Type"].get<std::string>();
                     SS_DEBUG_LOG("Requesting component type: " + type)
-                    auto& loaderMap = ComponentLoaders::GetCompLoaders();
+                    auto& loaderMap = ComponentRegistry::Get().GetLoaders();
                     auto found = loaderMap.find(type);
                     if (found != loaderMap.end())
                     {
@@ -236,25 +251,27 @@ namespace Spoon
         json manifest = json::parse(inFile);
         inFile.close();
 
-        std::filesystem::path sceneDir = std::filesystem::path(m_DataDir) / "scene";
         std::string newID = id;
         std::replace(newID.begin(), newID.end(), ' ', '_');
+        std::filesystem::path sceneDir = m_ManifestPath.parent_path() / "scenes" / newID;
+        std::filesystem::create_directories(sceneDir);
+        
 
         SceneData newScene;
         newScene.ID = newID;
-        newScene.ResourceFiles = (sceneDir / (newID + "_resources.json")).generic_string();
-        newScene.DataFiles = (sceneDir / (newID + "_data.json")).generic_string();
+        newScene.ResourceFiles = sceneDir / (newID + "_resources.json");
+        newScene.DataFiles = sceneDir / (newID + "_data.json");
 
         json newSceneJSON;
         newSceneJSON =
         {
             {"ID", newScene.ID},
-            {"Resources", newScene.ResourceFiles},
-            {"Data", newScene.DataFiles}
+            {"ResourceFiles", newScene.ResourceFiles},
+            {"DataFiles", newScene.DataFiles}
         };
         manifest["Scenes"].push_back(newSceneJSON);
 
-        std::ofstream resources(std::filesystem::path(newScene.ResourceFiles));
+        std::ofstream resources(newScene.ResourceFiles);
         json newRes;
         newRes["Textures"] = json::array();
         newRes["Fonts"] = json::array();
@@ -263,7 +280,7 @@ namespace Spoon
         resources << newRes.dump(4);
         resources.close();
 
-        std::ofstream data(std::filesystem::path(newScene.DataFiles));
+        std::ofstream data(newScene.DataFiles);
         json newData;
         newData["Entities"] = json::array();
         newData["Systems"] = json::array();
@@ -287,7 +304,17 @@ namespace Spoon
 
     void SceneManager::DeleteScene(const std::string& id)
     {
+        // Get scene path
+        std::filesystem::path scenePath = m_ManifestPath.parent_path() / "scenes" / id;
+        if(!std::filesystem::exists(scenePath))
+        {
+            throw std::runtime_error("The scene you are trying to delete does not exist on disk! : " + id);
+        }
+
+        // Remove from manifest map
         m_SceneManifest.erase(id);
+
+        // Read/Write manifest to remove scene entry
         std::ifstream inFile(m_ManifestPath);
         if(!inFile.is_open())
         {
@@ -313,21 +340,8 @@ namespace Spoon
 
         SS_DEBUG_LOG("Deleted scene from manifest --- ID: " + id)
 
-        std::ifstream dataFile((std::filesystem::path(m_DataDir) / "scene" / (id + "_data.json")).generic_string());
-        if(dataFile.is_open())
-        {
-            dataFile.close();
-            std::filesystem::remove((std::filesystem::path(m_DataDir) / "scene" / (id + "_data.json")));
-            SS_DEBUG_LOG("Deleted scene data file for scene --- ID: " + id)
-        }
-
-        std::ifstream resFile((std::filesystem::path(m_DataDir) / "scene" / (id + "_resources.json")).generic_string());
-        if(resFile.is_open())
-        {
-            resFile.close();
-            std::filesystem::remove((std::filesystem::path(m_DataDir) / "scene" / (id + "_resources.json")));
-            SS_DEBUG_LOG("Deleted scene resource file for scene --- ID: " + id)
-        }
+        // Delete scene directory and all contents
+        std::filesystem::remove_all(scenePath);
 
         SS_DEBUG_LOG("Deleted scene data/asset files --- ID: " + id)
     }

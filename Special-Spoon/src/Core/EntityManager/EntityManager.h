@@ -37,7 +37,7 @@ namespace Spoon
 
         // Template specialization alternative for adding components
         template<typename COMP, typename... Args>
-        void MakeComponent(UUID id, Args&&... args);
+        void MakeComponent(UUID id, const std::string& displayName, Args&&... args);
 
         // Template specialization alternative for removing components
         template<typename COMP>
@@ -59,7 +59,7 @@ namespace Spoon
 
         // Get a specific component of an entity
         template<typename COMP>
-        COMP& GetComponent(UUID id);
+        COMP& GetComponent(UUID id, const std::string& displayName);
 
         // Get all entities that have a specific component
         template<typename COMP>

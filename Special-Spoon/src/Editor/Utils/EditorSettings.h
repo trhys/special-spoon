@@ -14,9 +14,10 @@ namespace Spoon
         EditorSettings(EditorSettings&&) = delete;
         EditorSettings& operator=(EditorSettings&&) = delete;
 
-        bool compDelAskAgain = true;        // Ask before deleting component in entity inspector
-        bool displayEditorMetrics = true;   // Display editor metrics window
-        bool displayImGuiMetrics = false;   // Display ImGui metrics window
+        bool skipAskBeforeDeleteComp = false;        // Skip prompt before deleting component in entity inspector
+        bool skipProjectSavePrompt = false;         // Skip save project prompt
+        bool displayEditorMetrics = true;           // Display editor metrics window
+        bool displayImGuiMetrics = false;           // Display ImGui metrics window
 
     private:
         EditorSettings() = default;

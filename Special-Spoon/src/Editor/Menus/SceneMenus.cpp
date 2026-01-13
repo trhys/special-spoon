@@ -35,7 +35,7 @@ namespace Spoon
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
         // Prompt to save current scene before creating new scene
-        if (ImGui::BeginPopupModal("Prompt Save Before New Scene", &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal("Prompt Save Before New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Do you want to save the active scene before creating a new scene?\n"
                         "This will overwrite any existing scene file.");
@@ -44,7 +44,7 @@ namespace Spoon
             {
                 if (editor->GetActiveScene())
                 {
-                    Serialize(*editor->GetActiveScene(), Application::Get().GetEntityManager(), Application::Get().GetSystemManager());
+                    SerializeScene(*editor->GetActiveScene(), Application::Get().GetEntityManager(), Application::Get().GetSystemManager());
                     editor->SetActiveScene(nullptr);
                 }
                 ImGui::CloseCurrentPopup();
@@ -70,7 +70,7 @@ namespace Spoon
         }
 
         // Create new scene
-        if(ImGui::BeginPopupModal("New Scene", &editor->NewScene, ImGuiWindowFlags_AlwaysAutoResize))
+        if(ImGui::BeginPopupModal("New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Enter scene ID: "); ImGui::SameLine();
 
@@ -152,13 +152,15 @@ namespace Spoon
             {
                 if (editor->GetActiveScene())
                 {
-                    Serialize(*editor->GetActiveScene(), e_Manager, sys_Manager);
+                    SerializeScene(*editor->GetActiveScene(), e_Manager, sys_Manager);
                 }
+                editor->SaveScene = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
             if (ImGui::Button("No"))
             {
+				editor->SaveScene = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
@@ -219,9 +221,9 @@ namespace Spoon
                 {
                     if (toDelete)
                     {
-                        s_Manager.DeleteScene(sceneID);
                         if (activeScene && activeScene->ID == sceneID)
                             editor->SetActiveScene(nullptr);
+                        s_Manager.DeleteScene(sceneID);
                     }
                 }
                 ImGui::CloseCurrentPopup();

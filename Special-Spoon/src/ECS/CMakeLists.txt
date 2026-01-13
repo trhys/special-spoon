@@ -2,6 +2,7 @@ target_sources(Special-Spoon
     PRIVATE
         Components/Component.h
         Components/InputComp.h
+        Components/InputComp.cpp
         Components/PhysicsComp.h
         Components/StateActionComp.h
         Components/StatusComp.h

@@ -13,23 +13,21 @@ namespace Spoon
 	public:
 		void Run(SpriteComp& comp)
 		{
-            // Always center this window when appearing
+            // Center this window only when it first appears
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-			if (ImGui::Begin("Texture Rect Editor", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+			if (ImGui::Begin("Texture Rect Editor"))
 			{
-                static sf::IntRect rect;
-
-                if (ImGui::BeginChild("##TRE Viewport", ImVec2(0, 640), ImGuiChildFlags_Borders))
+                ImVec2 availableSize = ImGui::GetContentRegionAvail();
+                availableSize.y -= 30;
+                
+                if (ImGui::BeginChild("##TRE Viewport", availableSize, ImGuiChildFlags_Borders))
                 {
                     RenderViewport(m_Viewport);
 
-                    static sf::Vector2f drag;
-                    static bool dragging = false;
-
                     sf::RectangleShape rectPreview;
-                    rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
-                    rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
+                    rectPreview.setSize({ (float)m_Rect.size.x, (float)m_Rect.size.y });
+                    rectPreview.setPosition({ (float)m_Rect.position.x, (float)m_Rect.position.y });
                     rectPreview.setFillColor(sf::Color::Transparent);
                     rectPreview.setOutlineColor(sf::Color::Red);
                     rectPreview.setOutlineThickness(1.0);
@@ -50,33 +48,41 @@ namespace Spoon
                             static_cast<int>(mousePos.y - viewportPos.y)
                         );
                         sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
-                        if (!dragging)
+                        if (!m_Dragging)
                         {
-                            drag = worldMouse;
-                            dragging = true;
+                            m_DragStart = worldMouse;
+                            m_Dragging = true;
                         }
-                        if (dragging)
+                        if (m_Dragging)
                         {
-                            rect.position.x = std::min(drag.x, worldMouse.x);
-                            rect.position.y = std::min(drag.y, worldMouse.y);
-                            rect.size.x = std::abs(worldMouse.x - drag.x);
-                            rect.size.y = std::abs(worldMouse.y - drag.y);
+                            m_Rect.position.x = std::min(m_DragStart.x, worldMouse.x);
+                            m_Rect.position.y = std::min(m_DragStart.y, worldMouse.y);
+                            m_Rect.size.x = std::abs(worldMouse.x - m_DragStart.x);
+                            m_Rect.size.y = std::abs(worldMouse.y - m_DragStart.y);
                         }
                     }
-                    else dragging = false;
+                    else m_Dragging = false;
 
                     ImGui::EndChild();
                 }
                 if (ImGui::Button("Confirm", ImVec2(120, 0)))
                 {
-                    comp.SetTextureRect(rect);
-                    rect = sf::IntRect();
-                    comp.ToggleGizmo();
+                    comp.SetTextureRect(m_Rect);
+                    m_Rect = sf::IntRect();
+                    m_Dragging = false;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Cancel", ImVec2(120, 0)))
                 {
-                    rect = sf::IntRect();
+                    m_Rect = sf::IntRect();
+                    m_Dragging = false;
+                    comp.ToggleGizmo();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Close", ImVec2(120, 0)))
+                {
+                    m_Rect = sf::IntRect();
+                    m_Dragging = false;
                     comp.ToggleGizmo();
                 }
             }
@@ -90,5 +96,8 @@ namespace Spoon
 
 	private:
 		Viewport m_Viewport;
+        sf::IntRect m_Rect;
+        sf::Vector2f m_DragStart;
+        bool m_Dragging = false;
 	};
 }

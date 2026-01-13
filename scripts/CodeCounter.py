@@ -6,8 +6,9 @@ from pathlib import Path
 def CountCode():
     SSbasedir = Path("Special-Spoon/src")
     SSdirs = ["Core", "ECS", "Editor", "System", "Utils"]
+    Scripts = ["scripts"]
     SSfree = ["Spoon.h"]
-    WSfree = ["buildme.py", "CodeCounter.py"]
+    WSfree = []
     excludeDirs = ["--exclude-dir=SystemFont"]
 
     total_path = []
@@ -15,7 +16,9 @@ def CountCode():
         total_path.append(str(SSbasedir / directory))
     for path in SSfree:
         total_path.append(str(SSbasedir / path))
-    for script in WSfree:
+    for free in WSfree:
+        total_path.append(str(free))
+    for script in Scripts:
         total_path.append(str(script))
 
     print("Preparing cloc file...")
@@ -25,6 +28,11 @@ def CountCode():
         print("Counting Special-Spoon...")
         for directory in SSdirs:
             clocdir = SSbasedir / directory
+            Cloc(clocdir, clocfile, excludeDirs)
+
+        print("Counting scripts...")
+        for script in Scripts:
+            clocdir = Path(script)
             Cloc(clocdir, clocfile, excludeDirs)
 
         print("Counting free files...")

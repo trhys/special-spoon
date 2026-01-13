@@ -14,10 +14,14 @@ target_sources(Sandbox
             src/ECS/Component/MovementComp.h
             src/ECS/Component/PlayerComp.h
 
+            src/ECS/Component/Combat/AttackComp.h
+            src/ECS/Component/Combat/Hit-Hurt.h
+
             src/ECS/System/PatrolSystem.h
             src/ECS/System/MovementSystem.h
             src/ECS/System/PlayerController.h
-            
+            src/ECS/System/AttackSystem.h
+
             src/ECS/CustomCompLoader.h
             src/ECS/CustomSystemLoader.h
 )

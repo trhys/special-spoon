@@ -2,6 +2,8 @@
 
 #include "ECS/Entity.h"
 #include "ECS/Components/Animation/AnimationData.h"
+#include "Core/Registers/ActionRegistry.h"
+
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
 
@@ -110,4 +112,14 @@ namespace Spoon
         v.textureID = j.at("TextureID").get<std::string>();
         v.spriteCords = j.at("SpriteCords").get<std::vector<SpriteCords>>();
     }
+
+    inline void to_json(json& j, const ActionType& v)
+    {
+        j = v.m_ID;
+	}
+
+    inline void from_json(const json& j, ActionType& v)
+    {
+        v.m_ID = j.get<uint32_t>();
+	}
 }

@@ -19,11 +19,18 @@ public:
             PatrolComp& patrol = patrolArray.m_Components[in];
             Spoon::UUID entity = patrolArray.m_IndexToId[in];
             
+            if (!patrol.m_PatrolPoints.empty() && patrol.isPatrolling)
+            {
+                patrol.m_Destination = patrol.m_PatrolPoints[patrol.m_CurrentPointIndex];
+            }
+            else
+                continue;
+            
             if(movementArray.m_IdToIndex.count(entity) &&
                 transformArray.m_IdToIndex.count(entity))
             {
-                MovementComp& moveComp = manager.GetComponent<MovementComp>(entity);
-                Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(entity);
+                MovementComp& moveComp = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
+                Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(entity, Spoon::TransformComp::Name);
 
                 sf::Vector2f target;
                 target = patrol.m_Destination - transComp.GetPosition();

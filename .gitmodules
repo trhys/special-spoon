@@ -11,3 +11,6 @@
 [submodule "Special-Spoon/vendor/Imgui-sfml"]
 	path = Special-Spoon/vendor/Imgui-sfml
 	url = https://github.com/trhys/imgui-sfml.git
+[submodule "Special-Spoon/vendor/ImGuiFileDialog"]
+	path = Special-Spoon/vendor/ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git

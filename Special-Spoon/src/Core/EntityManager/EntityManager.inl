@@ -1,18 +1,17 @@
 namespace Spoon
 {
     template<typename COMP, typename... Args>
-    void EntityManager::MakeComponent(UUID id, Args&&... args)
+    void EntityManager::MakeComponent(UUID id, const std::string& displayName, Args&&... args)
     {
-        std::string type = typeid(COMP).name();
-        auto found = m_Arrays.find(type);
+        auto found = m_Arrays.find(displayName);
         if (found == m_Arrays.end())
         {
             std::string errorMsg = "ERROR: Attempted to MakeComponent<";
-            errorMsg += type;
-            errorMsg += "> but no ComponentArray storage was found. Did you forget to call LoadArray<COMP>() in startup?";
+            errorMsg += displayName;
+            errorMsg += "> but no ComponentArray storage was found. Did you forget to call LoadArray<COMP>(displayName) in startup?";
             throw std::runtime_error(errorMsg);
         }
-        ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[type].get());
+        ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[displayName].get());
 
         COMP newcomp = COMP(std::forward<Args>(args)...);
         array->AddComponent(id, newcomp);
@@ -38,7 +37,7 @@ namespace Spoon
             throw std::runtime_error("Component array already loaded: " + displayName + "\nMake sure your component arrays have unique names!");
         }
         m_Arrays[displayName] = std::make_unique<ComponentArray<COMP>>(displayName);
-        m_CompCreators[displayName] = [this](UUID id) { this->MakeComponent<COMP>(id); };
+        m_CompCreators[displayName] = [this, displayName](UUID id) { this->MakeComponent<COMP>(id, displayName); };
     }
 
     template<typename COMP>
@@ -73,18 +72,17 @@ namespace Spoon
     }
 
     template<typename COMP>
-    COMP& EntityManager::GetComponent(UUID id)
+    COMP& EntityManager::GetComponent(UUID id, const std::string& displayName)
     {
-        std::string name = typeid(COMP).name();
-        if(m_Arrays.find(name) == m_Arrays.end())
+        if(m_Arrays.find(displayName) == m_Arrays.end())
         {
-            throw std::runtime_error("Component array does not exist for type: " + name);
+            throw std::runtime_error("Component array does not exist for type: " + displayName);
         }
-        ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[name].get());
+        ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(m_Arrays[displayName].get());
 
         if(array->m_IdToIndex.find(id) == array->m_IdToIndex.end())
         {
-            throw std::runtime_error("Entity does not have component type: " + name);
+            throw std::runtime_error("Entity does not have component type: " + displayName);
         }
         size_t index = array->m_IdToIndex[id];
         return array->m_Components[index];

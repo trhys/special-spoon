@@ -38,7 +38,7 @@ namespace Spoon
         }
         if (ImGui::BeginChild("System Selector", ImVec2(0, 200)))
         {
-            for (const auto& [id, loader] : SystemLoaders::GetSysLoaders())
+            for (const auto& [id, loader] : SystemRegistry::Get().GetLoaders())
             {
                 if (ImGui::Checkbox(id.c_str(), &addedSystems[id]))
                 {
@@ -63,7 +63,7 @@ namespace Spoon
                 systems.end());
 
             // Add checked systems that aren't aleady here
-            auto& loaders = SystemLoaders::GetSysLoaders();
+            auto& loaders = SystemRegistry::Get().GetLoaders();
             for (auto& id : existing)
             {
                 bool exists = std::any_of(systems.begin(), systems.end(),

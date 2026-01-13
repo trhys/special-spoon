@@ -116,7 +116,7 @@ def buildme():
     
 if __name__ == "__main__":
 
-    required_packages = ["libxrandr-dev", "libxcursor-dev", "libxi-dev", "libudev-dev",
+    required_packages = ["cmake", "libxrandr-dev", "libxcursor-dev", "libxi-dev", "libudev-dev",
         "libopengl-dev", "libgl-dev", "libharfbuzz-dev", "libogg-dev", "libvorbis-dev", "libflac-dev", "libmbedtls-dev"]
     
     get(required_packages)

@@ -49,11 +49,11 @@ namespace Spoon
                 // Draw sprite component if it exists
                 if(spriteArray.m_IdToIndex.count(ID))
                 {
-                    SpriteComp& sprite = manager.GetComponent<SpriteComp>(ID);
+                    SpriteComp& sprite = manager.GetComponent<SpriteComp>(ID, SpriteComp::Name);
 
                     if(transformArray.m_IdToIndex.count(ID))
                     {
-                        TransformComp& transform = manager.GetComponent<TransformComp>(ID);
+                        TransformComp& transform = manager.GetComponent<TransformComp>(ID, TransformComp::Name);
                         sprite.SetPosition(transform.GetPosition());
                         sprite.SetScale(transform.GetScale());
                         sprite.SetRotation(transform.m_Transform.getRotation().asDegrees());
@@ -61,7 +61,7 @@ namespace Spoon
 
                     if(colorArray.m_IdToIndex.count(ID)) 
                     {
-                        ColorComp& color = manager.GetComponent<ColorComp>(ID);
+                        ColorComp& color = manager.GetComponent<ColorComp>(ID, ColorComp::Name);
                         sprite.SetColor(color.m_Color);
                     }
                     target.draw(sprite.m_Sprite, states);
@@ -71,18 +71,18 @@ namespace Spoon
                 // Draw text component if it exists
                 if(textArray.m_IdToIndex.count(ID))
                 {
-                    TextComp& text = manager.GetComponent<TextComp>(ID);
+                    TextComp& text = manager.GetComponent<TextComp>(ID, TextComp::Name);
 
                     if(transformArray.m_IdToIndex.count(ID))
                     {
-                        TransformComp& transform = manager.GetComponent<TransformComp>(ID);
+                        TransformComp& transform = manager.GetComponent<TransformComp>(ID, TransformComp::Name);
                         text.SetPosition(transform.GetPosition());
                         text.SetRotation(transform.m_Transform.getRotation().asDegrees());
                     }
 
                     if(colorArray.m_IdToIndex.count(ID)) 
                     {
-                        ColorComp& color = manager.GetComponent<ColorComp>(ID);
+                        ColorComp& color = manager.GetComponent<ColorComp>(ID, ColorComp::Name);
                         text.SetColor(color.m_Color);
                     }
                     target.draw(text.m_Text, states);
