@@ -2,9 +2,9 @@
 
 #include "Spoon.h"
 
-struct AttackComp : public Spoon::ComponentBase
+struct AttackComp : public Spoon::ComponentBase<AttackComp>
 {
-    AttackComp() : Spoon::ComponentBase::ComponentBase(AttackComp::Name) {}
+    AttackComp() : Spoon::ComponentBase<AttackComp>(AttackComp::Name) {}
 
     static constexpr const char* Name = "Attack";
 
