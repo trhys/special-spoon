@@ -18,6 +18,6 @@ struct AttackComp : public Spoon::ComponentBase
 
     void OnReflect() override
     {
-        if (ImGui::Sliderfloat("Reload Time", &m_ReloadTime, 0.f, 10.f)) {}
+        if (ImGui::SliderFloat("Reload Time", &m_ReloadTime, 0.f, 10.f)) {}
     }
 };
