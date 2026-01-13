@@ -10,7 +10,7 @@ public:
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
         auto& attackArray = manager.GetArray<AttackComp>(AttackComp::Name);
-        auto& statusArray = manager.GetArray<Spoon::StatusComp>(Spoon:StatusComp::Name);
+        auto& statusArray = manager.GetArray<Spoon::StatusComp>(Spoon::StatusComp::Name);
         for (size_t index = 0; index < attackArray.m_Components.size(); index++)
         {
             AttackComp& attackComp = attackArray.m_Components[index];
