@@ -158,6 +158,7 @@ namespace Spoon
         sf::Clock clock;
 
         bool play = true;
+        bool rayPickFlag = false;
         
         m_SystemManager.InitializeStateSystem();
         
@@ -170,7 +171,14 @@ namespace Spoon
             m_Window.handleEvents
             (
                 [&](const sf::Event::MouseButtonPressed& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
-                [&](const sf::Event::MouseButtonReleased& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+                [&](const sf::Event::MouseButtonReleased& event) 
+                { 
+                    if(m_Specs.editorEnabled) 
+                    {
+                        ImGui::SFML::ProcessEvent(m_Window, event);
+                        rayPickFlag = false;
+                    }
+                },
                 [&](const sf::Event::MouseMoved& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::MouseWheelScrolled& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
                 [&](const sf::Event::TextEntered& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
@@ -233,8 +241,9 @@ namespace Spoon
                 ImGui::Image(m_Viewport.target);
 
                 // Raycast to grab entities on the viewport
-                if (ImGui::IsItemHovered() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+                if (ImGui::IsItemHovered() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !rayPickFlag)
                 {
+                    rayPickFlag = true;
                     static UUID selectedID;
                     ImVec2 viewportPos = ImGui::GetItemRectMin();
                     ImVec2 mousePos = ImGui::GetIO().MousePos;
