@@ -17,7 +17,7 @@ namespace Spoon
 
         void Initialize(const std::string& logfilePath)
         {
-            m_LogFile.open(logfilePath, std::ios::trunc);
+            m_LogFile.open(logfilePath, std::ios::out);
             if(!m_LogFile.is_open())
             {
                 throw std::runtime_error("Failed to open log file at path: " + logfilePath);
