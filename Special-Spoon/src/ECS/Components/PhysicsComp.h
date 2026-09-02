@@ -33,15 +33,19 @@ namespace Spoon
 
         void OnReflect() override
         {
-            ImGui::Text("POS X: %.2f", m_CollisionBox.position.x);
-            ImGui::Text("POS Y: %.2f", m_CollisionBox.position.y);
-            ImGui::Text("Collision detected? : %s", Collided ? "True" : "False");
+            ImGui::Text("Position: (%.2f, %.2f)", m_CollisionBox.position.x, m_CollisionBox.position.y);
+            ImGui::Text("Mass: %.2f", mass);
+            ImGui::SliderFloat("Restitution##physics", &restitution, 0.0f, 1.0f, "%.2f");
+            ImGui::Checkbox("Is Static##physics", &isStatic);
+            ImGui::Text("Collision detected: %s", Collided ? "True" : "False");
         }
         
         sf::FloatRect m_CollisionBox;
+        float mass = 1.0f;
+        float restitution = 0.6f;
+        bool isStatic = false;
         bool Collided = false;
-
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PhysicsComp, Collided)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PhysicsComp, Collided, mass, restitution, isStatic)
 }
