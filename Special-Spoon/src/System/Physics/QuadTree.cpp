@@ -1,5 +1,6 @@
 #include "QuadTree.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "ECS/Components/MovementComp.h"
 
 #include <optional>
 #include <iterator>
@@ -14,10 +15,10 @@ namespace Spoon
     sf::Vector2f ComputeSeparation(const sf::FloatRect& boxA, const sf::FloatRect& boxB)
     {
         // Find overlap on each axis
-        float overlapLeft = (boxA.left + boxA.width) - boxB.left;
-        float overlapRight = boxB.left + boxB.width - boxA.left;
-        float overlapTop = (boxA.top + boxA.height) - boxB.top;
-        float overlapBottom = boxB.top + boxB.height - boxA.top;
+        float overlapLeft = (boxA.position.x + boxA.size.x) - boxB.position.x;
+        float overlapRight = boxB.position.x + boxB.size.x - boxA.position.x;
+        float overlapTop = (boxA.position.y + boxA.size.y) - boxB.position.y;
+        float overlapBottom = boxB.position.y + boxB.size.y - boxA.position.y;
         
         // Find minimum overlap (axis of least penetration)
         float minOverlap = std::min({overlapLeft, overlapRight, overlapTop, overlapBottom});
@@ -141,7 +142,7 @@ namespace Spoon
                         MovementComp& movB = manager.GetComponent<MovementComp>(entityB, MovementComp::Name);
                         
                         // Impulse calculation
-                        sf::Vector2f relativeVelocity = movA.velocity - movB.velocity;
+                        sf::Vector2f relativeVelocity = movA.m_Velocity - movB.m_Velocity;
                         sf::Vector2f collisionNormal = separation;
                         float length = std::sqrt(collisionNormal.x * collisionNormal.x + 
                                                  collisionNormal.y * collisionNormal.y);
@@ -167,9 +168,9 @@ namespace Spoon
                                 sf::Vector2f impulse = collisionNormal * j;
                                 
                                 if(!physA.isStatic)
-                                    movA.velocity += impulse * invMassA;
+                                    movA.m_Velocity += impulse * invMassA;
                                 if(!physB.isStatic)
-                                    movB.velocity -= impulse * invMassB;
+                                    movB.m_Velocity -= impulse * invMassB;
                             }
                         }
                     }
@@ -184,8 +185,8 @@ namespace Spoon
                         {
                             collisionNormal /= length;
                             float e = physA.restitution;
-                            movA.velocity = collisionNormal * (std::sqrt(movA.velocity.x * movA.velocity.x + 
-                                                                         movA.velocity.y * movA.velocity.y) * e);
+                            movA.m_Velocity = collisionNormal * (std::sqrt(movA.m_Velocity.x * movA.m_Velocity.x + 
+                                                                         movA.m_Velocity.y * movA.m_Velocity.y) * e);
                         }
                     }
                 }

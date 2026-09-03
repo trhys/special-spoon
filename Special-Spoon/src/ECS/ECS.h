@@ -5,6 +5,7 @@
 #include "Components/InputComp.h"
 #include "Components/StateActionComp.h"
 #include "Components/StatusComp.h"
+#include "Components/MovementComp.h"
 
 #include "Components/Render/TextComp.h"
 #include "Components/Render/SpriteComp.h"

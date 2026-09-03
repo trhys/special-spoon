@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Spoon.h"
-#include "ECS/Component/MovementComp.h"
 #include "ECS/Component/PlayerComp.h"
 
 class PlayerController : public Spoon::ISystem
@@ -13,7 +12,7 @@ public:
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
         auto& playerArray = manager.GetArray<PlayerComp>(PlayerComp::Name);
-        auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+        auto& movementArray = manager.GetArray<Spoon::MovementComp>(Spoon::MovementComp::Name);
         auto& statusArray = manager.GetArray<Spoon::StatusComp>(Spoon::StatusComp::Name);
         auto& actionBuffer = manager.GetActionsBuffer();
 
@@ -23,7 +22,7 @@ public:
             Spoon::UUID ID = playerArray.m_IndexToId[index];
 
             Spoon::StatusComp& status = manager.GetComponent<Spoon::StatusComp>(ID, Spoon::StatusComp::Name);
-            MovementComp& movement = manager.GetComponent<MovementComp>(ID, MovementComp::Name);
+            Spoon::MovementComp& movement = manager.GetComponent<Spoon::MovementComp>(ID, Spoon::MovementComp::Name);
             Spoon::InputComp& input = manager.GetComponent<Spoon::InputComp>(ID, Spoon::InputComp::Name);
 
             movement.m_Velocity = { 0.0, 0.0 };

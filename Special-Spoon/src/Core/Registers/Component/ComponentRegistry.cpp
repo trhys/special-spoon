@@ -83,6 +83,12 @@ namespace Spoon
         manager.MakeComponent<ColorComp>(id, ColorComp::Name, color);
     }
 
+    void LoadMovementComp(EntityManager& manager, UUID id, const json& comp)
+    {
+        float speed = comp["Speed"].get<float>();
+        manager.MakeComponent<MovementComp>(id, MovementComp::Name, speed);
+    }
+
     void RegisterDefaultLoaders()
     {
         SS_DEBUG_LOG("[COMPONENT] Registering default component loaders...")
@@ -98,5 +104,6 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(RenderLayer::Name, &LoadRenderLayer);
         ComponentRegistry::Get().RegisterLoader(PhysicsComp::Name, &LoadPhysicsComponent);
         ComponentRegistry::Get().RegisterLoader(ColorComp::Name, &LoadColorComponent);
+        ComponentRegistry::Get().RegisterLoader(MovementComp::Name, &LoadMovementComp);
     }
 }
