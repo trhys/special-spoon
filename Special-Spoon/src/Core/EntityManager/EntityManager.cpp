@@ -18,6 +18,7 @@ namespace Spoon
         LoadArray<AnimationComp>(AnimationComp::Name);
         LoadArray<StateActionComp>(StateActionComp::Name);
         LoadArray<RenderLayer>(RenderLayer::Name);
+        LoadArray<MovementComp>(MovementComp::Name);
     }
 
     // ===========================================
@@ -98,17 +99,6 @@ namespace Spoon
     // ===========================================
     // Misc Methods
     // ===========================================
-    void EntityManager::PushAction(UUID entityId, std::string action)
-    {
-        SS_DEBUG_LOG("[ENTITY MANAGER] Buffering action: " + action)
-        m_ActionsBuffer[entityId] = action;
-    }
-
-    void EntityManager::ClearActionsBuffer()
-    {
-        m_ActionsBuffer.clear();
-    }
-
     void EntityManager::ClearArrays()
     {
         for(auto& [type, array] : m_Arrays)
