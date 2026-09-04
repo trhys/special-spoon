@@ -1,7 +1,6 @@
 #include "Spoon.h"
 
 /*#include "Component/PatrolComp.h"*/
-#include "Component/PlayerComp.h"
 
 /*void LoadPatrolComponent(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)*/
 /*{*/
@@ -24,13 +23,7 @@
 /**/
 /*}*/
 
-void LoadPlayerComp(Spoon::EntityManager& manager, Spoon::UUID id, const nlohmann::json& comp)
-{
-    manager.MakeComponent<PlayerComp>(id, PlayerComp::Name);
-}
-
 void RegisterCustomLoaders()
 {
     /*Spoon::ComponentRegistry::Get().RegisterLoader(PatrolComp::Name, &LoadPatrolComponent);*/
-    Spoon::ComponentRegistry::Get().RegisterLoader(PlayerComp::Name, &LoadPlayerComp);
 }
