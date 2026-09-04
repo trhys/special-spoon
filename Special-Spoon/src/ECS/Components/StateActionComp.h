@@ -1,16 +1,17 @@
 #pragma once
 
 #include "Component.h"
+#include "Core/Registers/StateRegistry.h"
 
 namespace Spoon
 {
     struct StateActionComp : public ComponentBase<StateActionComp>
     {
         StateActionComp() : ComponentBase::ComponentBase(Name) {}
-        StateActionComp(std::unordered_map<std::string, std::string> stateActions) : ComponentBase::ComponentBase(Name), m_Actions(stateActions) {}
+        StateActionComp(std::unordered_map<ActionType, StateType> stateActions) : ComponentBase::ComponentBase(Name), m_Actions(stateActions) {}
 
         static constexpr const char* Name = "StateAction";
-        std::unordered_map<std::string, std::string> m_Actions;
+        std::unordered_map<ActionType, StateType> m_Actions;
         
         void OnReflect() override
         {
@@ -19,11 +20,13 @@ namespace Spoon
             static std::string editingAction = "";
             static char actionStateBuf[64];
             static char stateStringBuf[64];
+            actionRegistry = ActionRegistry::Get();
+            stateRegistry = StateRegistry::Get();
 
             for(auto& [action, state] : m_Actions)
             {
-                ImGui::Text("Action String: %s", action.c_str());
-                ImGui::Text("State String: %s", state.c_str());
+                ImGui::Text("Action: %s", actionRegistry.GetName(action));
+                ImGui::Text("State: %s", stateRegistry.GetName(state));
                 if(ImGui::Button("Edit"))
                 {
                     editingAction = action;
@@ -34,9 +37,10 @@ namespace Spoon
             }
             if(ImGui::BeginPopup(editWindow))
             {
+              // edit to select action and state from listbox - see inputcomp for reference
                 
-                ImGui::InputText("New Action String: ", actionStateBuf, IM_ARRAYSIZE(actionStateBuf));
-                ImGui::InputText("New State String: ", stateStringBuf, IM_ARRAYSIZE(stateStringBuf));
+                ImGui::InputText("New Action: ", actionStateBuf, IM_ARRAYSIZE(actionStateBuf));
+                ImGui::InputText("New State: ", stateStringBuf, IM_ARRAYSIZE(stateStringBuf));
                 if(ImGui::Button("Submit"))
                 {
                     m_Actions.erase(editingAction);

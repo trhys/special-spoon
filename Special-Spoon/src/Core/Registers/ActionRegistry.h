@@ -19,9 +19,6 @@ namespace Spoon
         constexpr uint32_t None = 0;
         constexpr uint32_t Quit = 1;
         constexpr uint32_t Idle = 2;
-        constexpr uint32_t Move = 3;
-        constexpr uint32_t Attack = 4;
-        constexpr uint32_t Interact = 5;
 
         constexpr uint32_t BeginCustomRange = 1000;
     }
@@ -46,9 +43,6 @@ namespace Spoon
             RegisterAction("None", BuiltInActions::None);
             RegisterAction("Quit", BuiltInActions::Quit);
             RegisterAction("Idle", BuiltInActions::Idle);
-            RegisterAction("Move", BuiltInActions::Move);
-            RegisterAction("Attack", BuiltInActions::Attack);
-            RegisterAction("Interact", BuiltInActions::Interact);
         }
 
         void RegisterCustom(const std::string& name)
