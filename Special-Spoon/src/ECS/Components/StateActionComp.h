@@ -9,16 +9,16 @@ namespace Spoon
     struct StateActionComp : public ComponentBase<StateActionComp>
     {
         StateActionComp() : ComponentBase::ComponentBase(Name) {}
-        StateActionComp(std::unordered_map<ActionType, StateType> stateActions) : ComponentBase::ComponentBase(Name), m_Actions(stateActions) {}
+        StateActionComp(const std::unordered_map<ActionType, StateType>& stateActions) : ComponentBase::ComponentBase(Name), m_Actions(stateActions) {}
 
         static constexpr const char* Name = "StateAction";
         std::unordered_map<ActionType, StateType> m_Actions;
         
         void OnReflect() override
         {
-            static ActionType currentAction = 0;  // Currently selected action
-            static ActionType editAction = 0;     // Action to replace
-            static StateType editState = 0;       // State to replace
+            static uint32_t currentAction = 0;  // Currently selected action
+            static uint32_t editAction = 0;     // Action to replace
+            static uint32_t editState = 0;       // State to replace
 
             ImGui::SeparatorText("Current Action-State Mappings");
             if(ImGui::BeginListBox("##ActionMappings"))
@@ -27,10 +27,10 @@ namespace Spoon
                 {
                     std::string actionName = ActionRegistry::Get().GetName(action);
                     ImGui::PushID(actionName.c_str());
-                    const bool is_selected = (currentAction == action);
+                    const bool is_selected = (currentAction == action.m_ID);
                     if(ImGui::Selectable(actionName.c_str(), is_selected))
                     {
-                        currentAction = action;
+                        currentAction = action.m_ID;
                     }
                     if(is_selected)
                         ImGui::SetItemDefaultFocus();
@@ -41,12 +41,12 @@ namespace Spoon
             ImGui::SameLine(); HelpMarker("Select an action to edit its state mapping.");
 
             ImGui::SeparatorText("Action State Mapping");
-            if(currentAction != 0 && m_Actions.count(currentAction))
+            if(currentAction != 0 && m_Actions.count(ActionRegistry::Get().GetFromID(currentAction)))
             {
                 const char* editWindow = "Edit Mapping";
 
-                std::string actionName = ActionRegistry::Get().GetName(currentAction);
-                std::string stateName = StateRegistry::Get().GetName(m_Actions[currentAction]);
+                std::string actionName = ActionRegistry::Get().m_IDToName[currentAction];
+                std::string stateName = StateRegistry::Get().GetName(m_Actions[ActionRegistry::Get().GetFromID(currentAction)]);
                 ImGui::Text("Action: %s", actionName.c_str());
                 ImGui::Text("State: %s", stateName.c_str());
                 ImGui::SameLine(); if(ImGui::Button("Edit")) ImGui::OpenPopup(editWindow);
@@ -97,8 +97,8 @@ namespace Spoon
 
                     if(ImGui::Button("Submit"))
                     {
-                        m_Actions.erase(currentAction);
-                        m_Actions[editAction] = editState;
+                        m_Actions.erase(ActionRegistry::Get().GetFromID(currentAction));
+                        m_Actions[ActionRegistry::Get().GetFromID(editAction)] = StateRegistry::Get().GetFromID(editState);
                         currentAction = 0;
                         editAction = 0;
                         editState = 0;
@@ -169,7 +169,7 @@ namespace Spoon
 
                 if(ImGui::Button("Submit"))
                 {
-                    m_Actions[editAction] = editState;
+                    m_Actions[ActionRegistry::Get().GetFromID(editAction)] = StateRegistry::Get().GetFromID(editState);
                     editAction = 0;
                     editState = 0;
                     ImGui::CloseCurrentPopup();

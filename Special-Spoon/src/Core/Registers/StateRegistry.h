@@ -3,6 +3,7 @@
 #include "Core/Core.h"
 #include <unordered_map>
 #include <vector>
+#include <stdexcept>
 
 namespace Spoon
 {
@@ -57,6 +58,15 @@ namespace Spoon
             return StateType{ BuiltInStates::None };
         }
 
+        StateType GetFromID(const uint32_t& id)
+        {
+          if (m_IDToName.find(id) != m_IDToName.end())
+          {
+            return StateType{ id };
+          }
+          throw std::runtime_error("attempted to fetch non existent state type from id");
+        }
+
         std::string& GetName(const StateType& action)
         {
             return m_IDToName[action.m_ID];
@@ -69,3 +79,13 @@ namespace Spoon
         uint32_t m_NextCustomID = BuiltInStates::BeginCustomRange;
     };
 }
+
+namespace std {
+    template <>
+    struct hash<Spoon::StateType> {
+        std::size_t operator()(const Spoon::StateType& action) const noexcept {
+            return std::hash<uint32_t>()(action.m_ID);
+        }
+    };
+}
+

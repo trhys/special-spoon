@@ -111,7 +111,6 @@ namespace Spoon
     {
         m_Arrays.clear();
         m_Entities.clear();
-        m_ActionsBuffer.clear();
         m_RecycledIds.clear();
         m_IdCounter = 0;
     }

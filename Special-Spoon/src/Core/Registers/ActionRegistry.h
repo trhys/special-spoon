@@ -3,6 +3,7 @@
 #include "Core/Core.h"
 #include <unordered_map>
 #include <vector>
+#include <stdexcept>
 
 namespace Spoon
 {
@@ -59,6 +60,15 @@ namespace Spoon
             return ActionType{ BuiltInActions::None };
         }
 
+        ActionType GetFromID(const uint32_t& id)
+        {
+          if (m_IDToName.find(id) != m_IDToName.end())
+          {
+            return ActionType{ id };
+          }
+          throw std::runtime_error("attempted to fetch non existent action type from id");
+        }
+
         std::string& GetName(const ActionType& action)
         {
             return m_IDToName[action.m_ID];
@@ -71,3 +81,13 @@ namespace Spoon
         uint32_t m_NextCustomID = BuiltInActions::BeginCustomRange;
     };
 }
+
+namespace std {
+    template <>
+    struct hash<Spoon::ActionType> {
+        std::size_t operator()(const Spoon::ActionType& action) const noexcept {
+            return std::hash<uint32_t>()(action.m_ID);
+        }
+    };
+}
+

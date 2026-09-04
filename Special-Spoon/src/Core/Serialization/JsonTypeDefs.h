@@ -3,6 +3,7 @@
 #include "ECS/Entity.h"
 #include "ECS/Components/Animation/AnimationData.h"
 #include "Core/Registers/ActionRegistry.h"
+#include "Core/Registers/StateRegistry.h"
 
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
@@ -122,4 +123,14 @@ namespace Spoon
     {
         v.m_ID = j.get<uint32_t>();
 	}
+
+    inline void to_json(json& j, const StateType& v)
+    {
+        j = v.m_ID;
+	}
+
+    inline void from_json(const json& j, StateType& v)
+    {
+        v.m_ID = j.get<uint32_t>();
+    }	
 }
