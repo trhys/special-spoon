@@ -179,5 +179,30 @@ namespace Spoon
         }
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StateActionComp, m_Actions)
+    inline void to_json(json& j, const StateActionComp& comp)
+    {
+        j["m_Actions"] = json::array();
+        for (const auto& [action, state] : comp.m_Actions)
+        {
+            j["m_Actions"].push_back(
+            {
+                {"Action", action},
+                {"State", state}
+            });
+        }
+    }
+
+    inline void from_json(const json& j, StateActionComp& comp)
+    {
+        comp.m_Actions.clear();
+        if (!j.contains("m_Actions") || !j["m_Actions"].is_array())
+            return;
+
+        for (const auto& item : j["m_Actions"])
+        {
+            ActionType action = item.at("Action").get<ActionType>();
+            StateType state = item.at("State").get<StateType>();
+            comp.m_Actions[action] = state;
+        }
+    }
 }

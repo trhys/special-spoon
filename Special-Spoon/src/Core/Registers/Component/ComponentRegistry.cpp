@@ -74,19 +74,25 @@ namespace Spoon
 
     void LoadPhysicsComponent(EntityManager& manager, UUID id, const json& comp)
     {
+        auto physics = comp.get<PhysicsComp>();
         manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
+        auto& loaded = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
+        loaded.mass = physics.mass;
+        loaded.restitution = physics.restitution;
+        loaded.isStatic = physics.isStatic;
+        loaded.Collided = physics.Collided;
     }
 
     void LoadColorComponent(EntityManager& manager, UUID id, const json& comp)
     {
-        sf::Color color = comp.get<sf::Color>();
-        manager.MakeComponent<ColorComp>(id, ColorComp::Name, color);
+        auto colorComp = comp.get<ColorComp>();
+        manager.MakeComponent<ColorComp>(id, ColorComp::Name, colorComp.m_Color);
     }
 
     void LoadMovementComp(EntityManager& manager, UUID id, const json& comp)
     {
-        float speed = comp["Speed"].get<float>();
-        manager.MakeComponent<MovementComp>(id, MovementComp::Name, speed);
+        auto movement = comp.get<MovementComp>();
+        manager.MakeComponent<MovementComp>(id, MovementComp::Name, movement.m_Speed);
     }
 
     void RegisterDefaultLoaders()
