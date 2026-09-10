@@ -20,6 +20,10 @@ namespace Spoon
         constexpr uint32_t None = 0;
         constexpr uint32_t Quit = 1;
         constexpr uint32_t Idle = 2;
+        constexpr uint32_t MoveLeft = 3;
+        constexpr uint32_t MoveRight = 4;
+        constexpr uint32_t MoveUp = 5;
+        constexpr uint32_t MoveDown = 6;
 
         constexpr uint32_t BeginCustomRange = 1000;
     }
@@ -44,6 +48,10 @@ namespace Spoon
             RegisterAction("None", BuiltInActions::None);
             RegisterAction("Quit", BuiltInActions::Quit);
             RegisterAction("Idle", BuiltInActions::Idle);
+            RegisterAction("MoveLeft", BuiltInActions::MoveLeft);
+            RegisterAction("MoveRight", BuiltInActions::MoveRight);
+            RegisterAction("MoveUp", BuiltInActions::MoveUp);
+            RegisterAction("MoveDown", BuiltInActions::MoveDown);
         }
 
         void RegisterCustom(const std::string& name)
@@ -90,4 +98,3 @@ namespace std {
         }
     };
 }
-

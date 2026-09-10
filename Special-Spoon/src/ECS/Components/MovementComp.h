@@ -2,6 +2,8 @@
 
 #include "ECS/Components/Component.h"
 
+#include <cmath>
+
 namespace Spoon {
  
   struct FacingDirection
@@ -34,10 +36,25 @@ namespace Spoon {
       // Runtime members
       sf::Vector2f m_Velocity;
       FacingDirection m_Facing;
+      sf::Vector2f m_FrameIntent;
+      sf::Vector2f m_ProposedDelta;
+      bool m_MoveLeftHeld = false;
+      bool m_MoveRightHeld = false;
+      bool m_MoveUpHeld = false;
+      bool m_MoveDownHeld = false;
+      bool m_UsesActionMovement = false;
+      bool m_WasCorrectedByPhysics = false;
 
       void OnReflect() override
       {
           if (ImGui::SliderFloat("Speed", &m_Speed, 0.0, 100)) {}
+          ImGui::SeparatorText("Runtime");
+          ImGui::Text("Intent: (%.2f, %.2f)", m_FrameIntent.x, m_FrameIntent.y);
+          ImGui::Text("Velocity: (%.2f, %.2f)", m_Velocity.x, m_Velocity.y);
+          ImGui::Text("Proposed Delta: (%.2f, %.2f)", m_ProposedDelta.x, m_ProposedDelta.y);
+          ImGui::Text("Facing: %s", m_Facing.m_Direction);
+          ImGui::Text("Action Driven: %s", m_UsesActionMovement ? "True" : "False");
+          ImGui::Text("Corrected By Physics: %s", m_WasCorrectedByPhysics ? "True" : "False");
       }
   };
 

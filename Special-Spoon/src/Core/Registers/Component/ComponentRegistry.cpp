@@ -75,7 +75,7 @@ namespace Spoon
     void LoadPhysicsComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto physics = comp.get<PhysicsComp>();
-        manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
+        manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name, physics.m_CollisionBox);
         auto& loaded = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
         loaded.mass = physics.mass;
         loaded.restitution = physics.restitution;

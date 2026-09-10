@@ -21,8 +21,7 @@ namespace Spoon
                 auto found = inputComp.m_KeyBindings.find(key);
                 if(found != inputComp.m_KeyBindings.end())
                 {
-                    //manager.PushAction(ID, found->second);
-                    queue.CreateAndPush(ID, found->second, 0);
+                    queue.CreateAndPush(ID, found->second, 0, ActionEvent::Pressed);
                     inputComp.m_KeyStates[found->first] = true;
                 }
                 
@@ -35,6 +34,7 @@ namespace Spoon
                 auto found = inputComp.m_KeyBindings.find(key);
                 if (found != inputComp.m_KeyBindings.end())
                 {
+                    queue.CreateAndPush(ID, found->second, 0, ActionEvent::Released);
                     inputComp.m_KeyStates[found->first] = false;
                 }
             }

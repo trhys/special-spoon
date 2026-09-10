@@ -52,6 +52,24 @@ namespace sf
         j.at("height").get_to(r.size.y);
     }
 
+    inline void to_json(json& j, const FloatRect& r)
+    {
+        j = json{
+            {"left", r.position.x},
+            {"top", r.position.y},
+            {"width", r.size.x},
+            {"height", r.size.y}
+        };
+    }
+
+    inline void from_json(const json& j, FloatRect& r)
+    {
+        j.at("left").get_to(r.position.x);
+        j.at("top").get_to(r.position.y);
+        j.at("width").get_to(r.size.x);
+        j.at("height").get_to(r.size.y);
+    }
+
     inline void to_json(json& j, const Color& v)
     {
         j = json{{"R", v.r}, {"G", v.g}, {"B", v.b}, {"A", v.a}};
