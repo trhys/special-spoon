@@ -21,33 +21,37 @@ public:
             action.m_ID == Spoon::BuiltInActions::MoveDown;
     }
 
-    static void UpdateHeldState(Spoon::MovementComp& moveComp, const Spoon::Action& action)
+    static sf::Vector2f BuildIntent(const std::vector<const Spoon::Action*>& actions)
     {
-        bool isPressed = action.m_Event == Spoon::ActionEvent::Pressed;
-        switch (action.m_ActionType.m_ID)
-        {
-        case Spoon::BuiltInActions::MoveLeft:
-            moveComp.m_MoveLeftHeld = isPressed;
-            break;
-        case Spoon::BuiltInActions::MoveRight:
-            moveComp.m_MoveRightHeld = isPressed;
-            break;
-        case Spoon::BuiltInActions::MoveUp:
-            moveComp.m_MoveUpHeld = isPressed;
-            break;
-        case Spoon::BuiltInActions::MoveDown:
-            moveComp.m_MoveDownHeld = isPressed;
-            break;
-        default:
-            break;
-        }
-    }
+        bool moveLeft = false;
+        bool moveRight = false;
+        bool moveUp = false;
+        bool moveDown = false;
 
-    static sf::Vector2f BuildIntent(const Spoon::MovementComp& moveComp)
-    {
+        for (const Spoon::Action* action : actions)
+        {
+            switch (action->m_ActionType.m_ID)
+            {
+            case Spoon::BuiltInActions::MoveLeft:
+                moveLeft = true;
+                break;
+            case Spoon::BuiltInActions::MoveRight:
+                moveRight = true;
+                break;
+            case Spoon::BuiltInActions::MoveUp:
+                moveUp = true;
+                break;
+            case Spoon::BuiltInActions::MoveDown:
+                moveDown = true;
+                break;
+            default:
+                break;
+            }
+        }
+
         sf::Vector2f intent(
-            (moveComp.m_MoveRightHeld ? 1.0f : 0.0f) - (moveComp.m_MoveLeftHeld ? 1.0f : 0.0f),
-            (moveComp.m_MoveDownHeld ? 1.0f : 0.0f) - (moveComp.m_MoveUpHeld ? 1.0f : 0.0f)
+            (moveRight ? 1.0f : 0.0f) - (moveLeft ? 1.0f : 0.0f),
+            (moveDown ? 1.0f : 0.0f) - (moveUp ? 1.0f : 0.0f)
         );
 
         if (intent.x != 0.0f && intent.y != 0.0f)
@@ -87,16 +91,7 @@ public:
             auto actionRange = movementActions.find(ID);
             if (actionRange != movementActions.end())
             {
-                moveComp.m_UsesActionMovement = true;
-                for (const Spoon::Action* action : actionRange->second)
-                {
-                    UpdateHeldState(moveComp, *action);
-                }
-            }
-
-            if (moveComp.m_UsesActionMovement)
-            {
-                moveComp.m_FrameIntent = BuildIntent(moveComp);
+                moveComp.m_FrameIntent = BuildIntent(actionRange->second);
                 moveComp.m_Velocity = moveComp.m_FrameIntent * moveComp.m_Speed;
             }
             else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
