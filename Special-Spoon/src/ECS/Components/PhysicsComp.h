@@ -62,8 +62,7 @@ namespace Spoon
             {"m_CollisionBox", comp.m_CollisionBox},
             {"mass", comp.mass},
             {"restitution", comp.restitution},
-            {"isStatic", comp.isStatic},
-            {"Collided", comp.Collided}
+            {"isStatic", comp.isStatic}
         };
     }
 
@@ -77,7 +76,5 @@ namespace Spoon
             comp.restitution = j.at("restitution").get<float>();
         if (j.contains("isStatic"))
             comp.isStatic = j.at("isStatic").get<bool>();
-        if (j.contains("Collided"))
-            comp.Collided = j.at("Collided").get<bool>();
     }
 }

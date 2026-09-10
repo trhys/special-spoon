@@ -2,6 +2,7 @@
 
 #include "System/System.h"
 #include "QuadTree.h"
+#include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "ECS/ECS.h"
 
@@ -20,49 +21,49 @@ namespace Spoon
             (void)tick;
 
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
-
             for (auto& physicsComp : physicsArray.m_Components)
             {
                 physicsComp.CollisionHandled();
             }
 
-            for (size_t indexA = 0; indexA < physicsArray.m_Components.size(); indexA++)
+            if (physicsArray.m_Components.size() < 2)
+                return;
+
+            sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
+            quadtree.BuildTree({ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
+            quadtree.Populate(manager);
+
+            for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
             {
-                UUID entityA = physicsArray.m_IndexToId[indexA];
-                PhysicsComp& physA = physicsArray.m_Components[indexA];
+                PhysicsComp& physA = manager.GetComponent<PhysicsComp>(entityA, PhysicsComp::Name);
+                PhysicsComp& physB = manager.GetComponent<PhysicsComp>(entityB, PhysicsComp::Name);
 
-                for (size_t indexB = indexA + 1; indexB < physicsArray.m_Components.size(); indexB++)
+                const std::optional collision = physA.GetCollisionBox().findIntersection(physB.GetCollisionBox());
+                if (!collision)
+                    continue;
+
+                if (physA.isStatic && physB.isStatic)
+                    continue;
+
+                physA.CollisionDetected();
+                physB.CollisionDetected();
+
+                sf::Vector2f correction = ComputeCorrection(physA.GetCollisionBox(), physB.GetCollisionBox(), *collision);
+                if (correction.x == 0.0f && correction.y == 0.0f)
+                    continue;
+
+                if (physA.isStatic)
                 {
-                    UUID entityB = physicsArray.m_IndexToId[indexB];
-                    PhysicsComp& physB = physicsArray.m_Components[indexB];
-
-                    const std::optional collision = physA.GetCollisionBox().findIntersection(physB.GetCollisionBox());
-                    if (!collision)
-                        continue;
-
-                    physA.CollisionDetected();
-                    physB.CollisionDetected();
-
-                    sf::Vector2f correction = ComputeCorrection(physA.GetCollisionBox(), physB.GetCollisionBox(), *collision);
-                    if (correction.x == 0.0f && correction.y == 0.0f)
-                        continue;
-
-                    if (physA.isStatic && physB.isStatic)
-                        continue;
-
-                    if (physA.isStatic)
-                    {
-                        ApplyCorrection(manager, entityB, correction * -1.0f);
-                    }
-                    else if (physB.isStatic)
-                    {
-                        ApplyCorrection(manager, entityA, correction);
-                    }
-                    else
-                    {
-                        ApplyCorrection(manager, entityA, correction * 0.5f);
-                        ApplyCorrection(manager, entityB, correction * -0.5f);
-                    }
+                    ApplyCorrection(manager, entityB, correction * -1.0f);
+                }
+                else if (physB.isStatic)
+                {
+                    ApplyCorrection(manager, entityA, correction);
+                }
+                else
+                {
+                    ApplyCorrection(manager, entityA, correction * 0.5f);
+                    ApplyCorrection(manager, entityB, correction * -0.5f);
                 }
             }
         }

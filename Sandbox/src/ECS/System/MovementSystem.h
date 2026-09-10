@@ -5,6 +5,7 @@
 #include "Core/Application.h"
 
 #include <cmath>
+#include <unordered_map>
 
 class MovementSystem : public Spoon::ISystem
 {
@@ -64,6 +65,15 @@ public:
         auto& movementArray = manager.GetArray<Spoon::MovementComp>(Spoon::MovementComp::Name);
         auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
         auto& physicsArray = manager.GetArray<Spoon::PhysicsComp>(Spoon::PhysicsComp::Name);
+        std::unordered_map<Spoon::UUID, std::vector<const Spoon::Action*>> movementActions;
+
+        for (const auto& action : queue.m_Queue)
+        {
+            if (IsMovementAction(action.m_ActionType))
+            {
+                movementActions[action.m_EntityID].push_back(&action);
+            }
+        }
 
         for(size_t index = 0; index < movementArray.m_Components.size(); index++)
         {
@@ -74,13 +84,14 @@ public:
             moveComp.m_ProposedDelta = {0.0f, 0.0f};
             moveComp.m_WasCorrectedByPhysics = false;
 
-            for (const auto& action : queue.m_Queue)
+            auto actionRange = movementActions.find(ID);
+            if (actionRange != movementActions.end())
             {
-                if (action.m_EntityID != ID || !IsMovementAction(action.m_ActionType))
-                    continue;
-
                 moveComp.m_UsesActionMovement = true;
-                UpdateHeldState(moveComp, action);
+                for (const Spoon::Action* action : actionRange->second)
+                {
+                    UpdateHeldState(moveComp, *action);
+                }
             }
 
             if (moveComp.m_UsesActionMovement)

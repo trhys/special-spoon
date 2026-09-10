@@ -32,6 +32,7 @@ namespace Spoon
                 if(found != loaderMap.end())
                 {
                     m_Systems.emplace_back(found->second(systemData));
+                    m_SystemOrderDirty = true;
                 }
                 else
                 {
@@ -51,6 +52,7 @@ namespace Spoon
             if(found != loaderMap.end())
             {
                 m_Systems.emplace_back(found->second(systemData));
+                m_SystemOrderDirty = true;
             }
             else
             {
@@ -61,11 +63,16 @@ namespace Spoon
         void ClearSystems()
         {
             m_Systems.clear();
+            m_SystemOrderDirty = true;
         }
 
         void UpdateSystems(sf::Time tick, EntityManager& manager)
         {
-            EnforceKnownExecutionOrder();
+            if (m_SystemOrderDirty)
+            {
+                EnforceKnownExecutionOrder();
+                m_SystemOrderDirty = false;
+            }
             for(auto& system : m_Systems)
             {
                 system->Update(tick, manager);
@@ -87,7 +94,11 @@ namespace Spoon
 
         StateSystem* GetStateSystem() { return m_StateSystem.get(); }
         
-        std::vector<std::unique_ptr<ISystem>>& GetSystems() { return m_Systems; }
+        std::vector<std::unique_ptr<ISystem>>& GetSystems()
+        {
+            m_SystemOrderDirty = true;
+            return m_Systems;
+        }
 
     private:
         void EnforceKnownExecutionOrder()
@@ -173,5 +184,6 @@ namespace Spoon
 
         std::vector<std::unique_ptr<ISystem>> m_Systems;
         std::unique_ptr<StateSystem> m_StateSystem = nullptr;
+        bool m_SystemOrderDirty = true;
     };
 }

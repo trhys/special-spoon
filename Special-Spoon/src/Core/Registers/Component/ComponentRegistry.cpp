@@ -75,12 +75,10 @@ namespace Spoon
     void LoadPhysicsComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto physics = comp.get<PhysicsComp>();
-        manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name, physics.m_CollisionBox);
+        manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
         auto& loaded = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
-        loaded.mass = physics.mass;
-        loaded.restitution = physics.restitution;
-        loaded.isStatic = physics.isStatic;
-        loaded.Collided = physics.Collided;
+        loaded = physics;
+        loaded.CollisionHandled();
     }
 
     void LoadColorComponent(EntityManager& manager, UUID id, const json& comp)
