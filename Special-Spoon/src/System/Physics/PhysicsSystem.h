@@ -22,10 +22,18 @@ namespace Spoon
         {
             (void)tick;
 
+            // Here we need to resolve state flags to zero before processing
+            // and calibrate the collision box and transform coords 
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
-            for (auto& physicsComp : physicsArray.m_Components)
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            for (size_t index = 0; index < physicsArray.m_Components.size(); index++)
             {
+                auto& physicsComp = physicsArray.m_Components[index];
+                UUID id = physicsArray.m_IndexToId[index];
                 physicsComp.CollisionHandled();
+
+                TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+                physicsComp.SetPosition(transform.GetPosition());
             }
 
             auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
