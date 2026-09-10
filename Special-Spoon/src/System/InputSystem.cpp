@@ -1,17 +1,8 @@
 #include "InputSystem.h"
 #include "Core/Application.h"
-#include "Core/Registers/ActionRegistry.h"
 
 namespace Spoon
 {
-    static bool IsMovementAction(const ActionType& action)
-    {
-        return action.m_ID == BuiltInActions::MoveLeft ||
-            action.m_ID == BuiltInActions::MoveRight ||
-            action.m_ID == BuiltInActions::MoveUp ||
-            action.m_ID == BuiltInActions::MoveDown;
-    }
-
     void InputSystem::Update(sf::Time tick, EntityManager& manager)
     {
         (void)tick;
@@ -55,7 +46,7 @@ namespace Spoon
                 }
 
                 auto binding = inputComp.m_KeyBindings.find(key);
-                if (binding != inputComp.m_KeyBindings.end() && IsMovementAction(binding->second))
+                if (binding != inputComp.m_KeyBindings.end())
                 {
                     queue.CreateAndPush(ID, binding->second, 0);
                 }
