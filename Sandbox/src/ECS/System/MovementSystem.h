@@ -69,6 +69,7 @@ public:
         auto& movementArray = manager.GetArray<Spoon::MovementComp>(Spoon::MovementComp::Name);
         auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
         auto& physicsArray = manager.GetArray<Spoon::PhysicsComp>(Spoon::PhysicsComp::Name);
+        auto& inputArray = manager.GetArray<Spoon::InputComp>(Spoon::InputComp::Name);
         std::unordered_map<Spoon::UUID, std::vector<const Spoon::Action*>> movementActions;
 
         for (const auto& action : queue.m_Queue)
@@ -93,6 +94,11 @@ public:
             {
                 moveComp.m_FrameIntent = BuildIntent(actionRange->second);
                 moveComp.m_Velocity = moveComp.m_FrameIntent * moveComp.m_Speed;
+            }
+            else if (inputArray.m_IdToIndex.count(ID))
+            {
+                moveComp.m_FrameIntent = { 0.0f, 0.0f };
+                moveComp.m_Velocity = { 0.0f, 0.0f };
             }
             else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
             {
