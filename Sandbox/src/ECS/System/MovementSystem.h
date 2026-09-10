@@ -95,11 +95,31 @@ public:
                 moveComp.m_FrameIntent = BuildIntent(actionRange->second);
                 moveComp.m_Velocity = moveComp.m_FrameIntent * moveComp.m_Speed;
                 m_ActionDrivenEntities.insert(ID);
+                m_LastActionVelocity[ID] = moveComp.m_Velocity;
             }
             else if (m_ActionDrivenEntities.erase(ID) > 0)
             {
-                moveComp.m_FrameIntent = { 0.0f, 0.0f };
-                moveComp.m_Velocity = { 0.0f, 0.0f };
+                auto lastVelocity = m_LastActionVelocity.find(ID);
+                bool velocityMatchesLastAction =
+                    lastVelocity != m_LastActionVelocity.end() &&
+                    std::abs(moveComp.m_Velocity.x - lastVelocity->second.x) < 0.0001f &&
+                    std::abs(moveComp.m_Velocity.y - lastVelocity->second.y) < 0.0001f;
+
+                if (velocityMatchesLastAction)
+                {
+                    moveComp.m_FrameIntent = { 0.0f, 0.0f };
+                    moveComp.m_Velocity = { 0.0f, 0.0f };
+                }
+                else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
+                {
+                    float magnitude = std::sqrt(moveComp.m_Velocity.x * moveComp.m_Velocity.x + moveComp.m_Velocity.y * moveComp.m_Velocity.y);
+                    if (magnitude > 0.0f)
+                    {
+                        moveComp.m_FrameIntent = moveComp.m_Velocity / magnitude;
+                    }
+                }
+
+                m_LastActionVelocity.erase(ID);
             }
             else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
             {
@@ -145,4 +165,5 @@ public:
 
 private:
     std::unordered_set<Spoon::UUID> m_ActionDrivenEntities;
+    std::unordered_map<Spoon::UUID, sf::Vector2f> m_LastActionVelocity;
 };
