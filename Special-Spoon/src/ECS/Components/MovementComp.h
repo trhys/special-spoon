@@ -38,6 +38,10 @@ namespace Spoon {
       FacingDirection m_Facing;
       sf::Vector2f m_FrameIntent;
       sf::Vector2f m_ProposedDelta;
+      bool m_MoveLeftHeld = false;
+      bool m_MoveRightHeld = false;
+      bool m_MoveUpHeld = false;
+      bool m_MoveDownHeld = false;
       bool m_WasCorrectedByPhysics = false;
 
       void OnReflect() override

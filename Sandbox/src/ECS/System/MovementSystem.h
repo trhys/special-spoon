@@ -22,37 +22,33 @@ public:
             action.m_ID == Spoon::BuiltInActions::MoveDown;
     }
 
-    static sf::Vector2f BuildIntent(const std::vector<const Spoon::Action*>& actions)
+    static void UpdateHeldState(Spoon::MovementComp& moveComp, const Spoon::Action& action)
     {
-        bool moveLeft = false;
-        bool moveRight = false;
-        bool moveUp = false;
-        bool moveDown = false;
-
-        for (const Spoon::Action* action : actions)
+        bool isPressed = action.m_Event == Spoon::ActionEvent::Pressed;
+        switch (action.m_ActionType.m_ID)
         {
-            switch (action->m_ActionType.m_ID)
-            {
-            case Spoon::BuiltInActions::MoveLeft:
-                moveLeft = true;
-                break;
-            case Spoon::BuiltInActions::MoveRight:
-                moveRight = true;
-                break;
-            case Spoon::BuiltInActions::MoveUp:
-                moveUp = true;
-                break;
-            case Spoon::BuiltInActions::MoveDown:
-                moveDown = true;
-                break;
-            default:
-                break;
-            }
+        case Spoon::BuiltInActions::MoveLeft:
+            moveComp.m_MoveLeftHeld = isPressed;
+            break;
+        case Spoon::BuiltInActions::MoveRight:
+            moveComp.m_MoveRightHeld = isPressed;
+            break;
+        case Spoon::BuiltInActions::MoveUp:
+            moveComp.m_MoveUpHeld = isPressed;
+            break;
+        case Spoon::BuiltInActions::MoveDown:
+            moveComp.m_MoveDownHeld = isPressed;
+            break;
+        default:
+            break;
         }
+    }
 
+    static sf::Vector2f BuildIntent(const Spoon::MovementComp& moveComp)
+    {
         sf::Vector2f intent(
-            (moveRight ? 1.0f : 0.0f) - (moveLeft ? 1.0f : 0.0f),
-            (moveDown ? 1.0f : 0.0f) - (moveUp ? 1.0f : 0.0f)
+            (moveComp.m_MoveRightHeld ? 1.0f : 0.0f) - (moveComp.m_MoveLeftHeld ? 1.0f : 0.0f),
+            (moveComp.m_MoveDownHeld ? 1.0f : 0.0f) - (moveComp.m_MoveUpHeld ? 1.0f : 0.0f)
         );
 
         if (intent.x != 0.0f && intent.y != 0.0f)
@@ -70,15 +66,6 @@ public:
         auto& movementArray = manager.GetArray<Spoon::MovementComp>(Spoon::MovementComp::Name);
         auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
         auto& physicsArray = manager.GetArray<Spoon::PhysicsComp>(Spoon::PhysicsComp::Name);
-        std::unordered_map<Spoon::UUID, std::vector<const Spoon::Action*>> movementActions;
-
-        for (const auto& action : queue.m_Queue)
-        {
-            if (IsMovementAction(action.m_ActionType))
-            {
-                movementActions[action.m_EntityID].push_back(&action);
-            }
-        }
 
         for(size_t index = 0; index < movementArray.m_Components.size(); index++)
         {
@@ -89,15 +76,27 @@ public:
             moveComp.m_ProposedDelta = {0.0f, 0.0f};
             moveComp.m_WasCorrectedByPhysics = false;
 
-            auto actionRange = movementActions.find(ID);
-            if (actionRange != movementActions.end())
+            bool receivedMovementAction = false;
+            for (const auto& action : queue.m_Queue)
             {
-                moveComp.m_FrameIntent = BuildIntent(actionRange->second);
+                if (action.m_EntityID != ID || !IsMovementAction(action.m_ActionType))
+                    continue;
+
+                UpdateHeldState(moveComp, action);
+                receivedMovementAction = true;
+            }
+
+            bool hasHeldMovement = moveComp.m_MoveLeftHeld || moveComp.m_MoveRightHeld ||
+                moveComp.m_MoveUpHeld || moveComp.m_MoveDownHeld;
+
+            if (hasHeldMovement)
+            {
+                moveComp.m_FrameIntent = BuildIntent(moveComp);
                 moveComp.m_Velocity = moveComp.m_FrameIntent * moveComp.m_Speed;
                 m_ActionDrivenEntities.insert(ID);
                 m_LastActionVelocity[ID] = moveComp.m_Velocity;
             }
-            else if (m_ActionDrivenEntities.erase(ID) > 0)
+            else if (receivedMovementAction && m_ActionDrivenEntities.erase(ID) > 0)
             {
                 auto lastVelocity = m_LastActionVelocity.find(ID);
                 bool velocityMatchesLastAction =

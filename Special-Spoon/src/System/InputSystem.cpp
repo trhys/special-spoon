@@ -1,10 +1,20 @@
 #include "InputSystem.h"
 #include "Core/Application.h"
+#include "Core/Registers/ActionRegistry.h"
 
 namespace Spoon
 {
+    static bool IsMovementAction(const ActionType& action)
+    {
+        return action.m_ID == BuiltInActions::MoveLeft ||
+            action.m_ID == BuiltInActions::MoveRight ||
+            action.m_ID == BuiltInActions::MoveUp ||
+            action.m_ID == BuiltInActions::MoveDown;
+    }
+
     void InputSystem::Update(sf::Time tick, EntityManager& manager)
     {
+        (void)tick;
         //manager.ClearActionsBuffer();
         auto& queue = Application::Get().GetActionQueue();
         auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
@@ -22,6 +32,7 @@ namespace Spoon
                 if(found != inputComp.m_KeyBindings.end())
                 {
                     inputComp.m_KeyStates[found->first] = true;
+                    queue.CreateAndPush(ID, found->second, 0, ActionEvent::Pressed);
                 }
                 
             }
@@ -34,6 +45,7 @@ namespace Spoon
                 if (found != inputComp.m_KeyBindings.end())
                 {
                     inputComp.m_KeyStates[found->first] = false;
+                    queue.CreateAndPush(ID, found->second, 0, ActionEvent::Released);
                 }
             }
 
@@ -45,9 +57,9 @@ namespace Spoon
                 }
 
                 auto binding = inputComp.m_KeyBindings.find(key);
-                if (binding != inputComp.m_KeyBindings.end())
+                if (binding != inputComp.m_KeyBindings.end() && IsMovementAction(binding->second))
                 {
-                    queue.CreateAndPush(ID, binding->second, 0);
+                    queue.CreateAndPush(ID, binding->second, 0, ActionEvent::Pressed);
                 }
             }
         }

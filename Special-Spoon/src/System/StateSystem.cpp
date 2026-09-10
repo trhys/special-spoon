@@ -18,7 +18,8 @@ namespace Spoon
                 [ID](const Action& action) { return action.m_EntityID == ID; });
             if(found != queue.m_Queue.end())
             {
-                if (found->m_ActionType == ActionRegistry::Get().GetAction("Quit"))
+                if (found->m_ActionType == ActionRegistry::Get().GetAction("Quit")
+                    && found->m_Event == ActionEvent::Pressed)
                 {
                     quitFlag = true;
                     return;
