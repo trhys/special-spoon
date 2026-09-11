@@ -74,10 +74,55 @@ namespace Spoon
     void LoadPhysicsComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto physics = comp.get<PhysicsComp>();
-        manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
+        auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
+        if (!physicsArray.m_IdToIndex.count(id))
+            manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
+
         auto& loaded = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
         loaded = physics;
-        loaded.CollisionHandled();
+
+        if (comp.contains("m_CollisionBox"))
+        {
+            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+            const bool needsLegacyMigration = !colliderArray.m_IdToIndex.count(id);
+            if (needsLegacyMigration)
+                manager.MakeComponent<ColliderComp>(id, ColliderComp::Name);
+
+            if (needsLegacyMigration)
+            {
+                auto& collider = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
+                const auto& box = comp.at("m_CollisionBox");
+                const float width = box.value("width", 32.0f);
+                const float height = box.value("height", 32.0f);
+                collider.SetAABBSize({ width, height });
+
+                if (box.contains("left") && box.contains("top"))
+                {
+                    sf::Vector2f legacyPos = { box.at("left").get<float>(), box.at("top").get<float>() };
+                    auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+                    if (transformArray.m_IdToIndex.count(id))
+                    {
+                        auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+                        collider.offset = legacyPos - transform.GetPosition();
+                    }
+                    else
+                    {
+                        collider.offset = legacyPos;
+                    }
+                }
+            }
+        }
+    }
+
+    void LoadColliderComponent(EntityManager& manager, UUID id, const json& comp)
+    {
+        auto collider = comp.get<ColliderComp>();
+        auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+        if (!colliderArray.m_IdToIndex.count(id))
+            manager.MakeComponent<ColliderComp>(id, ColliderComp::Name);
+
+        auto& loaded = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
+        loaded = collider;
     }
 
     void LoadColorComponent(EntityManager& manager, UUID id, const json& comp)
@@ -105,6 +150,7 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(InputComp::Name, &LoadInputComponent);
         ComponentRegistry::Get().RegisterLoader(StateActionComp::Name, &LoadStateActionComponent);
         ComponentRegistry::Get().RegisterLoader(RenderLayer::Name, &LoadRenderLayer);
+        ComponentRegistry::Get().RegisterLoader(ColliderComp::Name, &LoadColliderComponent);
         ComponentRegistry::Get().RegisterLoader(PhysicsComp::Name, &LoadPhysicsComponent);
         ComponentRegistry::Get().RegisterLoader(ColorComp::Name, &LoadColorComponent);
         ComponentRegistry::Get().RegisterLoader(MovementComp::Name, &LoadMovementComp);

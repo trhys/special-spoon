@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ECS/Components/PhysicsComp.h"
+#include "ECS/Components/ColliderComp.h"
 #include "SFML/Graphics.hpp"
 #include <set>
 
@@ -25,7 +25,6 @@ namespace Spoon
         void BuildTree(sf::Vector2f gridSize);
         void Populate(EntityManager& manager);
         std::set<std::pair<UUID, UUID>> GeneratePairs();
-        void ProcessCollisionBuffer(EntityManager& manager);
 
         // std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }
 
