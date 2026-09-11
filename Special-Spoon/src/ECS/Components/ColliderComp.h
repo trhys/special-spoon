@@ -3,6 +3,7 @@
 #include "ECS/Components/Component.h"
 #include "ECS/UUID.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -98,12 +99,17 @@ namespace Spoon
 
         void SetAABBSize(const sf::Vector2f& size)
         {
-            m_Collider = std::make_unique<AABBCollider>(size);
+            m_Collider = std::make_unique<AABBCollider>(
+                sf::Vector2f{
+                    std::max(size.x, 1.0f),
+                    std::max(size.y, 1.0f)
+                }
+            );
         }
 
         void SetCircleRadius(float radius)
         {
-            m_Collider = std::make_unique<CircleCollider>(radius);
+            m_Collider = std::make_unique<CircleCollider>(std::max(radius, 1.0f));
         }
 
         ColliderType GetType() const
@@ -148,13 +154,13 @@ namespace Spoon
             if (GetType() == ColliderType::AABB)
             {
                 auto* collider = static_cast<AABBCollider*>(m_Collider.get());
-                ImGui::SliderFloat("Width##collider", &collider->size.x, 0.0f, 500.0f, "%.2f");
-                ImGui::SliderFloat("Height##collider", &collider->size.y, 0.0f, 500.0f, "%.2f");
+                ImGui::SliderFloat("Width##collider", &collider->size.x, 1.0f, 500.0f, "%.2f");
+                ImGui::SliderFloat("Height##collider", &collider->size.y, 1.0f, 500.0f, "%.2f");
             }
             else if (GetType() == ColliderType::Circle)
             {
                 auto* collider = static_cast<CircleCollider*>(m_Collider.get());
-                ImGui::SliderFloat("Radius##collider", &collider->radius, 0.0f, 500.0f, "%.2f");
+                ImGui::SliderFloat("Radius##collider", &collider->radius, 1.0f, 500.0f, "%.2f");
             }
 
             ImGui::SliderFloat("Offset X##collider", &offset.x, -500.0f, 500.0f, "%.2f");
@@ -213,8 +219,6 @@ namespace Spoon
             {
                 if (collider.contains("size"))
                     comp.SetAABBSize(collider.at("size").get<sf::Vector2f>());
-                else
-                    comp.SetAABBSize({ collider.value("width", 32.0f), collider.value("height", 32.0f) });
             }
         }
         else

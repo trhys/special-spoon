@@ -80,38 +80,6 @@ namespace Spoon
 
         auto& loaded = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
         loaded = physics;
-
-        if (comp.contains("m_CollisionBox"))
-        {
-            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
-            const bool needsLegacyMigration = !colliderArray.m_IdToIndex.count(id);
-            if (needsLegacyMigration)
-                manager.MakeComponent<ColliderComp>(id, ColliderComp::Name);
-
-            if (needsLegacyMigration)
-            {
-                auto& collider = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
-                const auto& box = comp.at("m_CollisionBox");
-                const float width = box.value("width", 32.0f);
-                const float height = box.value("height", 32.0f);
-                collider.SetAABBSize({ width, height });
-
-                if (box.contains("left") && box.contains("top"))
-                {
-                    sf::Vector2f legacyPos = { box.at("left").get<float>(), box.at("top").get<float>() };
-                    auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
-                    if (transformArray.m_IdToIndex.count(id))
-                    {
-                        auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-                        collider.offset = legacyPos - transform.GetPosition();
-                    }
-                    else
-                    {
-                        collider.offset = legacyPos;
-                    }
-                }
-            }
-        }
     }
 
     void LoadColliderComponent(EntityManager& manager, UUID id, const json& comp)

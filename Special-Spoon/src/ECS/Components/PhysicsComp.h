@@ -82,8 +82,6 @@ namespace Spoon
     {
         if (j.contains("bodyType"))
             comp.bodyType = PhysicsComp::BodyTypeFromString(j.at("bodyType").get<std::string>());
-        else if (j.contains("isStatic"))
-            comp.bodyType = j.at("isStatic").get<bool>() ? BodyType::Static : BodyType::Dynamic;
 
         if (j.contains("velocity"))
             comp.velocity = j.at("velocity").get<sf::Vector2f>();

@@ -206,22 +206,12 @@ namespace Spoon
         
         try {
             // Load systems
-            bool loadedPhysics = false;
-            bool loadedCollision = false;
             for(auto& system : sceneData["Systems"])
             {
                 std::string systemID = system["Type"].get<std::string>();
                 SS_DEBUG_LOG("Loading system: " + systemID)
                 systemManager.AddSystem(&system);
-                loadedPhysics = loadedPhysics || systemID == "Physics";
-                loadedCollision = loadedCollision || systemID == "Collision";
                 SS_DEBUG_LOG("Successfully loaded system: " + systemID)
-            }
-
-            if (loadedPhysics && !loadedCollision)
-            {
-                systemManager.AddSystem("Collision");
-                SS_DEBUG_LOG("Added Collision system for legacy scene compatibility.")
             }
         }
         catch(const json::exception& e)
