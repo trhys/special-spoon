@@ -13,6 +13,11 @@ namespace Spoon
 
         static constexpr const char* Name = "Physics";
 
+        void SetBox(sf::FloatRect box)
+        {
+          m_CollisionBox = box;
+        }
+
         void SetPosition(sf::Vector2f pos)
         {
             m_CollisionBox.position.x = pos.x;
