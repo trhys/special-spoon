@@ -49,6 +49,7 @@ namespace Spoon
             ImGui::Text("Position: (%.2f, %.2f)", m_CollisionBox.position.x, m_CollisionBox.position.y);
             ImGui::SliderFloat("Width##physics", &m_CollisionBox.size.x, 0.0f, 500.0f, "%.2f");
             ImGui::SliderFloat("Height##physics", &m_CollisionBox.size.y, 0.0f, 500.0f, "%.2f");
+            ImGui::Text("Velocity: (%.2f, %.2f)", m_Velocity.x, m_Velocity.y);
             ImGui::Text("Mass: %.2f", mass);
             ImGui::SliderFloat("Restitution##physics", &restitution, 0.0f, 1.0f, "%.2f");
             ImGui::Checkbox("Is Static##physics", &isStatic);
@@ -59,6 +60,7 @@ namespace Spoon
         }
 
         sf::FloatRect m_CollisionBox;
+        sf::Vector2f m_Velocity = {0.0f, 0.0f};
         float mass = 1.0f;
         float restitution = 0.6f;
         bool isStatic = false;
@@ -79,7 +81,11 @@ namespace Spoon
             }},
             {"mass", comp.mass},
             {"restitution", comp.restitution},
-            {"isStatic", comp.isStatic}
+            {"isStatic", comp.isStatic},
+            {"velocity", {
+                {"x", comp.m_Velocity.x},
+                {"y", comp.m_Velocity.y}
+            }}
         };
     }
 
@@ -110,5 +116,13 @@ namespace Spoon
             comp.restitution = j.at("restitution").get<float>();
         if (j.contains("isStatic"))
             comp.isStatic = j.at("isStatic").get<bool>();
+        if (j.contains("velocity"))
+        {
+            const auto& velocity = j.at("velocity");
+            if (velocity.contains("x"))
+                comp.m_Velocity.x = velocity.at("x").get<float>();
+            if (velocity.contains("y"))
+                comp.m_Velocity.y = velocity.at("y").get<float>();
+        }
     }
 }

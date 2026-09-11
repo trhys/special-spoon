@@ -70,6 +70,8 @@ public:
         auto& movementArray = manager.GetArray<Spoon::MovementComp>(Spoon::MovementComp::Name);
         auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
         auto& physicsArray = manager.GetArray<Spoon::PhysicsComp>(Spoon::PhysicsComp::Name);
+        const bool physicsEnabled = !physicsArray.m_Components.empty();
+        const float deltaSeconds = tick.asSeconds();
         std::unordered_map<Spoon::UUID, std::vector<const Spoon::Action*>> movementActions;
 
         for (const auto& action : queue.m_Queue)
@@ -133,13 +135,23 @@ public:
             if(transformArray.m_IdToIndex.count(ID))
             {
                 Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(ID, Spoon::TransformComp::Name);
-                moveComp.m_ProposedDelta = moveComp.m_Velocity * tick.asSeconds();
-                transComp.Move(moveComp.m_ProposedDelta);
-
-                if (physicsArray.m_IdToIndex.count(ID))
+                if (physicsEnabled)
                 {
-                    Spoon::PhysicsComp& physicsComp = manager.GetComponent<Spoon::PhysicsComp>(ID, Spoon::PhysicsComp::Name);
-                    physicsComp.m_CollisionBox.position += moveComp.m_ProposedDelta;
+                    if (physicsArray.m_IdToIndex.count(ID))
+                    {
+                        Spoon::PhysicsComp& physicsComp = manager.GetComponent<Spoon::PhysicsComp>(ID, Spoon::PhysicsComp::Name);
+                        physicsComp.m_Velocity = moveComp.m_Velocity;
+                        moveComp.m_ProposedDelta = physicsComp.m_Velocity * deltaSeconds;
+                    }
+                    else
+                    {
+                        moveComp.m_ProposedDelta = {0.0f, 0.0f};
+                    }
+                }
+                else
+                {
+                    moveComp.m_ProposedDelta = moveComp.m_Velocity * deltaSeconds;
+                    transComp.Move(moveComp.m_ProposedDelta);
                 }
 
                 // Determine direction of travel
