@@ -18,6 +18,11 @@ namespace Spoon
             m_CollisionBox.position.x = pos.x;
             m_CollisionBox.position.y = pos.y;
         }
+        
+        void SetSize(sf::Vector2f size)
+        {
+            m_CollisionBox.size = size;
+        }
 
         sf::FloatRect GetCollisionBox() { return m_CollisionBox; }
 
@@ -37,6 +42,8 @@ namespace Spoon
         void OnReflect() override
         {
             ImGui::Text("Position: (%.2f, %.2f)", m_CollisionBox.position.x, m_CollisionBox.position.y);
+            ImGui::SliderFloat("Width##physics", &m_CollisionBox.size.x, 0.0f, 500.0f, "%.2f");
+            ImGui::SliderFloat("Height##physics", &m_CollisionBox.size.y, 0.0f, 500.0f, "%.2f");
             ImGui::Text("Mass: %.2f", mass);
             ImGui::SliderFloat("Restitution##physics", &restitution, 0.0f, 1.0f, "%.2f");
             ImGui::Checkbox("Is Static##physics", &isStatic);
@@ -59,7 +66,12 @@ namespace Spoon
     inline void to_json(json& j, const PhysicsComp& comp)
     {
         j = json{
-            {"m_CollisionBox", comp.m_CollisionBox},
+            {"m_CollisionBox", {
+                {"left", comp.m_CollisionBox.position.x},
+                {"top", comp.m_CollisionBox.position.y},
+                {"width", comp.m_CollisionBox.size.x},
+                {"height", comp.m_CollisionBox.size.y}
+            }},
             {"mass", comp.mass},
             {"restitution", comp.restitution},
             {"isStatic", comp.isStatic}
@@ -69,7 +81,24 @@ namespace Spoon
     inline void from_json(const json& j, PhysicsComp& comp)
     {
         if (j.contains("m_CollisionBox"))
-            comp.m_CollisionBox = j.at("m_CollisionBox").get<sf::FloatRect>();
+        {
+            const auto& collisionBox = j.at("m_CollisionBox");
+            if (collisionBox.contains("left") && collisionBox.contains("top"))
+            {
+                comp.m_CollisionBox.position.x = collisionBox.at("left").get<float>();
+                comp.m_CollisionBox.position.y = collisionBox.at("top").get<float>();
+            }
+
+            if (collisionBox.contains("width") && collisionBox.contains("height"))
+            {
+                comp.m_CollisionBox.size.x = collisionBox.at("width").get<float>();
+                comp.m_CollisionBox.size.y = collisionBox.at("height").get<float>();
+            }
+            else
+            {
+                comp.m_CollisionBox = collisionBox.get<sf::FloatRect>();
+            }
+        }
         if (j.contains("mass"))
             comp.mass = j.at("mass").get<float>();
         if (j.contains("restitution"))
