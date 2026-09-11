@@ -203,7 +203,7 @@ namespace Spoon
                 ImGui::Checkbox("Don't ask me again", &EditorSettings::Get().skipAskBeforeDeleteComp);
                 if(ImGui::Button("Delete")) 
                 { 
-                    e_Manager.KillComponent(selectedComponent->GetType(), selectedID);
+                    e_Manager.KillComponent(selectedComponent->GetDisplayName(), selectedID);
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::SameLine(); if(ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
@@ -274,6 +274,15 @@ namespace Spoon
                     if (compSelections[type] && !array->HasEntity(id))
                     {
                         manager.GetCreators().at(type)(id);
+                        // cant think of a better way to initialize physics comps with the most sensible default
+                        // without just outright branching here and doing it by hand. oh well
+                        auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
+                        if (type == PhysicsComp::Name && spriteArray.m_IdToIndex.count(id)) 
+                        {
+                          PhysicsComp& physics = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
+                          SpriteComp& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
+                          physics.SetBox(sprite.GetBoundingBox());
+                        }
                     }
                 }
                 

@@ -26,7 +26,7 @@ namespace Spoon
             }
             ImGui::EndListBox();
         }
-        ImGui::SameLine(); HelpMarker("refactoring");
+        ImGui::SameLine(); HelpMarker("Map a key to a registered event. The event is pushed to the action queue to be consumed by some system.");
         
         ImGui::SeparatorText("Action String Mapping");
         if(currentKey != sf::Keyboard::Key::Unknown && m_KeyBindings.count(currentKey))

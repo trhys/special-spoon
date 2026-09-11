@@ -115,7 +115,8 @@ namespace Spoon
     {
         m_Textures["empty"] = sf::Texture();
         sf::Texture texture;
-        if (!texture.loadFromFile("assets/Textures/special-spoon.png"))
+        std::filesystem::path defaultTexturePath = std::filesystem::path("assets")  / "system" / "special-spoon.png";
+        if (!texture.loadFromFile(defaultTexturePath))
         {
             throw std::runtime_error("Failed to load default texture!");
         }
@@ -202,7 +203,7 @@ namespace Spoon
         if (found == m_Thumbnails.end())
         {
             sf::Texture texture;
-            if (!texture.loadFromFile(node->m_Path))
+            if (!texture.loadFromFile(node->m_Path.string()))
             {
                 texture = GetResource<sf::Texture>("empty");
             }

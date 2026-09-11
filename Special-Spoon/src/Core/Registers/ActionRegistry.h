@@ -3,6 +3,7 @@
 #include "Core/Core.h"
 #include <unordered_map>
 #include <vector>
+#include <stdexcept>
 
 namespace Spoon
 {
@@ -19,9 +20,10 @@ namespace Spoon
         constexpr uint32_t None = 0;
         constexpr uint32_t Quit = 1;
         constexpr uint32_t Idle = 2;
-        constexpr uint32_t Move = 3;
-        constexpr uint32_t Attack = 4;
-        constexpr uint32_t Interact = 5;
+        constexpr uint32_t MoveLeft = 3;
+        constexpr uint32_t MoveRight = 4;
+        constexpr uint32_t MoveUp = 5;
+        constexpr uint32_t MoveDown = 6;
 
         constexpr uint32_t BeginCustomRange = 1000;
     }
@@ -46,9 +48,10 @@ namespace Spoon
             RegisterAction("None", BuiltInActions::None);
             RegisterAction("Quit", BuiltInActions::Quit);
             RegisterAction("Idle", BuiltInActions::Idle);
-            RegisterAction("Move", BuiltInActions::Move);
-            RegisterAction("Attack", BuiltInActions::Attack);
-            RegisterAction("Interact", BuiltInActions::Interact);
+            RegisterAction("MoveLeft", BuiltInActions::MoveLeft);
+            RegisterAction("MoveRight", BuiltInActions::MoveRight);
+            RegisterAction("MoveUp", BuiltInActions::MoveUp);
+            RegisterAction("MoveDown", BuiltInActions::MoveDown);
         }
 
         void RegisterCustom(const std::string& name)
@@ -65,6 +68,15 @@ namespace Spoon
             return ActionType{ BuiltInActions::None };
         }
 
+        ActionType GetFromID(const uint32_t& id)
+        {
+          if (m_IDToName.find(id) != m_IDToName.end())
+          {
+            return ActionType{ id };
+          }
+          throw std::runtime_error("attempted to fetch non existent action type from id");
+        }
+
         std::string& GetName(const ActionType& action)
         {
             return m_IDToName[action.m_ID];
@@ -75,5 +87,14 @@ namespace Spoon
     private:
         ActionRegistry() { RegisterBuiltIns(); }
         uint32_t m_NextCustomID = BuiltInActions::BeginCustomRange;
+    };
+}
+
+namespace std {
+    template <>
+    struct hash<Spoon::ActionType> {
+        std::size_t operator()(const Spoon::ActionType& action) const noexcept {
+            return std::hash<uint32_t>()(action.m_ID);
+        }
     };
 }

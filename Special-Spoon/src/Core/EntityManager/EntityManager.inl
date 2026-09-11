@@ -25,12 +25,9 @@ namespace Spoon
         array->RemoveComponent(id);
     }
 
-    // ===========================================
-    // CURRENTLY REFACTORING TO USE DISPLAY NAMES INSTEAD OF TYPEIDS
     template<typename COMP>
     void EntityManager::LoadArray(const std::string& displayName)
     {
-        //std::string name = typeid(COMP).name();
         SS_DEBUG_LOG("[ENTITY MANAGER] Loading component array: " + displayName);
         if (m_Arrays.find(displayName) != m_Arrays.end())
         {
@@ -43,7 +40,6 @@ namespace Spoon
     template<typename COMP>
     ComponentArray<COMP>& EntityManager::GetArray(const std::string& displayName)
     {
-        //std::string name = typeid(COMP).name();
         auto found = m_Arrays.find(displayName);
         if (found == m_Arrays.end())
         {
@@ -52,7 +48,6 @@ namespace Spoon
         ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(found->second.get());
         return *array;
     }
-    // ===========================================
 
     template<typename COMP>
     std::vector<UUID> EntityManager::GetAllEntitiesWithComponent(const std::string& displayName)

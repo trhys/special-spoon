@@ -6,7 +6,10 @@
 
 #include "Core/Registers/System/SystemRegistry.h"
 
+#include <array>
 #include <memory>
+#include <unordered_map>
+#include <vector>
 
 namespace Spoon
 {
@@ -29,6 +32,7 @@ namespace Spoon
                 if(found != loaderMap.end())
                 {
                     m_Systems.emplace_back(found->second(systemData));
+                    m_SystemOrderDirty = true;
                 }
                 else
                 {
@@ -48,6 +52,7 @@ namespace Spoon
             if(found != loaderMap.end())
             {
                 m_Systems.emplace_back(found->second(systemData));
+                m_SystemOrderDirty = true;
             }
             else
             {
@@ -58,10 +63,16 @@ namespace Spoon
         void ClearSystems()
         {
             m_Systems.clear();
+            m_SystemOrderDirty = true;
         }
 
         void UpdateSystems(sf::Time tick, EntityManager& manager)
         {
+            if (m_SystemOrderDirty)
+            {
+                EnforceKnownExecutionOrder();
+                m_SystemOrderDirty = false;
+            }
             for(auto& system : m_Systems)
             {
                 system->Update(tick, manager);
@@ -83,10 +94,96 @@ namespace Spoon
 
         StateSystem* GetStateSystem() { return m_StateSystem.get(); }
         
-        std::vector<std::unique_ptr<ISystem>>& GetSystems() { return m_Systems; }
+        std::vector<std::unique_ptr<ISystem>>& GetSystems()
+        {
+            m_SystemOrderDirty = true;
+            return m_Systems;
+        }
 
     private:
+        void EnforceKnownExecutionOrder()
+        {
+            if (m_Systems.size() < 2)
+                return;
+
+            std::unordered_map<std::string, size_t> nameToIndex;
+            for (size_t index = 0; index < m_Systems.size(); index++)
+            {
+                nameToIndex[m_Systems[index]->GetDisplayName()] = index;
+            }
+
+            std::vector<std::vector<size_t>> edges(m_Systems.size());
+            std::vector<size_t> indegree(m_Systems.size(), 0);
+            constexpr std::array<std::pair<const char*, const char*>, 3> dependencies = {
+                std::pair{ "Movement", "Physics" },
+                std::pair{ "Physics", "Animation" },
+                std::pair{ "Movement", "Animation" }
+            };
+
+            for (const auto& [before, after] : dependencies)
+            {
+                auto beforeIt = nameToIndex.find(before);
+                auto afterIt = nameToIndex.find(after);
+                if (beforeIt == nameToIndex.end() || afterIt == nameToIndex.end())
+                    continue;
+
+                edges[beforeIt->second].push_back(afterIt->second);
+                indegree[afterIt->second]++;
+            }
+
+            std::vector<size_t> resolvedOrder;
+            resolvedOrder.reserve(m_Systems.size());
+            std::vector<bool> used(m_Systems.size(), false);
+
+            for (size_t count = 0; count < m_Systems.size(); count++)
+            {
+                size_t nextIndex = m_Systems.size();
+                for (size_t index = 0; index < m_Systems.size(); index++)
+                {
+                    if (!used[index] && indegree[index] == 0)
+                    {
+                        nextIndex = index;
+                        break;
+                    }
+                }
+
+                if (nextIndex == m_Systems.size())
+                    return;
+
+                used[nextIndex] = true;
+                resolvedOrder.push_back(nextIndex);
+
+                for (size_t dependent : edges[nextIndex])
+                {
+                    indegree[dependent]--;
+                }
+            }
+
+            bool changed = false;
+            for (size_t index = 0; index < resolvedOrder.size(); index++)
+            {
+                if (resolvedOrder[index] != index)
+                {
+                    changed = true;
+                    break;
+                }
+            }
+
+            if (!changed)
+                return;
+
+            std::vector<std::unique_ptr<ISystem>> orderedSystems;
+            orderedSystems.reserve(m_Systems.size());
+            for (size_t index : resolvedOrder)
+            {
+                orderedSystems.push_back(std::move(m_Systems[index]));
+            }
+
+            m_Systems = std::move(orderedSystems);
+        }
+
         std::vector<std::unique_ptr<ISystem>> m_Systems;
         std::unique_ptr<StateSystem> m_StateSystem = nullptr;
+        bool m_SystemOrderDirty = true;
     };
 }

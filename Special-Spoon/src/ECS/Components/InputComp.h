@@ -31,5 +31,30 @@ namespace Spoon
         void OnReflect() override;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(InputComp, m_KeyBindings)
+    inline void to_json(json& j, const InputComp& comp)
+    {
+        j["m_KeyBindings"] = json::array();
+        for (const auto& [key, action] : comp.m_KeyBindings)
+        {
+            j["m_KeyBindings"].push_back(
+            {
+                {"Key", static_cast<int>(key)},
+                {"Action", action}
+            });
+        }
+    }
+
+    inline void from_json(const json& j, InputComp& comp)
+    {
+        comp.m_KeyBindings.clear();
+        if (!j.contains("m_KeyBindings") || !j["m_KeyBindings"].is_array())
+            return;
+
+        for (const auto& binding : j["m_KeyBindings"])
+        {
+            sf::Keyboard::Key key = static_cast<sf::Keyboard::Key>(binding.at("Key").get<int>());
+            ActionType action = binding.at("Action").get<ActionType>();
+            comp.m_KeyBindings[key] = action;
+        }
+    }
 }

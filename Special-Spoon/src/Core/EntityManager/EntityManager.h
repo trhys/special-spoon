@@ -50,8 +50,6 @@ namespace Spoon
         template<typename COMP>
         void LoadArray(const std::string& displayName);
 
-        // ===========================================
-        // CURRENTLY REFACTORING TO USE DISPLAY NAMES INSTEAD OF TYPEIDS
         // Get a reference to a specific component array
         template<typename COMP>
         ComponentArray<COMP>& GetArray(const std::string& displayName);
@@ -79,15 +77,6 @@ namespace Spoon
         // Misc Methods
         // ===========================================
 
-        // Buffer an action for an entity
-        void PushAction(UUID entityId, std::string action);
-
-        // Clear the action buffer
-        void ClearActionsBuffer();
-
-        // Get the action buffer
-        std::unordered_map<UUID, std::string>& GetActionsBuffer() { return m_ActionsBuffer; }
-
         // Clear all component arrays
         void ClearArrays();
 
@@ -104,7 +93,6 @@ namespace Spoon
         std::unordered_map<UUID, std::string> m_Entities;                           // Maps UUID to a debug name
         std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays; // Maps type name to array object
         std::unordered_map<std::string, std::function<void(UUID)>> m_CompCreators;  // Stores methods for adding new components
-        std::unordered_map<UUID, std::string> m_ActionsBuffer;                      // Maps UUID to action string
 
     private:
         // Load default component arrays at startup

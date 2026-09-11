@@ -3,6 +3,7 @@
 #include "ECS/Entity.h"
 #include "ECS/Components/Animation/AnimationData.h"
 #include "Core/Registers/ActionRegistry.h"
+#include "Core/Registers/StateRegistry.h"
 
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
@@ -44,6 +45,24 @@ namespace sf
     }
 
     inline void from_json(const json& j, IntRect& r)
+    {
+        j.at("left").get_to(r.position.x);
+        j.at("top").get_to(r.position.y);
+        j.at("width").get_to(r.size.x);
+        j.at("height").get_to(r.size.y);
+    }
+
+    inline void to_json(json& j, const FloatRect& r)
+    {
+        j = json{
+            {"left", r.position.x},
+            {"top", r.position.y},
+            {"width", r.size.x},
+            {"height", r.size.y}
+        };
+    }
+
+    inline void from_json(const json& j, FloatRect& r)
     {
         j.at("left").get_to(r.position.x);
         j.at("top").get_to(r.position.y);
@@ -122,4 +141,14 @@ namespace Spoon
     {
         v.m_ID = j.get<uint32_t>();
 	}
+
+    inline void to_json(json& j, const StateType& v)
+    {
+        j = v.m_ID;
+	}
+
+    inline void from_json(const json& j, StateType& v)
+    {
+        v.m_ID = j.get<uint32_t>();
+    }	
 }

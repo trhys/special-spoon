@@ -5,6 +5,7 @@ namespace Spoon
 {
     void InputSystem::Update(sf::Time tick, EntityManager& manager)
     {
+        (void)tick;
         //manager.ClearActionsBuffer();
         auto& queue = Application::Get().GetActionQueue();
         auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
@@ -21,8 +22,6 @@ namespace Spoon
                 auto found = inputComp.m_KeyBindings.find(key);
                 if(found != inputComp.m_KeyBindings.end())
                 {
-                    //manager.PushAction(ID, found->second);
-                    queue.CreateAndPush(ID, found->second, 0);
                     inputComp.m_KeyStates[found->first] = true;
                 }
                 
@@ -36,6 +35,20 @@ namespace Spoon
                 if (found != inputComp.m_KeyBindings.end())
                 {
                     inputComp.m_KeyStates[found->first] = false;
+                }
+            }
+
+            for (const auto& [key, isHeld] : inputComp.m_KeyStates)
+            {
+                if (!isHeld)
+                {
+                    continue;
+                }
+
+                auto binding = inputComp.m_KeyBindings.find(key);
+                if (binding != inputComp.m_KeyBindings.end())
+                {
+                    queue.CreateAndPush(ID, binding->second, 0);
                 }
             }
         }

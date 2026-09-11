@@ -55,7 +55,6 @@ namespace Spoon
 
     void LoadInputComponent(EntityManager& manager, UUID id, const json& comp)
     {
-        // todo: #45 fix this
          auto input = comp.get<InputComp>();
          manager.MakeComponent<InputComp>(id, InputComp::Name, input.m_KeyBindings);
     }
@@ -74,13 +73,23 @@ namespace Spoon
 
     void LoadPhysicsComponent(EntityManager& manager, UUID id, const json& comp)
     {
+        auto physics = comp.get<PhysicsComp>();
         manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
+        auto& loaded = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
+        loaded = physics;
+        loaded.CollisionHandled();
     }
 
     void LoadColorComponent(EntityManager& manager, UUID id, const json& comp)
     {
-        sf::Color color = comp.get<sf::Color>();
-        manager.MakeComponent<ColorComp>(id, ColorComp::Name, color);
+        auto colorComp = comp.get<ColorComp>();
+        manager.MakeComponent<ColorComp>(id, ColorComp::Name, colorComp.m_Color);
+    }
+
+    void LoadMovementComp(EntityManager& manager, UUID id, const json& comp)
+    {
+        auto movement = comp.get<MovementComp>();
+        manager.MakeComponent<MovementComp>(id, MovementComp::Name, movement.m_Speed);
     }
 
     void RegisterDefaultLoaders()
@@ -98,5 +107,6 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(RenderLayer::Name, &LoadRenderLayer);
         ComponentRegistry::Get().RegisterLoader(PhysicsComp::Name, &LoadPhysicsComponent);
         ComponentRegistry::Get().RegisterLoader(ColorComp::Name, &LoadColorComponent);
+        ComponentRegistry::Get().RegisterLoader(MovementComp::Name, &LoadMovementComp);
     }
 }

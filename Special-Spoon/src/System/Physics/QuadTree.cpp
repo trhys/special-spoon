@@ -1,5 +1,6 @@
 #include "QuadTree.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "ECS/Components/MovementComp.h"
 
 #include <optional>
 #include <iterator>
@@ -9,6 +10,30 @@
 
 namespace Spoon
 {
+
+    // helper for processbuffer
+    sf::Vector2f ComputeSeparation(const sf::FloatRect& boxA, const sf::FloatRect& boxB)
+    {
+        // Find overlap on each axis
+        float overlapLeft = (boxA.position.x + boxA.size.x) - boxB.position.x;
+        float overlapRight = boxB.position.x + boxB.size.x - boxA.position.x;
+        float overlapTop = (boxA.position.y + boxA.size.y) - boxB.position.y;
+        float overlapBottom = boxB.position.y + boxB.size.y - boxA.position.y;
+        
+        // Find minimum overlap (axis of least penetration)
+        float minOverlap = std::min({overlapLeft, overlapRight, overlapTop, overlapBottom});
+        
+        // Return separation direction based on minimum overlap
+        if(minOverlap == overlapLeft)
+            return {-overlapLeft / 2.0f, 0.0f};  // A moves left, B moves right
+        else if(minOverlap == overlapRight)
+            return {overlapRight / 2.0f, 0.0f};  // A moves right, B moves left
+        else if(minOverlap == overlapTop)
+            return {0.0f, -overlapTop / 2.0f};   // A moves up, B moves down
+        else
+            return {0.0f, overlapBottom / 2.0f}; // A moves down, B moves up
+    }
+
     void Quadtree::BuildTree(sf::Vector2f gridSize)
     {
         // Split the scene bounds into 8 equal grid squares
@@ -93,6 +118,78 @@ namespace Spoon
             {
                 physA.CollisionDetected();
                 physB.CollisionDetected();
+
+                sf::Vector2f separation = ComputeSeparation(physA.GetCollisionBox(), physB.GetCollisionBox());
+            
+                if(!physA.isStatic)
+                {
+                    physA.m_CollisionBox.position += separation;
+                }
+                if(!physB.isStatic)
+                {
+                    physB.m_CollisionBox.position -= separation;
+                }
+    
+                // Step 2: Get MovementComp velocity (if exists) and apply impulse
+                // Entity A movement
+                if(manager.GetArray<MovementComp>(MovementComp::Name).m_IdToIndex.count(entityA))
+                {
+                    MovementComp& movA = manager.GetComponent<MovementComp>(entityA, MovementComp::Name);
+                    
+                    // Entity B movement (if exists)
+                    if(manager.GetArray<MovementComp>(MovementComp::Name).m_IdToIndex.count(entityB))
+                    {
+                        MovementComp& movB = manager.GetComponent<MovementComp>(entityB, MovementComp::Name);
+                        
+                        // Impulse calculation
+                        sf::Vector2f relativeVelocity = movA.m_Velocity - movB.m_Velocity;
+                        sf::Vector2f collisionNormal = separation;
+                        float length = std::sqrt(collisionNormal.x * collisionNormal.x + 
+                                                 collisionNormal.y * collisionNormal.y);
+                        if(length > 0.001f)
+                        {
+                            collisionNormal /= length;
+                        }
+                        
+                        float velAlongNormal = relativeVelocity.x * collisionNormal.x + 
+                                               relativeVelocity.y * collisionNormal.y;
+                        
+                        if(velAlongNormal < 0.0f)
+                        {
+                            float e = (physA.restitution + physB.restitution) / 2.0f;
+                            
+                            float invMassA = physA.isStatic ? 0.0f : 1.0f / physA.mass;
+                            float invMassB = physB.isStatic ? 0.0f : 1.0f / physB.mass;
+                            float totalInvMass = invMassA + invMassB;
+                            
+                            if(totalInvMass > 0.001f)
+                            {
+                                float j = -(1.0f + e) * velAlongNormal / totalInvMass;
+                                sf::Vector2f impulse = collisionNormal * j;
+                                
+                                if(!physA.isStatic)
+                                    movA.m_Velocity += impulse * invMassA;
+                                if(!physB.isStatic)
+                                    movB.m_Velocity -= impulse * invMassB;
+                            }
+                        }
+                    }
+                    // Entity B has no movement; only A gets impulse
+                    else if(!physA.isStatic)
+                    {
+                        // Simple bounce off static/non-moving object
+                        sf::Vector2f collisionNormal = separation;
+                        float length = std::sqrt(collisionNormal.x * collisionNormal.x + 
+                                                 collisionNormal.y * collisionNormal.y);
+                        if(length > 0.001f)
+                        {
+                            collisionNormal /= length;
+                            float e = physA.restitution;
+                            movA.m_Velocity = collisionNormal * (std::sqrt(movA.m_Velocity.x * movA.m_Velocity.x + 
+                                                                         movA.m_Velocity.y * movA.m_Velocity.y) * e);
+                        }
+                    }
+                }
             }
         }
     }   

@@ -6,3 +6,4 @@
 *.vcxproj.user
 *.vcxproj.filters
 /build
+user_config.json
