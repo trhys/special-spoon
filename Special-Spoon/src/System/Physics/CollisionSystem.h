@@ -221,6 +221,56 @@ namespace Spoon
             return 1.0f / physics.mass;
         }
 
+        static PhysicsComp* GetPhysicsIfPresent(EntityManager& manager, UUID entity)
+        {
+            auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
+            if (!physicsArray.m_IdToIndex.count(entity))
+                return nullptr;
+            return &manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
+        }
+
+        static void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA, float invMassA, float invMassB)
+        {
+            const float totalInvMass = invMassA + invMassB;
+            if (totalInvMass <= 0.0f)
+                return;
+
+            const float correctionLength = std::sqrt(correctionForA.x * correctionForA.x + correctionForA.y * correctionForA.y);
+            if (correctionLength <= 0.0001f)
+                return;
+
+            const sf::Vector2f normal = correctionForA / correctionLength;
+            PhysicsComp* physA = GetPhysicsIfPresent(manager, entityA);
+            PhysicsComp* physB = GetPhysicsIfPresent(manager, entityB);
+
+            const sf::Vector2f velocityA = physA ? physA->velocity : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f velocityB = physB ? physB->velocity : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f relativeVelocity = velocityA - velocityB;
+            const float velAlongNormal = relativeVelocity.x * normal.x + relativeVelocity.y * normal.y;
+            if (velAlongNormal >= 0.0f)
+                return;
+
+            float restitutionA = 0.0f;
+            float restitutionB = 0.0f;
+            if (physA)
+                restitutionA = physA->restitution;
+            if (physB)
+                restitutionB = physB->restitution;
+            const float restitution = std::max(restitutionA, restitutionB);
+
+            const float impulseMagnitude = -(1.0f + restitution) * velAlongNormal / totalInvMass;
+            const sf::Vector2f impulse = normal * impulseMagnitude;
+
+            if (physA && invMassA > 0.0f)
+            {
+                physA->velocity += impulse * invMassA;
+            }
+            if (physB && invMassB > 0.0f)
+            {
+                physB->velocity -= impulse * invMassB;
+            }
+        }
+
         static void ApplyCorrection(EntityManager& manager, UUID entity, const sf::Vector2f& correction)
         {
             if (IsZeroVector(correction))
@@ -262,6 +312,8 @@ namespace Spoon
                 const sf::Vector2f correctionB = { -correctionForA.x * (invMassB / totalInvMass), -correctionForA.y * (invMassB / totalInvMass) };
                 ApplyCorrection(manager, entityB, correctionB);
             }
+
+            ApplyVelocityResponse(manager, entityA, entityB, correctionForA, invMassA, invMassB);
             return true;
         }
 

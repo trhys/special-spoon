@@ -115,8 +115,8 @@ namespace Spoon
             std::vector<std::vector<size_t>> edges(m_Systems.size());
             std::vector<size_t> indegree(m_Systems.size(), 0);
             constexpr std::array<std::pair<const char*, const char*>, 5> dependencies = {
-                std::pair{ "Movement", "Collision" },
-                std::pair{ "Collision", "Physics" },
+                std::pair{ "Movement", "Physics" },
+                std::pair{ "Physics", "Collision" },
                 std::pair{ "Physics", "Animation" },
                 std::pair{ "Movement", "Animation" },
                 std::pair{ "Collision", "Animation" }
