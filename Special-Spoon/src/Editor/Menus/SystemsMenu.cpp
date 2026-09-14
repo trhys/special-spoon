@@ -133,9 +133,17 @@ namespace Spoon
 
         ISystem* selectedSystem = nullptr;
         auto& systems = manager.GetSystems();
-        if (selectedSystemIndex >= 0 && selectedSystemIndex < static_cast<int>(systems.size()))
+        if (selectedSystemIndex >= 0 && selectedSystemIndex < static_cast<int>(existing.size()))
         {
-            selectedSystem = systems[selectedSystemIndex].get();
+            const std::string& selectedID = existing[selectedSystemIndex];
+            for (auto& system : systems)
+            {
+                if (system->GetDisplayName() == selectedID)
+                {
+                    selectedSystem = system.get();
+                    break;
+                }
+            }
         }
 
         if (selectedSystem)

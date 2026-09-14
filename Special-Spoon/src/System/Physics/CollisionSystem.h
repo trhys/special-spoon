@@ -271,6 +271,8 @@ namespace Spoon
                     physB->velocity -= impulse * invMassB;
                 }
             }
+            if (impulseMagnitude <= 0.0f)
+                return;
 
             const sf::Vector2f postVelocityA = physA ? physA->velocity : sf::Vector2f{ 0.0f, 0.0f };
             const sf::Vector2f postVelocityB = physB ? physB->velocity : sf::Vector2f{ 0.0f, 0.0f };
