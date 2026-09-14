@@ -70,6 +70,7 @@ public:
         auto& movementArray = manager.GetArray<Spoon::MovementComp>(Spoon::MovementComp::Name);
         auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
         auto& physicsArray = manager.GetArray<Spoon::PhysicsComp>(Spoon::PhysicsComp::Name);
+        const bool physicsEnabled = !physicsArray.m_Components.empty();
         std::unordered_map<Spoon::UUID, std::vector<const Spoon::Action*>> movementActions;
 
         for (const auto& action : queue.m_Queue)
@@ -134,12 +135,9 @@ public:
             {
                 Spoon::TransformComp& transComp = manager.GetComponent<Spoon::TransformComp>(ID, Spoon::TransformComp::Name);
                 moveComp.m_ProposedDelta = moveComp.m_Velocity * tick.asSeconds();
-                transComp.Move(moveComp.m_ProposedDelta);
-
-                if (physicsArray.m_IdToIndex.count(ID))
+                if (!physicsEnabled)
                 {
-                    Spoon::PhysicsComp& physicsComp = manager.GetComponent<Spoon::PhysicsComp>(ID, Spoon::PhysicsComp::Name);
-                    physicsComp.m_CollisionBox.position += moveComp.m_ProposedDelta;
+                    transComp.Move(moveComp.m_ProposedDelta);
                 }
 
                 // Determine direction of travel

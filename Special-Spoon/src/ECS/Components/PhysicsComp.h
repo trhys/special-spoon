@@ -1,114 +1,97 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
-#include "SFML/Graphics/Rect.hpp"
 
 namespace Spoon
 {
+    enum class BodyType
+    {
+        Static = 0,
+        Dynamic = 1,
+        Kinematic = 2
+    };
+
     struct PhysicsComp : public ComponentBase<PhysicsComp>
     {
     public:
         PhysicsComp() : ComponentBase::ComponentBase(Name) {}
-        PhysicsComp(sf::FloatRect rect) : ComponentBase::ComponentBase(Name), m_CollisionBox(rect) {}
 
         static constexpr const char* Name = "Physics";
 
-        void SetBox(sf::FloatRect box)
+        static const char* BodyTypeToString(BodyType type)
         {
-          m_CollisionBox = box;
+            switch (type)
+            {
+            case BodyType::Static:
+                return "Static";
+            case BodyType::Kinematic:
+                return "Kinematic";
+            case BodyType::Dynamic:
+            default:
+                return "Dynamic";
+            }
         }
 
-        void SetPosition(sf::Vector2f pos)
+        static BodyType BodyTypeFromString(const std::string& value)
         {
-            m_CollisionBox.position.x = pos.x;
-            m_CollisionBox.position.y = pos.y;
-        }
-        
-        void SetSize(sf::Vector2f size)
-        {
-            m_CollisionBox.size = size;
-        }
-
-        sf::FloatRect GetCollisionBox() { return m_CollisionBox; }
-
-        void CollisionDetected()
-        {
-            Collided = true;
-        }
-
-        void CollisionHandled()
-        {
-            Collided = false;
-            m_BlockedX = false;
-            m_BlockedY = false;
-            m_LastCorrection = {0.0f, 0.0f};
+            if (value == "Static")
+                return BodyType::Static;
+            if (value == "Kinematic")
+                return BodyType::Kinematic;
+            return BodyType::Dynamic;
         }
 
         void OnReflect() override
         {
-            ImGui::Text("Position: (%.2f, %.2f)", m_CollisionBox.position.x, m_CollisionBox.position.y);
-            ImGui::SliderFloat("Width##physics", &m_CollisionBox.size.x, 0.0f, 500.0f, "%.2f");
-            ImGui::SliderFloat("Height##physics", &m_CollisionBox.size.y, 0.0f, 500.0f, "%.2f");
-            ImGui::Text("Mass: %.2f", mass);
+            const char* bodyTypes[] = { "Static", "Dynamic", "Kinematic" };
+            int bodyTypeIndex = static_cast<int>(bodyType);
+            if (ImGui::Combo("Body Type##physics", &bodyTypeIndex, bodyTypes, 3))
+            {
+                bodyType = static_cast<BodyType>(bodyTypeIndex);
+            }
+
+            ImGui::SliderFloat("Velocity X##physics", &velocity.x, -2000.0f, 2000.0f, "%.2f");
+            ImGui::SliderFloat("Velocity Y##physics", &velocity.y, -2000.0f, 2000.0f, "%.2f");
+            ImGui::SliderFloat("Mass##physics", &mass, 0.001f, 1000.0f, "%.3f");
+            ImGui::SliderFloat("Gravity Scale##physics", &gravityScale, -10.0f, 10.0f, "%.2f");
             ImGui::SliderFloat("Restitution##physics", &restitution, 0.0f, 1.0f, "%.2f");
-            ImGui::Checkbox("Is Static##physics", &isStatic);
-            ImGui::Text("Collision detected: %s", Collided ? "True" : "False");
-            ImGui::Text("Blocked X: %s", m_BlockedX ? "True" : "False");
-            ImGui::Text("Blocked Y: %s", m_BlockedY ? "True" : "False");
-            ImGui::Text("Correction: (%.2f, %.2f)", m_LastCorrection.x, m_LastCorrection.y);
+            ImGui::SliderFloat("Linear Damping##physics", &linearDamping, 0.0f, 20.0f, "%.3f");
         }
 
-        sf::FloatRect m_CollisionBox;
+        BodyType bodyType = BodyType::Dynamic;
+        sf::Vector2f velocity = { 0.0f, 0.0f };
         float mass = 1.0f;
+        float gravityScale = 1.0f;
         float restitution = 0.6f;
-        bool isStatic = false;
-        bool Collided = false;
-        bool m_BlockedX = false;
-        bool m_BlockedY = false;
-        sf::Vector2f m_LastCorrection = {0.0f, 0.0f};
+        float linearDamping = 0.0f;
     };
 
     inline void to_json(json& j, const PhysicsComp& comp)
     {
         j = json{
-            {"m_CollisionBox", {
-                {"left", comp.m_CollisionBox.position.x},
-                {"top", comp.m_CollisionBox.position.y},
-                {"width", comp.m_CollisionBox.size.x},
-                {"height", comp.m_CollisionBox.size.y}
-            }},
+            {"bodyType", PhysicsComp::BodyTypeToString(comp.bodyType)},
+            {"velocity", comp.velocity},
             {"mass", comp.mass},
+            {"gravityScale", comp.gravityScale},
             {"restitution", comp.restitution},
-            {"isStatic", comp.isStatic}
+            {"linearDamping", comp.linearDamping}
         };
     }
 
     inline void from_json(const json& j, PhysicsComp& comp)
     {
-        if (j.contains("m_CollisionBox"))
-        {
-            const auto& collisionBox = j.at("m_CollisionBox");
-            if (collisionBox.contains("left") && collisionBox.contains("top"))
-            {
-                comp.m_CollisionBox.position.x = collisionBox.at("left").get<float>();
-                comp.m_CollisionBox.position.y = collisionBox.at("top").get<float>();
-            }
+        if (j.contains("bodyType"))
+            comp.bodyType = PhysicsComp::BodyTypeFromString(j.at("bodyType").get<std::string>());
 
-            if (collisionBox.contains("width") && collisionBox.contains("height"))
-            {
-                comp.m_CollisionBox.size.x = collisionBox.at("width").get<float>();
-                comp.m_CollisionBox.size.y = collisionBox.at("height").get<float>();
-            }
-            else
-            {
-                comp.m_CollisionBox = collisionBox.get<sf::FloatRect>();
-            }
-        }
+        if (j.contains("velocity"))
+            comp.velocity = j.at("velocity").get<sf::Vector2f>();
         if (j.contains("mass"))
             comp.mass = j.at("mass").get<float>();
+        if (j.contains("gravityScale"))
+            comp.gravityScale = j.at("gravityScale").get<float>();
         if (j.contains("restitution"))
             comp.restitution = j.at("restitution").get<float>();
-        if (j.contains("isStatic"))
-            comp.isStatic = j.at("isStatic").get<bool>();
+        if (j.contains("linearDamping"))
+            comp.linearDamping = j.at("linearDamping").get<float>();
     }
 }

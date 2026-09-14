@@ -4,6 +4,7 @@ target_sources(Special-Spoon
         Components/InputComp.h
         Components/InputComp.cpp
         Components/MovementComp.h
+        Components/ColliderComp.h
         Components/PhysicsComp.h
         Components/StateActionComp.h
         Components/StatusComp.h
