@@ -5,14 +5,79 @@
 #include "ECS/ECS.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace Spoon
 {
+    struct PhysicsSystemConfig
+    {
+        float defaultLinearDamping = 0.0f;
+        float defaultFriction = 0.6f;
+        float defaultRestitution = 0.6f;
+        float maxLinearSpeed = 0.0f;
+        float sleepSpeedThreshold = 0.01f;
+        bool enableSleepSnap = true;
+        bool clampNegativeInputs = true;
+    };
+
     class PhysicsSystem : public ISystem
     {
     public:
         PhysicsSystem() : ISystem::ISystem("Physics") {}
         ~PhysicsSystem() {}
+
+        void OnReflect() override
+        {
+            auto tooltip = [](const char* text)
+            {
+                if (ImGui::BeginItemTooltip())
+                {
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(text);
+                    ImGui::PopTextWrapPos();
+                    ImGui::EndTooltip();
+                }
+            };
+
+            ImGui::SeparatorText("Physics Defaults");
+            ImGui::SliderFloat("Default Linear Damping##physsystem", &m_Config.defaultLinearDamping, 0.0f, 20.0f, "%.3f");
+            tooltip("Fallback for PhysicsComp linear damping when value is -1.");
+            ImGui::SliderFloat("Default Friction##physsystem", &m_Config.defaultFriction, 0.0f, 2.0f, "%.2f");
+            tooltip("Fallback for PhysicsComp friction when value is -1.");
+            ImGui::SliderFloat("Default Restitution##physsystem", &m_Config.defaultRestitution, 0.0f, 1.0f, "%.2f");
+            tooltip("Fallback for PhysicsComp restitution when value is -1.");
+            ImGui::SliderFloat("Max Linear Speed##physsystem", &m_Config.maxLinearSpeed, 0.0f, 500.0f, "%.2f");
+            tooltip("Caps dynamic body speed. 0 disables speed clamping.");
+            ImGui::SliderFloat("Sleep Speed Threshold##physsystem", &m_Config.sleepSpeedThreshold, 0.0f, 0.5f, "%.3f");
+            tooltip("When sleep snap is enabled, speeds below this threshold are snapped to zero.");
+            ImGui::Checkbox("Enable Sleep Snap##physsystem", &m_Config.enableSleepSnap);
+            tooltip("Snaps tiny velocities to zero to prevent micro-sliding.");
+            ImGui::Checkbox("Clamp Negative Inputs##physsystem", &m_Config.clampNegativeInputs);
+            tooltip("Clamps resolved damping/friction/restitution values to non-negative.");
+        }
+
+        static const PhysicsSystemConfig& GetRuntimeConfig()
+        {
+            return s_RuntimeConfig;
+        }
+
+        static float ResolveLinearDamping(const PhysicsComp& comp)
+        {
+            const PhysicsSystemConfig& config = GetRuntimeConfig();
+            return ResolveCompValue(comp.linearDamping, config.defaultLinearDamping, config.clampNegativeInputs);
+        }
+
+        static float ResolveFriction(const PhysicsComp& comp)
+        {
+            const PhysicsSystemConfig& config = GetRuntimeConfig();
+            return ResolveCompValue(comp.friction, config.defaultFriction, config.clampNegativeInputs);
+        }
+
+        static float ResolveRestitution(const PhysicsComp& comp)
+        {
+            const PhysicsSystemConfig& config = GetRuntimeConfig();
+            return ResolveCompValue(comp.restitution, config.defaultRestitution, config.clampNegativeInputs);
+        }
 
         void Update(sf::Time tick, EntityManager& manager) override
         {
@@ -20,6 +85,7 @@ namespace Spoon
             if (dt <= 0.0f)
                 return;
 
+            s_RuntimeConfig = m_Config;
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
             auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
@@ -50,8 +116,33 @@ namespace Spoon
                 {
                     physicsComp.velocity.y += k_Gravity * physicsComp.gravityScale * dt;
 
-                    const float dampingFactor = std::max(0.0f, 1.0f - physicsComp.linearDamping * dt);
+                    const float damping = ResolveCompValue(physicsComp.linearDamping, m_Config.defaultLinearDamping, m_Config.clampNegativeInputs);
+                    const float dampingFactor = std::max(0.0f, 1.0f - damping * dt);
                     physicsComp.velocity *= dampingFactor;
+
+                    if (m_Config.maxLinearSpeed > 0.0f)
+                    {
+                        const float speedSq = physicsComp.velocity.x * physicsComp.velocity.x + physicsComp.velocity.y * physicsComp.velocity.y;
+                        const float maxSpeedSq = m_Config.maxLinearSpeed * m_Config.maxLinearSpeed;
+                        if (speedSq > maxSpeedSq)
+                        {
+                            const float speed = std::sqrt(speedSq);
+                            if (speed > 0.0f)
+                            {
+                                physicsComp.velocity *= (m_Config.maxLinearSpeed / speed);
+                            }
+                        }
+                    }
+
+                    if (m_Config.enableSleepSnap)
+                    {
+                        const float threshold = std::max(0.0f, m_Config.sleepSpeedThreshold);
+                        const float speedSq = physicsComp.velocity.x * physicsComp.velocity.x + physicsComp.velocity.y * physicsComp.velocity.y;
+                        if (speedSq < threshold * threshold)
+                        {
+                            physicsComp.velocity = { 0.0f, 0.0f };
+                        }
+                    }
                 }
 
                 const sf::Vector2f delta = physicsComp.velocity * dt;
@@ -79,6 +170,16 @@ namespace Spoon
         }
 
     private:
+        static float ResolveCompValue(float componentValue, float defaultValue, bool clampNegativeInputs)
+        {
+            float resolved = componentValue >= 0.0f ? componentValue : defaultValue;
+            if (clampNegativeInputs && resolved < 0.0f)
+                resolved = 0.0f;
+            return resolved;
+        }
+
         static constexpr float k_Gravity = 980.0f;
+        PhysicsSystemConfig m_Config;
+        inline static PhysicsSystemConfig s_RuntimeConfig{};
     };
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/System.h"
+#include "PhysicsSystem.h"
 #include "QuadTree.h"
 #include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
@@ -250,12 +251,12 @@ namespace Spoon
             float impulseMagnitude = 0.0f;
             if (velAlongNormal < 0.0f)
             {
-                float restitutionA = 0.0f;
-                float restitutionB = 0.0f;
+                float restitutionA = PhysicsSystem::GetRuntimeConfig().defaultRestitution;
+                float restitutionB = PhysicsSystem::GetRuntimeConfig().defaultRestitution;
                 if (physA)
-                    restitutionA = physA->restitution;
+                    restitutionA = PhysicsSystem::ResolveRestitution(*physA);
                 if (physB)
-                    restitutionB = physB->restitution;
+                    restitutionB = PhysicsSystem::ResolveRestitution(*physB);
                 const float restitution = std::max(restitutionA, restitutionB);
 
                 impulseMagnitude = -(1.0f + restitution) * velAlongNormal / totalInvMass;
@@ -281,13 +282,13 @@ namespace Spoon
                 return;
             tangent /= tangentLength;
 
-            float frictionA = 0.0f;
-            float frictionB = 0.0f;
+            float frictionA = PhysicsSystem::GetRuntimeConfig().defaultFriction;
+            float frictionB = PhysicsSystem::GetRuntimeConfig().defaultFriction;
             if (physA)
-                frictionA = physA->friction;
+                frictionA = PhysicsSystem::ResolveFriction(*physA);
             if (physB)
-                frictionB = physB->friction;
-            const float friction = std::max(std::max(0.0f, frictionA), std::max(0.0f, frictionB));
+                frictionB = PhysicsSystem::ResolveFriction(*physB);
+            const float friction = std::max(frictionA, frictionB);
             if (friction <= 0.0f)
                 return;
 
