@@ -287,7 +287,7 @@ namespace Spoon
                 frictionA = physA->friction;
             if (physB)
                 frictionB = physB->friction;
-            const float friction = std::sqrt(std::max(0.0f, frictionA) * std::max(0.0f, frictionB));
+            const float friction = std::max(std::max(0.0f, frictionA), std::max(0.0f, frictionB));
             if (friction <= 0.0f)
                 return;
 
