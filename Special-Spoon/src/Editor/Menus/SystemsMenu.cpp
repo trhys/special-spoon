@@ -13,6 +13,7 @@ namespace Spoon
         static std::unordered_map<std::string, bool> addedSystems;
         static bool editedSystems = false;
         static std::vector<std::string> existing;
+        static std::string selectedSystemName;
 
         if(init) // Inform the editor of systems that may get loaded by the scene manager elsewhere
         {
@@ -93,7 +94,7 @@ namespace Spoon
                     ImGui::PushID(id.c_str());
                     if (ImGui::Selectable(id.c_str()))
                     {
-                        // Placeholder - may put something here later
+                        selectedSystemName = id;
                     }
 
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -123,6 +124,27 @@ namespace Spoon
                 ImGui::EndListBox();
             }
             ImGui::EndChild();
+        }
+
+        ISystem* selectedSystem = nullptr;
+        auto& systems = manager.GetSystems();
+        for (auto& system : systems)
+        {
+            if (system->GetDisplayName() == selectedSystemName)
+            {
+                selectedSystem = system.get();
+                break;
+            }
+        }
+
+        if (selectedSystem)
+        {
+            ImGui::SeparatorText("System Inspector");
+            if (ImGui::BeginChild("System Inspector"))
+            {
+                selectedSystem->OnReflect();
+                ImGui::EndChild();
+            }
         }
         ImGui::End();
     }

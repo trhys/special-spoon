@@ -36,7 +36,10 @@ namespace Spoon
                 if (movementArray.m_IdToIndex.count(id))
                 {
                     auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
-                    physicsComp.velocity.x = movementComp.m_Velocity.x;
+                    if (physicsComp.bodyType == BodyType::Kinematic || movementComp.m_FrameIntent.x != 0.0f)
+                    {
+                        physicsComp.velocity.x = movementComp.m_Velocity.x;
+                    }
                     if (physicsComp.bodyType == BodyType::Kinematic || movementComp.m_FrameIntent.y != 0.0f || physicsComp.gravityScale == 0.0f)
                     {
                         physicsComp.velocity.y = movementComp.m_Velocity.y;
@@ -58,6 +61,7 @@ namespace Spoon
                     {
                         auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
                         movementComp.m_ProposedDelta = delta;
+                        movementComp.m_Velocity = physicsComp.velocity;
                     }
                     continue;
                 }
@@ -69,6 +73,7 @@ namespace Spoon
                 {
                     auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
                     movementComp.m_ProposedDelta = delta;
+                    movementComp.m_Velocity = physicsComp.velocity;
                 }
             }
         }

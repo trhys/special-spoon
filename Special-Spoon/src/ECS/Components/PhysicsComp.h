@@ -55,6 +55,7 @@ namespace Spoon
             ImGui::SliderFloat("Mass##physics", &mass, 0.001f, 1000.0f, "%.3f");
             ImGui::SliderFloat("Gravity Scale##physics", &gravityScale, -10.0f, 10.0f, "%.2f");
             ImGui::SliderFloat("Restitution##physics", &restitution, 0.0f, 1.0f, "%.2f");
+            ImGui::SliderFloat("Friction##physics", &friction, 0.0f, 2.0f, "%.2f");
             ImGui::SliderFloat("Linear Damping##physics", &linearDamping, 0.0f, 20.0f, "%.3f");
         }
 
@@ -63,6 +64,7 @@ namespace Spoon
         float mass = 1.0f;
         float gravityScale = 1.0f;
         float restitution = 0.6f;
+        float friction = 0.6f;
         float linearDamping = 0.0f;
     };
 
@@ -74,6 +76,7 @@ namespace Spoon
             {"mass", comp.mass},
             {"gravityScale", comp.gravityScale},
             {"restitution", comp.restitution},
+            {"friction", comp.friction},
             {"linearDamping", comp.linearDamping}
         };
     }
@@ -91,6 +94,8 @@ namespace Spoon
             comp.gravityScale = j.at("gravityScale").get<float>();
         if (j.contains("restitution"))
             comp.restitution = j.at("restitution").get<float>();
+        if (j.contains("friction"))
+            comp.friction = j.at("friction").get<float>();
         if (j.contains("linearDamping"))
             comp.linearDamping = j.at("linearDamping").get<float>();
     }

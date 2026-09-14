@@ -247,27 +247,62 @@ namespace Spoon
             const sf::Vector2f velocityB = physB ? physB->velocity : sf::Vector2f{ 0.0f, 0.0f };
             const sf::Vector2f relativeVelocity = velocityA - velocityB;
             const float velAlongNormal = relativeVelocity.x * normal.x + relativeVelocity.y * normal.y;
-            if (velAlongNormal >= 0.0f)
+            float impulseMagnitude = 0.0f;
+            if (velAlongNormal < 0.0f)
+            {
+                float restitutionA = 0.0f;
+                float restitutionB = 0.0f;
+                if (physA)
+                    restitutionA = physA->restitution;
+                if (physB)
+                    restitutionB = physB->restitution;
+                const float restitution = std::max(restitutionA, restitutionB);
+
+                impulseMagnitude = -(1.0f + restitution) * velAlongNormal / totalInvMass;
+                const sf::Vector2f impulse = normal * impulseMagnitude;
+
+                if (physA && invMassA > 0.0f)
+                {
+                    physA->velocity += impulse * invMassA;
+                }
+                if (physB && invMassB > 0.0f)
+                {
+                    physB->velocity -= impulse * invMassB;
+                }
+            }
+
+            const sf::Vector2f postVelocityA = physA ? physA->velocity : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f postVelocityB = physB ? physB->velocity : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f postRelativeVelocity = postVelocityA - postVelocityB;
+
+            sf::Vector2f tangent = postRelativeVelocity - normal * (postRelativeVelocity.x * normal.x + postRelativeVelocity.y * normal.y);
+            const float tangentLength = std::sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
+            if (tangentLength <= 0.0001f)
+                return;
+            tangent /= tangentLength;
+
+            float frictionA = 0.0f;
+            float frictionB = 0.0f;
+            if (physA)
+                frictionA = physA->friction;
+            if (physB)
+                frictionB = physB->friction;
+            const float friction = std::sqrt(std::max(0.0f, frictionA) * std::max(0.0f, frictionB));
+            if (friction <= 0.0f)
                 return;
 
-            float restitutionA = 0.0f;
-            float restitutionB = 0.0f;
-            if (physA)
-                restitutionA = physA->restitution;
-            if (physB)
-                restitutionB = physB->restitution;
-            const float restitution = std::max(restitutionA, restitutionB);
-
-            const float impulseMagnitude = -(1.0f + restitution) * velAlongNormal / totalInvMass;
-            const sf::Vector2f impulse = normal * impulseMagnitude;
+            float frictionImpulseMagnitude = -(postRelativeVelocity.x * tangent.x + postRelativeVelocity.y * tangent.y) / totalInvMass;
+            const float maxFrictionImpulse = impulseMagnitude * friction;
+            frictionImpulseMagnitude = std::clamp(frictionImpulseMagnitude, -maxFrictionImpulse, maxFrictionImpulse);
+            const sf::Vector2f frictionImpulse = tangent * frictionImpulseMagnitude;
 
             if (physA && invMassA > 0.0f)
             {
-                physA->velocity += impulse * invMassA;
+                physA->velocity += frictionImpulse * invMassA;
             }
             if (physB && invMassB > 0.0f)
             {
-                physB->velocity -= impulse * invMassB;
+                physB->velocity -= frictionImpulse * invMassB;
             }
         }
 
