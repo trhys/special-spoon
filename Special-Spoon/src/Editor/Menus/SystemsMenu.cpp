@@ -50,8 +50,9 @@ namespace Spoon
                     editedSystems = true;
                 }
             }
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
+ 
         if (editedSystems)
         {
             // Remove systems that are unchecked
@@ -149,11 +150,11 @@ namespace Spoon
         if (selectedSystem)
         {
             ImGui::SeparatorText("System Inspector");
-            if (ImGui::BeginChild("System Inspector"))
+            if (ImGui::BeginChild("##System Inspector"))
             {
                 selectedSystem->OnReflect();
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
         }
         ImGui::End();
     }

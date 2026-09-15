@@ -44,7 +44,7 @@ namespace Spoon
             {
                 bool appliedCorrection = false;
                 sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
-                quadtree.BuildTree({ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
+                quadtree.BuildTree({ bounds.x, bounds.y });
                 quadtree.Populate(manager);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
@@ -59,6 +59,12 @@ namespace Spoon
                 if (!appliedCorrection)
                     break;
             }
+        }
+
+        void OnReflect() override {
+          ImGui::SeparatorText("Collision Bounds");
+          ImGui::SliderFloat("Bounds X:", &bounds.x, 0.0f, 4000.0f);
+          ImGui::SliderFloat("Bounds Y:", &bounds.y, 0.0f, 4000.0f);
         }
 
     private:
@@ -356,5 +362,6 @@ namespace Spoon
         }
 
         Quadtree quadtree;
+        sf::Vector2f bounds = {0.0, 0.0f};
     };
 }
