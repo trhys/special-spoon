@@ -24,6 +24,7 @@ namespace Spoon
     {
     public:
         PhysicsSystem() : ISystem::ISystem("Physics") {}
+        PhysicsSystem(PhysicsSystemConfig& config) : ISystem::ISystem("Physics") { m_Config = config; }
         ~PhysicsSystem() {}
 
         PhysicsSystemConfig& GetConfig() { return m_Config; }
