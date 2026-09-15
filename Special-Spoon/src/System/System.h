@@ -13,6 +13,7 @@ namespace Spoon
         virtual ~ISystem() {}
 
         virtual void Update(sf::Time tick, EntityManager& manager) = 0;
+        virtual void OnReflect() {}
 
         std::string m_DisplayName;
         std::string& GetDisplayName() { return m_DisplayName; }
