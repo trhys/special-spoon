@@ -132,6 +132,7 @@ namespace Spoon
         v.spriteCords = j.at("SpriteCords").get<std::vector<SpriteCords>>();
     }
 
+	// Registry types
     inline void to_json(json& j, const ActionType& v)
     {
         j = v.m_ID;
@@ -151,4 +152,32 @@ namespace Spoon
     {
         v.m_ID = j.get<uint32_t>();
     }	
+
+	// Physics system config
+	inline void to_json(json& j, const PhysicsSystem& v)
+	{
+		config = v.GetConfig();
+		j = json{
+			{"linear damping", config.defaultLinearDamping},
+			{"friction", config.defaultFriction},
+			{"restitution", config.defaultRestitution},
+			{"max speed", config.maxLinearSpeed},
+			{"sleep threshold", config.sleepSpeedThreshold},
+			{"enable sleep snap", config.enableSleepSnap},
+			{"clamp neg inputs", config.clampNegativeInputs}
+		};
+	}
+
+	inline void from_json(const json& j, PhysicsSystem& v)
+	{
+		config = v.GetConfig();
+		config.defaultLinearDamping = j.at("linear damping").get<float>();
+		config.defaultFriction = j.at("friction").get<float>();
+		config.defaultRestitution = j.at("restitution").get<float>();
+		config.maxLinearSpeed = j.at("max speed").get<float>();
+		config.sleepSpeedThreshold = j.at("sleep threshold").get<float>();
+		config.enableSleepSnap = j.at("enable sleep snap").get<bool>();
+		config.clampNegativeInputs = j.at("clamp neg inputs").get<bool>();
+		v.SetConfig(config);
+	}
 }
