@@ -27,6 +27,7 @@ namespace Spoon
         ~PhysicsSystem() {}
 
         PhysicsSystemConfig& GetConfig() { return m_Config; }
+        void SetConfig(PhysicsSystemConfig& c) { m_Config = c; }
 
         void OnReflect() override
         {
