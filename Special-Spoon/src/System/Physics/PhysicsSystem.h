@@ -3,23 +3,13 @@
 #include "System/System.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "ECS/ECS.h"
+#include "System/Physics.PhysicsSystemConfig.h"
 
 #include <algorithm>
 #include <cmath>
 
 namespace Spoon
 {
-    struct PhysicsSystemConfig
-    {
-        float defaultLinearDamping = 0.0f;
-        float defaultFriction = 0.6f;
-        float defaultRestitution = 0.6f;
-        float maxLinearSpeed = 0.0f;
-        float sleepSpeedThreshold = 0.01f;
-        bool enableSleepSnap = true;
-        bool clampNegativeInputs = true;
-    };
-
     class PhysicsSystem : public ISystem
     {
     public:
