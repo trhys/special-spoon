@@ -44,7 +44,7 @@ namespace Spoon
             {
                 bool appliedCorrection = false;
                 sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
-                quadtree.BuildTree({ bounds.x, bounds.y });
+                quadtree.BuildTree((bounds.x > 0.0f && bounds.y > 0.0f) ? bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
                 quadtree.Populate(manager);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
@@ -257,8 +257,8 @@ namespace Spoon
             float impulseMagnitude = 0.0f;
             if (velAlongNormal < 0.0f)
             {
-                float restitutionA = PhysicsSystem::GetRuntimeConfig().defaultRestitution;
-                float restitutionB = PhysicsSystem::GetRuntimeConfig().defaultRestitution;
+                float restitutionA = PhysicsSystem::GetConfig().defaultRestitution;
+                float restitutionB = PhysicsSystem::GetConfig().defaultRestitution;
                 if (physA)
                     restitutionA = PhysicsSystem::ResolveRestitution(*physA);
                 if (physB)
@@ -290,8 +290,8 @@ namespace Spoon
                 return;
             tangent /= tangentLength;
 
-            float frictionA = PhysicsSystem::GetRuntimeConfig().defaultFriction;
-            float frictionB = PhysicsSystem::GetRuntimeConfig().defaultFriction;
+            float frictionA = PhysicsSystem::GetConfig().defaultFriction;
+            float frictionB = PhysicsSystem::GetConfig().defaultFriction;
             if (physA)
                 frictionA = PhysicsSystem::ResolveFriction(*physA);
             if (physB)
