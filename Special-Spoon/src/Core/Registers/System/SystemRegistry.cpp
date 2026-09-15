@@ -12,7 +12,8 @@ namespace Spoon
 
     std::unique_ptr<ISystem> LoadPhysicsSystem(const json* systemData)
     {
-        return std::make_unique<PhysicsSystem>();
+        config = systemData.get<PhysicsSystemConfig>();
+        return std::make_unique<PhysicsSystem>(config);
     }
 
     std::unique_ptr<ISystem> LoadCollisionSystem(const json* systemData)
