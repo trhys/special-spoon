@@ -4,7 +4,7 @@
 #include "ECS/Components/Animation/AnimationData.h"
 #include "Core/Registers/ActionRegistry.h"
 #include "Core/Registers/StateRegistry.h"
-#include "System/Physics/PhysicsSystem.h"
+#include "System/Physics/PhysicsSystemConfig.h"
 
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
