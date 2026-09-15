@@ -26,6 +26,8 @@ namespace Spoon
         PhysicsSystem() : ISystem::ISystem("Physics") {}
         ~PhysicsSystem() {}
 
+        PhysicsSystemConfig& GetConfig() { return m_Config; }
+
         void OnReflect() override
         {
             auto tooltip = [](const char* text)
