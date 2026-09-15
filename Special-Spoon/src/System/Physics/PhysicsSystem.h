@@ -27,7 +27,7 @@ namespace Spoon
         PhysicsSystem(PhysicsSystemConfig& config) : ISystem::ISystem("Physics") { m_Config = config; }
         ~PhysicsSystem() {}
 
-        PhysicsSystemConfig& GetConfig() { return m_Config; }
+        static PhysicsSystemConfig& GetConfig() { return m_Config; }
         void SetConfig(PhysicsSystemConfig& c) { m_Config = c; }
 
         void OnReflect() override
@@ -149,6 +149,21 @@ namespace Spoon
             }
         }
 
+        static float ResolveFriction(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.friction, m_Config.defaultFriction, m_Config.clampNegativeInputs);
+        }
+
+        static float ResolveRestitution(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.restitution, m_Config.defaultRestitution, m_Config.clampNegativeInputs);
+        }
+
+        static float ResolveLinearDamping(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.linearDamping, m_Config.defaultLinearDamping, m_Config.clampNegativeInputs);
+        }
+
     private:
         float ResolveCompValue(float componentValue, float defaultValue, bool clampNegativeInputs)
         {
@@ -158,23 +173,8 @@ namespace Spoon
             return resolved;
         }
 
-        float ResolveFriction(const PhysicsComp& comp)
-        {
-            return ResolveCompValue(comp.friction, m_Config.defaultFriction, m_Config.clampNegativeInputs);
-        }
-
-        float ResolveRestitution(const PhysicsComp& comp)
-        {
-            return ResolveCompValue(comp.restitution, m_Config.defaultRestitution, m_Config.clampNegativeInputs);
-        }
-
-        float ResolveLinearDamping(const PhysicsComp& comp)
-        {
-            return ResolveCompValue(comp.linearDamping, m_Config.defaultLinearDamping, m_Config.clampNegativeInputs);
-        }
-
     private:
         static constexpr float k_Gravity = 980.0f;
-        PhysicsSystemConfig m_Config;
+        static PhysicsSystemConfig m_Config;
     };
 }
