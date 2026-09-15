@@ -3,7 +3,7 @@
 #include "System/System.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "ECS/ECS.h"
-#include "System/Physics.PhysicsSystemConfig.h"
+#include "System/Physics/PhysicsSystemConfig.h"
 
 #include <algorithm>
 #include <cmath>
@@ -14,7 +14,7 @@ namespace Spoon
     {
     public:
         PhysicsSystem() : ISystem::ISystem("Physics") {}
-        PhysicsSystem(PhysicsSystemConfig& config) : ISystem::ISystem("Physics") { m_Config = config; }
+        PhysicsSystem(const PhysicsSystemConfig& config) : ISystem::ISystem("Physics") { m_Config = config; }
         ~PhysicsSystem() {}
 
         static PhysicsSystemConfig& GetConfig() { return m_Config; }
@@ -155,7 +155,7 @@ namespace Spoon
         }
 
     private:
-        float ResolveCompValue(float componentValue, float defaultValue, bool clampNegativeInputs)
+        static float ResolveCompValue(float componentValue, float defaultValue, bool clampNegativeInputs)
         {
             float resolved = componentValue >= 0.0f ? componentValue : defaultValue;
             if (clampNegativeInputs && resolved < 0.0f)
