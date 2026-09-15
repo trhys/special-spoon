@@ -56,36 +56,12 @@ namespace Spoon
             tooltip("Clamps resolved damping/friction/restitution values to non-negative.");
         }
 
-        static const PhysicsSystemConfig& GetRuntimeConfig()
-        {
-            return s_RuntimeConfig;
-        }
-
-        static float ResolveLinearDamping(const PhysicsComp& comp)
-        {
-            const PhysicsSystemConfig& config = GetRuntimeConfig();
-            return ResolveCompValue(comp.linearDamping, config.defaultLinearDamping, config.clampNegativeInputs);
-        }
-
-        static float ResolveFriction(const PhysicsComp& comp)
-        {
-            const PhysicsSystemConfig& config = GetRuntimeConfig();
-            return ResolveCompValue(comp.friction, config.defaultFriction, config.clampNegativeInputs);
-        }
-
-        static float ResolveRestitution(const PhysicsComp& comp)
-        {
-            const PhysicsSystemConfig& config = GetRuntimeConfig();
-            return ResolveCompValue(comp.restitution, config.defaultRestitution, config.clampNegativeInputs);
-        }
-
         void Update(sf::Time tick, EntityManager& manager) override
         {
             const float dt = tick.asSeconds();
             if (dt <= 0.0f)
                 return;
 
-            s_RuntimeConfig = m_Config;
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
             auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
@@ -170,7 +146,7 @@ namespace Spoon
         }
 
     private:
-        static float ResolveCompValue(float componentValue, float defaultValue, bool clampNegativeInputs)
+        float ResolveCompValue(float componentValue, float defaultValue, bool clampNegativeInputs)
         {
             float resolved = componentValue >= 0.0f ? componentValue : defaultValue;
             if (clampNegativeInputs && resolved < 0.0f)
@@ -178,8 +154,23 @@ namespace Spoon
             return resolved;
         }
 
+        float ResolveFriction(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.friction, m_Config.defaultFriction, m_Config.clampNegativeInputs);
+        }
+
+        float ResolveRestitution(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.restitution, m_Config.defaultRestitution, m_Config.clampNegativeInputs);
+        }
+
+        float ResolveLinearDamping(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.linearDamping, m_Config.defaultLinearDamping, m_Config.clampNegativeInputs);
+        }
+
+    private:
         static constexpr float k_Gravity = 980.0f;
         PhysicsSystemConfig m_Config;
-        inline static PhysicsSystemConfig s_RuntimeConfig{};
     };
 }
