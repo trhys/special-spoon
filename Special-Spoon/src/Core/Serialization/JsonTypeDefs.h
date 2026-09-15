@@ -4,6 +4,7 @@
 #include "ECS/Components/Animation/AnimationData.h"
 #include "Core/Registers/ActionRegistry.h"
 #include "Core/Registers/StateRegistry.h"
+#include "System/Physics/PhysicsSystem.h"
 
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
@@ -154,30 +155,27 @@ namespace Spoon
     }	
 
 	// Physics system config
-	inline void to_json(json& j, const PhysicsSystem& v)
+	inline void to_json(json& j, const PhysicsSystemConfig& v)
 	{
-		config = v.GetConfig();
 		j = json{
-			{"linear damping", config.defaultLinearDamping},
-			{"friction", config.defaultFriction},
-			{"restitution", config.defaultRestitution},
-			{"max speed", config.maxLinearSpeed},
-			{"sleep threshold", config.sleepSpeedThreshold},
-			{"enable sleep snap", config.enableSleepSnap},
-			{"clamp neg inputs", config.clampNegativeInputs}
+			{"linear damping", v.defaultLinearDamping},
+			{"friction", v.defaultFriction},
+			{"restitution", v.defaultRestitution},
+			{"max speed", v.maxLinearSpeed},
+			{"sleep threshold", v.sleepSpeedThreshold},
+			{"enable sleep snap", v.enableSleepSnap},
+			{"clamp neg inputs", v.clampNegativeInputs}
 		};
 	}
 
-	inline void from_json(const json& j, PhysicsSystem& v)
+	inline void from_json(const json& j, PhysicsSystemConfig& v)
 	{
-		config = v.GetConfig();
-		config.defaultLinearDamping = j.at("linear damping").get<float>();
-		config.defaultFriction = j.at("friction").get<float>();
-		config.defaultRestitution = j.at("restitution").get<float>();
-		config.maxLinearSpeed = j.at("max speed").get<float>();
-		config.sleepSpeedThreshold = j.at("sleep threshold").get<float>();
-		config.enableSleepSnap = j.at("enable sleep snap").get<bool>();
-		config.clampNegativeInputs = j.at("clamp neg inputs").get<bool>();
-		v.SetConfig(config);
+		v.defaultLinearDamping = j.at("linear damping").get<float>();
+		v.defaultFriction = j.at("friction").get<float>();
+		v.defaultRestitution = j.at("restitution").get<float>();
+		v.maxLinearSpeed = j.at("max speed").get<float>();
+		v.sleepSpeedThreshold = j.at("sleep threshold").get<float>();
+		v.enableSleepSnap = j.at("enable sleep snap").get<bool>();
+		v.clampNegativeInputs = j.at("clamp neg inputs").get<bool>();
 	}
 }
