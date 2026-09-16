@@ -7,7 +7,6 @@ namespace Spoon {
   // base tile
   struct Tile {
     uint16_t id;    // index to rect in the atlas
-    bool walkable;  // determines pathfinding/collision downstream
   };
 
   // atlas reference - we'll probably config this so change the defaults 
@@ -44,8 +43,8 @@ namespace Spoon {
           void OnReflect() override;
 
           // set and clear tiles in the map
-          void SetTile(uint16_t id, sf::Vector2f mousePos);
-          void ClearTile(sf::Vector2f mousePos);
+          void SetTile(uint16_t id, int x, int y, int layerIndex);
+          void ClearTile(int x, int y, int layerIndex);
 
           // build the map
           void BuildMap();
