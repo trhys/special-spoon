@@ -270,8 +270,8 @@ namespace Spoon
             float impulseMagnitude = 0.0f;
             if (velAlongNormal < 0.0f)
             {
-                float restitutionA = PhysicsSystem::GetConfig().defaultRestitution;
-                float restitutionB = PhysicsSystem::GetConfig().defaultRestitution;
+                float restitutionA = 0.0f;
+                float restitutionB = 0.0f;
                 if (physA)
                     restitutionA = PhysicsSystem::ResolveRestitution(*physA);
                 if (physB)
@@ -307,8 +307,8 @@ namespace Spoon
             }
             tangent /= tangentLength;
 
-            float frictionA = PhysicsSystem::GetConfig().defaultFriction;
-            float frictionB = PhysicsSystem::GetConfig().defaultFriction;
+            float frictionA = 0.0f;
+            float frictionB = 0.0f;
             if (physA)
                 frictionA = PhysicsSystem::ResolveFriction(*physA);
             if (physB)
