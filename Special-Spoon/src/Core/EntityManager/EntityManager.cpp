@@ -12,6 +12,7 @@ namespace Spoon
         LoadArray<SpriteComp>(SpriteComp::Name);
         LoadArray<TextComp>(TextComp::Name);
         LoadArray<ColorComp>(ColorComp::Name);
+        LoadArray<ColliderComp>(ColliderComp::Name);
         LoadArray<PhysicsComp>(PhysicsComp::Name);
         LoadArray<BlinkComp>(BlinkComp::Name);
         LoadArray<FadeComp>(FadeComp::Name);

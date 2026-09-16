@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Components/ColliderComp.h"
 #include "Components/PhysicsComp.h"
 #include "Components/TransformComp.h"
 #include "Components/InputComp.h"

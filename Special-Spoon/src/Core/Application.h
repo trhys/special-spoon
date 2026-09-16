@@ -50,8 +50,11 @@ namespace Spoon
 		static Application* s_Instance;
 		bool m_IsRunning = true;
 		bool closePrompt = false;
+
+		sf::RenderWindow  m_Window;
+		Viewport		  m_Viewport;	
 		
-		ProjectManager	  m_ProjectManager;
+        ProjectManager	  m_ProjectManager;
 		SceneManager	  m_SceneManager;
 		EntityManager	  m_EntityManager;
 		InputSystem		  m_InputSystem;
@@ -61,9 +64,6 @@ namespace Spoon
 		ActionQueue	  	  m_ActionQueue;
 
 		AppSpecifications m_Specs;
-		Viewport		  m_Viewport;
-		sf::RenderWindow  m_Window;
-		
 	};
 
 	//DEFINE IN CLIENT APPLICATION

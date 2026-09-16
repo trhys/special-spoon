@@ -74,10 +74,23 @@ namespace Spoon
     void LoadPhysicsComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto physics = comp.get<PhysicsComp>();
-        manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
+        auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
+        if (!physicsArray.m_IdToIndex.count(id))
+            manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name);
+
         auto& loaded = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
         loaded = physics;
-        loaded.CollisionHandled();
+    }
+
+    void LoadColliderComponent(EntityManager& manager, UUID id, const json& comp)
+    {
+        auto collider = comp.get<ColliderComp>();
+        auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+        if (!colliderArray.m_IdToIndex.count(id))
+            manager.MakeComponent<ColliderComp>(id, ColliderComp::Name);
+
+        auto& loaded = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
+        loaded = collider;
     }
 
     void LoadColorComponent(EntityManager& manager, UUID id, const json& comp)
@@ -105,6 +118,7 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(InputComp::Name, &LoadInputComponent);
         ComponentRegistry::Get().RegisterLoader(StateActionComp::Name, &LoadStateActionComponent);
         ComponentRegistry::Get().RegisterLoader(RenderLayer::Name, &LoadRenderLayer);
+        ComponentRegistry::Get().RegisterLoader(ColliderComp::Name, &LoadColliderComponent);
         ComponentRegistry::Get().RegisterLoader(PhysicsComp::Name, &LoadPhysicsComponent);
         ComponentRegistry::Get().RegisterLoader(ColorComp::Name, &LoadColorComponent);
         ComponentRegistry::Get().RegisterLoader(MovementComp::Name, &LoadMovementComp);

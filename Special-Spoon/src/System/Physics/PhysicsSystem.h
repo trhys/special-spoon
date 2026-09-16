@@ -1,13 +1,11 @@
 #pragma once
 
 #include "System/System.h"
-#include "QuadTree.h"
-#include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "ECS/ECS.h"
+#include "System/Physics/PhysicsSystemConfig.h"
 
-#include <optional>
-#include <array>
+#include <algorithm>
 #include <cmath>
 
 namespace Spoon
@@ -16,141 +14,169 @@ namespace Spoon
     {
     public:
         PhysicsSystem() : ISystem::ISystem("Physics") {}
+        PhysicsSystem(const PhysicsSystemConfig& config) : ISystem::ISystem("Physics") { m_Config = config; }
         ~PhysicsSystem() {}
+
+        json Serialize() override
+        {
+          json j;
+          nlohmann::to_json(j, m_Config);
+          return j;
+        }
+
+        static PhysicsSystemConfig& GetConfig() { return m_Config; }
+        void SetConfig(PhysicsSystemConfig& c) { m_Config = c; }
+
+        void OnReflect() override
+        {
+            auto tooltip = [](const char* text)
+            {
+                if (ImGui::BeginItemTooltip())
+                {
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(text);
+                    ImGui::PopTextWrapPos();
+                    ImGui::EndTooltip();
+                }
+            };
+
+            ImGui::SeparatorText("Physics Defaults");
+            ImGui::SliderFloat("Default Linear Damping##physsystem", &m_Config.defaultLinearDamping, 0.0f, 20.0f, "%.3f");
+            tooltip("Fallback for PhysicsComp linear damping when value is -1.");
+            ImGui::SliderFloat("Default Friction##physsystem", &m_Config.defaultFriction, 0.0f, 2.0f, "%.2f");
+            tooltip("Fallback for PhysicsComp friction when value is -1.");
+            ImGui::SliderFloat("Default Restitution##physsystem", &m_Config.defaultRestitution, 0.0f, 1.0f, "%.2f");
+            tooltip("Fallback for PhysicsComp restitution when value is -1.");
+            ImGui::SliderFloat("Max Linear Speed##physsystem", &m_Config.maxLinearSpeed, 0.0f, 500.0f, "%.2f");
+            tooltip("Caps dynamic body speed. 0 disables speed clamping.");
+            ImGui::SliderFloat("Sleep Speed Threshold##physsystem", &m_Config.sleepSpeedThreshold, 0.0f, 0.5f, "%.3f");
+            tooltip("When sleep snap is enabled, speeds below this threshold are snapped to zero.");
+            ImGui::Checkbox("Gravity Enabled##physsystem", &m_Config.gravityEnabled);
+            tooltip("Applies gravity to dynamic bodies when enabled.");
+            ImGui::Checkbox("Enable Sleep Snap##physsystem", &m_Config.enableSleepSnap);
+            tooltip("Snaps tiny velocities to zero to prevent micro-sliding.");
+            ImGui::Checkbox("Clamp Negative Inputs##physsystem", &m_Config.clampNegativeInputs);
+            tooltip("Clamps resolved damping/friction/restitution values to non-negative.");
+        }
 
         void Update(sf::Time tick, EntityManager& manager) override
         {
-            (void)tick;
+            const float dt = tick.asSeconds();
+            if (dt <= 0.0f)
+                return;
 
-            // Here we need to resolve state flags to zero before processing
-            // and calibrate the collision box and transform coords 
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
             for (size_t index = 0; index < physicsArray.m_Components.size(); index++)
             {
                 auto& physicsComp = physicsArray.m_Components[index];
                 UUID id = physicsArray.m_IndexToId[index];
-                physicsComp.CollisionHandled();
+                if (!transformArray.m_IdToIndex.count(id))
+                    continue;
 
-                TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-                physicsComp.SetPosition(transform.GetPosition());
-            }
+                if (physicsComp.bodyType == BodyType::Static)
+                    continue;
 
-            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
-            for (auto& movementComp : movementArray.m_Components)
-            {
-                movementComp.m_WasCorrectedByPhysics = false;
-            }
-
-            if (physicsArray.m_Components.size() < 2)
-                return;
-
-            constexpr int maxIterations = 8;
-            for (int iteration = 0; iteration < maxIterations; iteration++)
-            {
-                bool appliedCorrection = false;
-
-                sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
-                quadtree.BuildTree({ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
-                quadtree.Populate(manager);
-
-                for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
+                if (movementArray.m_IdToIndex.count(id))
                 {
-                    PhysicsComp& physA = manager.GetComponent<PhysicsComp>(entityA, PhysicsComp::Name);
-                    PhysicsComp& physB = manager.GetComponent<PhysicsComp>(entityB, PhysicsComp::Name);
-
-                    const std::optional collision = physA.GetCollisionBox().findIntersection(physB.GetCollisionBox());
-                    if (!collision)
-                        continue;
-
-                    physA.CollisionDetected();
-                    physB.CollisionDetected();
-
-                    if (physA.isStatic && physB.isStatic)
-                        continue;
-
-                    sf::Vector2f correction = ComputeCorrection(physA.GetCollisionBox(), physB.GetCollisionBox());
-                    if (correction.x == 0.0f && correction.y == 0.0f)
-                        continue;
-
-                    if (physA.isStatic)
+                    auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
+                    if (physicsComp.bodyType == BodyType::Kinematic || movementComp.m_FrameIntent.x != 0.0f)
                     {
-                        ApplyCorrection(manager, entityB, correction * -1.0f);
+                        physicsComp.velocity.x = movementComp.m_Velocity.x;
                     }
-                    else if (physB.isStatic)
+                    if (physicsComp.bodyType == BodyType::Kinematic || movementComp.m_FrameIntent.y != 0.0f || physicsComp.gravityScale == 0.0f)
                     {
-                        ApplyCorrection(manager, entityA, correction);
+                        physicsComp.velocity.y = movementComp.m_Velocity.y;
                     }
-                    else
-                    {
-                        ApplyCorrection(manager, entityA, correction * 0.5f);
-                        ApplyCorrection(manager, entityB, correction * -0.5f);
-                    }
-
-                    appliedCorrection = true;
                 }
 
-                if (!appliedCorrection)
-                    break;
+                if (physicsComp.bodyType == BodyType::Dynamic)
+                {
+                    if (m_Config.gravityEnabled)
+                    {
+                        physicsComp.velocity.y += k_Gravity * physicsComp.gravityScale * dt;
+                    }
+
+                    const float damping = ResolveCompValue(physicsComp.linearDamping, m_Config.defaultLinearDamping, m_Config.clampNegativeInputs);
+                    const float dampingFactor = std::max(0.0f, 1.0f - damping * dt);
+                    physicsComp.velocity *= dampingFactor;
+
+                    if (m_Config.maxLinearSpeed > 0.0f)
+                    {
+                        const float speedSq = physicsComp.velocity.x * physicsComp.velocity.x + physicsComp.velocity.y * physicsComp.velocity.y;
+                        const float maxSpeedSq = m_Config.maxLinearSpeed * m_Config.maxLinearSpeed;
+                        if (speedSq > maxSpeedSq)
+                        {
+                            const float speed = std::sqrt(speedSq);
+                            if (speed > 0.0f)
+                            {
+                                physicsComp.velocity *= (m_Config.maxLinearSpeed / speed);
+                            }
+                        }
+                    }
+
+                    if (m_Config.enableSleepSnap)
+                    {
+                        const float threshold = std::max(0.0f, m_Config.sleepSpeedThreshold);
+                        const float speedSq = physicsComp.velocity.x * physicsComp.velocity.x + physicsComp.velocity.y * physicsComp.velocity.y;
+                        if (speedSq < threshold * threshold)
+                        {
+                            physicsComp.velocity = { 0.0f, 0.0f };
+                        }
+                    }
+                }
+
+                const sf::Vector2f delta = physicsComp.velocity * dt;
+                if (delta.x == 0.0f && delta.y == 0.0f)
+                {
+                    if (movementArray.m_IdToIndex.count(id))
+                    {
+                        auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
+                        movementComp.m_ProposedDelta = delta;
+                        movementComp.m_Velocity = physicsComp.velocity;
+                    }
+                    continue;
+                }
+
+                TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+                transform.Move(delta);
+
+                if (movementArray.m_IdToIndex.count(id))
+                {
+                    auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
+                    movementComp.m_ProposedDelta = delta;
+                    movementComp.m_Velocity = physicsComp.velocity;
+                }
             }
         }
 
-        void OnInit()
+        static float ResolveFriction(const PhysicsComp& comp)
         {
-            // Get config and build tree
+            return ResolveCompValue(comp.friction, m_Config.defaultFriction, m_Config.clampNegativeInputs);
+        }
+
+        static float ResolveRestitution(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.restitution, m_Config.defaultRestitution, m_Config.clampNegativeInputs);
+        }
+
+        static float ResolveLinearDamping(const PhysicsComp& comp)
+        {
+            return ResolveCompValue(comp.linearDamping, m_Config.defaultLinearDamping, m_Config.clampNegativeInputs);
         }
 
     private:
-        static sf::Vector2f ComputeCorrection(const sf::FloatRect& boxA, const sf::FloatRect& boxB)
+        static float ResolveCompValue(float componentValue, float defaultValue, bool clampNegativeInputs)
         {
-            const float moveLeft = boxB.position.x - (boxA.position.x + boxA.size.x);
-            const float moveRight = (boxB.position.x + boxB.size.x) - boxA.position.x;
-            const float moveUp = boxB.position.y - (boxA.position.y + boxA.size.y);
-            const float moveDown = (boxB.position.y + boxB.size.y) - boxA.position.y;
-
-            const std::array xMoves{ moveLeft, moveRight };
-            const std::array yMoves{ moveUp, moveDown };
-
-            float bestX = std::abs(xMoves[0]) <= std::abs(xMoves[1]) ? xMoves[0] : xMoves[1];
-            float bestY = std::abs(yMoves[0]) <= std::abs(yMoves[1]) ? yMoves[0] : yMoves[1];
-
-            if (std::abs(bestX) <= std::abs(bestY))
-                return { bestX, 0.0f };
-
-            return { 0.0f, bestY };
+            float resolved = componentValue >= 0.0f ? componentValue : defaultValue;
+            if (clampNegativeInputs && resolved < 0.0f)
+                resolved = 0.0f;
+            return resolved;
         }
 
-        static void ApplyCorrection(EntityManager& manager, UUID entity, const sf::Vector2f& correction)
-        {
-            if (correction.x == 0.0f && correction.y == 0.0f)
-                return;
-
-            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
-            auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
-            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
-
-            if (transformArray.m_IdToIndex.count(entity))
-            {
-                TransformComp& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-                transform.Move(correction);
-            }
-
-            if (physicsArray.m_IdToIndex.count(entity))
-            {
-                PhysicsComp& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
-                physics.m_CollisionBox.position += correction;
-                physics.m_LastCorrection += correction;
-                physics.m_BlockedX = physics.m_BlockedX || correction.x != 0.0f;
-                physics.m_BlockedY = physics.m_BlockedY || correction.y != 0.0f;
-            }
-
-            if (movementArray.m_IdToIndex.count(entity))
-            {
-                MovementComp& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
-                movement.m_WasCorrectedByPhysics = true;
-            }
-        }
-
-        Quadtree quadtree;
+    private:
+        static constexpr float k_Gravity = 980.0f;
+        inline static PhysicsSystemConfig m_Config{};
     };
 }

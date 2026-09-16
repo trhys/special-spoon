@@ -274,14 +274,12 @@ namespace Spoon
                     if (compSelections[type] && !array->HasEntity(id))
                     {
                         manager.GetCreators().at(type)(id);
-                        // cant think of a better way to initialize physics comps with the most sensible default
-                        // without just outright branching here and doing it by hand. oh well
                         auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
-                        if (type == PhysicsComp::Name && spriteArray.m_IdToIndex.count(id)) 
+                        if (type == ColliderComp::Name && spriteArray.m_IdToIndex.count(id))
                         {
-                          PhysicsComp& physics = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
-                          SpriteComp& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
-                          physics.SetBox(sprite.GetBoundingBox());
+                            ColliderComp& collider = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
+                            SpriteComp& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
+                            collider.SetAABBSize(sprite.GetBoundingBox().size);
                         }
                     }
                 }
