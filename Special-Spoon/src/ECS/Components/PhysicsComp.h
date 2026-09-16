@@ -43,6 +43,17 @@ namespace Spoon
 
         void OnReflect() override
         {
+            auto tooltip = [](const char* text)
+            {
+                if (ImGui::BeginItemTooltip())
+                {
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(text);
+                    ImGui::PopTextWrapPos();
+                    ImGui::EndTooltip();
+                }
+            };
+
             const char* bodyTypes[] = { "Static", "Dynamic", "Kinematic" };
             int bodyTypeIndex = static_cast<int>(bodyType);
             if (ImGui::Combo("Body Type##physics", &bodyTypeIndex, bodyTypes, 3))
@@ -51,19 +62,28 @@ namespace Spoon
             }
 
             ImGui::SliderFloat("Velocity X##physics", &velocity.x, -2000.0f, 2000.0f, "%.2f");
+            tooltip("Horizontal velocity in units per second.");
             ImGui::SliderFloat("Velocity Y##physics", &velocity.y, -2000.0f, 2000.0f, "%.2f");
+            tooltip("Vertical velocity in units per second.");
             ImGui::SliderFloat("Mass##physics", &mass, 0.001f, 1000.0f, "%.3f");
+            tooltip("Dynamic mass used for collision impulse response.");
             ImGui::SliderFloat("Gravity Scale##physics", &gravityScale, -10.0f, 10.0f, "%.2f");
-            ImGui::SliderFloat("Restitution##physics", &restitution, 0.0f, 1.0f, "%.2f");
-            ImGui::SliderFloat("Linear Damping##physics", &linearDamping, 0.0f, 20.0f, "%.3f");
+            tooltip("Multiplier applied to world gravity.");
+            ImGui::SliderFloat("Restitution##physics", &restitution, -1.0f, 1.0f, "%.2f");
+            tooltip("Bounciness. -1 = use PhysicsSystem default.");
+            ImGui::SliderFloat("Friction##physics", &friction, -1.0f, 2.0f, "%.2f");
+            tooltip("Contact friction. -1 = use PhysicsSystem default.");
+            ImGui::SliderFloat("Linear Damping##physics", &linearDamping, -1.0f, 20.0f, "%.3f");
+            tooltip("Velocity damping. -1 = use PhysicsSystem default.");
         }
 
         BodyType bodyType = BodyType::Dynamic;
         sf::Vector2f velocity = { 0.0f, 0.0f };
         float mass = 1.0f;
         float gravityScale = 1.0f;
-        float restitution = 0.6f;
-        float linearDamping = 0.0f;
+        float restitution = -1.0f;
+        float friction = -1.0f;
+        float linearDamping = -1.0f;
     };
 
     inline void to_json(json& j, const PhysicsComp& comp)
@@ -74,6 +94,7 @@ namespace Spoon
             {"mass", comp.mass},
             {"gravityScale", comp.gravityScale},
             {"restitution", comp.restitution},
+            {"friction", comp.friction},
             {"linearDamping", comp.linearDamping}
         };
     }
@@ -91,6 +112,8 @@ namespace Spoon
             comp.gravityScale = j.at("gravityScale").get<float>();
         if (j.contains("restitution"))
             comp.restitution = j.at("restitution").get<float>();
+        if (j.contains("friction"))
+            comp.friction = j.at("friction").get<float>();
         if (j.contains("linearDamping"))
             comp.linearDamping = j.at("linearDamping").get<float>();
     }

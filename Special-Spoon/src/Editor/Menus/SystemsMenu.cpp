@@ -59,8 +59,9 @@ namespace Spoon
                     editedSystems = true;
                 }
             }
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
+ 
         if (editedSystems)
         {
             // Remove systems that are unchecked
@@ -93,6 +94,10 @@ namespace Spoon
 
             editedSystems = false;
         }
+
+        if (selectedSystemIndex >= static_cast<int>(existing.size()))
+            selectedSystemIndex = -1;
+
         if (ImGui::BeginChild("Active Systems", ImVec2(0, 200)))
         {
             if (ImGui::BeginListBox("##Systems"))
@@ -132,6 +137,31 @@ namespace Spoon
                     ImGui::PopID();
                 }
                 ImGui::EndListBox();
+            }
+            ImGui::EndChild();
+        }
+
+        ISystem* selectedSystem = nullptr;
+        auto& systems = manager.GetSystems();
+        if (selectedSystemIndex >= 0 && selectedSystemIndex < static_cast<int>(existing.size()))
+        {
+            const std::string& selectedID = existing[selectedSystemIndex];
+            for (auto& system : systems)
+            {
+                if (system->GetDisplayName() == selectedID)
+                {
+                    selectedSystem = system.get();
+                    break;
+                }
+            }
+        }
+
+        if (selectedSystem)
+        {
+            ImGui::SeparatorText("System Inspector");
+            if (ImGui::BeginChild("##System Inspector"))
+            {
+                selectedSystem->OnReflect();
             }
             ImGui::EndChild();
         }

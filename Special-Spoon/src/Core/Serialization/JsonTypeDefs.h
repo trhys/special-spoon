@@ -4,6 +4,7 @@
 #include "ECS/Components/Animation/AnimationData.h"
 #include "Core/Registers/ActionRegistry.h"
 #include "Core/Registers/StateRegistry.h"
+#include "System/Physics/PhysicsSystemConfig.h"
 
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
@@ -132,6 +133,7 @@ namespace Spoon
         v.spriteCords = j.at("SpriteCords").get<std::vector<SpriteCords>>();
     }
 
+	// Registry types
     inline void to_json(json& j, const ActionType& v)
     {
         j = v.m_ID;
@@ -151,4 +153,29 @@ namespace Spoon
     {
         v.m_ID = j.get<uint32_t>();
     }	
+
+	// Physics system config
+	inline void to_json(json& j, const PhysicsSystemConfig& v)
+	{
+		j = json{
+			{"linear damping", v.defaultLinearDamping},
+			{"friction", v.defaultFriction},
+			{"restitution", v.defaultRestitution},
+			{"max speed", v.maxLinearSpeed},
+			{"sleep threshold", v.sleepSpeedThreshold},
+			{"enable sleep snap", v.enableSleepSnap},
+			{"clamp neg inputs", v.clampNegativeInputs}
+		};
+	}
+
+	inline void from_json(const json& j, PhysicsSystemConfig& v)
+	{
+		v.defaultLinearDamping = j.at("linear damping").get<float>();
+		v.defaultFriction = j.at("friction").get<float>();
+		v.defaultRestitution = j.at("restitution").get<float>();
+		v.maxLinearSpeed = j.at("max speed").get<float>();
+		v.sleepSpeedThreshold = j.at("sleep threshold").get<float>();
+		v.enableSleepSnap = j.at("enable sleep snap").get<bool>();
+		v.clampNegativeInputs = j.at("clamp neg inputs").get<bool>();
+	}
 }
