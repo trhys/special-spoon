@@ -13,7 +13,7 @@ namespace Spoon
         static std::unordered_map<std::string, bool> addedSystems;
         static bool editedSystems = false;
         static std::vector<std::string> existing;
-        static int selectedSystemIndex = -1;
+        static std::string selectedSystemID;
 
         if(init) // Inform the editor of systems that may get loaded by the scene manager elsewhere
         {
@@ -24,6 +24,11 @@ namespace Spoon
                 std::string id = system->GetDisplayName();
                 addedSystems[id] = true;
                 existing.push_back(id);
+            }
+            if (!selectedSystemID.empty() &&
+                std::find(existing.begin(), existing.end(), selectedSystemID) == existing.end())
+            {
+                selectedSystemID.clear();
             }
             init = false;
         }
@@ -46,7 +51,13 @@ namespace Spoon
                     if(addedSystems[id])
                         existing.push_back(id);
                     else
+                    {
                         existing.erase(std::remove(existing.begin(), existing.end(), id), existing.end());
+                        if (selectedSystemID == id)
+                        {
+                            selectedSystemID.clear();
+                        }
+                    }
                     editedSystems = true;
                 }
             }
@@ -86,8 +97,11 @@ namespace Spoon
             editedSystems = false;
         }
 
-        if (selectedSystemIndex >= static_cast<int>(existing.size()))
-            selectedSystemIndex = -1;
+        if (!selectedSystemID.empty() &&
+            std::find(existing.begin(), existing.end(), selectedSystemID) == existing.end())
+        {
+            selectedSystemID.clear();
+        }
 
         if (ImGui::BeginChild("Active Systems", ImVec2(0, 200)))
         {
@@ -97,10 +111,10 @@ namespace Spoon
                 {
                     const std::string& id = existing[index];
                     ImGui::PushID(id.c_str());
-                    const bool isSelected = selectedSystemIndex == index;
+                    const bool isSelected = selectedSystemID == id;
                     if (ImGui::Selectable(id.c_str(), isSelected))
                     {
-                        selectedSystemIndex = index;
+                        selectedSystemID = id;
                     }
 
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -134,16 +148,19 @@ namespace Spoon
 
         ISystem* selectedSystem = nullptr;
         auto& systems = manager.GetSystems();
-        if (selectedSystemIndex >= 0 && selectedSystemIndex < static_cast<int>(existing.size()))
+        if (!selectedSystemID.empty())
         {
-            const std::string& selectedID = existing[selectedSystemIndex];
             for (auto& system : systems)
             {
-                if (system->GetDisplayName() == selectedID)
+                if (system->GetDisplayName() == selectedSystemID)
                 {
                     selectedSystem = system.get();
                     break;
                 }
+            }
+            if (!selectedSystem)
+            {
+                selectedSystemID.clear();
             }
         }
 

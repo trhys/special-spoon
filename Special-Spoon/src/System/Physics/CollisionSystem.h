@@ -236,6 +236,19 @@ namespace Spoon
             return &manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
         }
 
+        static void SyncMovementVelocityIfPresent(EntityManager& manager, UUID entity, const PhysicsComp* physics)
+        {
+            if (!physics)
+                return;
+
+            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+            if (!movementArray.m_IdToIndex.count(entity))
+                return;
+
+            auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
+            movement.m_Velocity = physics->velocity;
+        }
+
         static void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA, float invMassA, float invMassB)
         {
             const float totalInvMass = invMassA + invMassB;
@@ -287,7 +300,11 @@ namespace Spoon
             sf::Vector2f tangent = postRelativeVelocity - normal * (postRelativeVelocity.x * normal.x + postRelativeVelocity.y * normal.y);
             const float tangentLength = std::sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
             if (tangentLength <= 0.0001f)
+            {
+                SyncMovementVelocityIfPresent(manager, entityA, physA);
+                SyncMovementVelocityIfPresent(manager, entityB, physB);
                 return;
+            }
             tangent /= tangentLength;
 
             float frictionA = PhysicsSystem::GetConfig().defaultFriction;
@@ -298,7 +315,11 @@ namespace Spoon
                 frictionB = PhysicsSystem::ResolveFriction(*physB);
             const float friction = std::max(frictionA, frictionB);
             if (friction <= 0.0f)
+            {
+                SyncMovementVelocityIfPresent(manager, entityA, physA);
+                SyncMovementVelocityIfPresent(manager, entityB, physB);
                 return;
+            }
 
             float frictionImpulseMagnitude = -(postRelativeVelocity.x * tangent.x + postRelativeVelocity.y * tangent.y) / totalInvMass;
             const float maxFrictionImpulse = impulseMagnitude * friction;
@@ -313,6 +334,9 @@ namespace Spoon
             {
                 physB->velocity -= frictionImpulse * invMassB;
             }
+
+            SyncMovementVelocityIfPresent(manager, entityA, physA);
+            SyncMovementVelocityIfPresent(manager, entityB, physB);
         }
 
         static void ApplyCorrection(EntityManager& manager, UUID entity, const sf::Vector2f& correction)
