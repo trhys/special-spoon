@@ -291,7 +291,11 @@ namespace Spoon
                 }
             }
             if (impulseMagnitude <= 0.0f)
+            {
+                SyncMovementVelocityIfPresent(manager, entityA, physA);
+                SyncMovementVelocityIfPresent(manager, entityB, physB);
                 return;
+            }
 
             const sf::Vector2f postVelocityA = physA ? physA->velocity : sf::Vector2f{ 0.0f, 0.0f };
             const sf::Vector2f postVelocityB = physB ? physB->velocity : sf::Vector2f{ 0.0f, 0.0f };
@@ -386,6 +390,6 @@ namespace Spoon
         }
 
         Quadtree quadtree;
-        sf::Vector2f bounds = {0.0, 0.0f};
+        sf::Vector2f bounds = {0.0f, 0.0f};
     };
 }
