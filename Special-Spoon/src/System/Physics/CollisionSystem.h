@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/System.h"
+#include "PhysicsSystem.h"
 #include "QuadTree.h"
 #include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
@@ -43,7 +44,7 @@ namespace Spoon
             {
                 bool appliedCorrection = false;
                 sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
-                quadtree.BuildTree({ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
+                quadtree.BuildTree((bounds.x > 0.0f && bounds.y > 0.0f) ? bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
                 quadtree.Populate(manager);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
@@ -58,6 +59,12 @@ namespace Spoon
                 if (!appliedCorrection)
                     break;
             }
+        }
+
+        void OnReflect() override {
+          ImGui::SeparatorText("Collision Bounds");
+          ImGui::SliderFloat("Bounds X:", &bounds.x, 0.0f, 4000.0f);
+          ImGui::SliderFloat("Bounds Y:", &bounds.y, 0.0f, 4000.0f);
         }
 
     private:
@@ -229,6 +236,19 @@ namespace Spoon
             return &manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
         }
 
+        static void SyncMovementVelocityIfPresent(EntityManager& manager, UUID entity, const PhysicsComp* physics)
+        {
+            if (!physics)
+                return;
+
+            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+            if (!movementArray.m_IdToIndex.count(entity))
+                return;
+
+            auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
+            movement.m_Velocity = physics->velocity;
+        }
+
         static void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA, float invMassA, float invMassB)
         {
             const float totalInvMass = invMassA + invMassB;
@@ -247,28 +267,80 @@ namespace Spoon
             const sf::Vector2f velocityB = physB ? physB->velocity : sf::Vector2f{ 0.0f, 0.0f };
             const sf::Vector2f relativeVelocity = velocityA - velocityB;
             const float velAlongNormal = relativeVelocity.x * normal.x + relativeVelocity.y * normal.y;
-            if (velAlongNormal >= 0.0f)
+            float impulseMagnitude = 0.0f;
+            if (velAlongNormal < 0.0f)
+            {
+                float restitutionA = 0.0f;
+                float restitutionB = 0.0f;
+                if (physA)
+                    restitutionA = PhysicsSystem::ResolveRestitution(*physA);
+                if (physB)
+                    restitutionB = PhysicsSystem::ResolveRestitution(*physB);
+                const float restitution = std::max(restitutionA, restitutionB);
+
+                impulseMagnitude = -(1.0f + restitution) * velAlongNormal / totalInvMass;
+                const sf::Vector2f impulse = normal * impulseMagnitude;
+
+                if (physA && invMassA > 0.0f)
+                {
+                    physA->velocity += impulse * invMassA;
+                }
+                if (physB && invMassB > 0.0f)
+                {
+                    physB->velocity -= impulse * invMassB;
+                }
+            }
+            if (impulseMagnitude <= 0.0f)
+            {
+                SyncMovementVelocityIfPresent(manager, entityA, physA);
+                SyncMovementVelocityIfPresent(manager, entityB, physB);
                 return;
+            }
 
-            float restitutionA = 0.0f;
-            float restitutionB = 0.0f;
+            const sf::Vector2f postVelocityA = physA ? physA->velocity : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f postVelocityB = physB ? physB->velocity : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f postRelativeVelocity = postVelocityA - postVelocityB;
+
+            sf::Vector2f tangent = postRelativeVelocity - normal * (postRelativeVelocity.x * normal.x + postRelativeVelocity.y * normal.y);
+            const float tangentLength = std::sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
+            if (tangentLength <= 0.0001f)
+            {
+                SyncMovementVelocityIfPresent(manager, entityA, physA);
+                SyncMovementVelocityIfPresent(manager, entityB, physB);
+                return;
+            }
+            tangent /= tangentLength;
+
+            float frictionA = 0.0f;
+            float frictionB = 0.0f;
             if (physA)
-                restitutionA = physA->restitution;
+                frictionA = PhysicsSystem::ResolveFriction(*physA);
             if (physB)
-                restitutionB = physB->restitution;
-            const float restitution = std::max(restitutionA, restitutionB);
+                frictionB = PhysicsSystem::ResolveFriction(*physB);
+            const float friction = std::max(frictionA, frictionB);
+            if (friction <= 0.0f)
+            {
+                SyncMovementVelocityIfPresent(manager, entityA, physA);
+                SyncMovementVelocityIfPresent(manager, entityB, physB);
+                return;
+            }
 
-            const float impulseMagnitude = -(1.0f + restitution) * velAlongNormal / totalInvMass;
-            const sf::Vector2f impulse = normal * impulseMagnitude;
+            float frictionImpulseMagnitude = -(postRelativeVelocity.x * tangent.x + postRelativeVelocity.y * tangent.y) / totalInvMass;
+            const float maxFrictionImpulse = impulseMagnitude * friction;
+            frictionImpulseMagnitude = std::clamp(frictionImpulseMagnitude, -maxFrictionImpulse, maxFrictionImpulse);
+            const sf::Vector2f frictionImpulse = tangent * frictionImpulseMagnitude;
 
             if (physA && invMassA > 0.0f)
             {
-                physA->velocity += impulse * invMassA;
+                physA->velocity += frictionImpulse * invMassA;
             }
             if (physB && invMassB > 0.0f)
             {
-                physB->velocity -= impulse * invMassB;
+                physB->velocity -= frictionImpulse * invMassB;
             }
+
+            SyncMovementVelocityIfPresent(manager, entityA, physA);
+            SyncMovementVelocityIfPresent(manager, entityB, physB);
         }
 
         static void ApplyCorrection(EntityManager& manager, UUID entity, const sf::Vector2f& correction)
@@ -318,5 +390,6 @@ namespace Spoon
         }
 
         Quadtree quadtree;
+        sf::Vector2f bounds = {0.0f, 0.0f};
     };
 }

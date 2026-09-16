@@ -43,7 +43,7 @@ namespace Spoon
         scenedata["Systems"] = json::array();
         for (auto& system : s_Manager.GetSystems())
         {
-            json sys;
+            json sys = system->Serialize();
             sys["Type"] = system->GetDisplayName();
             scenedata["Systems"].push_back(sys);
         }

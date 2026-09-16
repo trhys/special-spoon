@@ -85,6 +85,7 @@ public:
         {
             Spoon::MovementComp& moveComp = movementArray.m_Components[index];
             Spoon::UUID ID = movementArray.m_IndexToId[index];
+            const bool hasPhysics = physicsArray.m_IdToIndex.count(ID) > 0;
 
             moveComp.m_FrameIntent = {0.0f, 0.0f};
             moveComp.m_ProposedDelta = {0.0f, 0.0f};
@@ -109,9 +110,19 @@ public:
                 if (velocityMatchesLastAction)
                 {
                     moveComp.m_FrameIntent = { 0.0f, 0.0f };
-                    moveComp.m_Velocity = { 0.0f, 0.0f };
+                    bool preservePhysicsVelocity = false;
+                    if (hasPhysics)
+                    {
+                        auto& physicsComp = manager.GetComponent<Spoon::PhysicsComp>(ID, Spoon::PhysicsComp::Name);
+                        preservePhysicsVelocity = physicsComp.bodyType == Spoon::BodyType::Dynamic;
+                    }
+
+                    if (!preservePhysicsVelocity)
+                    {
+                        moveComp.m_Velocity = { 0.0f, 0.0f };
+                    }
                 }
-                else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
+                else if (!hasPhysics && (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f))
                 {
                     float magnitude = std::sqrt(moveComp.m_Velocity.x * moveComp.m_Velocity.x + moveComp.m_Velocity.y * moveComp.m_Velocity.y);
                     if (magnitude > 0.0f)
@@ -122,7 +133,7 @@ public:
 
                 m_LastActionVelocity.erase(ID);
             }
-            else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
+            else if (!hasPhysics && (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f))
             {
                 float magnitude = std::sqrt(moveComp.m_Velocity.x * moveComp.m_Velocity.x + moveComp.m_Velocity.y * moveComp.m_Velocity.y);
                 if (magnitude > 0.0f)

@@ -11,6 +11,7 @@ target_sources(Special-Spoon
 
         Physics/CollisionSystem.h
         Physics/PhysicsSystem.h
+        Physics/PhysicsSystemConfig.h
         Physics/QuadTree.h            
         Physics/QuadTree.cpp
 )
