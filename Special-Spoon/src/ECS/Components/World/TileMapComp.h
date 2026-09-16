@@ -53,5 +53,6 @@ namespace Spoon {
           sf::Vector2i m_MapSize;      // map size in width/height cells, not px
           TileAtlas m_Atlas;
           std::vector<TileLayer> m_Layers;
+          std::vector<std::vector<sf::Vertex>> m_LayerVertices;
   };
 }
