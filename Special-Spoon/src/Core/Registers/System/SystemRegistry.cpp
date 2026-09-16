@@ -14,16 +14,7 @@ namespace Spoon
     std::unique_ptr<ISystem> LoadPhysicsSystem(const json* systemData)
     {
         if (!systemData) { return std::make_unique<PhysicsSystem>(); }
-
-        return std::make_unique<PhysicsSystem>(PhysicsSystemConfig{
-            systemData->at("linear damping").get<float>(),
-            systemData->at("friction").get<float>(),
-            systemData->at("restitution").get<float>(),
-            systemData->at("max speed").get<float>(),
-            systemData->at("sleep threshold").get<float>(),
-            systemData->at("enable sleep snap").get<bool>(),
-            systemData->at("clamp neg inputs").get<bool>()
-            });
+        return std::make_unique<PhysicsSystem>(systemData->get<PhysicsSystemConfig>());
     }
 
     std::unique_ptr<ISystem> LoadCollisionSystem(const json* systemData)

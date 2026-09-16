@@ -51,6 +51,8 @@ namespace Spoon
             tooltip("Caps dynamic body speed. 0 disables speed clamping.");
             ImGui::SliderFloat("Sleep Speed Threshold##physsystem", &m_Config.sleepSpeedThreshold, 0.0f, 0.5f, "%.3f");
             tooltip("When sleep snap is enabled, speeds below this threshold are snapped to zero.");
+            ImGui::Checkbox("Gravity Enabled##physsystem", &m_Config.gravityEnabled);
+            tooltip("Applies gravity to dynamic bodies when enabled.");
             ImGui::Checkbox("Enable Sleep Snap##physsystem", &m_Config.enableSleepSnap);
             tooltip("Snaps tiny velocities to zero to prevent micro-sliding.");
             ImGui::Checkbox("Clamp Negative Inputs##physsystem", &m_Config.clampNegativeInputs);
@@ -91,7 +93,10 @@ namespace Spoon
 
                 if (physicsComp.bodyType == BodyType::Dynamic)
                 {
-                    physicsComp.velocity.y += k_Gravity * physicsComp.gravityScale * dt;
+                    if (m_Config.gravityEnabled)
+                    {
+                        physicsComp.velocity.y += k_Gravity * physicsComp.gravityScale * dt;
+                    }
 
                     const float damping = ResolveCompValue(physicsComp.linearDamping, m_Config.defaultLinearDamping, m_Config.clampNegativeInputs);
                     const float dampingFactor = std::max(0.0f, 1.0f - damping * dt);

@@ -110,7 +110,17 @@ public:
                 if (velocityMatchesLastAction)
                 {
                     moveComp.m_FrameIntent = { 0.0f, 0.0f };
-                    moveComp.m_Velocity = { 0.0f, 0.0f };
+                    bool preservePhysicsVelocity = false;
+                    if (hasPhysics)
+                    {
+                        auto& physicsComp = manager.GetComponent<Spoon::PhysicsComp>(ID, Spoon::PhysicsComp::Name);
+                        preservePhysicsVelocity = physicsComp.bodyType == Spoon::BodyType::Dynamic;
+                    }
+
+                    if (!preservePhysicsVelocity)
+                    {
+                        moveComp.m_Velocity = { 0.0f, 0.0f };
+                    }
                 }
                 else if (!hasPhysics && (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f))
                 {
