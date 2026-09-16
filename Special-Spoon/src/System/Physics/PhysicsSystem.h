@@ -17,6 +17,13 @@ namespace Spoon
         PhysicsSystem(const PhysicsSystemConfig& config) : ISystem::ISystem("Physics") { m_Config = config; }
         ~PhysicsSystem() {}
 
+        json Serialize() override
+        {
+          json j;
+          nlohmann::to_json(j, m_Config);
+          return j;
+        }
+
         static PhysicsSystemConfig& GetConfig() { return m_Config; }
         void SetConfig(PhysicsSystemConfig& c) { m_Config = c; }
 
@@ -165,6 +172,6 @@ namespace Spoon
 
     private:
         static constexpr float k_Gravity = 980.0f;
-        static PhysicsSystemConfig m_Config;
+        inline static PhysicsSystemConfig m_Config{};
     };
 }

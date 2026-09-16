@@ -14,6 +14,7 @@ namespace Spoon
 
         virtual void Update(sf::Time tick, EntityManager& manager) = 0;
         virtual void OnReflect() {}
+        virtual json Serialize() { return nullptr; }
 
         std::string m_DisplayName;
         std::string& GetDisplayName() { return m_DisplayName; }
