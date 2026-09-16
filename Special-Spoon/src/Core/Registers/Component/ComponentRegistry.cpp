@@ -105,6 +105,12 @@ namespace Spoon
         manager.MakeComponent<MovementComp>(id, MovementComp::Name, movement.m_Speed);
     }
 
+    void LoadTileMapComp(EntityManager& manager, UUID id, const json& comp)
+    {
+      auto tilemap = comp.get<TileMapComp>();
+      manager.MakeComponent<TileMapComp>(id, TileMapComp::Name);
+    }
+
     void RegisterDefaultLoaders()
     {
         SS_DEBUG_LOG("[COMPONENT] Registering default component loaders...")
@@ -122,5 +128,6 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(PhysicsComp::Name, &LoadPhysicsComponent);
         ComponentRegistry::Get().RegisterLoader(ColorComp::Name, &LoadColorComponent);
         ComponentRegistry::Get().RegisterLoader(MovementComp::Name, &LoadMovementComp);
+        ComponentRegistry::Get().RegisterLoader(TileMapComp::Name, &LoadTileMapComp);
     }
 }

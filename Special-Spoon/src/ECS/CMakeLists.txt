@@ -22,6 +22,9 @@ target_sources(Special-Spoon
         Components/Render/ColorComp.h
         Components/Render/RenderLayer.h
         
+        Components/World/TileMapComp.h
+        Components/World/TileMapComp.cpp
+        
         ECS.h
         Entity.h
         Entity.inl

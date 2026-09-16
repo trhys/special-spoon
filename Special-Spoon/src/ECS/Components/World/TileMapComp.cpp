@@ -1,6 +1,8 @@
 #include "ECS/Components/World/TileMapComp.h"
 
 namespace Spoon {
+  void TileMapComp::OnReflect() {}
+
   void TileMapComp::BuildMap() {
     m_LayerVertices.clear();
     m_LayerVertices.resize(m_Layers.size());
@@ -47,10 +49,8 @@ namespace Spoon {
                     continue;
 
                 const sf::FloatRect worldRect{
-                    static_cast<float>(x * m_Atlas.tileWidth),
-                    static_cast<float>(y * m_Atlas.tileHeight),
-                    static_cast<float>(m_Atlas.tileWidth),
-                    static_cast<float>(m_Atlas.tileHeight)
+                    sf::Vector2f{static_cast<float>(x * m_Atlas.tileWidth), static_cast<float>(y * m_Atlas.tileHeight)},
+                    sf::Vector2f{static_cast<float>(m_Atlas.tileWidth), static_cast<float>(m_Atlas.tileHeight)}
                 };
 
                 const sf::IntRect atlasRect =
@@ -100,15 +100,15 @@ namespace Spoon {
                         atlasRect.position.y + atlasRect.size.y)
                 };
 
-                const sf::Color color = LayerColor(layer);
+                const sf::Color color = sf::Color::Red;// LayerColor(layer);
 
-                vertices.emplace_back(topLeft, texTopLeft, color);
-                vertices.emplace_back(topRight, texTopRight, color);
-                vertices.emplace_back(bottomRight, texBottomRight, color);
+                vertices.emplace_back(sf::Vertex{topLeft, color, texTopLeft});
+                vertices.emplace_back(sf::Vertex{topRight, color, texTopRight});
+                vertices.emplace_back(sf::Vertex{bottomRight, color, texBottomRight});
 
-                vertices.emplace_back(topLeft, texTopLeft, color);
-                vertices.emplace_back(bottomRight, texBottomRight, color);
-                vertices.emplace_back(bottomLeft, texBottomLeft, color);
+                vertices.emplace_back(sf::Vertex{topLeft, color, texTopLeft});
+                vertices.emplace_back(sf::Vertex{bottomRight, color, texBottomRight});
+                vertices.emplace_back(sf::Vertex{bottomLeft, color, texBottomLeft});
             }
         }
     }
@@ -132,4 +132,6 @@ namespace Spoon {
           {m_Atlas.tileWidth, m_Atlas.tileHeight}
       };
   }
+
+  void TileAtlas::Resolve() {}
 }

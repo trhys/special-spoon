@@ -16,3 +16,5 @@
 #include "Components/Animation/AnimationComp.h"
 #include "Components/Animation/BlinkComp.h"
 #include "Components/Animation/FadeComp.h"
+
+#include "Components/World/TileMapComp.h"

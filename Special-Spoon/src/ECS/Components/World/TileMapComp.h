@@ -12,7 +12,7 @@ namespace Spoon {
   // atlas reference - we'll probably config this so change the defaults 
   // depending on the asset provided for the project
   struct TileAtlas {
-    std::string texturePath;         // atlas texture path - fetch from resource manager on resolve()
+    std::string textureId;         // atlas texture id - fetch from resource manager on resolve()
     sf::Texture* texture = nullptr;  // runtime texture ptr - load on resolve()
     int tileWidth = 16;
     int tileHeight = 16;
@@ -48,11 +48,17 @@ namespace Spoon {
 
           // build the map
           void BuildMap();
+          sf::IntRect GetAtlasRect(uint16_t id) const;
 
-      private:
+          // members
           sf::Vector2i m_MapSize;      // map size in width/height cells, not px
           TileAtlas m_Atlas;
           std::vector<TileLayer> m_Layers;
           std::vector<std::vector<sf::Vertex>> m_LayerVertices;
   };
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileAtlas, textureId, tileWidth, tileHeight, columns, rows, margin, spacing)  
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileLayer, name, zOrder, visible, collidable, opacity, tiles)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileMapComp, m_MapSize, m_Atlas, m_Layers)
 }

@@ -20,6 +20,7 @@ namespace Spoon
         LoadArray<StateActionComp>(StateActionComp::Name);
         LoadArray<RenderLayer>(RenderLayer::Name);
         LoadArray<MovementComp>(MovementComp::Name);
+        LoadArray<TileMapComp>(TileMapComp::Name);
     }
 
     // ===========================================
