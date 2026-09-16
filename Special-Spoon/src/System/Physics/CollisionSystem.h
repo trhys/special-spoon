@@ -229,6 +229,20 @@ namespace Spoon
             return &manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
         }
 
+        static void SyncMovementVelocity(EntityManager& manager, UUID entity)
+        {
+            PhysicsComp* physics = GetPhysicsIfPresent(manager, entity);
+            if (!physics)
+                return;
+
+            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+            if (!movementArray.m_IdToIndex.count(entity))
+                return;
+
+            auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
+            movement.m_Velocity = physics->velocity;
+        }
+
         static void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA, float invMassA, float invMassB)
         {
             const float totalInvMass = invMassA + invMassB;
@@ -264,10 +278,12 @@ namespace Spoon
             if (physA && invMassA > 0.0f)
             {
                 physA->velocity += impulse * invMassA;
+                SyncMovementVelocity(manager, entityA);
             }
             if (physB && invMassB > 0.0f)
             {
                 physB->velocity -= impulse * invMassB;
+                SyncMovementVelocity(manager, entityB);
             }
         }
 

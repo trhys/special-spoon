@@ -38,6 +38,7 @@ namespace Spoon {
       FacingDirection m_Facing;
       sf::Vector2f m_FrameIntent;
       sf::Vector2f m_ProposedDelta;
+      bool m_HasVelocityIntent = false;
       bool m_WasCorrectedByPhysics = false;
 
       void OnReflect() override
@@ -47,6 +48,7 @@ namespace Spoon {
           ImGui::Text("Intent: (%.2f, %.2f)", m_FrameIntent.x, m_FrameIntent.y);
           ImGui::Text("Velocity: (%.2f, %.2f)", m_Velocity.x, m_Velocity.y);
           ImGui::Text("Proposed Delta: (%.2f, %.2f)", m_ProposedDelta.x, m_ProposedDelta.y);
+          ImGui::Text("Has Velocity Intent: %s", m_HasVelocityIntent ? "True" : "False");
           ImGui::Text("Facing: %s", m_Facing.m_Direction);
           ImGui::Text("Corrected By Physics: %s", m_WasCorrectedByPhysics ? "True" : "False");
       }

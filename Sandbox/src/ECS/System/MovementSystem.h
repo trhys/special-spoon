@@ -88,6 +88,7 @@ public:
 
             moveComp.m_FrameIntent = {0.0f, 0.0f};
             moveComp.m_ProposedDelta = {0.0f, 0.0f};
+            moveComp.m_HasVelocityIntent = false;
             moveComp.m_WasCorrectedByPhysics = false;
 
             auto actionRange = movementActions.find(ID);
@@ -95,6 +96,7 @@ public:
             {
                 moveComp.m_FrameIntent = BuildIntent(actionRange->second);
                 moveComp.m_Velocity = moveComp.m_FrameIntent * moveComp.m_Speed;
+                moveComp.m_HasVelocityIntent = true;
                 m_ActionDrivenEntities.insert(ID);
                 m_LastActionVelocity[ID] = moveComp.m_Velocity;
             }
@@ -110,25 +112,10 @@ public:
                 {
                     moveComp.m_FrameIntent = { 0.0f, 0.0f };
                     moveComp.m_Velocity = { 0.0f, 0.0f };
-                }
-                else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
-                {
-                    float magnitude = std::sqrt(moveComp.m_Velocity.x * moveComp.m_Velocity.x + moveComp.m_Velocity.y * moveComp.m_Velocity.y);
-                    if (magnitude > 0.0f)
-                    {
-                        moveComp.m_FrameIntent = moveComp.m_Velocity / magnitude;
-                    }
+                    moveComp.m_HasVelocityIntent = true;
                 }
 
                 m_LastActionVelocity.erase(ID);
-            }
-            else if (moveComp.m_Velocity.x != 0.0f || moveComp.m_Velocity.y != 0.0f)
-            {
-                float magnitude = std::sqrt(moveComp.m_Velocity.x * moveComp.m_Velocity.x + moveComp.m_Velocity.y * moveComp.m_Velocity.y);
-                if (magnitude > 0.0f)
-                {
-                    moveComp.m_FrameIntent = moveComp.m_Velocity / magnitude;
-                }
             }
 
             if(transformArray.m_IdToIndex.count(ID))
