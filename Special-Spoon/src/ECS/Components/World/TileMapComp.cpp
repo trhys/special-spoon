@@ -1,7 +1,36 @@
 #include "ECS/Components/World/TileMapComp.h"
 
 namespace Spoon {
-  void TileMapComp::OnReflect() {}
+  void TileMapComp::OnReflect() 
+  {
+	ImGui::Text("Tileset ID: %s", m_TilesetID.c_str());
+
+    if (ImGui::BeginChild(
+            "Tileset Explorer",
+            ImVec2(0, 200),
+            ImGuiChildFlags_Borders))
+    {
+        for (const auto& [id, texture] :
+             ResourceManager::Get().GetTextures())
+        {
+            if (ImGui::ImageButton(
+                    id.c_str(),
+                    texture,
+                    sf::Vector2f(64, 64)))
+            {
+                SetTileset(id);
+            }
+
+            ImGui::SameLine();
+        }
+
+        ImGui::EndChild();
+    }
+
+    ImGui::InputInt2("Tile Size", &m_TileSize.x);
+    ImGui::InputInt("Atlas Margin", &m_AtlasMargin);
+    ImGui::InputInt("Atlas Spacing", &m_AtlasSpacing);
+  }
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
   {
@@ -166,6 +195,41 @@ namespace Spoon {
           static_cast<std::uint8_t>(opacity * 255.0f)
       };
   }
+
+bool TileMapComp:::SetTile(uint16_t id, int x, int y, int layerIndex)
+{
+	if (layerIndex < 0 || std::static_cast<size_t>(layerIndex) > m_Layers.size())
+        return false;
+
+    if (x < 0 || y < 0 || x > m_MapSize.x || y > m_MapSize.y)
+        return false;
+
+    if (m_MapSize.x <= 0 || m_MapSize.y <= 0)
+        return false;
+
+    auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
+    const std::size_t width = static_cast<std::size_t>(m_MapSize.x);
+    const std::size_t height = static_cast<std::size_t>(m_MapSize.y);
+
+    const std::size_t expectedCount = width * height;
+
+    if (layer.tiles.size() != expectedCount)
+        layer.tiles.resize(expectedCount, Tile{ 0 });
+
+    const std::size_t index =
+        static_cast<std::size_t>(y) * width +
+        static_cast<std::size_t>(x);
+
+    layer.tiles[index].id = id;
+
+    BuildMap();
+    return true;
+}
+
+bool TileMapComp::ClearTile(int x, int y, int layerIndex)
+{
+    return SetTile(0, x, y, layerIndex);
+}
 
   void TileAtlas::Resolve() { texture = ResourceManager::Get().GetResource<sf::Texture>(textureId); }
 }
