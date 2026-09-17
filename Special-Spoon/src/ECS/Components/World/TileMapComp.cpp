@@ -3,7 +3,7 @@
 namespace Spoon {
   void TileMapComp::OnReflect() 
   {
-	ImGui::Text("Tileset ID: %s", m_TilesetID.c_str());
+	ImGui::Text("Tileset ID: %s", m_Atlas.textureId.c_str());
 
     if (ImGui::BeginChild(
             "Tileset Explorer",
@@ -18,7 +18,8 @@ namespace Spoon {
                     texture,
                     sf::Vector2f(64, 64)))
             {
-                SetTileset(id);
+                m_Atlas.textureId = id;
+				m_Atlas.Resolve();
             }
 
             ImGui::SameLine();
@@ -27,20 +28,21 @@ namespace Spoon {
         ImGui::EndChild();
     }
 
-    ImGui::InputInt2("Tile Size", &m_TileSize.x);
-    ImGui::InputInt("Atlas Margin", &m_AtlasMargin);
-    ImGui::InputInt("Atlas Spacing", &m_AtlasSpacing);
+    ImGui::InputInt("Atlas Margin", &m_Atlas.margin);
+    ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing);
   }
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
   {
-      // todo
+      // dont know if we need anything here yet - leaving no-op for now
   }
 
   void TileMapComp::Render(sf::RenderTarget& target, sf::RenderStates states)
   {
         for (std::size_t i = 0; i < m_Layers.size(); ++i)
 		{
+			if (!m_Atlas.texture) continue;
+			
 			if (!m_Layers[i].visible) continue;
 	
 			const auto& vertices = m_LayerVertices[i];
@@ -167,6 +169,12 @@ namespace Spoon {
 
   sf::IntRect TileMapComp::GetAtlasRect(uint16_t id) const
   {
+	  if (! id >= 0 || m_Atlas.columns >= 0)
+		  return sf::IntRect{
+			  {0, 0},
+			  {0, 0}
+		  };
+	  
       const int atlasColumn = static_cast<int>(id - 1) % m_Atlas.columns;
       const int atlasRow = static_cast<int>(id - 1) / m_Atlas.columns;
   
@@ -196,12 +204,12 @@ namespace Spoon {
       };
   }
 
-bool TileMapComp:::SetTile(uint16_t id, int x, int y, int layerIndex)
+bool TileMapComp::SetTile(uint16_t id, int x, int y, int layerIndex)
 {
-	if (layerIndex < 0 || std::static_cast<size_t>(layerIndex) > m_Layers.size())
+	if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
         return false;
 
-    if (x < 0 || y < 0 || x > m_MapSize.x || y > m_MapSize.y)
+    if (x < 0 || y < 0 || x >= m_MapSize.x || y >= m_MapSize.y)
         return false;
 
     if (m_MapSize.x <= 0 || m_MapSize.y <= 0)
