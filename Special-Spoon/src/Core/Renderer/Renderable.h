@@ -11,6 +11,7 @@ namespace Spoon
     public:
 		virtual void Render(sf::RenderTarget& target, sf::RenderStates states) = 0;
 		virtual void PreRender(EntityManager& manager, UUID id) = 0;
+		virtual sf::Vector2f GetPosition() = 0;
 	};
 
     struct Renderable
