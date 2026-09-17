@@ -42,6 +42,7 @@ namespace Spoon
         void OnReflect() override;
 
 		// renderable interface
+		void PreRender(EntityManager& manager, UUID id) override;
         void Render(sf::RenderTarget& target, sf::RenderStates states) override
         {
             target.draw(m_Sprite, states);
