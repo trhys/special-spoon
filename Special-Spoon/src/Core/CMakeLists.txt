@@ -15,6 +15,10 @@ target_sources(Special-Spoon
         EntityManager/EntityManager.inl
         EntityManager/EntityManager.cpp
 
+        Project/Config.h
+        Project/Policies.h
+        Project/Policies.cpp
+
         Registers/ActionRegistry.h
         Registers/StateRegistry.h
         Registers/Component/ComponentRegistry.h
