@@ -1,10 +1,16 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 namespace Spoon {
 // enum class pointing to sort policy
 	enum class ActiveSortPolicy {
 		Isometric
 	}
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(ActiveSortPolicy, {
+		{ActiveSortPolicy::Isometric, "isometric"}
+	})
 
 // interface for depth sorting policies
 	class SortPolicy {
