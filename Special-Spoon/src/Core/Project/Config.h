@@ -9,5 +9,5 @@ namespace Spoon {
 		ActiveSortPolicy SortPolicy = ActiveSortPolicy::Isometric;
 	};
 
-	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ProjectConfig, PhysicsEnabled, ActiveSortPolicy)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ProjectConfig, PhysicsEnabled, SortPolicy)
 }
