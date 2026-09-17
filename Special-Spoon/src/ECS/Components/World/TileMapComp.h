@@ -44,8 +44,8 @@ namespace Spoon {
           void OnReflect() override;
 
           // set and clear tiles in the map
-          void SetTile(uint16_t id, int x, int y, int layerIndex);
-          void ClearTile(int x, int y, int layerIndex);
+          bool SetTile(uint16_t id, int x, int y, int layerIndex);
+          bool ClearTile(int x, int y, int layerIndex);
 
           // build the map
           void BuildMap();
