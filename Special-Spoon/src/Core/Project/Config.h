@@ -5,6 +5,6 @@
 namespace Spoon {
 	struct ProjectConfig {
 		bool PhysicsEnabled;
-		RenderType RenderPolicy;
+		std::unique_ptr<SortPolicy> SortPolicy;
 	}
 }
