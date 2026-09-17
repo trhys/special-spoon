@@ -31,6 +31,10 @@ namespace Spoon {
 
         for (auto& renderable : m_Renderables)
         {
+			if (!renderable.m_Component)
+				continue;
+			
+			renderable.m_Component->PreRender(manager, renderable.m_ID);
 			renderable.m_Component->Render(target, states);
             m_DrawCalls++;
         }
