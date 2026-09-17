@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core.h"
+#include "Core/Project/Config.h"
+
 #include <filesystem>
 #include <string>
 #include <memory>
@@ -18,6 +20,7 @@ namespace Spoon
         std::filesystem::path assetsPath;                   // Path to the project assets directory
         std::string version = "1.0";                        // Project version
         std::vector<std::filesystem::path> recentFiles;     // List of recently opened files
+        ProjectConfig config;                               // Config settings for project
     };
     
     class SPOON_API ProjectManager
