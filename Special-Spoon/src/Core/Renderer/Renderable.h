@@ -17,6 +17,7 @@ namespace Spoon
     {
         UUID m_ID;
         int m_Layer;
+		float m_Depth;
 		IRenderable* m_Component;
     };
 }
