@@ -3,6 +3,7 @@
 #include "Renderable.h"
 #include "Gizmo.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "Core/Project/Policies.h"
 #include "ECS/ECS.h"
 #include "SFML/Graphics.hpp"
 
@@ -12,6 +13,10 @@ namespace Spoon
     {
     public:
         void Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager);
+        void DepthSort();
+
+        // Update render config
+        void UpdateRenderConfig();
 
         // Metrics
         int GetDrawCalls() const { return m_DrawCalls; }
@@ -22,6 +27,7 @@ namespace Spoon
         void ClearActiveGizmos() { m_Gizmos.clear(); }
 
     private:
+        RenderType renderType;
         std::vector<Renderable> m_Renderables;
         std::vector<GizmoCommand> m_Gizmos;
         int m_DrawCalls = 0;
