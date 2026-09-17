@@ -1,12 +1,13 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
+#include "Core/Renderer/Renderable.h"
 #include "Core/ResourceManager/ResourceManager.h"
 #include "SFML/Graphics/Text.hpp"
 
 namespace Spoon
 {
-    struct TextComp : public ComponentBase<TextComp>
+    struct TextComp : public ComponentBase<TextComp>, public IRenderable
     {
         TextComp(sf::Font& asset = ResourceManager::Get().GetResource<sf::Font>("Default"), std::string id = "Default", std::string text = "",
             unsigned int char_size = 30, sf::Color color = sf::Color::White, sf::Color outcolor = sf::Color::White, unsigned int olThickness = 0, bool centered = true)
@@ -44,7 +45,7 @@ namespace Spoon
 
 		// renderable interface
 		void PreRender(EntityManager& manager, UUID id) override;
-		void Render(sf::RenderTarget& target, sf::RenderStates& states) override;
+		void Render(sf::RenderTarget& target, sf::RenderStates states) override;
     };
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextComp, iFontID, isCentered, iCharSize, iColor, iText, iolThickness, iOutColor)
