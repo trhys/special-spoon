@@ -22,19 +22,22 @@ namespace Spoon {
             {
                 if (IRenderable* renderableComp = dynamic_cast<IRenderable*>(comp))
                 {
+					renderableComp->PreRender(manager, ID);
                     m_Renderables.emplace_back(Renderable{ ID, renderLayer.m_Layer, renderableComp });
                 }
 			}
         }
+		
+		DepthSort();
+		
         std::sort(m_Renderables.begin(), m_Renderables.end(),
-            [](Renderable& a, Renderable& b) { return a.m_Layer < b.m_Layer; });
+            [](Renderable& a, Renderable& b) { return a.m_Depth < b.m_Depth; });
 
         for (auto& renderable : m_Renderables)
         {
 			if (!renderable.m_Component)
 				continue;
 			
-			renderable.m_Component->PreRender(manager, renderable.m_ID);
 			renderable.m_Component->Render(target, states);
             m_DrawCalls++;
         }
@@ -50,4 +53,17 @@ namespace Spoon {
         // Return metrics
         m_DrawTime = static_cast<float>(drawClock.getElapsedTime().asMilliseconds());
     }
+
+	void Renderer::DepthSort()
+	{
+		// decide what depth computation to use based on active policy
+		switch (activeSortPolicy)
+			case ActiveSortPolicy::Isometric:
+		IsometricProjection policy{}.ComputeDepth(m_Renderables); 
+	}
+
+	void Renderer::UpdateRenderConfig()
+	{
+		activeSortPolicy = Application::Get().GetProjectManager().config.ActiveSortPolicy;
+	}
 }
