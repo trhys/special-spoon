@@ -19,6 +19,7 @@ target_sources(Special-Spoon
         Components/Render/SpriteComp.h
         Components/Render/SpriteComp.cpp
         Components/Render/TextComp.h
+        Components/Render/TextComp.cpp
         Components/Render/ColorComp.h
         Components/Render/RenderLayer.h
         
