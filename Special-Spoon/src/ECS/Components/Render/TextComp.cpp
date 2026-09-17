@@ -133,7 +133,7 @@ namespace Spoon {
       }
   }
 
-  void TextComp::PreRender(EntityManager& mangager, UUID id)
+  void TextComp::PreRender(EntityManager& manager, UUID id)
   {
       auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
       auto& colorArray = manager.GetArray<ColorComp>(ColorComp::Name);
