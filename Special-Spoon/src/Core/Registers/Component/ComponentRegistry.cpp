@@ -107,8 +107,10 @@ namespace Spoon
 
     void LoadTileMapComp(EntityManager& manager, UUID id, const json& comp)
     {
-      auto tilemap = comp.get<TileMapComp>();
-      manager.MakeComponent<TileMapComp>(id, TileMapComp::Name);
+        auto tilemap = comp.get<TileMapComp>();
+        manager.MakeComponent<TileMapComp>(id, TileMapComp::Name);
+        auto& loaded = manager.GetComponent<TileMapComp>(id, TileMapComp::Name);
+        loaded = tilemap;
     }
 
     void RegisterDefaultLoaders()
