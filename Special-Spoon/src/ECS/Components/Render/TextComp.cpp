@@ -141,18 +141,18 @@ namespace Spoon {
       if(transformArray.m_IdToIndex.count(id))
       {
           TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-          text.SetPosition(transform.GetPosition());
-          text.SetRotation(transform.m_Transform.getRotation().asDegrees());
+          m_Text.SetPosition(transform.GetPosition());
+          m_Text.SetRotation(transform.m_Transform.getRotation().asDegrees());
       }
     
       if(colorArray.m_IdToIndex.count(id)) 
       {
           ColorComp& color = manager.GetComponent<ColorComp>(id, ColorComp::Name);
-          text.SetColor(color.m_Color);
+          m_Text.SetColor(color.m_Color);
       }
   }
 
-  void TextComp::Render(sf::RenderTarget& target, sf::RenderStates& states)
+  void TextComp::Render(sf::RenderTarget& target, sf::RenderStates states)
   {
       target.draw(m_Text, states);
   }
