@@ -169,7 +169,12 @@ namespace Spoon {
 
   sf::IntRect TileMapComp::GetAtlasRect(uint16_t id) const
   {
-	  if (! id >= 0 || m_Atlas.columns >= 0)
+	  if ( id == 0 || 
+		  id > m_Atlas.columns * m_Atlas.rows ||
+		  m_Atlas.columns <= 0 || 
+		  m_Atlas.rows <= 0 || 
+		  m_Atlas.tileWidth <= 0 || 
+		  m_Atlas.tileHeight <= 0)
 		  return sf::IntRect{
 			  {0, 0},
 			  {0, 0}
