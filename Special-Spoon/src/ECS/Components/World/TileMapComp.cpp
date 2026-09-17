@@ -3,6 +3,28 @@
 namespace Spoon {
   void TileMapComp::OnReflect() {}
 
+  void TileMapComp::PreRender(EntityManager& manager, UUID id)
+  {
+      // todo
+  }
+
+  void TileMapComp::Render(sf::RenderTarget& target, sf::RenderStates states)
+  {
+        for (std::size_t i = 0; i < m_Layers.size(); ++i)
+		{
+			if (!m_Layers[i].visible) continue;
+	
+			const auto& vertices = m_LayerVertices[i];
+			if (vertices.empty()) continue;
+	
+			sf::RenderStates layerStates = states;
+			layerStates.texture = *m_Atlas.texture;
+	
+			target.draw(vertices.data(), vertices.size(),
+						sf::PrimitiveType::Triangles, layerStates);
+		}
+  }
+
   void TileMapComp::BuildMap() {
     m_LayerVertices.clear();
     m_LayerVertices.resize(m_Layers.size());
@@ -145,5 +167,5 @@ namespace Spoon {
       };
   }
 
-  void TileAtlas::Resolve() {}
+  void TileAtlas::Resolve() { texture = ResourceManager::Get().GetResource<sf::Texture>(textureId); }
 }
