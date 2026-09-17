@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ECS/Components/Component.h"
+#include "Core/Renderer/Renderable.h"
 
 namespace Spoon {
 
@@ -34,7 +35,7 @@ namespace Spoon {
     std::vector<Tile> tiles;       // row-major: width * height
   };
 
-  struct TileMapComp : public ComponentBase<TileMapComp> {
+  struct TileMapComp : public ComponentBase<TileMapComp>, public IRenderable {
       public:
           TileMapComp() : ComponentBase::ComponentBase(Name) { m_Atlas.Resolve(); }
       
@@ -56,6 +57,10 @@ namespace Spoon {
           TileAtlas m_Atlas;
           std::vector<TileLayer> m_Layers;
           std::vector<std::vector<sf::Vertex>> m_LayerVertices;
+
+		  // renderable interface
+		  void PreRender(EntityManager& manager, UUID id) override;
+		  void Render(sf::RenderTarget& target, sf::RenderStates states) override;
   };
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id)
