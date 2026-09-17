@@ -68,6 +68,7 @@ namespace Spoon
                 projectJson["AssetsPath"] = newProject.assetsPath;
                 projectJson["Version"] = newProject.version;
                 projectJson["RecentFiles"] = newProject.recentFiles;
+				projectJson["Config"] = ProjectConfig{};
                 newProj << projectJson.dump(4);
                 newProj.close();
 
@@ -138,6 +139,7 @@ namespace Spoon
             newProject.assetsPath = projectJson.value("AssetsPath", "");
             newProject.version = projectJson.value("Version", "1.0");
             newProject.recentFiles = projectJson.value("RecentFiles", std::vector<std::filesystem::path>{});
+			newProject.config = projectJson.value("Config", ProjectConfig{});
 
             Application::Get().GetSceneManager().LoadManifest(newProject.dataPath.string());
             ResourceManager::Get().ScanAssets(newProject.assetsPath);
@@ -213,6 +215,7 @@ namespace Spoon
             projectJson["DataPath"] = m_CurrentProject->dataPath.string();
             projectJson["AssetsPath"] = m_CurrentProject->assetsPath.string();
             projectJson["Version"] = m_CurrentProject->version;
+			projectJson["Config"] = m_CurrentProject->config;
 
             fileStream << projectJson.dump(4);
             fileStream.close();
@@ -221,6 +224,5 @@ namespace Spoon
             m_Saving = false;
             editor->SaveProject = false;
         }
-        
     }
 }
