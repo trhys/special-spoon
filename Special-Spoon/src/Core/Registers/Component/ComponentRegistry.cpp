@@ -111,6 +111,8 @@ namespace Spoon
         manager.MakeComponent<TileMapComp>(id, TileMapComp::Name);
         auto& loaded = manager.GetComponent<TileMapComp>(id, TileMapComp::Name);
         loaded = tilemap;
+        loaded.m_Atlas.Resolve();
+        loaded.BuildMap();
     }
 
     void RegisterDefaultLoaders()
