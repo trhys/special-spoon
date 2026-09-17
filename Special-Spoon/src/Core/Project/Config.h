@@ -4,7 +4,7 @@
 
 namespace Spoon {
 	struct ProjectConfig {
-		bool PhysicsEnabled;
-		std::unique_ptr<SortPolicy> SortPolicy;
+		bool PhysicsEnabled = false;
+		ActiveSortPolicy SortPolicy = 0;
 	}
 }
