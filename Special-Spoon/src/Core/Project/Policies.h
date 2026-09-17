@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Core/Renderer/Renderable.h"
+#include <vector>
 #include <nlohmann/json.hpp>
 
 namespace Spoon {
 // enum class pointing to sort policy
 	enum class ActiveSortPolicy {
 		Isometric
-	}
+	};
 
 	NLOHMANN_JSON_SERIALIZE_ENUM(ActiveSortPolicy, {
 		{ActiveSortPolicy::Isometric, "isometric"}
