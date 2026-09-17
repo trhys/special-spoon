@@ -49,6 +49,7 @@ namespace Spoon {
           // build the map
           void BuildMap();
           sf::IntRect GetAtlasRect(uint16_t id) const;
+		  sf::Color LayerColor(const TileLayer& layer) const;
 
           // members
           sf::Vector2i m_MapSize;      // map size in width/height cells, not px

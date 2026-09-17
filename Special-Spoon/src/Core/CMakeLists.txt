@@ -8,7 +8,6 @@ target_sources(Special-Spoon
         EntryPoint.h
         ProjectManager.h
         ProjectManager.cpp
-        Renderer.h
         SceneManager.h
         SceneManager.cpp
 
@@ -22,6 +21,11 @@ target_sources(Special-Spoon
         Registers/Component/ComponentRegistry.cpp
         Registers/System/SystemRegistry.h
         Registers/System/SystemRegistry.cpp
+
+        Renderer/Renderer.h
+        Renderer/Renderer.cpp
+        Renderer/Renderable.h
+        Renderer/Gizmo.h
         
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp

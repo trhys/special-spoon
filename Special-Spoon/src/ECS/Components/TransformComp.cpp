@@ -1,5 +1,6 @@
 #include "TransformComp.h"
 #include "Core/Application.h"
+#include "Core/Renderer/Gizmo.h"
 
 namespace Spoon
 {
@@ -79,6 +80,11 @@ namespace Spoon
             }
         }
         else dragging = false;
-        Application::Get().GetRenderer().AddActiveGizmo(rect);
+        Application::Get().GetRenderer().AddActiveGizmo(GizmoCommand{
+            [rect = this->rect](sf::RenderTarget& target, sf::RenderStates states)
+            {
+                target.draw(rect, states);
+            }
+        });
     }
 }

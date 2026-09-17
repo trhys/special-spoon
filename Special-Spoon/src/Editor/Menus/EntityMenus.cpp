@@ -28,7 +28,7 @@ namespace Spoon
         {
             editor->m_SelectionRect.setFillColor(sf::Color::Transparent);
             editor->m_SelectionRect.setOutlineColor(sf::Color::Green);
-            editor->m_SelectionRect.setOutlineThickness(2.f);
+            editor->m_SelectionRect.setOutlineThickness(5.f);
             init = true;
         }
 
@@ -56,7 +56,10 @@ namespace Spoon
     {
         auto& app = Application::Get();
         auto& editor = app.GetEditor();
-        app.GetRenderer().AddActiveGizmo(editor.m_SelectionRect);
+        app.GetRenderer().AddActiveGizmo(GizmoCommand{std::function<void(sf::RenderTarget& target, sf::RenderStates& states)>([rect = editor.m_SelectionRect](sf::RenderTarget& target, sf::RenderStates& states)
+        {
+            target.draw(rect, states);
+        })});
     }
     
     void ViewEntitiesMenu(EntityManager& e_Manager)

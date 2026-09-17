@@ -100,7 +100,7 @@ namespace Spoon {
                         atlasRect.position.y + atlasRect.size.y)
                 };
 
-                const sf::Color color = sf::Color::Red;// LayerColor(layer);
+                const sf::Color color = LayerColor(layer);
 
                 vertices.emplace_back(sf::Vertex{topLeft, color, texTopLeft});
                 vertices.emplace_back(sf::Vertex{topRight, color, texTopRight});
@@ -130,6 +130,18 @@ namespace Spoon {
       return sf::IntRect{
           {x, y},
           {m_Atlas.tileWidth, m_Atlas.tileHeight}
+      };
+  }
+
+  sf::Color TileMapComp::LayerColor(const TileLayer& layer) const
+  {
+      const float opacity = std::clamp(layer.opacity, 0.0f, 1.0f);
+
+      return sf::Color{
+          255,
+          255,
+          255,
+          static_cast<std::uint8_t>(opacity * 255.0f)
       };
   }
 
