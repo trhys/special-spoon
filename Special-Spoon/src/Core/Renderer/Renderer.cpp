@@ -31,7 +31,10 @@ namespace Spoon {
 		DepthSort();
 		
         std::sort(m_Renderables.begin(), m_Renderables.end(),
-            [](Renderable& a, Renderable& b) { return a.m_Depth < b.m_Depth; });
+            [](Renderable& a, Renderable& b) { 
+				return  std::tie(a.m_Layer, a.m_Depth, a.m_ID) <
+       					std::tie(b.m_Layer, b.m_Depth, b.m_ID); 
+			});
 
         for (auto& renderable : m_Renderables)
         {
