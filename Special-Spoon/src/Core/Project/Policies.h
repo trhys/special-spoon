@@ -1,6 +1,11 @@
 #pragma once
 
 namespace Spoon {
+// enum class pointing to sort policy
+	enum class ActiveSortPolicy {
+		Isometric
+	}
+
 // interface for depth sorting policies
 	class SortPolicy {
 		public:
