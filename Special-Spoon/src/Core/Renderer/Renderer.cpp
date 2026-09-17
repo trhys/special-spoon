@@ -23,7 +23,7 @@ namespace Spoon {
                 if (IRenderable* renderableComp = dynamic_cast<IRenderable*>(comp))
                 {
 					renderableComp->PreRender(manager, ID);
-                    m_Renderables.emplace_back(Renderable{ ID, renderLayer.m_Layer, renderableComp });
+                    m_Renderables.emplace_back(Renderable{ ID, renderLayer.m_Layer, 0.0f, renderableComp });
                 }
 			}
         }
@@ -60,13 +60,20 @@ namespace Spoon {
 	void Renderer::DepthSort()
 	{
 		// decide what depth computation to use based on active policy
-		switch (activeSortPolicy)
-			case ActiveSortPolicy::Isometric:
-		IsometricProjection policy{}.ComputeDepth(m_Renderables); 
+		switch (activeSortPolicy) {
+			case ActiveSortPolicy::Isometric: {
+				IsometricProjection policy;
+				policy.ComputeDepth(m_Renderables); 
+				break;
+			}
+		}
 	}
 
 	void Renderer::UpdateRenderConfig()
 	{
-		activeSortPolicy = Application::Get().GetProjectManager().config.ActiveSortPolicy;
+		if (auto* project = Application::Get().GetProjectManager().GetCurrentProject())
+		{
+		    activeSortPolicy = project->config.SortPolicy;
+		}	
 	}
 }
