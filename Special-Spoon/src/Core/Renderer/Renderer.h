@@ -29,7 +29,7 @@ namespace Spoon
     private:
         std::vector<Renderable> m_Renderables;
         std::vector<GizmoCommand> m_Gizmos;
-        int activeSortPolicy = 0;
+        ActiveSortPolicy activeSortPolicy = ActiveSortPolicy::Isometric;
         int m_DrawCalls = 0;
         float m_DrawTime = 0.f;
     };
