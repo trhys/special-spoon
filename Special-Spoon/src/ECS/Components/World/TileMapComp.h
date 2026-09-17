@@ -61,6 +61,7 @@ namespace Spoon {
 		  // renderable interface
 		  void PreRender(EntityManager& manager, UUID id) override;
 		  void Render(sf::RenderTarget& target, sf::RenderStates states) override;
+		  sf::Vector2f GetPosition() override { return sf::Vector2f{0.0, 0.0}; }
   };
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id)
