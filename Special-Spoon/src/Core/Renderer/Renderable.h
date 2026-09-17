@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/EntityManager/EntityManager.h
+#include "Core/EntityManager/EntityManager.h"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 
