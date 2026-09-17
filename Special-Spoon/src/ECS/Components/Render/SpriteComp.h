@@ -26,7 +26,7 @@ namespace Spoon
         bool isCentered;
 
         // Core getters
-        sf::Vector2f GetPosition() { return m_Sprite.getPosition(); }
+        sf::Vector2f GetPosition() override { return m_Sprite.getPosition(); }
         sf::FloatRect GetBoundingBox() { return m_Sprite.getGlobalBounds(); }
 
         // Core setters
