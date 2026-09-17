@@ -6,8 +6,8 @@
 namespace Spoon {
 	struct ProjectConfig {
 		bool PhysicsEnabled = false;
-		ActiveSortPolicy SortPolicy = 0;
-	}
+		ActiveSortPolicy SortPolicy = ActiveSortPolicy::Isometric;
+	};
 
 	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ProjectConfig, PhysicsEnabled, ActiveSortPolicy)
 }
