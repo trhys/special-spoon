@@ -1,4 +1,4 @@
-#include "Core/Projects/Policies.h"
+#include "Core/Project/Policies.h"
 
 namespace Spoon {
 	void IsometricProjection::ComputeDepth(std::vector<Renderable>& renderables)
