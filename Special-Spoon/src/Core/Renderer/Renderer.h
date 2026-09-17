@@ -27,9 +27,9 @@ namespace Spoon
         void ClearActiveGizmos() { m_Gizmos.clear(); }
 
     private:
-        RenderType renderType;
         std::vector<Renderable> m_Renderables;
         std::vector<GizmoCommand> m_Gizmos;
+        int activeSortPolicy = 0;
         int m_DrawCalls = 0;
         float m_DrawTime = 0.f;
     };
