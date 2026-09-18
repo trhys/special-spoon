@@ -6,7 +6,7 @@ namespace Spoon {
   void TileMapComp::OnReflect() 
   {
   	constexpr const char* missingAtlasPopup = "Missing Tilemap Atlas";
-	if (fetchBadTexture)
+	if (m_Atlas.fetchBadTexture)
 	{
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.35f, 0.35f, 1.0f));
         ImGui::TextWrapped("The tilemap atlas texture could not be found.");
@@ -19,7 +19,7 @@ namespace Spoon {
         {
             m_Atlas.textureId.clear();
             m_Atlas.texture = nullptr;
-            fetchBadTexture = false;
+            m_Atlas.fetchBadTexture = false;
             BuildMap();
         }
     }
