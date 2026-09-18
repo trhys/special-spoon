@@ -5,6 +5,7 @@
 namespace Spoon {
   void TileMapComp::OnReflect() 
   {
+  	constexpr const char* missingAtlasPopup = "Missing Tilemap Atlas";
 	if (fetchBadTexture)
 	{
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.35f, 0.35f, 1.0f));
