@@ -79,7 +79,7 @@ namespace Spoon {
             {
                 m_Atlas.textureId = id;
 				m_Atlas.Resolve();
-				if (!fetchBadTexture) BuildMap();
+				if (!m_Atlas.fetchBadTexture) BuildMap();
             }
 
             ImGui::SameLine();
