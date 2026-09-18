@@ -3,6 +3,17 @@
 #include "Utils/Macros.h"
 
 namespace Spoon {
+
+	void TileMapComp::ClampInput()
+	{
+		if (m_Atlas.tileWidth < 0) m_Atlas.tileWidth = 0;
+		if (m_Atlas.tileHeight < 0) m_Atlas.tileHeight = 0;
+		if (m_Atlas.columns < 0) m_Atlas.column = 0;
+		if (m_Atlas.rows < 0) m_Atlas.rows = 0;
+	    if (m_Atlas.margin < 0) m_Atlas.margin = 0;
+	    if (m_Atlas.spacing < 0) m_Atlas.spacing = 0;
+	}
+
   void TileMapComp::OnReflect() 
   {
   	constexpr const char* missingAtlasPopup = "Missing Tilemap Atlas";
@@ -47,6 +58,9 @@ namespace Spoon {
         if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
     }
+
+	ImGui::TextDisabled("Atlas Settings"); 
+	ImGui::Separator();
 	  
 	ImGui::Text("Tileset ID: %s", m_Atlas.textureId.c_str());
 
@@ -65,6 +79,7 @@ namespace Spoon {
             {
                 m_Atlas.textureId = id;
 				m_Atlas.Resolve();
+				if (!fetchBadTexture) BuildMap();
             }
 
             ImGui::SameLine();
@@ -81,7 +96,10 @@ namespace Spoon {
     changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin);
     changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing);
 
-	if (changed) BuildMap();
+	if (changed) {
+		ClampInput();
+		BuildMap();
+	}
   }
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
@@ -263,16 +281,23 @@ namespace Spoon {
 	      };
 	  }
 
-	bool TileMapComp::SetTile(uint16_t id, int x, int y, int layerIndex)
+	bool TileMapComp::ValidateBounds(int x, int y, int layerIndex)
 	{
 		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
 	        return false;
 	
 	    if (x < 0 || y < 0 || x >= m_MapSize.x || y >= m_MapSize.y)
 	        return false;
-	
+
+		return true;
+	}
+
+	bool TileMapComp::SetTile(uint16_t id, int x, int y, int layerIndex)
+	{
 	    if (m_MapSize.x <= 0 || m_MapSize.y <= 0)
 	        return false;
+		if (!ValidateBounds(x, y, layerIndex))
+			return false;
 	
 	    auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
 	    const std::size_t width = static_cast<std::size_t>(m_MapSize.x);
@@ -297,7 +322,43 @@ namespace Spoon {
 	{
 	    return SetTile(0, x, y, layerIndex);
 	}
-	
+
+	bool TileMapComp::FillLayer(int layerIndex, uint16_t tileId)
+	{
+		std::size_t index = static_cast<std::size_t>(layerIndex);
+		if (layerIndex < 0 || layerIndex >= m_Layers.size())
+			return false;
+		auto& layer = m_Layers[index];
+		for (auto& tile : layer.tiles) 
+			tile.id = tileId;
+		return true;
+	}
+
+	bool TileMapComp::ClearLayer(int layerIndex)
+	{
+		std::size_t index = static_cast<std::size_t>(layerIndex);
+		if (layerIndex < 0 || layerIndex >= m_Layers.size())
+			return false;
+		auto& layer = m_Layers[index];
+		for (auto& tile : layer.tiles) 
+			tile.id = 0;
+		return true;
+	}
+
+	std::optional<uint16_t> TileMapComp::GetTile(int x, int y, int layerIndex) const
+	{
+		if (!ValidateBounds(x, y, layerIndex))
+			return;
+		
+		std::size_t index = static_cast<std::size_t>(layerIndex);
+		auto& layer = m_Layers[index];
+		const std::size_t width = static_cast<std::size_t>(m_MapSize.x);
+		const std::size_t tileIndex =
+	        static_cast<std::size_t>(y) * width +
+	        static_cast<std::size_t>(x);
+		return layer.tiles[tileIndex].id;
+	}
+		
 	void TileAtlas::Resolve() 
 	{ 
 		fetchBadTexture = false;
