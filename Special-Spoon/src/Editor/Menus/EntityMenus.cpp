@@ -56,7 +56,7 @@ namespace Spoon
     {
         auto& app = Application::Get();
         auto& editor = app.GetEditor();
-        app.GetRenderer().AddActiveGizmo(GizmoCommand{std::function<void(sf::RenderTarget& target, sf::RenderStates states)>([rect = editor.m_SelectionRect](sf::RenderTarget& target, sf::RenderStates& states)
+        app.GetRenderer().AddActiveGizmo(GizmoCommand{std::function<void(sf::RenderTarget& target, sf::RenderStates states)>([rect = editor.m_SelectionRect](sf::RenderTarget& target, sf::RenderStates states)
         {
             target.draw(rect, states);
         })});
