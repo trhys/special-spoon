@@ -344,6 +344,14 @@ namespace Spoon {
 		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
 			return false;
 		auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
+
+		if (m_MapSize.x < 0 || m_MapSize.y < 0)
+			return false;
+		const std::size_t expectedCount =
+		    static_cast<std::size_t>(m_MapSize.x) *
+		    static_cast<std::size_t>(m_MapSize.y);
+		layer.tiles.resize(expectedCount, Tile{0});
+		
 		for (auto& tile : layer.tiles) 
 			tile.id = tileId;
 		BuildMap();
@@ -355,6 +363,14 @@ namespace Spoon {
 		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
 			return false;
 		auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
+
+		if (m_MapSize.x < 0 || m_MapSize.y < 0)
+			return false;
+		const std::size_t expectedCount =
+		    static_cast<std::size_t>(m_MapSize.x) *
+		    static_cast<std::size_t>(m_MapSize.y);
+		layer.tiles.resize(expectedCount, Tile{0});
+		
 		for (auto& tile : layer.tiles) 
 			tile.id = 0;
 		BuildMap();
