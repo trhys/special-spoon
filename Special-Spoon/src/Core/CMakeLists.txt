@@ -6,8 +6,6 @@ target_sources(Special-Spoon
         ComponentArray.h
         Core.h
         EntryPoint.h
-        ProjectManager.h
-        ProjectManager.cpp
         SceneManager.h
         SceneManager.cpp
 
@@ -18,6 +16,8 @@ target_sources(Special-Spoon
         Project/Config.h
         Project/Policies.h
         Project/Policies.cpp
+        Project/ProjectManager.h
+        Project/ProjectManager.cpp
 
         Registers/ActionRegistry.h
         Registers/StateRegistry.h

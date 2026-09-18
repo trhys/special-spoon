@@ -38,6 +38,7 @@ namespace Spoon
         bool NewProject = false;
         bool OpenProject = false;
         bool SaveProject = false;
+        bool ProjectProperties = false;
 
         bool NewScene = false;
         bool LoadScene = false;

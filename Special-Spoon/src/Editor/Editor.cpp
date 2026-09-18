@@ -64,6 +64,7 @@ namespace Spoon
                 if (ImGui::MenuItem("Open Project")) OpenProject = true;
                 if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) SaveProject = true;
                 ImGui::Separator();
+                if (ImGui::MenuItem("Project Properties")) ProjectProperties = true;
                 if (ImGui::MenuItem("Exit")) Application::Get().Close();
                 ImGui::EndMenu();
             }
@@ -160,6 +161,7 @@ namespace Spoon
         if (NewProject)         { Application::Get().GetProjectManager().CreateNew(this); }
         if (OpenProject)        { Application::Get().GetProjectManager().LoadProject(this); }
         if (SaveProject)        { Application::Get().GetProjectManager().SaveProject(this); }
+        if (ProjectProperties)  { Application::Get().GetProjectManager().ConfigProject(this); }
 
         // Scene menus
         if (NewScene)           { NewSceneMenu(s_Manager, this); }

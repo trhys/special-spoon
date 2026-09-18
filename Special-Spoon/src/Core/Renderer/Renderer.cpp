@@ -1,4 +1,5 @@
 #include "Core/Renderer/Renderer.h"
+#include "Core/Application.h"
 
 namespace Spoon {
     void Renderer::Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager)

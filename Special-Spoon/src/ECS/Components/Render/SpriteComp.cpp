@@ -34,16 +34,16 @@ namespace Spoon
         if(transformArray.m_IdToIndex.count(id))
         {
             TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-            sprite.SetPosition(transform.GetPosition());
-            sprite.SetScale(transform.GetScale());
-            sprite.SetRotation(transform.m_Transform.getRotation().asDegrees());
+            m_Sprite.setPosition(transform.GetPosition());
+            m_Sprite.setScale(transform.GetScale());
+            m_Sprite.setRotation(transform.m_Transform.getRotation());
         }
 
         // apply color comp if it exists
         if(colorArray.m_IdToIndex.count(id)) 
         {
             ColorComp& color = manager.GetComponent<ColorComp>(id, ColorComp::Name);
-            sprite.SetColor(color.m_Color);
+            m_Sprite.setColor(color.m_Color);
         }
     }
 

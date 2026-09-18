@@ -13,16 +13,16 @@ namespace Spoon {
   // atlas reference - we'll probably config this so change the defaults 
   // depending on the asset provided for the project
   struct TileAtlas {
-    std::string textureId;         // atlas texture id - fetch from resource manager on resolve()
-    sf::Texture* texture = nullptr;  // runtime texture ptr - load on resolve()
+    std::string textureId = "special-spoon-logo";   // atlas texture id - fetch from resource manager on resolve()
+    sf::Texture* texture = nullptr;                 // runtime texture ptr - load on resolve()
     int tileWidth = 16;
     int tileHeight = 16;
-    int columns = 1;                 // derived or serialized
-    int rows = 1;                    // derived or serialized
-    int margin = 0;                  // atlas spacing support
+    int columns = 1;                                // derived or serialized
+    int rows = 1;                                   // derived or serialized
+    int margin = 0;                                 // atlas spacing support
     int spacing = 0;
 
-    void Resolve();                  // get texture in memory from resource manager
+    void Resolve();                                 // get texture in memory from resource manager
   };
     
   // abstraction for the tilemap comp to hold. we'll build the vertex array from this

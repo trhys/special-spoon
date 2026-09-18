@@ -1,4 +1,5 @@
 #include "ECS/Components/Render/TextComp.h"
+#include "Core/EntityManager/EntityManager.h"
 
 namespace Spoon {
   void TextComp::CenterOrigin() 
@@ -141,14 +142,14 @@ namespace Spoon {
       if(transformArray.m_IdToIndex.count(id))
       {
           TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-          m_Text.SetPosition(transform.GetPosition());
-          m_Text.SetRotation(transform.m_Transform.getRotation().asDegrees());
+          m_Text.setPosition(transform.GetPosition());
+          m_Text.setRotation(transform.m_Transform.getRotation());
       }
     
       if(colorArray.m_IdToIndex.count(id)) 
       {
           ColorComp& color = manager.GetComponent<ColorComp>(id, ColorComp::Name);
-          m_Text.SetColor(color.m_Color);
+          m_Text.setFillColor(color.m_Color);
       }
   }
 

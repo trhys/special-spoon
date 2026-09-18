@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Core/EntityManager/EntityManager.h"
+#include "ECS/UUID.h"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 
 namespace Spoon
 {
+	class EntityManager;
+
     class IRenderable
 	{
     public:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core.h"
+#include "Core/Core.h"
 #include "Core/Project/Config.h"
 
 #include <filesystem>
@@ -29,9 +29,13 @@ namespace Spoon
         ProjectManager() {}
         ~ProjectManager() {}
 
+        // editor menus
         void CreateNew(Editor* editor);
         void LoadProject(Editor* editor);
         void SaveProject(Editor* editor);
+        void ConfigProject(Editor* editor);
+
+        // data ops
         void OpenFromFile(const std::filesystem::path& filepath);
 
         Project* GetCurrentProject() { return m_CurrentProject.get(); }

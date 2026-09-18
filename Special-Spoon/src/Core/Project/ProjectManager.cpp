@@ -1,6 +1,6 @@
 #include "ProjectManager.h"
 #include "Core/Application.h"
-#include "Serialization/Serializer.h"
+#include "Core/Serialization/Serializer.h"
 #include "Editor/Editor.h"
 #include "Editor/Utils/EditorSettings.h"
 
@@ -105,6 +105,78 @@ namespace Spoon
                 editor->OpenProject = false;
             }
         }
+    }
+
+    void ProjectManager::ConfigProject(Editor* editor)
+    {
+        // Always center this window when appearing
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        if (ImGui::Begin("Project Settings", &editor->ProjectProperties))
+        {
+            char projectName[128];
+            char version[32];
+            char dataPath[512];
+            char assetsPath[512];
+            
+            std::snprintf(projectName, sizeof(projectName), "%s", m_CurrentProject->ID.c_str());
+            std::snprintf(version, sizeof(version), "%s", m_CurrentProject->version.c_str());
+            std::snprintf(dataPath, sizeof(dataPath), "%s", m_CurrentProject->dataPath.string().c_str());
+            std::snprintf(assetsPath, sizeof(assetsPath), "%s", m_CurrentProject->assetsPath.string().c_str());
+            
+            ImGui::TextDisabled("Project file");
+            ImGui::TextWrapped("%s", m_CurrentProject->filePath.string().c_str());
+            ImGui::Separator();
+            
+            bool changed = false;
+            changed |= ImGui::InputText("Project Name", projectName, IM_ARRAYSIZE(projectName));
+            changed |= ImGui::InputText("Version", version, IM_ARRAYSIZE(version));
+            changed |= ImGui::InputText("Data Path", dataPath, IM_ARRAYSIZE(dataPath));
+            changed |= ImGui::InputText("Assets Path", assetsPath, IM_ARRAYSIZE(assetsPath));
+            
+            if (changed)
+            {
+                 m_CurrentProject->ID = projectName;
+                 m_CurrentProject->version = version;
+                 m_CurrentProject->dataPath = dataPath;
+                 m_CurrentProject->assetsPath = assetsPath;
+            }
+
+            ImGui::TextDisabled("Settings");
+            ImGui::Separator();
+
+            changed |= ImGui::Checkbox("Physics Enabled", &m_CurrentProject->config.PhysicsEnabled);
+            ImGui::SameLine(); HelpMarker("TODO: not implemented");
+
+            static constexpr ActiveSortPolicy policies[] = {
+                ActiveSortPolicy::Isometric
+            };
+            ActiveSortPolicy* selectedPolicy = nullptr;
+            if (ImGui::BeginListBox("Projection Style"))
+            {
+                for (const ActiveSortPolicy policy : policies)
+                {
+                    const bool selected = m_CurrentProject->config.SortPolicy == policy;
+
+                    if (ImGui::Selectable(SortPolicyToString(policy), selected))
+                        m_CurrentProject->config.SortPolicy = policy;
+
+                    if (selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndListBox();
+            }
+            ImGui::SameLine(); HelpMarker("Determines the rendering style");
+            
+            ImGui::Separator();
+            if (ImGui::Button("Save Project"))
+               editor->SaveProject = true;
+            
+               ImGui::SameLine();
+            if (ImGui::Button("Close"))
+                editor->ProjectProperties = false;
+        }
+        ImGui::End();
     }
 
     void ProjectManager::OpenFromFile(const std::filesystem::path& filepath)

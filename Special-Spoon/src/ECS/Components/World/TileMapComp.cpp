@@ -1,4 +1,5 @@
 #include "ECS/Components/World/TileMapComp.h"
+#include "Core/ResourceManager/ResourceManager.h"
 
 namespace Spoon {
   void TileMapComp::OnReflect() 
@@ -49,7 +50,7 @@ namespace Spoon {
 			if (vertices.empty()) continue;
 	
 			sf::RenderStates layerStates = states;
-			layerStates.texture = *m_Atlas.texture;
+			layerStates.texture = m_Atlas.texture;
 	
 			target.draw(vertices.data(), vertices.size(),
 						sf::PrimitiveType::Triangles, layerStates);
@@ -244,5 +245,5 @@ bool TileMapComp::ClearTile(int x, int y, int layerIndex)
     return SetTile(0, x, y, layerIndex);
 }
 
-  void TileAtlas::Resolve() { texture = ResourceManager::Get().GetResource<sf::Texture>(textureId); }
+  void TileAtlas::Resolve() { texture = &ResourceManager::Get().GetResource<sf::Texture>(textureId); }
 }
