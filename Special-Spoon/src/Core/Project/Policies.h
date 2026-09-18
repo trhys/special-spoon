@@ -20,6 +20,7 @@ namespace Spoon {
 	// interface for depth sorting policies
 	class SortPolicy {
 		public:
+			virtual ~SortPolicy() = default;
 			virtual void ComputeDepth(std::vector<Renderable>& renderables) = 0;
 	};
 
