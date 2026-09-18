@@ -3,6 +3,8 @@
 #include "ECS/Components/Component.h"
 #include "Core/Renderer/Renderable.h"
 
+#include <optional>
+
 namespace Spoon {
 
   // base tile
@@ -42,12 +44,16 @@ namespace Spoon {
           static constexpr const char* Name = "TileMap";
 
           void OnReflect() override;
+		  void ClampInput();
+		  bool ValidateBounds(int x, int y, int layerIndex);
 
           // tile/layer methods
           bool SetTile(uint16_t id, int x, int y, int layerIndex);
           bool ClearTile(int x, int y, int layerIndex);
 		  bool FillLayer(int layerIndex, uint16_t tileId);
-		  bool ClearLayer(in layerIndex);
+		  bool ClearLayer(int layerIndex);
+
+		  std::optional<uint16_t> GetTile(int x, int y, int layerIndex) const;
 
           // build the map
           void BuildMap();
