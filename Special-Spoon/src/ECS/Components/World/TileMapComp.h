@@ -32,6 +32,7 @@ namespace Spoon {
     bool collidable = false;       // optional: collision extraction
     float opacity = 1.0f;          // editor/runtime blending
     std::vector<Tile> tiles;       // row-major: width * height
+	bool fetchBadTexture = false;  // editor flag
   };
 
   struct TileMapComp : public ComponentBase<TileMapComp>, public IRenderable {
@@ -41,8 +42,6 @@ namespace Spoon {
           static constexpr const char* Name = "TileMap";
 
           void OnReflect() override;
-		  // editor flag
-		  bool fetchBadTexture = false;
 
           // set and clear tiles in the map
           bool SetTile(uint16_t id, int x, int y, int layerIndex);
