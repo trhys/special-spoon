@@ -13,7 +13,7 @@ namespace Spoon {
   // atlas reference - we'll probably config this so change the defaults 
   // depending on the asset provided for the project
   struct TileAtlas {
-    std::string textureId = "special-spoon-logo";   // atlas texture id - fetch from resource manager on resolve()
+    std::string textureId;   						// atlas texture id - fetch from resource manager on resolve()
     sf::Texture* texture = nullptr;                 // runtime texture ptr - load on resolve()
     int tileWidth = 16;
     int tileHeight = 16;
@@ -28,7 +28,6 @@ namespace Spoon {
   // abstraction for the tilemap comp to hold. we'll build the vertex array from this
   struct TileLayer {
     std::string name;              // "Background", "Gameplay", "Foreground"
-    int zOrder = 0;                // deterministic layer sort
     bool visible = true;           // runtime/editor visibility
     bool collidable = false;       // optional: collision extraction
     float opacity = 1.0f;          // editor/runtime blending
@@ -42,6 +41,8 @@ namespace Spoon {
           static constexpr const char* Name = "TileMap";
 
           void OnReflect() override;
+		  // editor flag
+		  bool fetchBadTexture = false;
 
           // set and clear tiles in the map
           bool SetTile(uint16_t id, int x, int y, int layerIndex);
@@ -66,6 +67,6 @@ namespace Spoon {
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileAtlas, textureId, tileWidth, tileHeight, columns, rows, margin, spacing)  
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileLayer, name, zOrder, visible, collidable, opacity, tiles)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileLayer, name, visible, collidable, opacity, tiles)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileMapComp, m_MapSize, m_Atlas, m_Layers)
 }
