@@ -76,6 +76,7 @@ namespace Spoon
                 Application::Get().GetSceneManager().LoadManifest(newProject.dataPath);
                 m_CurrentProject = std::make_unique<Project>(newProject);
                 editor->SetCurrentProject(m_CurrentProject.get());
+				Application::Get().GetRenderer().UpdateRenderConfig();
                 editor->NewProject = false;
             }
         }
@@ -95,6 +96,7 @@ namespace Spoon
 
                 // Load the project using the selected file path
                 OpenFromFile(pathObj);
+				Application::Get().GetRenderer().UpdateRenderConfig();
             }
             
             // Close the dialog
@@ -162,7 +164,10 @@ namespace Spoon
                         m_CurrentProject->config.SortPolicy = policy;
 
                     if (selected)
+					{
+						Application::Get().GetRenderer().UpdateRenderConfig();
                         ImGui::SetItemDefaultFocus();
+					}
                 }
                 ImGui::EndListBox();
             }
