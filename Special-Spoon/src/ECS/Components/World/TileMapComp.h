@@ -36,7 +36,7 @@ namespace Spoon {
 
   struct TileMapComp : public ComponentBase<TileMapComp>, public IRenderable {
       public:
-          TileMapComp() : ComponentBase::ComponentBase(Name) { m_Atlas.Resolve(); }
+          TileMapComp() : ComponentBase::ComponentBase(Name) {}
       
           static constexpr const char* Name = "TileMap";
 
