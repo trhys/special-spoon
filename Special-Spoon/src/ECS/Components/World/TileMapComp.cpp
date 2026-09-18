@@ -294,6 +294,14 @@ namespace Spoon {
 
 	bool TileMapComp::SetTile(uint16_t id, int x, int y, int layerIndex)
 	{
+		if (id != 0 &&
+		    (m_Atlas.columns <= 0 ||
+		     m_Atlas.rows <= 0 ||
+		     id > m_Atlas.columns * m_Atlas.rows))
+		{
+		    return false;
+		}
+		
 	    if (m_MapSize.x <= 0 || m_MapSize.y <= 0)
 	        return false;
 		if (!ValidateBounds(x, y, layerIndex))
@@ -325,6 +333,14 @@ namespace Spoon {
 
 	bool TileMapComp::FillLayer(int layerIndex, uint16_t tileId)
 	{
+		if (tileId != 0 &&
+		    (m_Atlas.columns <= 0 ||
+		     m_Atlas.rows <= 0 ||
+		     tileId > m_Atlas.columns * m_Atlas.rows))
+		{
+		    return false;
+		}
+		
 		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
 			return false;
 		auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
@@ -348,7 +364,7 @@ namespace Spoon {
 	std::optional<uint16_t> TileMapComp::GetTile(int x, int y, int layerIndex) const
 	{
 		if (!ValidateBounds(x, y, layerIndex))
-			return;
+			return std::nullopt;
 		
 		std::size_t index = static_cast<std::size_t>(layerIndex);
 		auto& layer = m_Layers[index];
@@ -356,6 +372,17 @@ namespace Spoon {
 		const std::size_t tileIndex =
 	        static_cast<std::size_t>(y) * width +
 	        static_cast<std::size_t>(x);
+		
+		const std::size_t expectedCount =
+		    static_cast<std::size_t>(m_MapSize.x) *
+		    static_cast<std::size_t>(m_MapSize.y);
+	
+		if (layer.tiles.size() != expectedCount ||
+		    tileIndex >= layer.tiles.size())
+		{
+		    return std::nullopt;
+		}
+		
 		return layer.tiles[tileIndex].id;
 	}
 		
