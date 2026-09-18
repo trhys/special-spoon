@@ -5,7 +5,10 @@ namespace Spoon {
 	{
 		for (auto& renderable : renderables)
 			{
-				renderable.m_Depth = renderable.m_Component->GetPosition().y;
+				sf::Vector2f pos = renderable.m_Component->GetPosition();
+				float x = pos.x;
+				float y = pos.y;
+				renderable.m_Depth = x + y;
 			}
 	}
 
