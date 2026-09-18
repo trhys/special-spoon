@@ -8,7 +8,7 @@ namespace Spoon {
 	{
 		if (m_Atlas.tileWidth < 0) m_Atlas.tileWidth = 0;
 		if (m_Atlas.tileHeight < 0) m_Atlas.tileHeight = 0;
-		if (m_Atlas.columns < 0) m_Atlas.column = 0;
+		if (m_Atlas.columns < 0) m_Atlas.columns = 0;
 		if (m_Atlas.rows < 0) m_Atlas.rows = 0;
 	    if (m_Atlas.margin < 0) m_Atlas.margin = 0;
 	    if (m_Atlas.spacing < 0) m_Atlas.spacing = 0;
@@ -281,7 +281,7 @@ namespace Spoon {
 	      };
 	  }
 
-	bool TileMapComp::ValidateBounds(int x, int y, int layerIndex)
+	bool TileMapComp::ValidateBounds(int x, int y, int layerIndex) const 
 	{
 		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
 	        return false;
@@ -325,23 +325,23 @@ namespace Spoon {
 
 	bool TileMapComp::FillLayer(int layerIndex, uint16_t tileId)
 	{
-		std::size_t index = static_cast<std::size_t>(layerIndex);
-		if (layerIndex < 0 || layerIndex >= m_Layers.size())
+		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
 			return false;
-		auto& layer = m_Layers[index];
+		auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
 		for (auto& tile : layer.tiles) 
 			tile.id = tileId;
+		BuildMap();
 		return true;
 	}
 
 	bool TileMapComp::ClearLayer(int layerIndex)
 	{
-		std::size_t index = static_cast<std::size_t>(layerIndex);
-		if (layerIndex < 0 || layerIndex >= m_Layers.size())
+		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
 			return false;
-		auto& layer = m_Layers[index];
+		auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
 		for (auto& tile : layer.tiles) 
 			tile.id = 0;
+		BuildMap();
 		return true;
 	}
 
