@@ -1,9 +1,52 @@
 #include "ECS/Components/World/TileMapComp.h"
 #include "Core/ResourceManager/ResourceManager.h"
+#include "Utils/Macros.h"
 
 namespace Spoon {
   void TileMapComp::OnReflect() 
   {
+	if (fetchBadTexture)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.35f, 0.35f, 1.0f));
+        ImGui::TextWrapped("The tilemap atlas texture could not be found.");
+        ImGui::PopStyleColor();
+
+        if (ImGui::Button("Show Details")) ImGui::OpenPopup(missingAtlasPopup);
+        ImGui::SameLine();
+
+        if (ImGui::Button("Clear Atlas"))
+        {
+            m_Atlas.textureId.clear();
+            m_Atlas.texture = nullptr;
+            fetchBadTexture = false;
+            BuildMap();
+        }
+    }
+
+    if (ImGui::BeginPopupModal(missingAtlasPopup, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextWrapped("The texture referenced by this tilemap is unavailable.");
+
+        ImGui::Spacing();
+
+        ImGui::TextWrapped("Referenced texture:");
+        ImGui::Indent();
+        ImGui::TextWrapped("%s", m_Atlas.textureId.empty() ? "<empty>" : m_Atlas.textureId.c_str());
+        ImGui::Unindent();
+
+        ImGui::Spacing();
+
+        ImGui::TextWrapped(
+            "Select a valid texture from the explorer below. "
+            "The tilemap will remain empty until the atlas is resolved."
+        );
+
+        ImGui::Spacing();
+
+        if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+    }
+	  
 	ImGui::Text("Tileset ID: %s", m_Atlas.textureId.c_str());
 
     if (ImGui::BeginChild(
@@ -29,13 +72,22 @@ namespace Spoon {
         ImGui::EndChild();
     }
 
-    ImGui::InputInt("Atlas Margin", &m_Atlas.margin);
-    ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing);
+	bool changed = false;
+	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth);
+	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight);
+	changed |= ImGui::InputInt("Columns", &m_Atlas.columns);
+	changed |= ImGui::InputInt("Rows", &m_Atlas.rows);
+    changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin);
+    changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing);
+
+	if (changed) BuildMap();
   }
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
   {
       // dont know if we need anything here yet - leaving no-op for now
+	  // at this time i dont see a need for us to use a transform and move the tileset
+	  // we can just let 0, 0 be the origin for now
   }
 
   void TileMapComp::Render(sf::RenderTarget& target, sf::RenderStates states)
@@ -167,83 +219,96 @@ namespace Spoon {
         }
     }
   }
-
-  sf::IntRect TileMapComp::GetAtlasRect(uint16_t id) const
-  {
-	  if ( id == 0 || 
-		  id > m_Atlas.columns * m_Atlas.rows ||
-		  m_Atlas.columns <= 0 || 
-		  m_Atlas.rows <= 0 || 
-		  m_Atlas.tileWidth <= 0 || 
-		  m_Atlas.tileHeight <= 0)
-		  return sf::IntRect{
-			  {0, 0},
-			  {0, 0}
-		  };
+	
+	  sf::IntRect TileMapComp::GetAtlasRect(uint16_t id) const
+	  {
+		  if ( id == 0 || 
+			  id > m_Atlas.columns * m_Atlas.rows ||
+			  m_Atlas.columns <= 0 || 
+			  m_Atlas.rows <= 0 || 
+			  m_Atlas.tileWidth <= 0 || 
+			  m_Atlas.tileHeight <= 0)
+			  return sf::IntRect{
+				  {0, 0},
+				  {0, 0}
+			  };
+		  
+	      const int atlasColumn = static_cast<int>(id - 1) % m_Atlas.columns;
+	      const int atlasRow = static_cast<int>(id - 1) / m_Atlas.columns;
 	  
-      const int atlasColumn = static_cast<int>(id - 1) % m_Atlas.columns;
-      const int atlasRow = static_cast<int>(id - 1) / m_Atlas.columns;
-  
-      const int x =
-          m_Atlas.margin +
-          atlasColumn * (m_Atlas.tileWidth + m_Atlas.spacing);
-  
-      const int y =
-          m_Atlas.margin +
-          atlasRow * (m_Atlas.tileHeight + m_Atlas.spacing);
-  
-      return sf::IntRect{
-          {x, y},
-          {m_Atlas.tileWidth, m_Atlas.tileHeight}
-      };
-  }
+	      const int x =
+	          m_Atlas.margin +
+	          atlasColumn * (m_Atlas.tileWidth + m_Atlas.spacing);
+	  
+	      const int y =
+	          m_Atlas.margin +
+	          atlasRow * (m_Atlas.tileHeight + m_Atlas.spacing);
+	  
+	      return sf::IntRect{
+	          {x, y},
+	          {m_Atlas.tileWidth, m_Atlas.tileHeight}
+	      };
+	  }
 
-  sf::Color TileMapComp::LayerColor(const TileLayer& layer) const
-  {
-      const float opacity = std::clamp(layer.opacity, 0.0f, 1.0f);
+	  sf::Color TileMapComp::LayerColor(const TileLayer& layer) const
+	  {
+	      const float opacity = std::clamp(layer.opacity, 0.0f, 1.0f);
+	
+	      return sf::Color{
+	          255,
+	          255,
+	          255,
+	          static_cast<std::uint8_t>(opacity * 255.0f)
+	      };
+	  }
 
-      return sf::Color{
-          255,
-          255,
-          255,
-          static_cast<std::uint8_t>(opacity * 255.0f)
-      };
-  }
+	bool TileMapComp::SetTile(uint16_t id, int x, int y, int layerIndex)
+	{
+		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
+	        return false;
+	
+	    if (x < 0 || y < 0 || x >= m_MapSize.x || y >= m_MapSize.y)
+	        return false;
+	
+	    if (m_MapSize.x <= 0 || m_MapSize.y <= 0)
+	        return false;
+	
+	    auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
+	    const std::size_t width = static_cast<std::size_t>(m_MapSize.x);
+	    const std::size_t height = static_cast<std::size_t>(m_MapSize.y);
+	
+	    const std::size_t expectedCount = width * height;
+	
+	    if (layer.tiles.size() != expectedCount)
+	        layer.tiles.resize(expectedCount, Tile{ 0 });
+	
+	    const std::size_t index =
+	        static_cast<std::size_t>(y) * width +
+	        static_cast<std::size_t>(x);
+	
+	    layer.tiles[index].id = id;
+	
+	    BuildMap();
+	    return true;
+	}
 
-bool TileMapComp::SetTile(uint16_t id, int x, int y, int layerIndex)
-{
-	if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
-        return false;
-
-    if (x < 0 || y < 0 || x >= m_MapSize.x || y >= m_MapSize.y)
-        return false;
-
-    if (m_MapSize.x <= 0 || m_MapSize.y <= 0)
-        return false;
-
-    auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
-    const std::size_t width = static_cast<std::size_t>(m_MapSize.x);
-    const std::size_t height = static_cast<std::size_t>(m_MapSize.y);
-
-    const std::size_t expectedCount = width * height;
-
-    if (layer.tiles.size() != expectedCount)
-        layer.tiles.resize(expectedCount, Tile{ 0 });
-
-    const std::size_t index =
-        static_cast<std::size_t>(y) * width +
-        static_cast<std::size_t>(x);
-
-    layer.tiles[index].id = id;
-
-    BuildMap();
-    return true;
-}
-
-bool TileMapComp::ClearTile(int x, int y, int layerIndex)
-{
-    return SetTile(0, x, y, layerIndex);
-}
-
-  void TileAtlas::Resolve() { texture = &ResourceManager::Get().GetResource<sf::Texture>(textureId); }
+	bool TileMapComp::ClearTile(int x, int y, int layerIndex)
+	{
+	    return SetTile(0, x, y, layerIndex);
+	}
+	
+	void TileAtlas::Resolve() 
+	{ 
+		fetchBadTexture = false;
+		texture = nullptr;
+		if (!textureId.empty())
+		{
+			try {
+				texture = &ResourceManager::Get().GetResource<sf::Texture>(textureId);
+			} catch (const std::out_of_range&) {
+				fetchBadTexture = true;
+				SS_DEBUG_LOG("[TILEMAP] Failed to resolve atlas texture: " + textureId);
+			}
+		}
+	}
 }
