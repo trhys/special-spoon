@@ -23,6 +23,7 @@ namespace Spoon {
     int rows = 1;                                   // derived or serialized
     int margin = 0;                                 // atlas spacing support
     int spacing = 0;
+	bool fetchBadTexture = false;  					// editor flag
 
     void Resolve();                                 // get texture in memory from resource manager
   };
@@ -34,7 +35,6 @@ namespace Spoon {
     bool collidable = false;       // optional: collision extraction
     float opacity = 1.0f;          // editor/runtime blending
     std::vector<Tile> tiles;       // row-major: width * height
-	bool fetchBadTexture = false;  // editor flag
   };
 
   struct TileMapComp : public ComponentBase<TileMapComp>, public IRenderable {
