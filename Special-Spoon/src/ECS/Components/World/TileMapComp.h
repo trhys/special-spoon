@@ -45,7 +45,7 @@ namespace Spoon {
 
           void OnReflect() override;
 		  void ClampInput();
-		  bool ValidateBounds(int x, int y, int layerIndex);
+		  bool ValidateBounds(int x, int y, int layerIndex) const;
 
           // tile/layer methods
           bool SetTile(uint16_t id, int x, int y, int layerIndex);
