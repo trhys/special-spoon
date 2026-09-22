@@ -1,5 +1,6 @@
 #include "TileMapTool.h"
 
+#include "Core/Application.h"
 #include "ECS/Components/World/TileMapComp.h"
 
 #include <algorithm>
@@ -11,6 +12,27 @@ namespace Spoon
     namespace
     {
         constexpr const char* addLayerPopup = "Add Tile Layer";
+
+        bool IsTileMapPointerValid(TileMapComp* tileMap)
+        {
+            if (tileMap == nullptr)
+                return false;
+
+            auto& tileMaps =
+                Application::Get()
+                    .GetEntityManager()
+                    .GetArray<TileMapComp>(TileMapComp::Name)
+                    .m_Components;
+
+            return std::any_of(
+                tileMaps.begin(),
+                tileMaps.end(),
+                [tileMap](TileMapComp& candidate)
+                {
+                    return &candidate == tileMap;
+                }
+            );
+        }
     }
 
     void TileMapTool::Open(TileMapComp* tileMap)
@@ -470,7 +492,13 @@ namespace Spoon
         const ImVec2& imageMax
     )
     {
-        if (!m_Open || m_TileMap == nullptr || !viewportHovered)
+        if (!m_Open || !IsTileMapPointerValid(m_TileMap))
+        {
+            Close();
+            return false;
+        }
+
+        if (!viewportHovered)
         {
             m_LastPaintedCell = {-1, -1};
             return false;
@@ -523,8 +551,11 @@ namespace Spoon
     {
         static_cast<void>(tick);
 
-        if (!m_Open || m_TileMap == nullptr)
+        if (!m_Open || !IsTileMapPointerValid(m_TileMap))
+        {
+            Close();
             return;
+        }
 
         EnsureValidState(*m_TileMap);
 
