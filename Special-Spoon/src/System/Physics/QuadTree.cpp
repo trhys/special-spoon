@@ -36,16 +36,41 @@ namespace Spoon
             return { 0.0f, 0.0f };
         }
 
-        sf::FloatRect ComputeSweptBounds(const sf::FloatRect& currentBounds, const sf::Vector2f& delta)
+        bool TransformAlreadyAdvancedThisFrame(EntityManager& manager, UUID entity)
         {
-            const sf::Vector2f startPosition = currentBounds.position - delta;
+            auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
+            if (physicsArray.m_IdToIndex.count(entity))
+            {
+                auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
+                return physics.bodyType != BodyType::Static;
+            }
+
+            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+            if (!movementArray.m_IdToIndex.count(entity))
+                return false;
+
+            return physicsArray.m_Components.empty();
+        }
+
+        sf::Vector2f GetFrameStartPosition(EntityManager& manager, UUID entity, float dt)
+        {
+            auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
+            const sf::Vector2f currentPosition = transform.GetPosition();
+            if (!TransformAlreadyAdvancedThisFrame(manager, entity))
+                return currentPosition;
+
+            return currentPosition - GetFrameDelta(manager, entity, dt);
+        }
+
+        sf::FloatRect ComputeSweptBounds(const sf::FloatRect& startBounds, const sf::Vector2f& delta)
+        {
             const sf::Vector2f minPosition = {
-                std::min(startPosition.x, currentBounds.position.x),
-                std::min(startPosition.y, currentBounds.position.y)
+                std::min(startBounds.position.x, startBounds.position.x + delta.x),
+                std::min(startBounds.position.y, startBounds.position.y + delta.y)
             };
             const sf::Vector2f maxPosition = {
-                std::max(startPosition.x + currentBounds.size.x, currentBounds.position.x + currentBounds.size.x),
-                std::max(startPosition.y + currentBounds.size.y, currentBounds.position.y + currentBounds.size.y)
+                std::max(startBounds.position.x + startBounds.size.x, startBounds.position.x + delta.x + startBounds.size.x),
+                std::max(startBounds.position.y + startBounds.size.y, startBounds.position.y + delta.y + startBounds.size.y)
             };
 
             return sf::FloatRect(minPosition, maxPosition - minPosition);
@@ -107,7 +132,9 @@ namespace Spoon
             sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
             if (useSweptBounds)
             {
-                entityBox = ComputeSweptBounds(entityBox, GetFrameDelta(manager, entity, dt));
+                entityBox = ComputeSweptBounds(
+                    collider.GetWorldBounds(GetFrameStartPosition(manager, entity, dt)),
+                    GetFrameDelta(manager, entity, dt));
             }
             for (auto& leaf : m_GridNodes)
             {
