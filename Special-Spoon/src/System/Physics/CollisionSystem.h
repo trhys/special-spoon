@@ -10,6 +10,7 @@
 #include <optional>
 #include <cmath>
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <vector>
 
@@ -195,6 +196,147 @@ namespace Spoon
            return hit;
         }
 
+         std::optional<SweptAABBHit> SweptCircleCircle(const sf::Vector2f& centerA, float radiusA, const sf::Vector2f& delta, const sf::Vector2f& centerB, float radiusB)
+        {
+           const sf::Vector2f startOffset = centerA - centerB;
+           const float combinedRadius = radiusA + radiusB;
+           const float c = startOffset.x * startOffset.x + startOffset.y * startOffset.y - combinedRadius * combinedRadius;
+           if (c < 0.0f)
+              return std::nullopt;
+
+           const float a = delta.x * delta.x + delta.y * delta.y;
+           if (a <= 0.0001f)
+              return std::nullopt;
+
+           const float b = 2.0f * (startOffset.x * delta.x + startOffset.y * delta.y);
+           if (c <= 0.0001f && b >= -0.0001f)
+              return std::nullopt;
+
+           const float discriminant = b * b - 4.0f * a * c;
+           if (discriminant < 0.0f)
+              return std::nullopt;
+
+           const float impactTime = (-b - std::sqrt(discriminant)) / (2.0f * a);
+           if (impactTime < -0.0001f || impactTime > 1.0f)
+              return std::nullopt;
+
+           const sf::Vector2f impactOffset = startOffset + delta * std::max(0.0f, impactTime);
+           const float impactDistance = std::sqrt(impactOffset.x * impactOffset.x + impactOffset.y * impactOffset.y);
+           if (impactDistance <= 0.0001f)
+              return std::nullopt;
+
+           return SweptAABBHit{
+              std::max(0.0f, impactTime),
+              impactOffset / impactDistance
+           };
+        }
+
+         std::optional<SweptAABBHit> SweptCircleAABB(const sf::Vector2f& center, float radius, const sf::Vector2f& delta, const sf::FloatRect& box)
+        {
+           std::optional<SweptAABBHit> bestHit;
+           auto considerHit = [&bestHit](float time, const sf::Vector2f& normal)
+           {
+              if (time < -0.0001f || time > 1.0f)
+                  return;
+              if (!bestHit || time < bestHit->time)
+                  bestHit = SweptAABBHit{ std::max(0.0f, time), normal };
+           };
+
+           const float left = box.position.x;
+           const float right = box.position.x + box.size.x;
+           const float top = box.position.y;
+           const float bottom = box.position.y + box.size.y;
+
+           if (delta.x > 0.0001f && center.x + radius <= left)
+           {
+              const float impactTime = (left - (center.x + radius)) / delta.x;
+              const float impactY = center.y + delta.y * impactTime;
+              if (impactY >= top && impactY <= bottom)
+                  considerHit(impactTime, { -1.0f, 0.0f });
+           }
+           else if (delta.x < -0.0001f && center.x - radius >= right)
+           {
+              const float impactTime = (right - (center.x - radius)) / delta.x;
+              const float impactY = center.y + delta.y * impactTime;
+              if (impactY >= top && impactY <= bottom)
+                  considerHit(impactTime, { 1.0f, 0.0f });
+           }
+
+           if (delta.y > 0.0001f && center.y + radius <= top)
+           {
+              const float impactTime = (top - (center.y + radius)) / delta.y;
+              const float impactX = center.x + delta.x * impactTime;
+              if (impactX >= left && impactX <= right)
+                  considerHit(impactTime, { 0.0f, -1.0f });
+           }
+           else if (delta.y < -0.0001f && center.y - radius >= bottom)
+           {
+              const float impactTime = (bottom - (center.y - radius)) / delta.y;
+              const float impactX = center.x + delta.x * impactTime;
+              if (impactX >= left && impactX <= right)
+                  considerHit(impactTime, { 0.0f, 1.0f });
+           }
+
+           const std::array<sf::Vector2f, 4> corners = {
+              sf::Vector2f{ left, top },
+              sf::Vector2f{ right, top },
+              sf::Vector2f{ left, bottom },
+              sf::Vector2f{ right, bottom }
+           };
+           for (const sf::Vector2f& corner : corners)
+           {
+              if (std::optional<SweptAABBHit> cornerHit = SweptCircleCircle(center, radius, delta, corner, 0.0f))
+                  considerHit(cornerHit->time, cornerHit->normal);
+           }
+
+           return bestHit;
+        }
+
+         bool ComputePairCorrection(const ColliderComp& colliderA, const sf::Vector2f& transformPositionA, const ColliderComp& colliderB, const sf::Vector2f& transformPositionB, sf::Vector2f& correctionForA)
+        {
+           const sf::Vector2f posA = colliderA.GetWorldOrigin(transformPositionA);
+           const sf::Vector2f posB = colliderB.GetWorldOrigin(transformPositionB);
+           const sf::FloatRect boundsA = colliderA.GetWorldBounds(transformPositionA);
+           const sf::FloatRect boundsB = colliderB.GetWorldBounds(transformPositionB);
+           if (!boundsA.findIntersection(boundsB))
+              return false;
+
+           const ColliderType typeA = colliderA.GetType();
+           const ColliderType typeB = colliderB.GetType();
+
+           bool collided = false;
+           if (typeA == ColliderType::AABB && typeB == ColliderType::AABB)
+           {
+              correctionForA = ComputeAABBCorrection(boundsA, boundsB);
+              collided = !IsZeroVector(correctionForA);
+           }
+           else if (typeA == ColliderType::Circle && typeB == ColliderType::Circle)
+           {
+              const auto* circleA = colliderA.AsCircle();
+              const auto* circleB = colliderB.AsCircle();
+              if (circleA && circleB)
+                  collided = IntersectCircleCircle(posA, circleA->radius, posB, circleB->radius, correctionForA);
+           }
+           else if (typeA == ColliderType::AABB && typeB == ColliderType::Circle)
+           {
+              const auto* circleB = colliderB.AsCircle();
+              if (circleB)
+                  collided = IntersectAABBCircle(boundsA, posB, circleB->radius, correctionForA);
+           }
+           else if (typeA == ColliderType::Circle && typeB == ColliderType::AABB)
+           {
+              const auto* circleA = colliderA.AsCircle();
+              sf::Vector2f correctionForB = { 0.0f, 0.0f };
+              if (circleA && IntersectAABBCircle(boundsB, posA, circleA->radius, correctionForB))
+              {
+                  correctionForA = { -correctionForB.x, -correctionForB.y };
+                  collided = true;
+              }
+           }
+
+           return collided;
+        }
+
          std::optional<SweptPairHit> ComputeSweptPairHit(EntityManager& manager, UUID entityA, UUID entityB, float dt)
         {
            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
@@ -212,9 +354,8 @@ namespace Spoon
            auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
            auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
 
-           const sf::FloatRect boundsA = colliderA.GetWorldBounds(transformA.GetPosition());
-           const sf::FloatRect boundsB = colliderB.GetWorldBounds(transformB.GetPosition());
-           if (boundsA.findIntersection(boundsB))
+           sf::Vector2f correctionForA = { 0.0f, 0.0f };
+           if (ComputePairCorrection(colliderA, transformA.GetPosition(), colliderB, transformB.GetPosition(), correctionForA))
                return std::nullopt;
 
            const sf::Vector2f deltaA = GetFrameDelta(manager, entityA, dt);
@@ -222,13 +363,50 @@ namespace Spoon
            if (IsZeroVector(deltaA) && IsZeroVector(deltaB))
                return std::nullopt;
 
-           const sf::FloatRect startBoundsA = colliderA.GetWorldBounds(transformA.GetPosition() - deltaA);
-           const sf::FloatRect startBoundsB = colliderB.GetWorldBounds(transformB.GetPosition() - deltaB);
-           if (startBoundsA.findIntersection(startBoundsB))
+           const sf::Vector2f startTransformA = transformA.GetPosition() - deltaA;
+           const sf::Vector2f startTransformB = transformB.GetPosition() - deltaB;
+           if (ComputePairCorrection(colliderA, startTransformA, colliderB, startTransformB, correctionForA))
                return std::nullopt;
 
            const sf::Vector2f relativeDelta = deltaA - deltaB;
-           std::optional<SweptAABBHit> hit = SweptAABB(startBoundsA, relativeDelta, startBoundsB);
+           const sf::FloatRect startBoundsA = colliderA.GetWorldBounds(startTransformA);
+           const sf::FloatRect startBoundsB = colliderB.GetWorldBounds(startTransformB);
+           const sf::Vector2f startOriginA = colliderA.GetWorldOrigin(startTransformA);
+           const sf::Vector2f startOriginB = colliderB.GetWorldOrigin(startTransformB);
+
+           std::optional<SweptAABBHit> hit;
+           if (colliderA.GetType() == ColliderType::AABB && colliderB.GetType() == ColliderType::AABB)
+           {
+               hit = SweptAABB(startBoundsA, relativeDelta, startBoundsB);
+           }
+           else if (colliderA.GetType() == ColliderType::Circle && colliderB.GetType() == ColliderType::Circle)
+           {
+               const auto* circleA = colliderA.AsCircle();
+               const auto* circleB = colliderB.AsCircle();
+               if (circleA && circleB)
+                   hit = SweptCircleCircle(startOriginA, circleA->radius, relativeDelta, startOriginB, circleB->radius);
+           }
+           else if (colliderA.GetType() == ColliderType::Circle && colliderB.GetType() == ColliderType::AABB)
+           {
+               const auto* circleA = colliderA.AsCircle();
+               if (circleA)
+                   hit = SweptCircleAABB(startOriginA, circleA->radius, relativeDelta, startBoundsB);
+           }
+           else if (colliderA.GetType() == ColliderType::AABB && colliderB.GetType() == ColliderType::Circle)
+           {
+               const auto* circleB = colliderB.AsCircle();
+               if (circleB)
+               {
+                   hit = SweptCircleAABB(
+                       startOriginB,
+                       circleB->radius,
+                       sf::Vector2f{ -relativeDelta.x, -relativeDelta.y },
+                       startBoundsA);
+                   if (hit)
+                       hit->normal = { -hit->normal.x, -hit->normal.y };
+               }
+           }
+
            if (!hit)
                return std::nullopt;
 
@@ -258,9 +436,8 @@ namespace Spoon
 
            const sf::Vector2f deltaA = GetFrameDelta(manager, entityA, dt);
            const sf::Vector2f deltaB = GetFrameDelta(manager, entityB, dt);
-           const sf::FloatRect startBoundsA = colliderA.GetWorldBounds(transformA.GetPosition() - deltaA);
-           const sf::FloatRect startBoundsB = colliderB.GetWorldBounds(transformB.GetPosition() - deltaB);
-           return startBoundsA.findIntersection(startBoundsB).has_value();
+           sf::Vector2f correctionForA = { 0.0f, 0.0f };
+           return ComputePairCorrection(colliderA, transformA.GetPosition() - deltaA, colliderB, transformB.GetPosition() - deltaB, correctionForA);
         }
 
          bool ApplySweepClamp(EntityManager& manager, UUID entity, const sf::Vector2f& fullDelta, float time)
@@ -434,45 +611,7 @@ namespace Spoon
             auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
             auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
 
-            const sf::Vector2f posA = colliderA.GetWorldOrigin(transformA.GetPosition());
-            const sf::Vector2f posB = colliderB.GetWorldOrigin(transformB.GetPosition());
-            const sf::FloatRect boundsA = colliderA.GetWorldBounds(transformA.GetPosition());
-            const sf::FloatRect boundsB = colliderB.GetWorldBounds(transformB.GetPosition());
-            if (!boundsA.findIntersection(boundsB))
-                return false;
-
-            const ColliderType typeA = colliderA.GetType();
-            const ColliderType typeB = colliderB.GetType();
-
-            bool collided = false;
-            if (typeA == ColliderType::AABB && typeB == ColliderType::AABB)
-            {
-                correctionForA = ComputeAABBCorrection(boundsA, boundsB);
-                collided = !IsZeroVector(correctionForA);
-            }
-            else if (typeA == ColliderType::Circle && typeB == ColliderType::Circle)
-            {
-                const auto* circleA = colliderA.AsCircle();
-                const auto* circleB = colliderB.AsCircle();
-                if (circleA && circleB)
-                    collided = IntersectCircleCircle(posA, circleA->radius, posB, circleB->radius, correctionForA);
-            }
-            else if (typeA == ColliderType::AABB && typeB == ColliderType::Circle)
-            {
-                const auto* circleB = colliderB.AsCircle();
-                if (circleB)
-                    collided = IntersectAABBCircle(boundsA, posB, circleB->radius, correctionForA);
-            }
-            else if (typeA == ColliderType::Circle && typeB == ColliderType::AABB)
-            {
-                const auto* circleA = colliderA.AsCircle();
-                sf::Vector2f correctionForB = { 0.0f, 0.0f };
-                if (circleA && IntersectAABBCircle(boundsB, posA, circleA->radius, correctionForB))
-                {
-                    correctionForA = { -correctionForB.x, -correctionForB.y };
-                    collided = true;
-                }
-            }
+            const bool collided = ComputePairCorrection(colliderA, transformA.GetPosition(), colliderB, transformB.GetPosition(), correctionForA);
 
             if (!collided)
                 return false;
