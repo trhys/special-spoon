@@ -13,31 +13,28 @@ namespace Spoon
     {
         constexpr const char* addLayerPopup = "Add Tile Layer";
 
-        bool IsTileMapPointerValid(TileMapComp* tileMap)
+        TileMapComp* ResolveTileMap(UUID entity)
         {
-            if (tileMap == nullptr)
-                return false;
+            if (entity.ID == 0)
+                return nullptr;
 
             auto& tileMaps =
                 Application::Get()
                     .GetEntityManager()
-                    .GetArray<TileMapComp>(TileMapComp::Name)
-                    .m_Components;
+                    .GetArray<TileMapComp>(TileMapComp::Name);
 
-            return std::any_of(
-                tileMaps.begin(),
-                tileMaps.end(),
-                [tileMap](TileMapComp& candidate)
-                {
-                    return &candidate == tileMap;
-                }
-            );
+            const auto found = tileMaps.m_IdToIndex.find(entity);
+            if (found == tileMaps.m_IdToIndex.end())
+                return nullptr;
+
+            return &tileMaps.m_Components[found->second];
         }
     }
 
-    void TileMapTool::Open(TileMapComp* tileMap)
+    void TileMapTool::Open(UUID tileMapEntity)
     {
-        m_TileMap = tileMap;
+        m_TileMapEntity = tileMapEntity;
+        m_TileMap = ResolveTileMap(m_TileMapEntity);
         m_Open = (m_TileMap != nullptr);
         m_LastPaintedCell = {-1, -1};
 
@@ -48,8 +45,15 @@ namespace Spoon
     void TileMapTool::Close()
     {
         m_Open = false;
+        m_TileMapEntity = {};
         m_TileMap = nullptr;
         m_LastPaintedCell = {-1, -1};
+    }
+
+    bool TileMapTool::RefreshTileMap()
+    {
+        m_TileMap = ResolveTileMap(m_TileMapEntity);
+        return m_TileMap != nullptr;
     }
 
     void TileMapTool::EnsureValidState(TileMapComp& tileMap)
@@ -182,8 +186,10 @@ namespace Spoon
                 const bool selected =
                     m_ActiveLayerIndex == static_cast<int>(index);
 
+                ImGui::PushID(static_cast<int>(index));
                 if (ImGui::Selectable(displayName.c_str(), selected))
                     m_ActiveLayerIndex = static_cast<int>(index);
+                ImGui::PopID();
 
                 if (selected)
                     ImGui::SetItemDefaultFocus();
@@ -492,7 +498,7 @@ namespace Spoon
         const ImVec2& imageMax
     )
     {
-        if (!m_Open || !IsTileMapPointerValid(m_TileMap))
+        if (!m_Open || !RefreshTileMap())
         {
             Close();
             return false;
@@ -551,7 +557,7 @@ namespace Spoon
     {
         static_cast<void>(tick);
 
-        if (!m_Open || !IsTileMapPointerValid(m_TileMap))
+        if (!m_Open || !RefreshTileMap())
         {
             Close();
             return;

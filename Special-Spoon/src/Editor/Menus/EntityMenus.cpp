@@ -224,7 +224,7 @@ namespace Spoon
                 if (auto* tileMap = dynamic_cast<TileMapComp*>(selectedComponent))
                 {
                     if (ImGui::Button("Open Tile Map Editor"))
-                        Application::Get().GetEditor().EditTileMap(*tileMap);
+                        Application::Get().GetEditor().EditTileMap(selectedID);
                 }
 
                 ImGui::EndChild();

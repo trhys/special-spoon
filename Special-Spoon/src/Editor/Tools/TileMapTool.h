@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ECS/UUID.h"
 #include "Editor/Utils/Viewport.h"
 #include "SFML/System/Time.hpp"
 
@@ -10,7 +11,7 @@ namespace Spoon
     class TileMapTool
     {
     public:
-        void Open(TileMapComp* tileMap);
+        void Open(UUID tileMapEntity);
         void Close();
 
         bool IsOpen() const { return m_Open; }
@@ -25,6 +26,7 @@ namespace Spoon
         );
 
     private:
+        bool RefreshTileMap();
         void DrawLayerPanel(TileMapComp& tileMap);
         void DrawTilePalette(TileMapComp& tileMap);
 
@@ -47,6 +49,7 @@ namespace Spoon
         ) const;
 
         bool m_Open = false;
+        UUID m_TileMapEntity{};
         TileMapComp* m_TileMap = nullptr;
 
         int m_ActiveLayerIndex = 0;

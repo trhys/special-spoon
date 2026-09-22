@@ -188,9 +188,9 @@ namespace Spoon
         m_TextureRectTool.Run(comp);
     }
 
-    void Editor::EditTileMap(TileMapComp& comp)
+    void Editor::EditTileMap(UUID id)
     {
-        m_TileMapTool.Open(&comp);
+        m_TileMapTool.Open(id);
     }
 
     void Editor::PickEntity(UUID id, EntityManager& e_Manager)
