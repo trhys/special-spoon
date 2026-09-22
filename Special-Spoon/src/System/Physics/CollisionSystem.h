@@ -437,15 +437,21 @@ namespace Spoon
            const sf::Vector2f tangentialDelta = fullDelta - normalDelta;
            const sf::Vector2f appliedDelta = tangentialDelta + normalDelta * clampedTime;
            const sf::Vector2f correction = appliedDelta - fullDelta;
+           const sf::Vector2f transformDelta = motion.transformAlreadyAdvanced ? correction : appliedDelta;
+           sf::Vector2f updatedPosition = motion.currentPosition;
 
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
             if (transformArray.m_IdToIndex.count(entity))
             {
                auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-               const sf::Vector2f transformDelta = motion.transformAlreadyAdvanced ? correction : appliedDelta;
                if (!IsZeroVector(transformDelta))
                    transform.Move(transformDelta);
+               updatedPosition = transform.GetPosition();
             }
+           else if (!IsZeroVector(transformDelta))
+           {
+               updatedPosition += transformDelta;
+           }
 
            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
            if (movementArray.m_IdToIndex.count(entity))
@@ -454,6 +460,13 @@ namespace Spoon
                movement.m_ProposedDelta = appliedDelta;
                movement.m_WasCorrectedByPhysics = true;
            }
+
+           m_FrameMotionCache[entity] = FrameMotion{
+               updatedPosition,
+               updatedPosition,
+               { 0.0f, 0.0f },
+               false
+           };
 
            return true;
         }
@@ -496,9 +509,10 @@ namespace Spoon
                const FrameMotion& motionA = GetFrameMotion(manager, hit->entityA);
                const FrameMotion& motionB = GetFrameMotion(manager, hit->entityB);
                const float normalMotionA = motionA.delta.x * hit->normal.x + motionA.delta.y * hit->normal.y;
-               const float normalMotionB = motionB.delta.x * hit->normal.x + motionB.delta.y * hit->normal.y;
+               const sf::Vector2f inverseNormal = { -hit->normal.x, -hit->normal.y };
+               const float normalMotionB = motionB.delta.x * inverseNormal.x + motionB.delta.y * inverseNormal.y;
                const bool movedA = normalMotionA < -0.0001f && ApplySweepClamp(manager, hit->entityA, motionA, hit->normal, hit->time);
-               const bool movedB = normalMotionB < -0.0001f && ApplySweepClamp(manager, hit->entityB, motionB, hit->normal, hit->time);
+               const bool movedB = normalMotionB < -0.0001f && ApplySweepClamp(manager, hit->entityB, motionB, inverseNormal, hit->time);
                if (!movedA && !movedB)
                    continue;
 

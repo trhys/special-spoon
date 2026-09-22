@@ -35,8 +35,10 @@ namespace Spoon
         if (movementIt != movementArray.m_IdToIndex.end())
         {
             auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
-            motion.delta = movement.m_ProposedDelta;
-            if (physicsIt == physicsArray.m_IdToIndex.end())
+            const bool hasPhysics = physicsIt != physicsArray.m_IdToIndex.end();
+            if (!hasPhysics || manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name).bodyType != BodyType::Static)
+                motion.delta = movement.m_ProposedDelta;
+            if (!hasPhysics)
                 motion.transformAlreadyAdvanced = physicsArray.m_Components.empty();
         }
 
