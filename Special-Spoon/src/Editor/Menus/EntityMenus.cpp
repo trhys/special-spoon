@@ -5,6 +5,7 @@
 
 #include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "ECS/Components/World/TileMapComp.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
@@ -219,6 +220,13 @@ namespace Spoon
             if(ImGui::BeginChild("Component Inspector"))
             {
                 selectedComponent->OnReflect();
+
+                if (auto* tileMap = dynamic_cast<TileMapComp*>(selectedComponent))
+                {
+                    if (ImGui::Button("Open Tile Map Editor"))
+                        Application::Get().GetEditor().EditTileMap(*tileMap);
+                }
+
                 ImGui::EndChild();
             }
         }

@@ -1,5 +1,7 @@
 #include "Editor.h"
 
+#include "ECS/Components/World/TileMapComp.h"
+
 #include "Menus/SceneMenus.h"
 #include "Menus/EntityMenus.h"
 #include "Menus/SystemsMenu.h"
@@ -178,6 +180,7 @@ namespace Spoon
 
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
+        if (m_TileMapTool.IsOpen()) m_TileMapTool.Update(tick);
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)
@@ -185,14 +188,38 @@ namespace Spoon
         m_TextureRectTool.Run(comp);
     }
 
+    void Editor::EditTileMap(TileMapComp& comp)
+    {
+        m_TileMapTool.Open(&comp);
+    }
+
     void Editor::PickEntity(UUID id, EntityManager& e_Manager)
     {
         SelectEntity(id, this, e_Manager);
+    }
+
+    bool Editor::HandleViewportTools(
+        Viewport& viewport,
+        bool viewportHovered,
+        const ImVec2& imageMin,
+        const ImVec2& imageMax
+    )
+    {
+        if (!m_TileMapTool.IsOpen())
+            return false;
+
+        return m_TileMapTool.HandleViewport(
+            viewport,
+            viewportHovered,
+            imageMin,
+            imageMax
+        );
     }
 
     void Editor::Shutdown()
     {
         m_AnimationTool.Shutdown();
         m_TextureRectTool.Shutdown();
+        m_TileMapTool.Close();
     }
 }
