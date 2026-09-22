@@ -49,6 +49,7 @@ namespace Spoon
                 collider.touchingThisFrame.clear();
             }
 
+            m_FrameMotionDt = dt;
             m_FrameMotionCache.clear();
 
             if (colliderArray.m_Components.size() < 2)
@@ -332,8 +333,8 @@ namespace Spoon
            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
 
            sf::Vector2f correctionForA = { 0.0f, 0.0f };
-           const FrameMotion& motionA = GetFrameMotion(manager, entityA, dt);
-           const FrameMotion& motionB = GetFrameMotion(manager, entityB, dt);
+           const FrameMotion& motionA = GetFrameMotion(manager, entityA);
+           const FrameMotion& motionB = GetFrameMotion(manager, entityB);
 
            if (ComputePairCorrection(colliderA, motionA.currentPosition, colliderB, motionB.currentPosition, correctionForA))
                return std::nullopt;
@@ -409,8 +410,8 @@ namespace Spoon
 
            auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
-           const FrameMotion& motionA = GetFrameMotion(manager, entityA, dt);
-           const FrameMotion& motionB = GetFrameMotion(manager, entityB, dt);
+           const FrameMotion& motionA = GetFrameMotion(manager, entityA);
+           const FrameMotion& motionB = GetFrameMotion(manager, entityB);
            sf::Vector2f correctionForA = { 0.0f, 0.0f };
            return ComputePairCorrection(
                colliderA,
@@ -492,12 +493,12 @@ namespace Spoon
                if (!hit)
                    continue;
 
-               const FrameMotion& motionA = GetFrameMotion(manager, hit->entityA, dt);
-               const FrameMotion& motionB = GetFrameMotion(manager, hit->entityB, dt);
+               const FrameMotion& motionA = GetFrameMotion(manager, hit->entityA);
+               const FrameMotion& motionB = GetFrameMotion(manager, hit->entityB);
                const float normalMotionA = motionA.delta.x * hit->normal.x + motionA.delta.y * hit->normal.y;
                const float normalMotionB = motionB.delta.x * hit->normal.x + motionB.delta.y * hit->normal.y;
                const bool movedA = normalMotionA < -0.0001f && ApplySweepClamp(manager, hit->entityA, motionA, hit->normal, hit->time);
-               const bool movedB = normalMotionB > 0.0001f && ApplySweepClamp(manager, hit->entityB, motionB, hit->normal, hit->time);
+               const bool movedB = normalMotionB < -0.0001f && ApplySweepClamp(manager, hit->entityB, motionB, hit->normal, hit->time);
                if (!movedA && !movedB)
                    continue;
 
@@ -637,13 +638,13 @@ namespace Spoon
             return &manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
         }
 
-         const FrameMotion& GetFrameMotion(EntityManager& manager, UUID entity, float dt)
+         const FrameMotion& GetFrameMotion(EntityManager& manager, UUID entity)
         {
             auto cached = m_FrameMotionCache.find(entity);
             if (cached != m_FrameMotionCache.end())
                 return cached->second;
 
-            return m_FrameMotionCache.emplace(entity, ComputeFrameMotion(manager, entity, dt)).first->second;
+            return m_FrameMotionCache.emplace(entity, ComputeFrameMotion(manager, entity, m_FrameMotionDt)).first->second;
         }
 
          void SyncMovementVelocityIfPresent(EntityManager& manager, UUID entity, const PhysicsComp* physics)
@@ -803,5 +804,6 @@ namespace Spoon
         Quadtree quadtree;
         CollisionSystemConfig m_Config;
         std::unordered_map<UUID, FrameMotion> m_FrameMotionCache;
+        float m_FrameMotionDt = 0.0f;
     };
 }
