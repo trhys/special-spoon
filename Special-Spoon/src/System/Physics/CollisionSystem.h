@@ -183,7 +183,7 @@ namespace Spoon
 
            const float entryTime = std::max(xEntry, yEntry);
            const float exitTime = std::min(xExit, yExit);
-           if (entryTime > exitTime || exitTime < 0.0f || entryTime > 1.0f)
+           if (entryTime < -0.0001f || entryTime > exitTime || exitTime < 0.0f || entryTime > 1.0f)
                return std::nullopt;
 
            SweptAABBHit hit;
