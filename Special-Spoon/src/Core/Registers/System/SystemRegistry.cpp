@@ -2,7 +2,7 @@
 #include "System/AnimationSystem.h"
 #include "System/Physics/CollisionSystem.h"
 #include "System/Physics/PhysicsSystem.h"
-#include "System/Physics/PhysicsSystemConfig.h"
+#include "System/Physics/SystemConfigs.h"
 
 namespace Spoon
 {
@@ -19,7 +19,8 @@ namespace Spoon
 
     std::unique_ptr<ISystem> LoadCollisionSystem(const json* systemData)
     {
-        return std::make_unique<CollisionSystem>();
+        if (!systemData) { return std::make_unique<CollisionSystem>(); }
+        return std::make_unique<CollisionSystem>(systemData->get<CollisionSystemConfig>());
     }
 
     void RegisterDefaultSystems()

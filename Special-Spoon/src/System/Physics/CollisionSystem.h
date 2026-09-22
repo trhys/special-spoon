@@ -17,8 +17,16 @@ namespace Spoon
     {
     public:
         CollisionSystem() : ISystem::ISystem("Collision") {}
+        CollisionSystem(const CollisionSystemConfig& config) : ISystem::ISystem("Collision") { m_Config = config; }
         ~CollisionSystem() {}
 
+        json Serialize() override
+        {
+          json j;
+          nlohmann::to_json(j, m_Config);
+          return j;
+        }
+          
         void Update(sf::Time tick, EntityManager& manager) override
         {
             (void)tick;
@@ -44,7 +52,7 @@ namespace Spoon
             {
                 bool appliedCorrection = false;
                 sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
-                quadtree.BuildTree((bounds.x > 0.0f && bounds.y > 0.0f) ? bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
+                quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
                 quadtree.Populate(manager);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
@@ -63,17 +71,17 @@ namespace Spoon
 
         void OnReflect() override {
           ImGui::SeparatorText("Collision Bounds");
-          ImGui::SliderFloat("Bounds X:", &bounds.x, 0.0f, 4000.0f);
-          ImGui::SliderFloat("Bounds Y:", &bounds.y, 0.0f, 4000.0f);
+          ImGui::SliderFloat("Bounds X:", &m_Config.bounds.x, 0.0f, 4000.0f);
+          ImGui::SliderFloat("Bounds Y:", &m_Config.bounds.y, 0.0f, 4000.0f);
         }
 
     private:
-        static bool IsZeroVector(const sf::Vector2f& value)
+         bool IsZeroVector(const sf::Vector2f& value)
         {
             return std::abs(value.x) < 0.0001f && std::abs(value.y) < 0.0001f;
         }
 
-        static sf::Vector2f ComputeAABBCorrection(const sf::FloatRect& boxA, const sf::FloatRect& boxB)
+         sf::Vector2f ComputeAABBCorrection(const sf::FloatRect& boxA, const sf::FloatRect& boxB)
         {
             const float moveLeft = boxB.position.x - (boxA.position.x + boxA.size.x);
             const float moveRight = (boxB.position.x + boxB.size.x) - boxA.position.x;
@@ -89,7 +97,7 @@ namespace Spoon
             return { 0.0f, bestY };
         }
 
-        static bool IntersectCircleCircle(const sf::Vector2f& centerA, float radiusA, const sf::Vector2f& centerB, float radiusB, sf::Vector2f& correctionForA)
+         bool IntersectCircleCircle(const sf::Vector2f& centerA, float radiusA, const sf::Vector2f& centerB, float radiusB, sf::Vector2f& correctionForA)
         {
             const sf::Vector2f delta = centerA - centerB;
             const float distanceSquared = delta.x * delta.x + delta.y * delta.y;
@@ -111,7 +119,7 @@ namespace Spoon
             return !IsZeroVector(correctionForA);
         }
 
-        static bool IntersectAABBCircle(const sf::FloatRect& boxA, const sf::Vector2f& circleCenter, float circleRadius, sf::Vector2f& correctionForA)
+         bool IntersectAABBCircle(const sf::FloatRect& boxA, const sf::Vector2f& circleCenter, float circleRadius, sf::Vector2f& correctionForA)
         {
             const float closestX = std::clamp(circleCenter.x, boxA.position.x, boxA.position.x + boxA.size.x);
             const float closestY = std::clamp(circleCenter.y, boxA.position.y, boxA.position.y + boxA.size.y);
@@ -145,7 +153,7 @@ namespace Spoon
             return !IsZeroVector(correctionForA);
         }
 
-        static bool ComputePairCorrection(EntityManager& manager, UUID entityA, UUID entityB, sf::Vector2f& correctionForA)
+         bool ComputePairCorrection(EntityManager& manager, UUID entityA, UUID entityB, sf::Vector2f& correctionForA)
         {
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
             auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
@@ -208,13 +216,13 @@ namespace Spoon
             return true;
         }
 
-        static void AddTouch(std::vector<UUID>& touched, UUID entity)
+         void AddTouch(std::vector<UUID>& touched, UUID entity)
         {
             if (std::find(touched.begin(), touched.end(), entity) == touched.end())
                 touched.push_back(entity);
         }
 
-        static float InverseMass(EntityManager& manager, UUID entity)
+         float InverseMass(EntityManager& manager, UUID entity)
         {
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
             if (!physicsArray.m_IdToIndex.count(entity))
@@ -228,7 +236,7 @@ namespace Spoon
             return 1.0f / physics.mass;
         }
 
-        static PhysicsComp* GetPhysicsIfPresent(EntityManager& manager, UUID entity)
+         PhysicsComp* GetPhysicsIfPresent(EntityManager& manager, UUID entity)
         {
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
             if (!physicsArray.m_IdToIndex.count(entity))
@@ -236,7 +244,7 @@ namespace Spoon
             return &manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
         }
 
-        static void SyncMovementVelocityIfPresent(EntityManager& manager, UUID entity, const PhysicsComp* physics)
+         void SyncMovementVelocityIfPresent(EntityManager& manager, UUID entity, const PhysicsComp* physics)
         {
             if (!physics)
                 return;
@@ -249,7 +257,7 @@ namespace Spoon
             movement.m_Velocity = physics->velocity;
         }
 
-        static void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA, float invMassA, float invMassB)
+         void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA, float invMassA, float invMassB)
         {
             const float totalInvMass = invMassA + invMassB;
             if (totalInvMass <= 0.0f)
@@ -343,7 +351,7 @@ namespace Spoon
             SyncMovementVelocityIfPresent(manager, entityB, physB);
         }
 
-        static void ApplyCorrection(EntityManager& manager, UUID entity, const sf::Vector2f& correction)
+         void ApplyCorrection(EntityManager& manager, UUID entity, const sf::Vector2f& correction)
         {
             if (IsZeroVector(correction))
                 return;
@@ -363,7 +371,7 @@ namespace Spoon
             }
         }
 
-        static bool ResolvePair(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA)
+         bool ResolvePair(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA)
         {
             if (IsZeroVector(correctionForA))
                 return false;
@@ -390,6 +398,6 @@ namespace Spoon
         }
 
         Quadtree quadtree;
-        sf::Vector2f bounds = {0.0f, 0.0f};
+        CollisionSystemConfig m_Config;
     };
 }

@@ -4,7 +4,7 @@
 #include "ECS/Components/Animation/AnimationData.h"
 #include "Core/Registers/ActionRegistry.h"
 #include "Core/Registers/StateRegistry.h"
-#include "System/Physics/PhysicsSystemConfig.h"
+#include "System/Physics/SystemConfigs.h"
 
 #include "nlohmann/json.hpp"
 #include "SFML/Graphics.hpp"
@@ -183,9 +183,22 @@ namespace Spoon
 			v.sleepSpeedThreshold = j.at("sleep threshold").get<float>();
 		if (j.contains("gravity enabled"))
 			v.gravityEnabled = j.at("gravity enabled").get<bool>();
-		if (j.contains("enable sleep snap"))
+	    if (j.contains("enable sleep snap"))
 			v.enableSleepSnap = j.at("enable sleep snap").get<bool>();
 		if (j.contains("clamp neg inputs"))
 			v.clampNegativeInputs = j.at("clamp neg inputs").get<bool>();
 	}
+
+    inline void to_json(json& j, const CollisionSystemConfig& v)
+    {
+      j = json{
+        {"bounds", v.bounds}
+      };
+    }
+
+    inline void from_json(const json& j, CollisionSystemConfig& v)
+    {
+      if (j.contains("bounds"))
+        v.bounds = j.at("bounds").get<sf::Vector2f>();
+    }
 }

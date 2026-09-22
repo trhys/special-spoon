@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SFML/Graphics.hpp"
+
 namespace Spoon {
   struct PhysicsSystemConfig
     {
@@ -12,4 +14,9 @@ namespace Spoon {
         bool enableSleepSnap = true;
         bool clampNegativeInputs = true;
     };
+
+  struct CollisionSystemConfig
+  {
+    sf::Vector2f bounds = {0.0f, 0.0f};
+  };
 }

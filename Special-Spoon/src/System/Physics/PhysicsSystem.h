@@ -3,7 +3,7 @@
 #include "System/System.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "ECS/ECS.h"
-#include "System/Physics/PhysicsSystemConfig.h"
+#include "System/Physics/SystemConfigs.h"
 
 #include <algorithm>
 #include <cmath>
