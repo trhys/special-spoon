@@ -1,11 +1,57 @@
 #include "QuadTree.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "ECS/Components/MovementComp.h"
+#include "ECS/Components/PhysicsComp.h"
 #include "ECS/Components/TransformComp.h"
 
+#include <algorithm>
 #include <optional>
 
 namespace Spoon
 {
+    namespace
+    {
+        sf::Vector2f GetFrameDelta(EntityManager& manager, UUID entity, float dt)
+        {
+            auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
+            if (physicsArray.m_IdToIndex.count(entity))
+            {
+                auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
+                if (physics.bodyType == BodyType::Static)
+                    return { 0.0f, 0.0f };
+            }
+
+            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+            if (movementArray.m_IdToIndex.count(entity))
+            {
+                return manager.GetComponent<MovementComp>(entity, MovementComp::Name).m_ProposedDelta;
+            }
+
+            if (physicsArray.m_IdToIndex.count(entity))
+            {
+                auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
+                return physics.velocity * dt;
+            }
+
+            return { 0.0f, 0.0f };
+        }
+
+        sf::FloatRect ComputeSweptBounds(const sf::FloatRect& currentBounds, const sf::Vector2f& delta)
+        {
+            const sf::Vector2f startPosition = currentBounds.position - delta;
+            const sf::Vector2f minPosition = {
+                std::min(startPosition.x, currentBounds.position.x),
+                std::min(startPosition.y, currentBounds.position.y)
+            };
+            const sf::Vector2f maxPosition = {
+                std::max(startPosition.x + currentBounds.size.x, currentBounds.position.x + currentBounds.size.x),
+                std::max(startPosition.y + currentBounds.size.y, currentBounds.position.y + currentBounds.size.y)
+            };
+
+            return sf::FloatRect(minPosition, maxPosition - minPosition);
+        }
+    }
+
     void Quadtree::BuildTree(sf::Vector2f gridSize)
     {
         sf::Vector2f node_size = { gridSize.x / 4, gridSize.y / 2 };
@@ -35,7 +81,7 @@ namespace Spoon
         }
     }
 
-    void Quadtree::Populate(EntityManager& manager)
+    void Quadtree::Populate(EntityManager& manager, float dt, bool useSweptBounds)
     {
         for (auto& leaf : m_GridNodes)
             leaf.collision_buffer.clear();
@@ -48,7 +94,11 @@ namespace Spoon
 
             auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
             auto& collider = manager.GetComponent<ColliderComp>(entity, ColliderComp::Name);
-            const sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
+            sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
+            if (useSweptBounds)
+            {
+                entityBox = ComputeSweptBounds(entityBox, GetFrameDelta(manager, entity, dt));
+            }
             for (auto& leaf : m_GridNodes)
             {
                 if (const std::optional intersect = leaf.body.findIntersection(entityBox))

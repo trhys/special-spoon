@@ -10,6 +10,8 @@
 #include <optional>
 #include <cmath>
 #include <algorithm>
+#include <limits>
+#include <vector>
 
 namespace Spoon
 {
@@ -29,7 +31,7 @@ namespace Spoon
           
         void Update(sf::Time tick, EntityManager& manager) override
         {
-            (void)tick;
+            const float dt = tick.asSeconds();
 
             auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
             auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
@@ -47,13 +49,15 @@ namespace Spoon
             if (colliderArray.m_Components.size() < 2)
                 return;
 
+            ResolveSweptCollisions(manager, dt);
+
             constexpr int maxIterations = 8;
             for (int iteration = 0; iteration < maxIterations; iteration++)
             {
                 bool appliedCorrection = false;
                 sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
                 quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
-                quadtree.Populate(manager);
+                quadtree.Populate(manager, dt);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
                 {
@@ -76,9 +80,240 @@ namespace Spoon
         }
 
     private:
+        struct SweptAABBHit
+        {
+           float time = 1.0f;
+           sf::Vector2f normal = { 0.0f, 0.0f };
+        };
+
+        struct SweptPairHit
+        {
+           UUID entityA;
+           UUID entityB;
+           float time = 1.0f;
+           sf::Vector2f normal = { 0.0f, 0.0f };
+           sf::Vector2f deltaA = { 0.0f, 0.0f };
+           sf::Vector2f deltaB = { 0.0f, 0.0f };
+        };
+
          bool IsZeroVector(const sf::Vector2f& value)
         {
-            return std::abs(value.x) < 0.0001f && std::abs(value.y) < 0.0001f;
+           return std::abs(value.x) < 0.0001f && std::abs(value.y) < 0.0001f;
+        }
+
+         sf::Vector2f GetFrameDelta(EntityManager& manager, UUID entity, float dt)
+        {
+           if (PhysicsComp* physics = GetPhysicsIfPresent(manager, entity))
+           {
+               if (physics->bodyType == BodyType::Static)
+                   return { 0.0f, 0.0f };
+           }
+
+           auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+           if (movementArray.m_IdToIndex.count(entity))
+               return manager.GetComponent<MovementComp>(entity, MovementComp::Name).m_ProposedDelta;
+
+           if (PhysicsComp* physics = GetPhysicsIfPresent(manager, entity))
+           {
+               return physics->velocity * dt;
+           }
+
+           return { 0.0f, 0.0f };
+        }
+
+         std::optional<SweptAABBHit> SweptAABB(const sf::FloatRect& movingBox, const sf::Vector2f& delta, const sf::FloatRect& targetBox)
+        {
+           if (IsZeroVector(delta))
+               return std::nullopt;
+
+           const auto buildInterval = [](float movingMin, float movingMax, float targetMin, float targetMax, float axisDelta, float& entry, float& exit)
+           {
+               if (std::abs(axisDelta) < 0.0001f)
+               {
+                   if (movingMax <= targetMin || movingMin >= targetMax)
+                       return false;
+
+                   entry = -std::numeric_limits<float>::infinity();
+                   exit = std::numeric_limits<float>::infinity();
+                   return true;
+               }
+
+               if (axisDelta > 0.0f)
+               {
+                   entry = (targetMin - movingMax) / axisDelta;
+                   exit = (targetMax - movingMin) / axisDelta;
+               }
+               else
+               {
+                   entry = (targetMax - movingMin) / axisDelta;
+                   exit = (targetMin - movingMax) / axisDelta;
+               }
+
+               return true;
+           };
+
+           float xEntry = 0.0f;
+           float xExit = 0.0f;
+           if (!buildInterval(
+               movingBox.position.x,
+               movingBox.position.x + movingBox.size.x,
+               targetBox.position.x,
+               targetBox.position.x + targetBox.size.x,
+               delta.x,
+               xEntry,
+               xExit))
+           {
+               return std::nullopt;
+           }
+
+           float yEntry = 0.0f;
+           float yExit = 0.0f;
+           if (!buildInterval(
+               movingBox.position.y,
+               movingBox.position.y + movingBox.size.y,
+               targetBox.position.y,
+               targetBox.position.y + targetBox.size.y,
+               delta.y,
+               yEntry,
+               yExit))
+           {
+               return std::nullopt;
+           }
+
+           const float entryTime = std::max(xEntry, yEntry);
+           const float exitTime = std::min(xExit, yExit);
+           if (entryTime > exitTime || exitTime < 0.0f || entryTime > 1.0f)
+               return std::nullopt;
+
+           SweptAABBHit hit;
+           hit.time = std::max(0.0f, entryTime);
+           if (xEntry > yEntry)
+               hit.normal = delta.x > 0.0f ? sf::Vector2f{ -1.0f, 0.0f } : sf::Vector2f{ 1.0f, 0.0f };
+           else
+               hit.normal = delta.y > 0.0f ? sf::Vector2f{ 0.0f, -1.0f } : sf::Vector2f{ 0.0f, 1.0f };
+
+           return hit;
+        }
+
+         std::optional<SweptPairHit> ComputeSweptPairHit(EntityManager& manager, UUID entityA, UUID entityB, float dt)
+        {
+           auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+           auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+           if (!transformArray.m_IdToIndex.count(entityA) || !transformArray.m_IdToIndex.count(entityB))
+               return std::nullopt;
+           if (!colliderArray.m_IdToIndex.count(entityA) || !colliderArray.m_IdToIndex.count(entityB))
+               return std::nullopt;
+
+           auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
+           auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
+           if (colliderA.GetType() != ColliderType::AABB || colliderB.GetType() != ColliderType::AABB)
+               return std::nullopt;
+
+           auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
+           auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
+
+           const sf::FloatRect boundsA = colliderA.GetWorldBounds(transformA.GetPosition());
+           const sf::FloatRect boundsB = colliderB.GetWorldBounds(transformB.GetPosition());
+           if (boundsA.findIntersection(boundsB))
+               return std::nullopt;
+
+           const sf::Vector2f deltaA = GetFrameDelta(manager, entityA, dt);
+           const sf::Vector2f deltaB = GetFrameDelta(manager, entityB, dt);
+           if (IsZeroVector(deltaA) && IsZeroVector(deltaB))
+               return std::nullopt;
+
+           const sf::FloatRect startBoundsA = colliderA.GetWorldBounds(transformA.GetPosition() - deltaA);
+           const sf::FloatRect startBoundsB = colliderB.GetWorldBounds(transformB.GetPosition() - deltaB);
+           if (startBoundsA.findIntersection(startBoundsB))
+               return std::nullopt;
+
+           const sf::Vector2f relativeDelta = deltaA - deltaB;
+           std::optional<SweptAABBHit> hit = SweptAABB(startBoundsA, relativeDelta, startBoundsB);
+           if (!hit)
+               return std::nullopt;
+
+           return SweptPairHit{
+               entityA,
+               entityB,
+               hit->time,
+               hit->normal,
+               deltaA,
+               deltaB
+           };
+        }
+
+         bool ApplySweepClamp(EntityManager& manager, UUID entity, const sf::Vector2f& fullDelta, float time)
+        {
+           if (IsZeroVector(fullDelta))
+               return false;
+
+           const float clampedTime = std::clamp(time, 0.0f, 1.0f);
+           const bool corrected = clampedTime < 0.9999f;
+           if (!corrected)
+               return false;
+
+           const sf::Vector2f appliedDelta = fullDelta * clampedTime;
+           const sf::Vector2f correction = appliedDelta - fullDelta;
+
+           auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+           if (transformArray.m_IdToIndex.count(entity) && !IsZeroVector(correction))
+           {
+               auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
+               transform.Move(correction);
+           }
+
+           auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+           if (movementArray.m_IdToIndex.count(entity))
+           {
+               auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
+               movement.m_ProposedDelta = appliedDelta;
+               movement.m_WasCorrectedByPhysics = true;
+           }
+
+           return true;
+        }
+
+         void ResolveSweptCollisions(EntityManager& manager, float dt)
+        {
+           if (dt <= 0.0f)
+               return;
+
+           sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
+           quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
+           quadtree.Populate(manager, dt, true);
+
+           std::vector<SweptPairHit> hits;
+           for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
+           {
+               if (std::optional<SweptPairHit> hit = ComputeSweptPairHit(manager, entityA, entityB, dt))
+                   hits.push_back(*hit);
+           }
+
+           std::sort(hits.begin(), hits.end(), [](const SweptPairHit& lhs, const SweptPairHit& rhs)
+           {
+               return lhs.time < rhs.time;
+           });
+
+           for (const SweptPairHit& cachedHit : hits)
+           {
+               std::optional<SweptPairHit> hit = ComputeSweptPairHit(manager, cachedHit.entityA, cachedHit.entityB, dt);
+               if (!hit)
+                   continue;
+
+               const bool movedA = ApplySweepClamp(manager, hit->entityA, hit->deltaA, hit->time);
+               const bool movedB = ApplySweepClamp(manager, hit->entityB, hit->deltaB, hit->time);
+               if (!movedA && !movedB)
+                   continue;
+
+               auto& colliderA = manager.GetComponent<ColliderComp>(hit->entityA, ColliderComp::Name);
+               auto& colliderB = manager.GetComponent<ColliderComp>(hit->entityB, ColliderComp::Name);
+               AddTouch(colliderA.touchingThisFrame, hit->entityB);
+               AddTouch(colliderB.touchingThisFrame, hit->entityA);
+
+               const float invMassA = InverseMass(manager, hit->entityA);
+               const float invMassB = InverseMass(manager, hit->entityB);
+               ApplyVelocityResponse(manager, hit->entityA, hit->entityB, hit->normal, invMassA, invMassB);
+           }
         }
 
          sf::Vector2f ComputeAABBCorrection(const sf::FloatRect& boxA, const sf::FloatRect& boxB)
@@ -257,17 +492,14 @@ namespace Spoon
             movement.m_Velocity = physics->velocity;
         }
 
-         void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA, float invMassA, float invMassB)
+         void ApplyVelocityResponse(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& normal, float invMassA, float invMassB)
         {
             const float totalInvMass = invMassA + invMassB;
             if (totalInvMass <= 0.0f)
                 return;
 
-            const float correctionLength = std::sqrt(correctionForA.x * correctionForA.x + correctionForA.y * correctionForA.y);
-            if (correctionLength <= 0.0001f)
+            if (IsZeroVector(normal))
                 return;
-
-            const sf::Vector2f normal = correctionForA / correctionLength;
             PhysicsComp* physA = GetPhysicsIfPresent(manager, entityA);
             PhysicsComp* physB = GetPhysicsIfPresent(manager, entityB);
 
@@ -393,7 +625,11 @@ namespace Spoon
                 ApplyCorrection(manager, entityB, correctionB);
             }
 
-            ApplyVelocityResponse(manager, entityA, entityB, correctionForA, invMassA, invMassB);
+            const float correctionLength = std::sqrt(correctionForA.x * correctionForA.x + correctionForA.y * correctionForA.y);
+            if (correctionLength <= 0.0001f)
+                return true;
+
+            ApplyVelocityResponse(manager, entityA, entityB, correctionForA / correctionLength, invMassA, invMassB);
             return true;
         }
 

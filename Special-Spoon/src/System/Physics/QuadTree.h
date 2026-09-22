@@ -23,7 +23,7 @@ namespace Spoon
         ~Quadtree() {}
 
         void BuildTree(sf::Vector2f gridSize);
-        void Populate(EntityManager& manager);
+        void Populate(EntityManager& manager, float dt, bool useSweptBounds = false);
         std::set<std::pair<UUID, UUID>> GeneratePairs();
 
         // std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }
