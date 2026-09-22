@@ -201,7 +201,7 @@ namespace Spoon
            const sf::Vector2f startOffset = centerA - centerB;
            const float combinedRadius = radiusA + radiusB;
            const float c = startOffset.x * startOffset.x + startOffset.y * startOffset.y - combinedRadius * combinedRadius;
-           if (c < 0.0f)
+           if (c <= 0.0001f)
               return std::nullopt;
 
            const float a = delta.x * delta.x + delta.y * delta.y;
@@ -209,7 +209,7 @@ namespace Spoon
               return std::nullopt;
 
            const float b = 2.0f * (startOffset.x * delta.x + startOffset.y * delta.y);
-           if (c <= 0.0001f && b >= -0.0001f)
+           if (b >= -0.0001f)
               return std::nullopt;
 
            const float discriminant = b * b - 4.0f * a * c;
@@ -348,8 +348,6 @@ namespace Spoon
 
            auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
-           if (colliderA.GetType() != ColliderType::AABB || colliderB.GetType() != ColliderType::AABB)
-               return std::nullopt;
 
            auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
            auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
