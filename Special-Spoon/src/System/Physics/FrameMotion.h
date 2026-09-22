@@ -17,29 +17,27 @@ namespace Spoon
 
     inline FrameMotion ComputeFrameMotion(EntityManager& manager, UUID entity, float dt)
     {
+        (void)dt;
         FrameMotion motion{};
         motion.currentPosition = manager.GetComponent<TransformComp>(entity, TransformComp::Name).GetPosition();
 
         auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
         auto physicsIt = physicsArray.m_IdToIndex.find(entity);
-        if (physicsIt != physicsArray.m_IdToIndex.end())
-        {
-            auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
-            motion.transformAlreadyAdvanced = physics.bodyType != BodyType::Static;
-            if (physics.bodyType != BodyType::Static)
-                motion.delta = physics.velocity * dt;
-        }
-
         auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
         auto movementIt = movementArray.m_IdToIndex.find(entity);
         if (movementIt != movementArray.m_IdToIndex.end())
         {
             auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
-            const bool hasPhysics = physicsIt != physicsArray.m_IdToIndex.end();
-            if (!hasPhysics || manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name).bodyType != BodyType::Static)
-                motion.delta = movement.m_ProposedDelta;
-            if (!hasPhysics)
-                motion.transformAlreadyAdvanced = physicsArray.m_Components.empty();
+            motion.delta = movement.m_ProposedDelta;
+            motion.transformAlreadyAdvanced = movement.m_TransformAdvancedThisFrame;
+        }
+
+        if (physicsIt != physicsArray.m_IdToIndex.end())
+        {
+            auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
+            if (movementIt == movementArray.m_IdToIndex.end())
+                motion.delta = physics.frameAppliedDelta;
+            motion.transformAlreadyAdvanced = motion.transformAlreadyAdvanced || physics.transformAdvancedThisFrame;
         }
 
         motion.startPosition = motion.transformAlreadyAdvanced ? motion.currentPosition - motion.delta : motion.currentPosition;

@@ -425,9 +425,6 @@ namespace Spoon
                return false;
 
            const float clampedTime = std::clamp(time, 0.0f, 1.0f);
-           const bool corrected = clampedTime < 0.9999f;
-           if (!corrected)
-               return false;
 
            const float motionAlongNormal = fullDelta.x * normal.x + fullDelta.y * normal.y;
            const sf::Vector2f normalDelta = normal * motionAlongNormal;

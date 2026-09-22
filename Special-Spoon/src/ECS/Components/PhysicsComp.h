@@ -84,6 +84,8 @@ namespace Spoon
         float restitution = -1.0f;
         float friction = -1.0f;
         float linearDamping = -1.0f;
+        sf::Vector2f frameAppliedDelta = { 0.0f, 0.0f };
+        bool transformAdvancedThisFrame = false;
     };
 
     inline void to_json(json& j, const PhysicsComp& comp)
