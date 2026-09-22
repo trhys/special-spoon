@@ -57,7 +57,7 @@ namespace Spoon
                 bool appliedCorrection = false;
                 sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
                 quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
-                quadtree.Populate(manager, dt);
+                quadtree.Populate(manager);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
                 {
@@ -242,6 +242,27 @@ namespace Spoon
            };
         }
 
+         bool StartedOverlapping(EntityManager& manager, UUID entityA, UUID entityB, float dt)
+        {
+           auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+           auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+           if (!transformArray.m_IdToIndex.count(entityA) || !transformArray.m_IdToIndex.count(entityB))
+               return false;
+           if (!colliderArray.m_IdToIndex.count(entityA) || !colliderArray.m_IdToIndex.count(entityB))
+               return false;
+
+           auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
+           auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
+           auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
+           auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
+
+           const sf::Vector2f deltaA = GetFrameDelta(manager, entityA, dt);
+           const sf::Vector2f deltaB = GetFrameDelta(manager, entityB, dt);
+           const sf::FloatRect startBoundsA = colliderA.GetWorldBounds(transformA.GetPosition() - deltaA);
+           const sf::FloatRect startBoundsB = colliderB.GetWorldBounds(transformB.GetPosition() - deltaB);
+           return startBoundsA.findIntersection(startBoundsB).has_value();
+        }
+
          bool ApplySweepClamp(EntityManager& manager, UUID entity, const sf::Vector2f& fullDelta, float time)
         {
            if (IsZeroVector(fullDelta))
@@ -280,11 +301,19 @@ namespace Spoon
 
            sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
            quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
-           quadtree.Populate(manager, dt, true);
+           quadtree.PopulateSwept(manager, dt);
 
            std::vector<SweptPairHit> hits;
            for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
            {
+               if (StartedOverlapping(manager, entityA, entityB, dt))
+               {
+                   auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
+                   auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
+                   AddTouch(colliderA.touchingThisFrame, entityB);
+                   AddTouch(colliderB.touchingThisFrame, entityA);
+               }
+
                if (std::optional<SweptPairHit> hit = ComputeSweptPairHit(manager, entityA, entityB, dt))
                    hits.push_back(*hit);
            }
@@ -300,8 +329,10 @@ namespace Spoon
                if (!hit)
                    continue;
 
-               const bool movedA = ApplySweepClamp(manager, hit->entityA, hit->deltaA, hit->time);
-               const bool movedB = ApplySweepClamp(manager, hit->entityB, hit->deltaB, hit->time);
+               const float normalMotionA = hit->deltaA.x * hit->normal.x + hit->deltaA.y * hit->normal.y;
+               const float normalMotionB = hit->deltaB.x * hit->normal.x + hit->deltaB.y * hit->normal.y;
+               const bool movedA = normalMotionA < -0.0001f && ApplySweepClamp(manager, hit->entityA, hit->deltaA, hit->time);
+               const bool movedB = normalMotionB > 0.0001f && ApplySweepClamp(manager, hit->entityB, hit->deltaB, hit->time);
                if (!movedA && !movedB)
                    continue;
 

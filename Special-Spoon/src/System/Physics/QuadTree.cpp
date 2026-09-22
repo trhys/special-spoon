@@ -81,6 +81,16 @@ namespace Spoon
         }
     }
 
+    void Quadtree::Populate(EntityManager& manager)
+    {
+        Populate(manager, 0.0f, false);
+    }
+
+    void Quadtree::PopulateSwept(EntityManager& manager, float dt)
+    {
+        Populate(manager, dt, true);
+    }
+
     void Quadtree::Populate(EntityManager& manager, float dt, bool useSweptBounds)
     {
         for (auto& leaf : m_GridNodes)
