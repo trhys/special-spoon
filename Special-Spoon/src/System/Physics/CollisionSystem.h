@@ -336,9 +336,6 @@ namespace Spoon
            const FrameMotion motionA = GetFrameMotion(manager, entityA);
            const FrameMotion motionB = GetFrameMotion(manager, entityB);
 
-           if (ComputePairCorrection(colliderA, motionA.currentPosition, colliderB, motionB.currentPosition, correctionForA))
-               return std::nullopt;
-
            const sf::Vector2f deltaA = motionA.delta;
            const sf::Vector2f deltaB = motionB.delta;
            if (IsZeroVector(deltaA) && IsZeroVector(deltaB))
