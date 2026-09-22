@@ -139,8 +139,8 @@ namespace Spoon
 
     void Application::Shutdown()
     {
-        m_EntityManager.Shutdown();
         m_Editor.Shutdown();
+        m_EntityManager.Shutdown();
 
         if (m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
 

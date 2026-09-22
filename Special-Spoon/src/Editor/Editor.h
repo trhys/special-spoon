@@ -35,7 +35,7 @@ namespace Spoon
         );
 
         void SetCurrentProject(Project* project) { m_CurrentProject = project; }
-        void SetActiveScene(SceneData* scene) { m_ActiveScene = scene; }
+        void SetActiveScene(SceneData* scene);
         void SetWorkingDir(AssetNode* dir) { workingDir = dir; }
 
         Project* GetCurrentProject() { return m_CurrentProject; }

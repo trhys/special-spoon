@@ -193,6 +193,14 @@ namespace Spoon
         m_TileMapTool.Open(id);
     }
 
+    void Editor::SetActiveScene(SceneData* scene)
+    {
+        if (m_ActiveScene != scene)
+            m_TileMapTool.Close();
+
+        m_ActiveScene = scene;
+    }
+
     void Editor::PickEntity(UUID id, EntityManager& e_Manager)
     {
         SelectEntity(id, this, e_Manager);

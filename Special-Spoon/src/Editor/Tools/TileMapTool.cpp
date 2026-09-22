@@ -15,19 +15,20 @@ namespace Spoon
 
         TileMapComp* ResolveTileMap(UUID entity)
         {
-            if (entity.ID == 0)
+            auto& entityManager = Application::Get().GetEntityManager();
+            const auto& arrays = entityManager.GetAllArrays();
+            const auto arrayIt = arrays.find(TileMapComp::Name);
+            if (arrayIt == arrays.end())
                 return nullptr;
 
-            auto& tileMaps =
-                Application::Get()
-                    .GetEntityManager()
-                    .GetArray<TileMapComp>(TileMapComp::Name);
+            auto* tileMaps =
+                static_cast<ComponentArray<TileMapComp>*>(arrayIt->second.get());
 
-            const auto found = tileMaps.m_IdToIndex.find(entity);
-            if (found == tileMaps.m_IdToIndex.end())
+            const auto found = tileMaps->m_IdToIndex.find(entity);
+            if (found == tileMaps->m_IdToIndex.end())
                 return nullptr;
 
-            return &tileMaps.m_Components[found->second];
+            return &tileMaps->m_Components[found->second];
         }
     }
 
@@ -509,10 +510,13 @@ namespace Spoon
             imageMin.y + static_cast<float>(pixelMax.y)
         );
 
-        const ImU32 fillColor = (m_EraseMode || m_SelectedTileId == 0)
+        const bool erasePreview =
+            m_EraseMode || m_SelectedTileId == 0 ||
+            ImGui::IsMouseDown(ImGuiMouseButton_Right);
+        const ImU32 fillColor = erasePreview
             ? IM_COL32(220, 80, 80, 80)
             : IM_COL32(255, 220, 80, 80);
-        const ImU32 outlineColor = (m_EraseMode || m_SelectedTileId == 0)
+        const ImU32 outlineColor = erasePreview
             ? IM_COL32(255, 100, 100, 255)
             : IM_COL32(255, 230, 120, 255);
 
