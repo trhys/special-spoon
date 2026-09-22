@@ -34,8 +34,10 @@ namespace Spoon
     void TileMapTool::Open(UUID tileMapEntity)
     {
         m_TileMapEntity = tileMapEntity;
+        m_SceneGeneration = Application::Get().GetSceneManager().GetSceneGeneration();
         m_TileMap = ResolveTileMap(m_TileMapEntity);
         m_Open = (m_TileMap != nullptr);
+        m_HasPendingBuild = false;
         m_LastPaintedCell = {-1, -1};
         m_LastLeftDown = false;
         m_LastRightDown = false;
@@ -49,6 +51,7 @@ namespace Spoon
         m_Open = false;
         m_TileMapEntity = {};
         m_TileMap = nullptr;
+        m_HasPendingBuild = false;
         m_LastPaintedCell = {-1, -1};
         m_LastLeftDown = false;
         m_LastRightDown = false;
@@ -56,6 +59,12 @@ namespace Spoon
 
     bool TileMapTool::RefreshTileMap()
     {
+        if (Application::Get().GetSceneManager().GetSceneGeneration() !=
+            m_SceneGeneration)
+        {
+            return false;
+        }
+
         m_TileMap = ResolveTileMap(m_TileMapEntity);
         return m_TileMap != nullptr;
     }
@@ -409,9 +418,8 @@ namespace Spoon
                 m_SelectedTileId = selectedFromClick;
                 m_EraseMode = false;
             }
-
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
     }
 
     bool TileMapTool::GetHoveredCell(
@@ -508,16 +516,22 @@ namespace Spoon
             return false;
         }
 
+        const bool leftDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+        const bool rightDown = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+
         if (!viewportHovered)
         {
+            if (!leftDown && !rightDown && m_HasPendingBuild)
+            {
+                m_TileMap->BuildMap();
+                m_HasPendingBuild = false;
+            }
+
             m_LastPaintedCell = {-1, -1};
             return false;
         }
 
         EnsureValidState(*m_TileMap);
-
-        const bool leftDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-        const bool rightDown = ImGui::IsMouseDown(ImGuiMouseButton_Right);
 
         if (leftDown != m_LastLeftDown || rightDown != m_LastRightDown)
             m_LastPaintedCell = {-1, -1};
@@ -538,20 +552,49 @@ namespace Spoon
             if (leftDown && changedCell)
             {
                 handledCell = true;
-                if (m_EraseMode || m_SelectedTileId == 0)
-                    m_TileMap->ClearTile(cellX, cellY, m_ActiveLayerIndex);
-                else
-                    m_TileMap->SetTile(
-                        static_cast<uint16_t>(m_SelectedTileId),
-                        cellX,
-                        cellY,
-                        m_ActiveLayerIndex
-                    );
+                auto& activeLayer = m_TileMap
+                                        ->m_Layers[static_cast<std::size_t>(
+                                            m_ActiveLayerIndex)];
+                const std::size_t width =
+                    static_cast<std::size_t>(m_TileMap->m_MapSize.x);
+                const std::size_t expectedCount =
+                    width * static_cast<std::size_t>(m_TileMap->m_MapSize.y);
+                if (activeLayer.tiles.size() != expectedCount)
+                    activeLayer.tiles.resize(expectedCount, Tile{0});
+
+                const std::size_t tileIndex =
+                    static_cast<std::size_t>(cellY) * width +
+                    static_cast<std::size_t>(cellX);
+                const std::uint16_t newTile = (m_EraseMode || m_SelectedTileId == 0)
+                    ? static_cast<std::uint16_t>(0)
+                    : static_cast<std::uint16_t>(m_SelectedTileId);
+                if (activeLayer.tiles[tileIndex].id != newTile)
+                {
+                    activeLayer.tiles[tileIndex].id = newTile;
+                    m_HasPendingBuild = true;
+                }
             }
             else if (rightDown && changedCell)
             {
                 handledCell = true;
-                m_TileMap->ClearTile(cellX, cellY, m_ActiveLayerIndex);
+                auto& activeLayer = m_TileMap
+                                        ->m_Layers[static_cast<std::size_t>(
+                                            m_ActiveLayerIndex)];
+                const std::size_t width =
+                    static_cast<std::size_t>(m_TileMap->m_MapSize.x);
+                const std::size_t expectedCount =
+                    width * static_cast<std::size_t>(m_TileMap->m_MapSize.y);
+                if (activeLayer.tiles.size() != expectedCount)
+                    activeLayer.tiles.resize(expectedCount, Tile{0});
+
+                const std::size_t tileIndex =
+                    static_cast<std::size_t>(cellY) * width +
+                    static_cast<std::size_t>(cellX);
+                if (activeLayer.tiles[tileIndex].id != 0)
+                {
+                    activeLayer.tiles[tileIndex].id = 0;
+                    m_HasPendingBuild = true;
+                }
             }
 
             if (handledCell)
@@ -559,7 +602,14 @@ namespace Spoon
         }
 
         if (!leftDown && !rightDown)
+        {
+            if (m_HasPendingBuild)
+            {
+                m_TileMap->BuildMap();
+                m_HasPendingBuild = false;
+            }
             m_LastPaintedCell = {-1, -1};
+        }
 
         return true;
     }

@@ -3,6 +3,7 @@
 #include "ECS/UUID.h"
 #include "Editor/Utils/Viewport.h"
 #include "SFML/System/Time.hpp"
+#include <cstdint>
 
 namespace Spoon
 {
@@ -51,6 +52,8 @@ namespace Spoon
         bool m_Open = false;
         UUID m_TileMapEntity{};
         TileMapComp* m_TileMap = nullptr;
+        std::uint64_t m_SceneGeneration = 0;
+        bool m_HasPendingBuild = false;
 
         int m_ActiveLayerIndex = 0;
         int m_SelectedTileId = 1;
