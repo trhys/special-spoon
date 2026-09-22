@@ -429,7 +429,8 @@ namespace Spoon
            const float motionAlongNormal = fullDelta.x * normal.x + fullDelta.y * normal.y;
            const sf::Vector2f normalDelta = normal * motionAlongNormal;
            const sf::Vector2f tangentialDelta = fullDelta - normalDelta;
-           const sf::Vector2f appliedDelta = tangentialDelta + normalDelta * clampedTime;
+           const sf::Vector2f appliedDelta = (normalDelta + tangentialDelta) * clampedTime;
+           const sf::Vector2f remainingDelta = tangentialDelta * (1.0f - clampedTime);
            const sf::Vector2f correction = appliedDelta - fullDelta;
            const sf::Vector2f transformDelta = motion.transformAlreadyAdvanced ? correction : appliedDelta;
            sf::Vector2f updatedPosition = motion.currentPosition;
@@ -458,7 +459,7 @@ namespace Spoon
            m_FrameMotionCache[entity] = FrameMotion{
                updatedPosition,
                updatedPosition,
-               { 0.0f, 0.0f },
+               remainingDelta,
                false
            };
 

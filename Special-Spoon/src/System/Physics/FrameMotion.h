@@ -37,7 +37,11 @@ namespace Spoon
             auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
             if (physics.frameDeltaComputedThisFrame)
             {
-                if (movementIt != movementArray.m_IdToIndex.end())
+                if (physics.bodyType == BodyType::Static)
+                {
+                    motion.delta = { 0.0f, 0.0f };
+                }
+                else if (movementIt != movementArray.m_IdToIndex.end())
                 {
                     auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
                     motion.delta = movement.m_ProposedDelta;
