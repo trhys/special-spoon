@@ -333,8 +333,8 @@ namespace Spoon
            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
 
            sf::Vector2f correctionForA = { 0.0f, 0.0f };
-           const FrameMotion& motionA = GetFrameMotion(manager, entityA);
-           const FrameMotion& motionB = GetFrameMotion(manager, entityB);
+           const FrameMotion motionA = GetFrameMotion(manager, entityA);
+           const FrameMotion motionB = GetFrameMotion(manager, entityB);
 
            if (ComputePairCorrection(colliderA, motionA.currentPosition, colliderB, motionB.currentPosition, correctionForA))
                return std::nullopt;
