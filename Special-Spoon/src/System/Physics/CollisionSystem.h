@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/System.h"
+#include "FrameMotion.h"
 #include "PhysicsSystem.h"
 #include "QuadTree.h"
 #include "Core/Application.h"
@@ -12,6 +13,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <unordered_map>
 #include <vector>
 
 namespace Spoon
@@ -46,6 +48,8 @@ namespace Spoon
                 collider.touchingLastFrame = collider.touchingThisFrame;
                 collider.touchingThisFrame.clear();
             }
+
+            m_FrameMotionCache.clear();
 
             if (colliderArray.m_Components.size() < 2)
                 return;
@@ -93,33 +97,11 @@ namespace Spoon
            UUID entityB;
            float time = 1.0f;
            sf::Vector2f normal = { 0.0f, 0.0f };
-           sf::Vector2f deltaA = { 0.0f, 0.0f };
-           sf::Vector2f deltaB = { 0.0f, 0.0f };
         };
 
          bool IsZeroVector(const sf::Vector2f& value)
         {
            return std::abs(value.x) < 0.0001f && std::abs(value.y) < 0.0001f;
-        }
-
-         sf::Vector2f GetFrameDelta(EntityManager& manager, UUID entity, float dt)
-        {
-           if (PhysicsComp* physics = GetPhysicsIfPresent(manager, entity))
-           {
-               if (physics->bodyType == BodyType::Static)
-                   return { 0.0f, 0.0f };
-           }
-
-           auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
-           if (movementArray.m_IdToIndex.count(entity))
-               return manager.GetComponent<MovementComp>(entity, MovementComp::Name).m_ProposedDelta;
-
-           if (PhysicsComp* physics = GetPhysicsIfPresent(manager, entity))
-           {
-               return physics->velocity * dt;
-           }
-
-           return { 0.0f, 0.0f };
         }
 
          std::optional<SweptAABBHit> SweptAABB(const sf::FloatRect& movingBox, const sf::Vector2f& delta, const sf::FloatRect& targetBox)
@@ -349,20 +331,20 @@ namespace Spoon
            auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
 
-           auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
-           auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
-
            sf::Vector2f correctionForA = { 0.0f, 0.0f };
-           if (ComputePairCorrection(colliderA, transformA.GetPosition(), colliderB, transformB.GetPosition(), correctionForA))
+           const FrameMotion& motionA = GetFrameMotion(manager, entityA, dt);
+           const FrameMotion& motionB = GetFrameMotion(manager, entityB, dt);
+
+           if (ComputePairCorrection(colliderA, motionA.currentPosition, colliderB, motionB.currentPosition, correctionForA))
                return std::nullopt;
 
-           const sf::Vector2f deltaA = GetFrameDelta(manager, entityA, dt);
-           const sf::Vector2f deltaB = GetFrameDelta(manager, entityB, dt);
+           const sf::Vector2f deltaA = motionA.delta;
+           const sf::Vector2f deltaB = motionB.delta;
            if (IsZeroVector(deltaA) && IsZeroVector(deltaB))
                return std::nullopt;
 
-           const sf::Vector2f startTransformA = GetFrameStartPosition(manager, entityA, dt);
-           const sf::Vector2f startTransformB = GetFrameStartPosition(manager, entityB, dt);
+           const sf::Vector2f startTransformA = motionA.startPosition;
+           const sf::Vector2f startTransformB = motionB.startPosition;
            if (ComputePairCorrection(colliderA, startTransformA, colliderB, startTransformB, correctionForA))
                return std::nullopt;
 
@@ -412,9 +394,7 @@ namespace Spoon
                entityA,
                entityB,
                hit->time,
-               hit->normal,
-               deltaA,
-               deltaB
+               hit->normal
            };
         }
 
@@ -429,17 +409,20 @@ namespace Spoon
 
            auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
+           const FrameMotion& motionA = GetFrameMotion(manager, entityA, dt);
+           const FrameMotion& motionB = GetFrameMotion(manager, entityB, dt);
            sf::Vector2f correctionForA = { 0.0f, 0.0f };
            return ComputePairCorrection(
                colliderA,
-               GetFrameStartPosition(manager, entityA, dt),
+               motionA.startPosition,
                colliderB,
-               GetFrameStartPosition(manager, entityB, dt),
+               motionB.startPosition,
                correctionForA);
         }
 
-         bool ApplySweepClamp(EntityManager& manager, UUID entity, const sf::Vector2f& fullDelta, const sf::Vector2f& normal, float time)
+         bool ApplySweepClamp(EntityManager& manager, UUID entity, const FrameMotion& motion, const sf::Vector2f& normal, float time)
         {
+           const sf::Vector2f& fullDelta = motion.delta;
            if (IsZeroVector(fullDelta))
                return false;
 
@@ -457,11 +440,10 @@ namespace Spoon
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
             if (transformArray.m_IdToIndex.count(entity))
             {
-                auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-                const sf::Vector2f transformDelta =
-                    TransformAlreadyAdvancedThisFrame(manager, entity) ? correction : appliedDelta;
-                if (!IsZeroVector(transformDelta))
-                    transform.Move(transformDelta);
+               auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
+               const sf::Vector2f transformDelta = motion.transformAlreadyAdvanced ? correction : appliedDelta;
+               if (!IsZeroVector(transformDelta))
+                   transform.Move(transformDelta);
             }
 
            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
@@ -510,10 +492,12 @@ namespace Spoon
                if (!hit)
                    continue;
 
-               const float normalMotionA = hit->deltaA.x * hit->normal.x + hit->deltaA.y * hit->normal.y;
-               const float normalMotionB = hit->deltaB.x * hit->normal.x + hit->deltaB.y * hit->normal.y;
-               const bool movedA = normalMotionA < -0.0001f && ApplySweepClamp(manager, hit->entityA, hit->deltaA, hit->normal, hit->time);
-               const bool movedB = normalMotionB > 0.0001f && ApplySweepClamp(manager, hit->entityB, hit->deltaB, hit->normal, hit->time);
+               const FrameMotion& motionA = GetFrameMotion(manager, hit->entityA, dt);
+               const FrameMotion& motionB = GetFrameMotion(manager, hit->entityB, dt);
+               const float normalMotionA = motionA.delta.x * hit->normal.x + motionA.delta.y * hit->normal.y;
+               const float normalMotionB = motionB.delta.x * hit->normal.x + motionB.delta.y * hit->normal.y;
+               const bool movedA = normalMotionA < -0.0001f && ApplySweepClamp(manager, hit->entityA, motionA, hit->normal, hit->time);
+               const bool movedB = normalMotionB > 0.0001f && ApplySweepClamp(manager, hit->entityB, motionB, hit->normal, hit->time);
                if (!movedA && !movedB)
                    continue;
 
@@ -653,27 +637,13 @@ namespace Spoon
             return &manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
         }
 
-         bool TransformAlreadyAdvancedThisFrame(EntityManager& manager, UUID entity)
+         const FrameMotion& GetFrameMotion(EntityManager& manager, UUID entity, float dt)
         {
-            if (PhysicsComp* physics = GetPhysicsIfPresent(manager, entity))
-                return physics->bodyType != BodyType::Static;
+            auto cached = m_FrameMotionCache.find(entity);
+            if (cached != m_FrameMotionCache.end())
+                return cached->second;
 
-            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
-            if (!movementArray.m_IdToIndex.count(entity))
-                return false;
-
-            auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
-            return physicsArray.m_Components.empty();
-        }
-
-         sf::Vector2f GetFrameStartPosition(EntityManager& manager, UUID entity, float dt)
-        {
-            auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-            const sf::Vector2f currentPosition = transform.GetPosition();
-            if (!TransformAlreadyAdvancedThisFrame(manager, entity))
-                return currentPosition;
-
-            return currentPosition - GetFrameDelta(manager, entity, dt);
+            return m_FrameMotionCache.emplace(entity, ComputeFrameMotion(manager, entity, dt)).first->second;
         }
 
          void SyncMovementVelocityIfPresent(EntityManager& manager, UUID entity, const PhysicsComp* physics)
@@ -832,5 +802,6 @@ namespace Spoon
 
         Quadtree quadtree;
         CollisionSystemConfig m_Config;
+        std::unordered_map<UUID, FrameMotion> m_FrameMotionCache;
     };
 }

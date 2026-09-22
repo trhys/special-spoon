@@ -1,7 +1,6 @@
 #include "QuadTree.h"
 #include "Core/EntityManager/EntityManager.h"
-#include "ECS/Components/MovementComp.h"
-#include "ECS/Components/PhysicsComp.h"
+#include "FrameMotion.h"
 #include "ECS/Components/TransformComp.h"
 
 #include <algorithm>
@@ -11,57 +10,6 @@ namespace Spoon
 {
     namespace
     {
-        sf::Vector2f GetFrameDelta(EntityManager& manager, UUID entity, float dt)
-        {
-            auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
-            if (physicsArray.m_IdToIndex.count(entity))
-            {
-                auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
-                if (physics.bodyType == BodyType::Static)
-                    return { 0.0f, 0.0f };
-            }
-
-            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
-            if (movementArray.m_IdToIndex.count(entity))
-            {
-                return manager.GetComponent<MovementComp>(entity, MovementComp::Name).m_ProposedDelta;
-            }
-
-            if (physicsArray.m_IdToIndex.count(entity))
-            {
-                auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
-                return physics.velocity * dt;
-            }
-
-            return { 0.0f, 0.0f };
-        }
-
-        bool TransformAlreadyAdvancedThisFrame(EntityManager& manager, UUID entity)
-        {
-            auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
-            if (physicsArray.m_IdToIndex.count(entity))
-            {
-                auto& physics = manager.GetComponent<PhysicsComp>(entity, PhysicsComp::Name);
-                return physics.bodyType != BodyType::Static;
-            }
-
-            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
-            if (!movementArray.m_IdToIndex.count(entity))
-                return false;
-
-            return physicsArray.m_Components.empty();
-        }
-
-        sf::Vector2f GetFrameStartPosition(EntityManager& manager, UUID entity, float dt)
-        {
-            auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-            const sf::Vector2f currentPosition = transform.GetPosition();
-            if (!TransformAlreadyAdvancedThisFrame(manager, entity))
-                return currentPosition;
-
-            return currentPosition - GetFrameDelta(manager, entity, dt);
-        }
-
         sf::FloatRect ComputeSweptBounds(const sf::FloatRect& startBounds, const sf::Vector2f& delta)
         {
             const sf::Vector2f minPosition = {
@@ -132,9 +80,10 @@ namespace Spoon
             sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
             if (useSweptBounds)
             {
+                const FrameMotion motion = ComputeFrameMotion(manager, entity, dt);
                 entityBox = ComputeSweptBounds(
-                    collider.GetWorldBounds(GetFrameStartPosition(manager, entity, dt)),
-                    GetFrameDelta(manager, entity, dt));
+                    collider.GetWorldBounds(motion.startPosition),
+                    motion.delta);
             }
             for (auto& leaf : m_GridNodes)
             {
