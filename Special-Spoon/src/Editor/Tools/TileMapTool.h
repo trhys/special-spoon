@@ -27,6 +27,7 @@ namespace Spoon
         );
 
     private:
+        void FlushPendingBuild();
         bool RefreshTileMap();
         void DrawLayerPanel(TileMapComp& tileMap);
         void DrawTilePalette(TileMapComp& tileMap);

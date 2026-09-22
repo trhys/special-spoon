@@ -46,12 +46,27 @@ namespace Spoon
             EnsureValidState(*m_TileMap);
     }
 
+    void TileMapTool::FlushPendingBuild()
+    {
+        if (!m_HasPendingBuild)
+            return;
+
+        if (m_TileMap &&
+            Application::Get().GetSceneManager().GetSceneGeneration() ==
+                m_SceneGeneration)
+        {
+            m_TileMap->BuildMap();
+        }
+
+        m_HasPendingBuild = false;
+    }
+
     void TileMapTool::Close()
     {
+        FlushPendingBuild();
         m_Open = false;
         m_TileMapEntity = {};
         m_TileMap = nullptr;
-        m_HasPendingBuild = false;
         m_LastPaintedCell = {-1, -1};
         m_LastLeftDown = false;
         m_LastRightDown = false;
@@ -521,11 +536,8 @@ namespace Spoon
 
         if (!viewportHovered)
         {
-            if (!leftDown && !rightDown && m_HasPendingBuild)
-            {
-                m_TileMap->BuildMap();
-                m_HasPendingBuild = false;
-            }
+            if (!leftDown && !rightDown)
+                FlushPendingBuild();
 
             m_LastPaintedCell = {-1, -1};
             return false;
@@ -603,11 +615,7 @@ namespace Spoon
 
         if (!leftDown && !rightDown)
         {
-            if (m_HasPendingBuild)
-            {
-                m_TileMap->BuildMap();
-                m_HasPendingBuild = false;
-            }
+            FlushPendingBuild();
             m_LastPaintedCell = {-1, -1};
         }
 
