@@ -53,7 +53,8 @@ namespace Spoon
 
         if (m_TileMap &&
             Application::Get().GetSceneManager().GetSceneGeneration() ==
-                m_SceneGeneration)
+                m_SceneGeneration &&
+            ResolveTileMap(m_TileMapEntity) == m_TileMap)
         {
             m_TileMap->BuildMap();
         }
@@ -80,8 +81,12 @@ namespace Spoon
             return false;
         }
 
-        m_TileMap = ResolveTileMap(m_TileMapEntity);
-        return m_TileMap != nullptr;
+        TileMapComp* tileMap = ResolveTileMap(m_TileMapEntity);
+        if (!tileMap)
+            return false;
+
+        m_TileMap = tileMap;
+        return true;
     }
 
     void TileMapTool::EnsureValidState(TileMapComp& tileMap)
