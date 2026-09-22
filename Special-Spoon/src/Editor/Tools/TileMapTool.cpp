@@ -534,13 +534,14 @@ namespace Spoon
             const sf::Vector2i hoveredCell(cellX, cellY);
             const bool changedCell = hoveredCell != m_LastPaintedCell;
 
-            bool changedTile = false;
+            bool handledCell = false;
             if (leftDown && changedCell)
             {
+                handledCell = true;
                 if (m_EraseMode || m_SelectedTileId == 0)
-                    changedTile = m_TileMap->ClearTile(cellX, cellY, m_ActiveLayerIndex);
+                    m_TileMap->ClearTile(cellX, cellY, m_ActiveLayerIndex);
                 else
-                    changedTile = m_TileMap->SetTile(
+                    m_TileMap->SetTile(
                         static_cast<uint16_t>(m_SelectedTileId),
                         cellX,
                         cellY,
@@ -549,11 +550,11 @@ namespace Spoon
             }
             else if (rightDown && changedCell)
             {
-                changedTile =
-                    m_TileMap->ClearTile(cellX, cellY, m_ActiveLayerIndex);
+                handledCell = true;
+                m_TileMap->ClearTile(cellX, cellY, m_ActiveLayerIndex);
             }
 
-            if (changedTile)
+            if (handledCell)
                 m_LastPaintedCell = hoveredCell;
         }
 

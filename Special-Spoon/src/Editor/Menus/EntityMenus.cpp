@@ -221,7 +221,7 @@ namespace Spoon
             {
                 selectedComponent->OnReflect();
 
-                if (auto* tileMap = dynamic_cast<TileMapComp*>(selectedComponent))
+                if (selectedComponent->GetDisplayName() == TileMapComp::Name)
                 {
                     if (ImGui::Button("Open Tile Map Editor"))
                         Application::Get().GetEditor().EditTileMap(selectedID);
