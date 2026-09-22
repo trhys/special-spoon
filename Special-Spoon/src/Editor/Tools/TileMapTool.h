@@ -60,5 +60,7 @@ namespace Spoon
         char m_NewLayerName[128] = "New Layer";
 
         sf::Vector2i m_LastPaintedCell{-1, -1};
+        bool m_LastLeftDown = false;
+        bool m_LastRightDown = false;
     };
 }

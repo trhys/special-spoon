@@ -37,6 +37,8 @@ namespace Spoon
         m_TileMap = ResolveTileMap(m_TileMapEntity);
         m_Open = (m_TileMap != nullptr);
         m_LastPaintedCell = {-1, -1};
+        m_LastLeftDown = false;
+        m_LastRightDown = false;
 
         if (m_TileMap)
             EnsureValidState(*m_TileMap);
@@ -48,6 +50,8 @@ namespace Spoon
         m_TileMapEntity = {};
         m_TileMap = nullptr;
         m_LastPaintedCell = {-1, -1};
+        m_LastLeftDown = false;
+        m_LastRightDown = false;
     }
 
     bool TileMapTool::RefreshTileMap()
@@ -514,6 +518,12 @@ namespace Spoon
 
         const bool leftDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
         const bool rightDown = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+
+        if (leftDown != m_LastLeftDown || rightDown != m_LastRightDown)
+            m_LastPaintedCell = {-1, -1};
+
+        m_LastLeftDown = leftDown;
+        m_LastRightDown = rightDown;
 
         int cellX = -1;
         int cellY = -1;
