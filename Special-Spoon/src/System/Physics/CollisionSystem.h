@@ -454,12 +454,15 @@ namespace Spoon
            const sf::Vector2f appliedDelta = tangentialDelta + normalDelta * clampedTime;
            const sf::Vector2f correction = appliedDelta - fullDelta;
 
-           auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
-           if (transformArray.m_IdToIndex.count(entity) && !IsZeroVector(correction))
-           {
-               auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-               transform.Move(correction);
-           }
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            if (transformArray.m_IdToIndex.count(entity))
+            {
+                auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
+                const sf::Vector2f transformDelta =
+                    TransformAlreadyAdvancedThisFrame(manager, entity) ? correction : appliedDelta;
+                if (!IsZeroVector(transformDelta))
+                    transform.Move(transformDelta);
+            }
 
            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
            if (movementArray.m_IdToIndex.count(entity))
