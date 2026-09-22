@@ -364,7 +364,7 @@ namespace Spoon
         }
 
         const sf::Vector2u atlasSize = tileMap.m_Atlas.texture->getSize();
-        const ImVec2 imageSize(
+        const sf::Vector2f imageSize(
             static_cast<float>(atlasSize.x) * m_PaletteScale,
             static_cast<float>(atlasSize.y) * m_PaletteScale
         );
