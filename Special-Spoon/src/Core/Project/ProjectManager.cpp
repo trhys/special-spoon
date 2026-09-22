@@ -72,6 +72,7 @@ namespace Spoon
                 newProj << projectJson.dump(4);
                 newProj.close();
 
+                editor->SetActiveScene(nullptr);
                 ResourceManager::Get().ScanAssets(newProject.assetsPath);
                 Application::Get().GetSceneManager().LoadManifest(newProject.dataPath);
                 m_CurrentProject = std::make_unique<Project>(newProject);
@@ -95,6 +96,7 @@ namespace Spoon
                 std::filesystem::path pathObj(filePathName);
 
                 // Load the project using the selected file path
+                editor->SetActiveScene(nullptr);
                 OpenFromFile(pathObj);
 				Application::Get().GetRenderer().UpdateRenderConfig();
             }
