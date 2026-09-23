@@ -110,6 +110,7 @@ namespace Spoon
         bool IntersectAABBCircle(const sf::FloatRect& boxA, const sf::Vector2f& circleCenter, 
                                  float circleRadius, sf::Vector2f& correctionForA);
         void ResolveDiscreteCleanup(std::unordered_map<UUID, BodyRuntime>& bodies);
+        float DotProd(const sf::Vector2f& a, const sf::Vector2f& b);
 
     private:
         Quadtree quadtree;
