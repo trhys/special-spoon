@@ -859,7 +859,7 @@ if (bodies.size() == 1)
 		return true;
 	}
 
-	bool CollisionSystem::AABBOverlapOrTouch(const sf::FloatRect& a, const sf::FloatRect& b, float epsilon = k_TOIEpsilon)
+	bool CollisionSystem::AABBOverlapOrTouch(const sf::FloatRect& a, const sf::FloatRect& b, float epsilon)
 	{
 		return a.position.x <= b.position.x + b.size.x + epsilon &&
 			a.position.x + a.size.x >= b.position.x - epsilon &&
