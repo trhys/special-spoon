@@ -21,6 +21,7 @@ else()
 endif()
 
 include(GenerateExportHeader)
+include(CTest)
 
 if(DEBUG_MODE)
     add_compile_definitions(SS_DEBUG_ENABLED SS_ASSERTS_ENABLED)
@@ -28,6 +29,10 @@ endif()
 
 add_subdirectory(Special-Spoon)
 add_subdirectory(Sandbox)
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
 #if(BUILD_SANDBOX)
 #    add_subdirectory(Sandbox)

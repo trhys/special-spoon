@@ -51,8 +51,13 @@ namespace Spoon
             for (int iteration = 0; iteration < maxIterations; iteration++)
             {
                 bool appliedCorrection = false;
-                sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
-                quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
+                sf::Vector2f collisionBounds = m_Config.bounds;
+                if (collisionBounds.x <= 0.0f || collisionBounds.y <= 0.0f)
+                {
+                    const sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
+                    collisionBounds = { static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) };
+                }
+                quadtree.BuildTree(collisionBounds);
                 quadtree.Populate(manager);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
@@ -153,25 +158,12 @@ namespace Spoon
             return !IsZeroVector(correctionForA);
         }
 
-         bool ComputePairCorrection(EntityManager& manager, UUID entityA, UUID entityB, sf::Vector2f& correctionForA)
+         bool ComputePairCorrectionAtPositions(const ColliderComp& colliderA, const sf::Vector2f& transformPositionA, const ColliderComp& colliderB, const sf::Vector2f& transformPositionB, sf::Vector2f& correctionForA)
         {
-            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
-            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
-            if (!transformArray.m_IdToIndex.count(entityA) || !transformArray.m_IdToIndex.count(entityB))
-                return false;
-            if (!colliderArray.m_IdToIndex.count(entityA) || !colliderArray.m_IdToIndex.count(entityB))
-                return false;
-
-            auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
-            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
-
-            auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
-            auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
-
-            const sf::Vector2f posA = colliderA.GetWorldOrigin(transformA.GetPosition());
-            const sf::Vector2f posB = colliderB.GetWorldOrigin(transformB.GetPosition());
-            const sf::FloatRect boundsA = colliderA.GetWorldBounds(transformA.GetPosition());
-            const sf::FloatRect boundsB = colliderB.GetWorldBounds(transformB.GetPosition());
+            const sf::Vector2f posA = colliderA.GetWorldOrigin(transformPositionA);
+            const sf::Vector2f posB = colliderB.GetWorldOrigin(transformPositionB);
+            const sf::FloatRect boundsA = colliderA.GetWorldBounds(transformPositionA);
+            const sf::FloatRect boundsB = colliderB.GetWorldBounds(transformPositionB);
             if (!boundsA.findIntersection(boundsB))
                 return false;
 
@@ -208,7 +200,25 @@ namespace Spoon
                 }
             }
 
-            if (!collided)
+            return collided;
+        }
+
+         bool ComputePairCorrection(EntityManager& manager, UUID entityA, UUID entityB, sf::Vector2f& correctionForA)
+        {
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+            if (!transformArray.m_IdToIndex.count(entityA) || !transformArray.m_IdToIndex.count(entityB))
+                return false;
+            if (!colliderArray.m_IdToIndex.count(entityA) || !colliderArray.m_IdToIndex.count(entityB))
+                return false;
+
+            auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
+            auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
+
+            auto& transformA = manager.GetComponent<TransformComp>(entityA, TransformComp::Name);
+            auto& transformB = manager.GetComponent<TransformComp>(entityB, TransformComp::Name);
+
+            if (!ComputePairCorrectionAtPositions(colliderA, transformA.GetPosition(), colliderB, transformB.GetPosition(), correctionForA))
                 return false;
 
             AddTouch(colliderA.touchingThisFrame, entityB);
@@ -351,16 +361,99 @@ namespace Spoon
             SyncMovementVelocityIfPresent(manager, entityB, physB);
         }
 
-         void ApplyCorrection(EntityManager& manager, UUID entity, const sf::Vector2f& correction)
+         bool HasBlockingOverlapAtPosition(EntityManager& manager, UUID entity, const sf::Vector2f& startPosition, const sf::Vector2f& targetPosition, UUID ignoredEntity)
+        {
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+            if (!transformArray.m_IdToIndex.count(entity) || !colliderArray.m_IdToIndex.count(entity))
+                return false;
+
+            const auto& movingCollider = manager.GetComponent<ColliderComp>(entity, ColliderComp::Name);
+            const sf::Vector2f attemptedMotion = targetPosition - startPosition;
+            for (const UUID otherEntity : colliderArray.m_IndexToId)
+            {
+                if (otherEntity == entity || otherEntity == ignoredEntity)
+                    continue;
+                if (!transformArray.m_IdToIndex.count(otherEntity))
+                    continue;
+
+                const auto& otherCollider = manager.GetComponent<ColliderComp>(otherEntity, ColliderComp::Name);
+                auto& otherTransform = manager.GetComponent<TransformComp>(otherEntity, TransformComp::Name);
+                sf::Vector2f startOverlapCorrection = { 0.0f, 0.0f };
+                const bool overlapsAtStart = ComputePairCorrectionAtPositions(movingCollider, startPosition, otherCollider, otherTransform.GetPosition(), startOverlapCorrection);
+                if (overlapsAtStart)
+                {
+                    const float escapeAlignment = attemptedMotion.x * startOverlapCorrection.x + attemptedMotion.y * startOverlapCorrection.y;
+                    if (escapeAlignment > 0.0f)
+                        continue;
+                }
+
+                sf::Vector2f targetOverlapCorrection = { 0.0f, 0.0f };
+                if (ComputePairCorrectionAtPositions(movingCollider, targetPosition, otherCollider, otherTransform.GetPosition(), targetOverlapCorrection))
+                    return true;
+            }
+            return false;
+        }
+
+         sf::Vector2f ConstrainCorrection(EntityManager& manager, UUID entity, UUID ignoredEntity, const sf::Vector2f& correction)
         {
             if (IsZeroVector(correction))
-                return;
+                return { 0.0f, 0.0f };
+
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+            if (!transformArray.m_IdToIndex.count(entity) || !colliderArray.m_IdToIndex.count(entity))
+                return { 0.0f, 0.0f };
+
+            const sf::Vector2f startPosition = manager.GetComponent<TransformComp>(entity, TransformComp::Name).GetPosition();
+            const float correctionLength = std::sqrt(correction.x * correction.x + correction.y * correction.y);
+            constexpr float maxSweepStep = 0.5f;
+            constexpr int maxBinarySearchIterations = 8;
+            const int steps = std::max(1, static_cast<int>(std::ceil(correctionLength / maxSweepStep)));
+
+            sf::Vector2f safePosition = startPosition;
+            for (int stepIndex = 1; stepIndex <= steps; stepIndex++)
+            {
+                const float fraction = static_cast<float>(stepIndex) / static_cast<float>(steps);
+                const sf::Vector2f candidatePosition = startPosition + correction * fraction;
+                if (!HasBlockingOverlapAtPosition(manager, entity, startPosition, candidatePosition, ignoredEntity))
+                {
+                    safePosition = candidatePosition;
+                    continue;
+                }
+
+                sf::Vector2f low = safePosition;
+                sf::Vector2f high = candidatePosition;
+                for (int iteration = 0; iteration < maxBinarySearchIterations; iteration++)
+                {
+                    const sf::Vector2f mid = (low + high) * 0.5f;
+                    if (HasBlockingOverlapAtPosition(manager, entity, startPosition, mid, ignoredEntity))
+                        high = mid;
+                    else
+                        low = mid;
+                }
+
+                safePosition = low;
+                break;
+            }
+
+            return safePosition - startPosition;
+        }
+
+         bool ApplyCorrection(EntityManager& manager, UUID entity, UUID ignoredEntity, const sf::Vector2f& correction)
+        {
+            if (IsZeroVector(correction))
+                return false;
+
+            const sf::Vector2f constrainedCorrection = ConstrainCorrection(manager, entity, ignoredEntity, correction);
+            if (IsZeroVector(constrainedCorrection))
+                return false;
 
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
             if (transformArray.m_IdToIndex.count(entity))
             {
                 auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-                transform.Move(correction);
+                transform.Move(constrainedCorrection);
             }
 
             auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
@@ -369,6 +462,8 @@ namespace Spoon
                 auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
                 movement.m_WasCorrectedByPhysics = true;
             }
+
+            return true;
         }
 
          bool ResolvePair(EntityManager& manager, UUID entityA, UUID entityB, const sf::Vector2f& correctionForA)
@@ -382,19 +477,20 @@ namespace Spoon
             if (totalInvMass <= 0.0f)
                 return false;
 
+            bool appliedCorrection = false;
             if (invMassA > 0.0f)
             {
                 const sf::Vector2f correctionA = correctionForA * (invMassA / totalInvMass);
-                ApplyCorrection(manager, entityA, correctionA);
+                appliedCorrection |= ApplyCorrection(manager, entityA, entityB, correctionA);
             }
             if (invMassB > 0.0f)
             {
                 const sf::Vector2f correctionB = { -correctionForA.x * (invMassB / totalInvMass), -correctionForA.y * (invMassB / totalInvMass) };
-                ApplyCorrection(manager, entityB, correctionB);
+                appliedCorrection |= ApplyCorrection(manager, entityB, entityA, correctionB);
             }
 
             ApplyVelocityResponse(manager, entityA, entityB, correctionForA, invMassA, invMassB);
-            return true;
+            return appliedCorrection;
         }
 
         Quadtree quadtree;
