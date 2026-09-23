@@ -534,7 +534,7 @@ namespace Spoon
            const float invMassAForVelocity = InverseMass(manager, entityA);
            const float invMassBForVelocity = InverseMass(manager, entityB);
            ApplyVelocityResponse(manager, entityA, entityB, normal, invMassAForVelocity, invMassBForVelocity);
-           return false;
+           return true;
         }
 
          void ApplyImmediateCorrection(EntityManager& manager, UUID entity, const FrameMotion& motion, const sf::Vector2f& correction)
