@@ -694,6 +694,20 @@ namespace Spoon {
 		}
 
 		const sf::Vector2f relativeDelta = deltaA - deltaB;
+
+		// determine if touching bodies are moving together, apart, or tangentially
+		if (result.startsTouching)
+		{
+			const float closingDelta = DotProd(relativeDelta, initialNormal);
+
+	        if (closingDelta < -k_Epsilon)
+	        {
+	            result.hit = true;
+	            result.toi = 0.0f;
+	        }
+	        return result;
+		}
+		
 		if (IsZeroVector(relativeDelta))
 			return result;
 
@@ -754,23 +768,6 @@ namespace Spoon {
 			return result;
 		if (tEntry > 1.0f)
 			return result;
-		if (tEntry <= k_TOIEpsilon)
-		{
-			if (!result.startsTouching)
-			{
-				result.hit = true;
-				result.toi = std::clamp(tEntry, 0.0f, 1.0f);
-				if (txEntry > tyEntry)
-				{
-					result.normal = (relativeDelta.x > 0.0f) ? sf::Vector2f{ -1.0f, 0.0f } : sf::Vector2f{ 1.0f, 0.0f };
-				}
-				else
-				{
-					result.normal = (relativeDelta.y > 0.0f) ? sf::Vector2f{ 0.0f, -1.0f } : sf::Vector2f{ 0.0f, 1.0f };
-				}
-			}
-			return result;
-		}
 
 		result.hit = true;
 		result.toi = std::clamp(tEntry, 0.0f, 1.0f);
@@ -1069,4 +1066,9 @@ namespace Spoon {
 			correctionForA = { 0.0f, fromCenter.y < 0.0f ? overlapY : -overlapY };
 
 		return !IsZeroVector(correctionForA);
+	}
+
+	float CollisionSystem::DotProd(const sf::Vector2f& a, const sf::Vector2f& b)
+	{
+	    return a.x * b.x + a.y * b.y;
 	}
