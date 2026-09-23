@@ -1,6 +1,4 @@
 #include "QuadTree.h"
-#include "Core/EntityManager/EntityManager.h"
-#include "ECS/Components/TransformComp.h"
 
 #include <optional>
 
@@ -35,26 +33,13 @@ namespace Spoon
         }
     }
 
-    void Quadtree::Populate(EntityManager& manager, const std::unordered_map<UUID, sf::FloatRect>* boundsOverride)
+    void Quadtree::Populate(const std::unordered_map<UUID, sf::FloatRect>& bounds)
     {
         for (auto& leaf : m_GridNodes)
             leaf.collision_buffer.clear();
 
-        auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
-        for (auto& entity : manager.GetAllEntitiesWithComponent<ColliderComp>(ColliderComp::Name))
+        for (const auto& [entity, entityBox] : bounds)
         {
-            if (!transformArray.m_IdToIndex.count(entity))
-                continue;
-
-            auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-            auto& collider = manager.GetComponent<ColliderComp>(entity, ColliderComp::Name);
-            sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
-            if (boundsOverride)
-            {
-                auto it = boundsOverride->find(entity);
-                if (it != boundsOverride->end())
-                    entityBox = it->second;
-            }
             for (auto& leaf : m_GridNodes)
             {
                 if (const std::optional intersect = leaf.body.findIntersection(entityBox))

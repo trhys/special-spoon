@@ -100,8 +100,8 @@ namespace Spoon
             if (bodies.size() < 2)
                 return;
 
-            SimulateContinuousAABB(manager, bodies);
-            ResolveDiscreteCleanup(manager, bodies);
+            SimulateContinuousAABB(bodies);
+            ResolveDiscreteCleanup(bodies);
 
             for (auto& [id, body] : bodies)
             {
@@ -612,7 +612,7 @@ namespace Spoon
             return true;
         }
 
-        void SimulateContinuousAABB(EntityManager& manager, std::unordered_map<UUID, BodyRuntime>& bodies)
+        void SimulateContinuousAABB(std::unordered_map<UUID, BodyRuntime>& bodies)
         {
             sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
             quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f)
@@ -635,24 +635,35 @@ namespace Spoon
             auto buildCandidatePairs = [&](std::vector<PairKey>& candidatePairs)
             {
                 buildSweptBounds(sweptBounds);
-                quadtree.Populate(manager, &sweptBounds);
+                quadtree.Populate(sweptBounds);
 
                 candidatePairs.clear();
                 candidatePairs.reserve(128);
-                for (const auto& [a, b] : quadtree.GeneratePairs())
+                std::unordered_set<PairKey, PairKeyHasher> uniquePairs;
+                uniquePairs.reserve(128);
+
+                const auto appendPair = [&](UUID a, UUID b)
                 {
                     if (!bodies.count(a) || !bodies.count(b))
-                        continue;
-                    candidatePairs.push_back(MakePairKey(a, b));
+                        return;
+
+                    const PairKey pair = MakePairKey(a, b);
+                    if (uniquePairs.insert(pair).second)
+                        candidatePairs.push_back(pair);
+                };
+
+                for (const auto& [a, b] : quadtree.GeneratePairs())
+                {
+                    appendPair(a, b);
                 }
 
                 for (const auto& [id, body] : bodies)
                 {
                     for (const UUID touchId : body.collider->touchingLastFrame)
                     {
-                        if (!bodies.count(touchId) || touchId == id)
+                        if (touchId == id)
                             continue;
-                        candidatePairs.push_back(MakePairKey(id, touchId));
+                        appendPair(id, touchId);
                     }
                 }
             };
@@ -979,7 +990,7 @@ namespace Spoon
             }
         }
 
-        bool ComputePairCorrection(EntityManager& manager, std::unordered_map<UUID, BodyRuntime>& bodies, UUID entityA, UUID entityB, sf::Vector2f& correctionForA)
+        bool ComputePairCorrection(std::unordered_map<UUID, BodyRuntime>& bodies, UUID entityA, UUID entityB, sf::Vector2f& correctionForA)
         {
             if (!bodies.count(entityA) || !bodies.count(entityB))
                 return false;
@@ -1000,10 +1011,11 @@ namespace Spoon
             {
                 sf::Vector2f normal = { 0.0f, 0.0f };
                 float penetration = 0.0f;
-                if (ComputeAABBContact(boundsA, boundsB, normal, penetration) && penetration > k_Epsilon)
+                if (ComputeAABBContact(boundsA, boundsB, normal, penetration))
                 {
-                    correctionForA = normal * penetration;
                     collided = true;
+                    if (penetration > k_Epsilon)
+                        correctionForA = normal * penetration;
                 }
             }
             else if (typeA == ColliderType::Circle && typeB == ColliderType::Circle)
@@ -1100,7 +1112,7 @@ namespace Spoon
             return !IsZeroVector(correctionForA);
         }
 
-        void ResolveDiscreteCleanup(EntityManager& manager, std::unordered_map<UUID, BodyRuntime>& bodies)
+        void ResolveDiscreteCleanup(std::unordered_map<UUID, BodyRuntime>& bodies)
         {
             for (int iteration = 0; iteration < k_MaxDiscreteIterations; iteration++)
             {
@@ -1117,12 +1129,12 @@ namespace Spoon
                 {
                     currentBounds.emplace(id, ComputeBoundsAt(body, body.position));
                 }
-                quadtree.Populate(manager, &currentBounds);
+                quadtree.Populate(currentBounds);
 
                 for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
                 {
                     sf::Vector2f correctionForA = { 0.0f, 0.0f };
-                    if (!ComputePairCorrection(manager, bodies, entityA, entityB, correctionForA))
+                    if (!ComputePairCorrection(bodies, entityA, entityB, correctionForA))
                         continue;
 
                     BodyRuntime& bodyA = bodies[entityA];
