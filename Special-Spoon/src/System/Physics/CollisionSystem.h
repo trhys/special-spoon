@@ -623,314 +623,347 @@ namespace Spoon
             };
 
             std::unordered_map<UUID, sf::FloatRect> sweptBounds;
-            buildSweptBounds(sweptBounds);
-            quadtree.Populate(manager, &sweptBounds);
-
-            std::vector<PairKey> candidatePairs;
-            candidatePairs.reserve(128);
-            for (const auto& [a, b] : quadtree.GeneratePairs())
+            auto buildCandidatePairs = [&](std::vector<PairKey>& candidatePairs)
             {
-                if (!bodies.count(a) || !bodies.count(b))
-                    continue;
-                candidatePairs.push_back(MakePairKey(a, b));
-            }
+                buildSweptBounds(sweptBounds);
+                quadtree.Populate(manager, &sweptBounds);
 
-            for (const auto& [id, body] : bodies)
-            {
-                for (const UUID touchId : body.collider->touchingLastFrame)
+                candidatePairs.clear();
+                candidatePairs.reserve(128);
+                for (const auto& [a, b] : quadtree.GeneratePairs())
                 {
-                    if (!bodies.count(touchId) || touchId == id)
+                    if (!bodies.count(a) || !bodies.count(b))
                         continue;
-                    candidatePairs.push_back(MakePairKey(id, touchId));
+                    candidatePairs.push_back(MakePairKey(a, b));
                 }
-            }
 
-            if (candidatePairs.empty())
-            {
-                for (auto& [id, body] : bodies)
+                for (const auto& [id, body] : bodies)
                 {
-                    if (!body.canTranslate)
-                        continue;
-                    body.position += body.remainingDelta;
-                    body.transform->SetPosition(body.position);
-                    body.remainingTime = 0.0f;
-                    body.remainingDelta = { 0.0f, 0.0f };
+                    for (const UUID touchId : body.collider->touchingLastFrame)
+                    {
+                        if (!bodies.count(touchId) || touchId == id)
+                            continue;
+                        candidatePairs.push_back(MakePairKey(id, touchId));
+                    }
                 }
-                return;
-            }
-
-            std::unordered_map<UUID, UUID> parent;
-            parent.reserve(bodies.size());
-            for (const auto& [id, body] : bodies)
-                parent[id] = id;
-
-            const auto findRoot = [&](UUID id, auto&& self) -> UUID
-            {
-                UUID root = id;
-                while (!(parent[root] == root))
-                    root = parent[root];
-
-                UUID current = id;
-                while (!(parent[current] == current))
-                {
-                    UUID next = parent[current];
-                    parent[current] = root;
-                    current = next;
-                }
-                return root;
             };
 
-            auto unite = [&](UUID a, UUID b)
+            const int maxBroadphaseRefreshes = std::max(1, static_cast<int>(bodies.size())) * k_MaxToiEvents;
+            int broadphaseRefreshes = 0;
+            while (true)
             {
-                UUID rootA = findRoot(a, findRoot);
-                UUID rootB = findRoot(b, findRoot);
-                if (rootA == rootB)
+                std::vector<PairKey> candidatePairs;
+                buildCandidatePairs(candidatePairs);
+                if (candidatePairs.empty())
+                {
+                    for (auto& [id, body] : bodies)
+                    {
+                        if (!body.canTranslate)
+                            continue;
+                        CommitRemainingMotion(body);
+                    }
                     return;
-                parent[rootB] = rootA;
-            };
-
-            for (const PairKey& pair : candidatePairs)
-                unite(pair.a, pair.b);
-
-            std::unordered_map<UUID, std::vector<PairKey>> islandPairs;
-            for (const PairKey& pair : candidatePairs)
-            {
-                const UUID root = findRoot(pair.a, findRoot);
-                islandPairs[root].push_back(pair);
-            }
-
-            std::unordered_set<UUID> bodiesInIslands;
-            for (auto& [root, pairs] : islandPairs)
-            {
-                std::unordered_set<UUID> islandBodies;
-                for (const PairKey& pair : pairs)
-                {
-                    islandBodies.insert(pair.a);
-                    islandBodies.insert(pair.b);
                 }
-                bodiesInIslands.insert(islandBodies.begin(), islandBodies.end());
 
-                int zeroProgressGuard = 0;
-                int eventIndex = 0;
-                for (; eventIndex < k_MaxToiEvents; eventIndex++)
+                std::unordered_map<UUID, UUID> parent;
+                parent.reserve(bodies.size());
+                for (const auto& [id, body] : bodies)
+                    parent[id] = id;
+
+                const auto findRoot = [&](UUID id) -> UUID
                 {
-                    float earliestToi = 1.0f;
-                    std::vector<Contact> earliestContacts;
-                    std::vector<Contact> persistentContacts;
+                    UUID root = id;
+                    while (!(parent[root] == root))
+                        root = parent[root];
 
+                    UUID current = id;
+                    while (!(parent[current] == current))
+                    {
+                        UUID next = parent[current];
+                        parent[current] = root;
+                        current = next;
+                    }
+                    return root;
+                };
+
+                auto unite = [&](UUID a, UUID b)
+                {
+                    UUID rootA = findRoot(a);
+                    UUID rootB = findRoot(b);
+                    if (rootA == rootB)
+                        return;
+                    parent[rootB] = rootA;
+                };
+
+                for (const PairKey& pair : candidatePairs)
+                    unite(pair.a, pair.b);
+
+                std::unordered_map<UUID, std::vector<PairKey>> islandPairs;
+                for (const PairKey& pair : candidatePairs)
+                {
+                    const UUID root = findRoot(pair.a);
+                    islandPairs[root].push_back(pair);
+                }
+
+                bool rebuildBroadphase = false;
+                std::unordered_set<UUID> bodiesInIslands;
+                for (auto& [root, pairs] : islandPairs)
+                {
+                    std::unordered_set<UUID> islandBodies;
                     for (const PairKey& pair : pairs)
                     {
-                        BodyRuntime& bodyA = bodies[pair.a];
-                        BodyRuntime& bodyB = bodies[pair.b];
-
-                        if (bodyA.collider->GetType() != ColliderType::AABB || bodyB.collider->GetType() != ColliderType::AABB)
-                            continue;
-
-                        const sf::FloatRect boundsA = ComputeBoundsAt(bodyA, bodyA.position);
-                        const sf::FloatRect boundsB = ComputeBoundsAt(bodyB, bodyB.position);
-                        const sf::Vector2f deltaA = bodyA.canTranslate ? bodyA.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
-                        const sf::Vector2f deltaB = bodyB.canTranslate ? bodyB.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
-
-                        SweepResult sweep = SweepAABBPair(boundsA, deltaA, boundsB, deltaB);
-                        if (sweep.startsTouching)
-                        {
-                            persistentContacts.push_back(Contact{ pair, sweep.normal });
-                        }
-
-                        if (!sweep.hit)
-                            continue;
-
-                        if (sweep.toi + k_TOIEpsilon < earliestToi)
-                        {
-                            earliestToi = sweep.toi;
-                            earliestContacts.clear();
-                        }
-
-                        if (std::abs(sweep.toi - earliestToi) <= k_TOIEpsilon)
-                        {
-                            earliestContacts.push_back(Contact{ pair, sweep.normal });
-                        }
+                        islandBodies.insert(pair.a);
+                        islandBodies.insert(pair.b);
                     }
+                    bodiesInIslands.insert(islandBodies.begin(), islandBodies.end());
 
-                    const bool hasEarliest = !earliestContacts.empty();
-                    const bool hasPersistent = !persistentContacts.empty();
-                    if (!hasEarliest && !hasPersistent)
+                    bool islandRequiresBroadphaseRefresh = false;
+                    int zeroProgressGuard = 0;
+                    int eventIndex = 0;
+                    for (; eventIndex < k_MaxToiEvents; eventIndex++)
                     {
-                        bool moved = false;
-                        for (UUID bodyId : islandBodies)
-                        {
-                            BodyRuntime& body = bodies[bodyId];
-                            if (!body.canTranslate)
-                                continue;
-                            if (IsZeroVector(body.remainingDelta))
-                                continue;
+                        float earliestToi = 1.0f;
+                        std::vector<Contact> earliestContacts;
+                        std::vector<Contact> persistentContacts;
 
-                            body.position += body.remainingDelta;
-                            body.transform->SetPosition(body.position);
-                            body.remainingTime = 0.0f;
-                            body.remainingDelta = { 0.0f, 0.0f };
-                            moved = true;
-                        }
-
-                        if (!moved)
-                            break;
-
-                        continue;
-                    }
-
-                    if (!hasEarliest)
-                    {
-                        bool constrained = false;
-                        for (const Contact& contact : persistentContacts)
-                        {
-                            BodyRuntime& bodyA = bodies[contact.pair.a];
-                            BodyRuntime& bodyB = bodies[contact.pair.b];
-                            AddTouch(bodyA.collider->touchingThisFrame, bodyB.id);
-                            AddTouch(bodyB.collider->touchingThisFrame, bodyA.id);
-                            constrained |= ConstrainPersistentContactMotion(bodyA, bodyB, contact.normal);
-                        }
-
-                        if (constrained)
-                            continue;
-
-                        bool moved = false;
-                        for (UUID bodyId : islandBodies)
-                        {
-                            BodyRuntime& body = bodies[bodyId];
-                            if (!body.canTranslate)
-                                continue;
-                            if (IsZeroVector(body.remainingDelta))
-                                continue;
-
-                            body.position += body.remainingDelta;
-                            body.transform->SetPosition(body.position);
-                            body.remainingTime = 0.0f;
-                            body.remainingDelta = { 0.0f, 0.0f };
-                            moved = true;
-                        }
-
-                        if (!moved)
-                            break;
-
-                        continue;
-                    }
-
-                    float advance = hasEarliest ? earliestToi : 0.0f;
-                    advance = std::clamp(advance, 0.0f, 1.0f);
-                    if (advance > 0.0f)
-                    {
-                        for (UUID bodyId : islandBodies)
-                        {
-                            BodyRuntime& body = bodies[bodyId];
-                            if (!body.canTranslate)
-                                continue;
-
-                            const sf::Vector2f deltaStep = body.remainingDelta * advance;
-                            body.position += deltaStep;
-                            body.transform->SetPosition(body.position);
-                            body.remainingTime *= (1.0f - advance);
-                            body.remainingDelta -= deltaStep;
-                        }
-                    }
-
-                    std::unordered_map<PairKey, Contact, PairKeyHasher> batch;
-                    for (const Contact& contact : persistentContacts)
-                    {
-                        batch[contact.pair] = contact;
-                    }
-                    for (const Contact& contact : earliestContacts)
-                    {
-                        batch[contact.pair] = contact;
-                    }
-
-                    for (const PairKey& pair : pairs)
-                    {
-                        BodyRuntime& bodyA = bodies[pair.a];
-                        BodyRuntime& bodyB = bodies[pair.b];
-                        if (bodyA.collider->GetType() != ColliderType::AABB || bodyB.collider->GetType() != ColliderType::AABB)
-                            continue;
-
-                        sf::Vector2f normal = { 0.0f, 0.0f };
-                        float penetration = 0.0f;
-                        if (ComputeAABBContact(ComputeBoundsAt(bodyA, bodyA.position), ComputeBoundsAt(bodyB, bodyB.position), normal, penetration))
-                        {
-                            batch[pair] = Contact{ pair, normal };
-                        }
-                    }
-
-                    bool eventProgress = false;
-                    for (int iteration = 0; iteration < k_MaxContactIterations; iteration++)
-                    {
-                        bool iterationProgress = false;
-                        for (auto& [pair, contact] : batch)
+                        for (const PairKey& pair : pairs)
                         {
                             BodyRuntime& bodyA = bodies[pair.a];
                             BodyRuntime& bodyB = bodies[pair.b];
 
-                            sf::Vector2f normal = contact.normal;
-                            float penetration = 0.0f;
-                            if (!ComputeAABBContact(ComputeBoundsAt(bodyA, bodyA.position), ComputeBoundsAt(bodyB, bodyB.position), normal, penetration))
+                            if (bodyA.collider->GetType() != ColliderType::AABB || bodyB.collider->GetType() != ColliderType::AABB)
                                 continue;
 
-                            AddTouch(bodyA.collider->touchingThisFrame, bodyB.id);
-                            AddTouch(bodyB.collider->touchingThisFrame, bodyA.id);
+                            const sf::FloatRect boundsA = ComputeBoundsAt(bodyA, bodyA.position);
+                            const sf::FloatRect boundsB = ComputeBoundsAt(bodyB, bodyB.position);
+                            const sf::Vector2f deltaA = bodyA.canTranslate ? bodyA.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
+                            const sf::Vector2f deltaB = bodyB.canTranslate ? bodyB.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
 
-                            if (ApplyContactResponse(bodyA, bodyB, normal, penetration))
+                            SweepResult sweep = SweepAABBPair(boundsA, deltaA, boundsB, deltaB);
+                            if (sweep.startsTouching)
                             {
-                                iterationProgress = true;
+                                persistentContacts.push_back(Contact{ pair, sweep.normal });
+                            }
+
+                            if (!sweep.hit)
+                                continue;
+
+                            if (sweep.toi + k_TOIEpsilon < earliestToi)
+                            {
+                                earliestToi = sweep.toi;
+                                earliestContacts.clear();
+                            }
+
+                            if (std::abs(sweep.toi - earliestToi) <= k_TOIEpsilon)
+                            {
+                                earliestContacts.push_back(Contact{ pair, sweep.normal });
                             }
                         }
 
-                        eventProgress |= iterationProgress;
-                        if (!iterationProgress)
+                        const bool hasEarliest = !earliestContacts.empty();
+                        const bool hasPersistent = !persistentContacts.empty();
+                        if (!hasEarliest && !hasPersistent)
+                        {
+                            bool moved = false;
+                            for (UUID bodyId : islandBodies)
+                            {
+                                BodyRuntime& body = bodies[bodyId];
+                                if (!body.canTranslate)
+                                    continue;
+                                if (IsZeroVector(body.remainingDelta))
+                                    continue;
+
+                                CommitRemainingMotion(body);
+                                moved = true;
+                            }
+
+                            if (!moved)
+                                break;
+
+                            continue;
+                        }
+
+                        if (!hasEarliest)
+                        {
+                            bool constrained = false;
+                            for (const Contact& contact : persistentContacts)
+                            {
+                                BodyRuntime& bodyA = bodies[contact.pair.a];
+                                BodyRuntime& bodyB = bodies[contact.pair.b];
+                                AddTouch(bodyA.collider->touchingThisFrame, bodyB.id);
+                                AddTouch(bodyB.collider->touchingThisFrame, bodyA.id);
+                                constrained |= ConstrainPersistentContactMotion(bodyA, bodyB, contact.normal);
+                            }
+
+                            if (constrained)
+                            {
+                                islandRequiresBroadphaseRefresh = true;
+                                break;
+                            }
+
+                            bool moved = false;
+                            for (UUID bodyId : islandBodies)
+                            {
+                                BodyRuntime& body = bodies[bodyId];
+                                if (!body.canTranslate)
+                                    continue;
+                                if (IsZeroVector(body.remainingDelta))
+                                    continue;
+
+                                CommitRemainingMotion(body);
+                                moved = true;
+                            }
+
+                            if (!moved)
+                                break;
+
+                            continue;
+                        }
+
+                        float advance = hasEarliest ? earliestToi : 0.0f;
+                        advance = std::clamp(advance, 0.0f, 1.0f);
+                        if (advance > 0.0f)
+                        {
+                            for (UUID bodyId : islandBodies)
+                            {
+                                BodyRuntime& body = bodies[bodyId];
+                                if (!body.canTranslate)
+                                    continue;
+
+                                const sf::Vector2f deltaStep = body.remainingDelta * advance;
+                                body.position += deltaStep;
+                                body.transform->SetPosition(body.position);
+                                body.remainingTime *= (1.0f - advance);
+                                body.remainingDelta -= deltaStep;
+                            }
+                        }
+
+                        std::unordered_map<PairKey, Contact, PairKeyHasher> batch;
+                        for (const Contact& contact : persistentContacts)
+                        {
+                            batch[contact.pair] = contact;
+                        }
+                        for (const Contact& contact : earliestContacts)
+                        {
+                            batch[contact.pair] = contact;
+                        }
+
+                        for (const PairKey& pair : pairs)
+                        {
+                            BodyRuntime& bodyA = bodies[pair.a];
+                            BodyRuntime& bodyB = bodies[pair.b];
+                            if (bodyA.collider->GetType() != ColliderType::AABB || bodyB.collider->GetType() != ColliderType::AABB)
+                                continue;
+
+                            sf::Vector2f normal = { 0.0f, 0.0f };
+                            float penetration = 0.0f;
+                            if (ComputeAABBContact(ComputeBoundsAt(bodyA, bodyA.position), ComputeBoundsAt(bodyB, bodyB.position), normal, penetration))
+                            {
+                                batch[pair] = Contact{ pair, normal };
+                            }
+                        }
+
+                        bool eventProgress = false;
+                        for (int iteration = 0; iteration < k_MaxContactIterations; iteration++)
+                        {
+                            bool iterationProgress = false;
+                            for (auto& [pair, contact] : batch)
+                            {
+                                BodyRuntime& bodyA = bodies[pair.a];
+                                BodyRuntime& bodyB = bodies[pair.b];
+
+                                sf::Vector2f normal = contact.normal;
+                                float penetration = 0.0f;
+                                if (!ComputeAABBContact(ComputeBoundsAt(bodyA, bodyA.position), ComputeBoundsAt(bodyB, bodyB.position), normal, penetration))
+                                    continue;
+
+                                AddTouch(bodyA.collider->touchingThisFrame, bodyB.id);
+                                AddTouch(bodyB.collider->touchingThisFrame, bodyA.id);
+
+                                if (ApplyContactResponse(bodyA, bodyB, normal, penetration))
+                                {
+                                    iterationProgress = true;
+                                }
+                            }
+
+                            eventProgress |= iterationProgress;
+                            if (!iterationProgress)
+                                break;
+                        }
+
+                        if (eventProgress)
+                        {
+                            islandRequiresBroadphaseRefresh = true;
+                            break;
+                        }
+
+                        if (advance <= 0.0f)
+                        {
+                            zeroProgressGuard++;
+                            if (zeroProgressGuard >= 2)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            zeroProgressGuard = 0;
+                        }
+
+                        bool islandDone = true;
+                        for (UUID bodyId : islandBodies)
+                        {
+                            if (!IsZeroVector(bodies[bodyId].remainingDelta))
+                            {
+                                islandDone = false;
+                                break;
+                            }
+                        }
+                        if (islandDone)
                             break;
                     }
 
-                    if (advance <= 0.0f && !eventProgress)
+                    if (eventIndex == k_MaxToiEvents)
                     {
-                        zeroProgressGuard++;
-                        if (zeroProgressGuard >= 2)
+                        for (UUID bodyId : islandBodies)
                         {
-                            break;
+                            CommitRemainingMotion(bodies[bodyId]);
                         }
-                    }
-                    else
-                    {
-                        zeroProgressGuard = 0;
                     }
 
-                    bool islandDone = true;
-                    for (UUID bodyId : islandBodies)
+                    if (islandRequiresBroadphaseRefresh)
                     {
-                        if (!IsZeroVector(bodies[bodyId].remainingDelta))
-                        {
-                            islandDone = false;
-                            break;
-                        }
-                    }
-                    if (islandDone)
+                        rebuildBroadphase = true;
                         break;
-                }
-
-                if (eventIndex == k_MaxToiEvents)
-                {
-                    for (UUID bodyId : islandBodies)
-                    {
-                        CommitRemainingMotion(bodies[bodyId]);
                     }
                 }
-            }
 
-            for (auto& [id, body] : bodies)
-            {
-                if (!body.canTranslate)
+                if (rebuildBroadphase)
+                {
+                    broadphaseRefreshes++;
+                    if (broadphaseRefreshes >= maxBroadphaseRefreshes)
+                    {
+                        for (auto& [id, body] : bodies)
+                        {
+                            CommitRemainingMotion(body);
+                        }
+                        return;
+                    }
                     continue;
-                if (bodiesInIslands.count(id))
-                    continue;
-                if (IsZeroVector(body.remainingDelta))
-                    continue;
+                }
 
-                CommitRemainingMotion(body);
+                for (auto& [id, body] : bodies)
+                {
+                    if (!body.canTranslate)
+                        continue;
+                    if (bodiesInIslands.count(id))
+                        continue;
+                    if (IsZeroVector(body.remainingDelta))
+                        continue;
+
+                    CommitRemainingMotion(body);
+                }
+                return;
             }
         }
 
