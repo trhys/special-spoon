@@ -525,16 +525,21 @@ namespace Spoon
            // that follows) see the corrected position rather than the stale, still-overlapping one.
            // This is what allows a body squeezed between two colliders to be separated from BOTH
            // sides within the same frame instead of only one contact "winning".
+           bool movedA = false;
+           bool movedB = false;
            if (invMassA > 0.0f)
            {
                const sf::Vector2f correctionA = correctionForA * (invMassA / totalInvMass);
-               ApplyImmediateCorrection(manager, entityA, motionA, correctionA);
+               movedA = ApplyImmediateCorrection(manager, entityA, entityB, motionA, correctionA);
            }
            if (invMassB > 0.0f)
            {
                const sf::Vector2f correctionB = { -correctionForA.x * (invMassB / totalInvMass), -correctionForA.y * (invMassB / totalInvMass) };
-               ApplyImmediateCorrection(manager, entityB, motionB, correctionB);
+               movedB = ApplyImmediateCorrection(manager, entityB, entityA, motionB, correctionB);
            }
+
+           if (!movedA && !movedB)
+               return false;
 
            const float invMassAForVelocity = InverseMass(manager, entityA);
            const float invMassBForVelocity = InverseMass(manager, entityB);
@@ -542,22 +547,23 @@ namespace Spoon
            return true;
         }
 
-         void ApplyImmediateCorrection(EntityManager& manager, UUID entity, const FrameMotion& motion, const sf::Vector2f& correction)
+         bool ApplyImmediateCorrection(EntityManager& manager, UUID entity, UUID ignoredEntity, const FrameMotion& motion, const sf::Vector2f& correction)
         {
+           const sf::Vector2f constrainedCorrection = ConstrainCorrection(manager, entity, ignoredEntity, correction);
+           if (IsZeroVector(constrainedCorrection))
+               return false;
+
            sf::Vector2f updatedPosition = motion.currentPosition;
-           if (!IsZeroVector(correction))
+           auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+           if (transformArray.m_IdToIndex.count(entity))
            {
-               auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
-               if (transformArray.m_IdToIndex.count(entity))
-               {
-                   auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
-                   transform.Move(correction);
-                   updatedPosition = transform.GetPosition();
-               }
-               else
-               {
-                   updatedPosition += correction;
-               }
+               auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
+               transform.Move(constrainedCorrection);
+               updatedPosition = transform.GetPosition();
+           }
+           else
+           {
+               updatedPosition += constrainedCorrection;
            }
 
            auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
@@ -567,16 +573,16 @@ namespace Spoon
                movement.m_WasCorrectedByPhysics = true;
            }
 
-           // Keep the entity's remaining swept delta for this frame intact (positional
-           // correction here only nudges it out of overlap, it doesn't consume travel time),
-           // while updating start/current position so later pair checks in this same iteration
-           // use the corrected, non-overlapping position.
+           // Apply the positional correction to both endpoints of the frame motion. The transform
+           // is already at currentPosition, so treating that position as a new frame start would
+           // replay the full delta and can push an entity through a second collider.
            m_FrameMotionCache[entity] = FrameMotion{
                updatedPosition,
-               updatedPosition,
+               motion.startPosition + constrainedCorrection,
                motion.delta,
-               false
+               motion.transformAlreadyAdvanced
            };
+           return true;
         }
 
          void ResolveSweptCollisions(EntityManager& manager, float dt)
@@ -1093,8 +1099,9 @@ namespace Spoon
                 movedB = ApplyCorrection(manager, entityB, entityA, correctionB);
             }
 
-            if (movedA || movedB)
-                ApplyVelocityResponse(manager, entityA, entityB, correctionForA, invMassA, invMassB);
+            const float correctionLength = std::sqrt(correctionForA.x * correctionForA.x + correctionForA.y * correctionForA.y);
+            if ((movedA || movedB) && correctionLength > 0.0001f)
+                ApplyVelocityResponse(manager, entityA, entityB, correctionForA / correctionLength, invMassA, invMassB);
             return true;
         }
 

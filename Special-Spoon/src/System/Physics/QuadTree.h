@@ -29,6 +29,7 @@ namespace Spoon
 
         void BuildTree(sf::Vector2f gridSize);
         void Populate(EntityManager& manager);
+        void PopulateSwept(EntityManager& manager, float dt, const MotionProvider& motionProvider = nullptr);
         std::vector<UUID> Query(const sf::FloatRect& bounds) const;
         std::set<std::pair<UUID, UUID>> GeneratePairs();
 
