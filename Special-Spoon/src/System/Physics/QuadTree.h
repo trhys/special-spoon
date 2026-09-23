@@ -3,6 +3,7 @@
 #include "ECS/Components/ColliderComp.h"
 #include "SFML/Graphics.hpp"
 #include <set>
+#include <unordered_map>
 
 namespace Spoon
 {
@@ -23,7 +24,7 @@ namespace Spoon
         ~Quadtree() {}
 
         void BuildTree(sf::Vector2f gridSize);
-        void Populate(EntityManager& manager);
+        void Populate(EntityManager& manager, const std::unordered_map<UUID, sf::FloatRect>* boundsOverride = nullptr);
         std::set<std::pair<UUID, UUID>> GeneratePairs();
 
         // std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }

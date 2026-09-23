@@ -35,7 +35,7 @@ namespace Spoon
         }
     }
 
-    void Quadtree::Populate(EntityManager& manager)
+    void Quadtree::Populate(EntityManager& manager, const std::unordered_map<UUID, sf::FloatRect>* boundsOverride)
     {
         for (auto& leaf : m_GridNodes)
             leaf.collision_buffer.clear();
@@ -48,7 +48,13 @@ namespace Spoon
 
             auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
             auto& collider = manager.GetComponent<ColliderComp>(entity, ColliderComp::Name);
-            const sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
+            sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
+            if (boundsOverride)
+            {
+                auto it = boundsOverride->find(entity);
+                if (it != boundsOverride->end())
+                    entityBox = it->second;
+            }
             for (auto& leaf : m_GridNodes)
             {
                 if (const std::optional intersect = leaf.body.findIntersection(entityBox))
