@@ -79,8 +79,12 @@ namespace Spoon {
 		}
 
 		// skip the solver algos if there isnt enough material to solve
-		if (bodies.size() < 2)
+if (bodies.size() == 1)
+		{
+			CommitRemainingMotion(bodies.begin()->second);
+			SyncMovementState(bodies.begin()->second);
 			return;
+		}
 
 		// run solver
 		SimulateContinuousAABB(bodies);
