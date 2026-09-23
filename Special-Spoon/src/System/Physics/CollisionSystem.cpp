@@ -563,8 +563,12 @@ auto buildCandidatePairs = [&](std::set<std::pair<UUID, UUID>>& candidatePairs)
 			}
 		}
 
-		if (totalInvMass <= 0.0f)
+if (totalInvMass <= 0.0f)
 		{
+			const sf::Vector2f relativeDelta = bodyA.remainingDelta - bodyB.remainingDelta;
+			const float closingDelta = DotProd(relativeDelta, normalForA);
+			if (closingDelta >= 0.0f)
+				return changed;
 			if (bodyA.bodyType == BodyType::Kinematic &&
 		        bodyB.bodyType == BodyType::Static)
 		    {
