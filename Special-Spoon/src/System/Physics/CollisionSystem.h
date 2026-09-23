@@ -352,7 +352,7 @@ namespace Spoon
                 if (!result.startsTouching)
                 {
                     result.hit = true;
-                    result.toi = 0.0f;
+                    result.toi = std::clamp(tEntry, 0.0f, 1.0f);
                     if (txEntry > tyEntry)
                     {
                         result.normal = (relativeDelta.x > 0.0f) ? sf::Vector2f{ -1.0f, 0.0f } : sf::Vector2f{ 1.0f, 0.0f };
@@ -422,6 +422,21 @@ namespace Spoon
             body.remainingDelta = body.physics->velocity * body.remainingTime;
         }
 
+        static void CommitRemainingMotion(BodyRuntime& body)
+        {
+            if (!body.canTranslate)
+                return;
+
+            if (!IsZeroVector(body.remainingDelta))
+            {
+                body.position += body.remainingDelta;
+                body.transform->SetPosition(body.position);
+            }
+
+            body.remainingTime = 0.0f;
+            body.remainingDelta = { 0.0f, 0.0f };
+        }
+
         bool ConstrainPersistentContactMotion(BodyRuntime& bodyA, BodyRuntime& bodyB, const sf::Vector2f& normalForA)
         {
             const sf::Vector2f deltaA = bodyA.canTranslate ? bodyA.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
@@ -431,17 +446,26 @@ namespace Spoon
             if (closingDelta >= 0.0f)
                 return false;
 
-            auto motionWeight = [&](const BodyRuntime& body)
+            auto motionWeight = [](const BodyRuntime& body, const BodyRuntime& other)
             {
                 if (!body.canTranslate)
                     return 0.0f;
 
+                if (body.bodyType == BodyType::Kinematic)
+                {
+                    if (!other.canTranslate)
+                        return 1.0f;
+                    if (other.bodyType == BodyType::Dynamic)
+                        return 0.0f;
+                    return 1.0f;
+                }
+
                 const float invMass = InverseMass(body);
-                return invMass > 0.0f ? invMass : 1.0f;
+                return invMass > 0.0f ? invMass : 0.0f;
             };
 
-            const float weightA = motionWeight(bodyA);
-            const float weightB = motionWeight(bodyB);
+            const float weightA = motionWeight(bodyA, bodyB);
+            const float weightB = motionWeight(bodyB, bodyA);
             const float totalWeight = weightA + weightB;
             if (totalWeight <= 0.0f)
                 return false;
@@ -670,7 +694,8 @@ namespace Spoon
                 bodiesInIslands.insert(islandBodies.begin(), islandBodies.end());
 
                 int zeroProgressGuard = 0;
-                for (int eventIndex = 0; eventIndex < k_MaxToiEvents; eventIndex++)
+                int eventIndex = 0;
+                for (; eventIndex < k_MaxToiEvents; eventIndex++)
                 {
                     float earliestToi = 1.0f;
                     std::vector<Contact> earliestContacts;
@@ -775,7 +800,7 @@ namespace Spoon
 
                     float advance = hasEarliest ? earliestToi : 0.0f;
                     advance = std::clamp(advance, 0.0f, 1.0f);
-                    if (advance > k_TOIEpsilon)
+                    if (advance > 0.0f)
                     {
                         for (UUID bodyId : islandBodies)
                         {
@@ -844,7 +869,7 @@ namespace Spoon
                             break;
                     }
 
-                    if (advance <= k_TOIEpsilon && !eventProgress)
+                    if (advance <= 0.0f && !eventProgress)
                     {
                         zeroProgressGuard++;
                         if (zeroProgressGuard >= 2)
@@ -869,6 +894,14 @@ namespace Spoon
                     if (islandDone)
                         break;
                 }
+
+                if (eventIndex == k_MaxToiEvents)
+                {
+                    for (UUID bodyId : islandBodies)
+                    {
+                        CommitRemainingMotion(bodies[bodyId]);
+                    }
+                }
             }
 
             for (auto& [id, body] : bodies)
@@ -880,10 +913,7 @@ namespace Spoon
                 if (IsZeroVector(body.remainingDelta))
                     continue;
 
-                body.position += body.remainingDelta;
-                body.transform->SetPosition(body.position);
-                body.remainingTime = 0.0f;
-                body.remainingDelta = { 0.0f, 0.0f };
+                CommitRemainingMotion(body);
             }
         }
 
