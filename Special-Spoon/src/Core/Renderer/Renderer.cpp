@@ -1,5 +1,5 @@
-#include "Core/Renderer/Renderer.h"
 #include "Core/Application.h"
+#include "Editor/Utils/EditorSettings.h"
 
 namespace Spoon {
     void Renderer::Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager)
@@ -54,6 +54,9 @@ namespace Spoon {
         }
         ClearActiveGizmos();
 
+        // Debug overlays
+        DrawColliderOverlay(target, states, manager);
+
         // Return metrics
         m_DrawTime = static_cast<float>(drawClock.getElapsedTime().asMilliseconds());
     }
@@ -77,4 +80,41 @@ namespace Spoon {
 		    activeSortPolicy = project->config.SortPolicy;
 		}	
 	}
+
+    void Renderer::DrawColliderOverlay(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager)
+    {
+        if (!EditorSettings::Get().showColliderOverlay)
+            return;
+
+        auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+        for (auto& entity : manager.GetAllEntitiesWithComponent<ColliderComp>(ColliderComp::Name))
+        {
+            if (!transformArray.m_IdToIndex.count(entity))
+                continue;
+
+            auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
+            auto& collider = manager.GetComponent<ColliderComp>(entity, ColliderComp::Name);
+            const sf::FloatRect bounds = collider.GetWorldBounds(transform.GetPosition());
+
+            if (collider.GetType() == ColliderType::Circle)
+            {
+                sf::CircleShape shape(bounds.size.x * 0.5f);
+                shape.setPosition(bounds.position);
+                shape.setFillColor(sf::Color::Transparent);
+                shape.setOutlineColor(sf::Color::Green);
+                shape.setOutlineThickness(1.0f);
+                target.draw(shape, states);
+            }
+            else
+            {
+                sf::RectangleShape shape(bounds.size);
+                shape.setPosition(bounds.position);
+                shape.setFillColor(sf::Color::Transparent);
+                shape.setOutlineColor(sf::Color::Green);
+                shape.setOutlineThickness(1.0f);
+                target.draw(shape, states);
+            }
+            m_DrawCalls++;
+        }
+    }
 }

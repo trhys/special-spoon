@@ -39,6 +39,7 @@ namespace Spoon {
       sf::Vector2f m_FrameIntent;
       sf::Vector2f m_ProposedDelta;
       bool m_WasCorrectedByPhysics = false;
+      bool m_TransformAdvancedThisFrame = false;
 
       void OnReflect() override
       {
@@ -49,6 +50,7 @@ namespace Spoon {
           ImGui::Text("Proposed Delta: (%.2f, %.2f)", m_ProposedDelta.x, m_ProposedDelta.y);
           ImGui::Text("Facing: %s", m_Facing.m_Direction);
           ImGui::Text("Corrected By Physics: %s", m_WasCorrectedByPhysics ? "True" : "False");
+          ImGui::Text("Transform Advanced This Frame: %s", m_TransformAdvancedThisFrame ? "True" : "False");
       }
   };
 

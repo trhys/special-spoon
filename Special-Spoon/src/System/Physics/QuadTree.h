@@ -1,7 +1,9 @@
 #pragma once
 
 #include "ECS/Components/ColliderComp.h"
+#include "FrameMotion.h"
 #include "SFML/Graphics.hpp"
+#include <functional>
 #include <set>
 #include <vector>
 
@@ -20,6 +22,8 @@ namespace Spoon
     class Quadtree
     {
     public:
+        using MotionProvider = std::function<FrameMotion(EntityManager&, UUID, float)>;
+
         Quadtree() {}
         ~Quadtree() {}
 
@@ -31,6 +35,7 @@ namespace Spoon
         // std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }
 
     private:
+        void Populate(EntityManager& manager, float dt, bool useSweptBounds, const MotionProvider& motionProvider);
         std::vector<QT_GridNode> m_GridNodes{8};
 
     };

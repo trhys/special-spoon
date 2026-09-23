@@ -27,6 +27,8 @@ namespace Spoon
         void ClearActiveGizmos() { m_Gizmos.clear(); }
 
     private:
+        void DrawColliderOverlay(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager);
+
         std::vector<Renderable> m_Renderables;
         std::vector<GizmoCommand> m_Gizmos;
         ActiveSortPolicy activeSortPolicy = ActiveSortPolicy::Isometric;

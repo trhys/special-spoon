@@ -90,6 +90,7 @@ public:
             moveComp.m_FrameIntent = {0.0f, 0.0f};
             moveComp.m_ProposedDelta = {0.0f, 0.0f};
             moveComp.m_WasCorrectedByPhysics = false;
+            moveComp.m_TransformAdvancedThisFrame = false;
 
             auto actionRange = movementActions.find(ID);
             if (actionRange != movementActions.end())
@@ -149,6 +150,7 @@ public:
                 if (!physicsEnabled)
                 {
                     transComp.Move(moveComp.m_ProposedDelta);
+                    moveComp.m_TransformAdvancedThisFrame = true;
                 }
 
                 // Determine direction of travel

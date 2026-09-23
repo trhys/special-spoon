@@ -84,6 +84,12 @@ namespace Spoon
         float restitution = -1.0f;
         float friction = -1.0f;
         float linearDamping = -1.0f;
+        // Runtime-only sweep bookkeeping; reset by PhysicsSystem each frame.
+        sf::Vector2f frameAppliedDelta = { 0.0f, 0.0f };
+        // Runtime-only sweep bookkeeping; true when frameAppliedDelta was produced this frame.
+        bool frameDeltaComputedThisFrame = false;
+        // Runtime-only sweep bookkeeping; true when PhysicsSystem moved TransformComp this frame.
+        bool transformAdvancedThisFrame = false;
     };
 
     inline void to_json(json& j, const PhysicsComp& comp)

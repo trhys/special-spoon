@@ -1,8 +1,11 @@
 #pragma once
 
 #include "System/System.h"
+#include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "Core/Renderer/Gizmo.h"
 #include "ECS/ECS.h"
+#include "Editor/Utils/EditorSettings.h"
 #include "System/Physics/SystemConfigs.h"
 
 #include <algorithm>
@@ -72,6 +75,9 @@ namespace Spoon
             {
                 auto& physicsComp = physicsArray.m_Components[index];
                 UUID id = physicsArray.m_IndexToId[index];
+                physicsComp.frameAppliedDelta = { 0.0f, 0.0f };
+                physicsComp.frameDeltaComputedThisFrame = false;
+                physicsComp.transformAdvancedThisFrame = false;
                 if (!transformArray.m_IdToIndex.count(id))
                     continue;
 
@@ -128,12 +134,15 @@ namespace Spoon
                 }
 
                 const sf::Vector2f delta = physicsComp.velocity * dt;
+                physicsComp.frameAppliedDelta = delta;
+                physicsComp.frameDeltaComputedThisFrame = true;
                 if (delta.x == 0.0f && delta.y == 0.0f)
                 {
                     if (movementArray.m_IdToIndex.count(id))
                     {
                         auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
-                        movementComp.m_ProposedDelta = delta;
+                        if (!movementComp.m_TransformAdvancedThisFrame)
+                            movementComp.m_ProposedDelta = delta;
                         movementComp.m_Velocity = physicsComp.velocity;
                     }
                     continue;
@@ -141,12 +150,17 @@ namespace Spoon
 
                 TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
                 transform.Move(delta);
+                physicsComp.transformAdvancedThisFrame = true;
 
                 if (movementArray.m_IdToIndex.count(id))
                 {
                     auto& movementComp = manager.GetComponent<MovementComp>(id, MovementComp::Name);
-                    movementComp.m_ProposedDelta = delta;
+                    if (movementComp.m_TransformAdvancedThisFrame)
+                        movementComp.m_ProposedDelta += delta;
+                    else
+                        movementComp.m_ProposedDelta = delta;
                     movementComp.m_Velocity = physicsComp.velocity;
+                    movementComp.m_TransformAdvancedThisFrame = true;
                 }
             }
         }

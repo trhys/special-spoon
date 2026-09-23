@@ -1,12 +1,31 @@
 #include "QuadTree.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "FrameMotion.h"
 #include "ECS/Components/TransformComp.h"
 
+#include <algorithm>
 #include <optional>
 #include <set>
 
 namespace Spoon
 {
+    namespace
+    {
+        sf::FloatRect ComputeSweptBounds(const sf::FloatRect& startBounds, const sf::Vector2f& delta)
+        {
+            const sf::Vector2f minPosition = {
+                std::min(startBounds.position.x, startBounds.position.x + delta.x),
+                std::min(startBounds.position.y, startBounds.position.y + delta.y)
+            };
+            const sf::Vector2f maxPosition = {
+                std::max(startBounds.position.x + startBounds.size.x, startBounds.position.x + delta.x + startBounds.size.x),
+                std::max(startBounds.position.y + startBounds.size.y, startBounds.position.y + delta.y + startBounds.size.y)
+            };
+
+            return sf::FloatRect(minPosition, maxPosition - minPosition);
+        }
+    }
+
     void Quadtree::BuildTree(sf::Vector2f gridSize)
     {
         sf::Vector2f node_size = { gridSize.x / 4, gridSize.y / 2 };
@@ -38,6 +57,16 @@ namespace Spoon
 
     void Quadtree::Populate(EntityManager& manager)
     {
+        Populate(manager, 0.0f, false, nullptr);
+    }
+
+    void Quadtree::PopulateSwept(EntityManager& manager, float dt, const MotionProvider& motionProvider)
+    {
+        Populate(manager, dt, true, motionProvider);
+    }
+
+    void Quadtree::Populate(EntityManager& manager, float dt, bool useSweptBounds, const MotionProvider& motionProvider)
+    {
         for (auto& leaf : m_GridNodes)
             leaf.collision_buffer.clear();
 
@@ -49,7 +78,22 @@ namespace Spoon
 
             auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
             auto& collider = manager.GetComponent<ColliderComp>(entity, ColliderComp::Name);
-            const sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
+            sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
+            if (useSweptBounds)
+            {
+                // Prefer the caller-supplied motion provider (e.g. CollisionSystem's per-frame
+                // cache) so the broadphase agrees with the narrowphase on each entity's current
+                // remaining motion. Without this, a second/later resolution pass could build swept
+                // bounds from a stale, unclamped delta while narrowphase already knows the entity
+                // was clamped - causing pairs to be missed and bodies to tunnel through under
+                // multiple simultaneous collisions.
+                const FrameMotion motion = motionProvider
+                    ? motionProvider(manager, entity, dt)
+                    : ComputeFrameMotion(manager, entity, dt);
+                entityBox = ComputeSweptBounds(
+                    collider.GetWorldBounds(motion.startPosition),
+                    motion.delta);
+            }
             for (auto& leaf : m_GridNodes)
             {
                 if (const std::optional intersect = leaf.body.findIntersection(entityBox))
