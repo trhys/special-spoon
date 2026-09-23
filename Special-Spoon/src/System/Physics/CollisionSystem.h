@@ -346,7 +346,22 @@ namespace Spoon
             if (tEntry > 1.0f)
                 return result;
             if (tEntry <= k_TOIEpsilon)
+            {
+                if (!result.startsTouching)
+                {
+                    result.hit = true;
+                    result.toi = 0.0f;
+                    if (txEntry > tyEntry)
+                    {
+                        result.normal = (relativeDelta.x > 0.0f) ? sf::Vector2f{ -1.0f, 0.0f } : sf::Vector2f{ 1.0f, 0.0f };
+                    }
+                    else
+                    {
+                        result.normal = (relativeDelta.y > 0.0f) ? sf::Vector2f{ 0.0f, -1.0f } : sf::Vector2f{ 0.0f, 1.0f };
+                    }
+                }
                 return result;
+            }
 
             result.hit = true;
             result.toi = std::clamp(tEntry, 0.0f, 1.0f);
@@ -726,26 +741,7 @@ namespace Spoon
                         zeroProgressGuard++;
                         if (zeroProgressGuard >= 2)
                         {
-                            const float forcedStep = 0.05f;
-                            bool forcedMoved = false;
-                            for (UUID bodyId : islandBodies)
-                            {
-                                BodyRuntime& body = bodies[bodyId];
-                                if (!body.canTranslate)
-                                    continue;
-                                if (IsZeroVector(body.remainingDelta))
-                                    continue;
-
-                                const sf::Vector2f deltaStep = body.remainingDelta * forcedStep;
-                                body.position += deltaStep;
-                                body.transform->SetPosition(body.position);
-                                body.remainingDelta -= deltaStep;
-                                forcedMoved = true;
-                            }
-
-                            if (!forcedMoved)
-                                break;
-                            zeroProgressGuard = 0;
+                            break;
                         }
                     }
                     else
