@@ -82,6 +82,7 @@ namespace Spoon
                     body.bodyType = body.physics->bodyType;
                     if (body.bodyType != BodyType::Static)
                     {
+                        body.remainingTime = dt;
                         body.remainingDelta = body.physics->velocity * dt;
                         body.canTranslate = true;
                     }
@@ -135,6 +136,7 @@ namespace Spoon
             bool canTranslate = false;
             sf::Vector2f startPosition = { 0.0f, 0.0f };
             sf::Vector2f position = { 0.0f, 0.0f };
+            float remainingTime = 0.0f;
             sf::Vector2f remainingDelta = { 0.0f, 0.0f };
         };
 
@@ -409,9 +411,54 @@ namespace Spoon
                 body.movement->m_Velocity = velocity;
         }
 
+        static void RecomputeRemainingDelta(BodyRuntime& body)
+        {
+            if (!body.canTranslate || !body.physics)
+            {
+                body.remainingDelta = { 0.0f, 0.0f };
+                return;
+            }
+
+            body.remainingDelta = body.physics->velocity * body.remainingTime;
+        }
+
+        bool ConstrainPersistentContactMotion(BodyRuntime& bodyA, BodyRuntime& bodyB, const sf::Vector2f& normalForA)
+        {
+            const sf::Vector2f deltaA = bodyA.canTranslate ? bodyA.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f deltaB = bodyB.canTranslate ? bodyB.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
+            const sf::Vector2f relativeDelta = deltaA - deltaB;
+            const float closingDelta = relativeDelta.x * normalForA.x + relativeDelta.y * normalForA.y;
+            if (closingDelta >= 0.0f)
+                return false;
+
+            auto motionWeight = [&](const BodyRuntime& body)
+            {
+                if (!body.canTranslate)
+                    return 0.0f;
+
+                const float invMass = InverseMass(body);
+                return invMass > 0.0f ? invMass : 1.0f;
+            };
+
+            const float weightA = motionWeight(bodyA);
+            const float weightB = motionWeight(bodyB);
+            const float totalWeight = weightA + weightB;
+            if (totalWeight <= 0.0f)
+                return false;
+
+            const sf::Vector2f blockedDelta = normalForA * closingDelta;
+            if (weightA > 0.0f)
+                bodyA.remainingDelta -= blockedDelta * (weightA / totalWeight);
+            if (weightB > 0.0f)
+                bodyB.remainingDelta += blockedDelta * (weightB / totalWeight);
+
+            return true;
+        }
+
         bool ApplyContactResponse(BodyRuntime& bodyA, BodyRuntime& bodyB, const sf::Vector2f& normalForA, float penetration)
         {
             bool changed = false;
+            bool velocityChanged = false;
             const float invMassA = InverseMass(bodyA);
             const float invMassB = InverseMass(bodyB);
             const float totalInvMass = invMassA + invMassB;
@@ -460,26 +507,43 @@ namespace Spoon
             {
                 SetVelocity(bodyA, velocityA + impulse * invMassA);
                 changed = true;
+                velocityChanged = true;
             }
             if (invMassB > 0.0f)
             {
                 SetVelocity(bodyB, velocityB - impulse * invMassB);
                 changed = true;
+                velocityChanged = true;
             }
+
+            const auto syncRemainingMotion = [&]()
+            {
+                if (!velocityChanged)
+                    return;
+
+                RecomputeRemainingDelta(bodyA);
+                RecomputeRemainingDelta(bodyB);
+            };
 
             const sf::Vector2f postA = GetVelocity(bodyA);
             const sf::Vector2f postB = GetVelocity(bodyB);
             sf::Vector2f tangent = (postA - postB) - normalForA * ((postA - postB).x * normalForA.x + (postA - postB).y * normalForA.y);
             const float tangentLength = std::sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
             if (tangentLength <= k_Epsilon)
+            {
+                syncRemainingMotion();
                 return changed;
+            }
 
             tangent /= tangentLength;
             const float frictionA = bodyA.physics ? PhysicsSystem::ResolveFriction(*bodyA.physics) : 0.0f;
             const float frictionB = bodyB.physics ? PhysicsSystem::ResolveFriction(*bodyB.physics) : 0.0f;
             const float friction = std::max(frictionA, frictionB);
             if (friction <= 0.0f)
+            {
+                syncRemainingMotion();
                 return changed;
+            }
 
             float jt = -((postA - postB).x * tangent.x + (postA - postB).y * tangent.y) / totalInvMass;
             const float maxJt = impulseMagnitude * friction;
@@ -491,6 +555,10 @@ namespace Spoon
             if (invMassB > 0.0f)
                 SetVelocity(bodyB, GetVelocity(bodyB) - frictionImpulse * invMassB);
 
+            if ((invMassA > 0.0f || invMassB > 0.0f) && !IsZeroVector(frictionImpulse))
+                velocityChanged = true;
+
+            syncRemainingMotion();
             return true;
         }
 
@@ -544,6 +612,7 @@ namespace Spoon
                         continue;
                     body.position += body.remainingDelta;
                     body.transform->SetPosition(body.position);
+                    body.remainingTime = 0.0f;
                     body.remainingDelta = { 0.0f, 0.0f };
                 }
                 return;
@@ -656,6 +725,44 @@ namespace Spoon
 
                             body.position += body.remainingDelta;
                             body.transform->SetPosition(body.position);
+                            body.remainingTime = 0.0f;
+                            body.remainingDelta = { 0.0f, 0.0f };
+                            moved = true;
+                        }
+
+                        if (!moved)
+                            break;
+
+                        continue;
+                    }
+
+                    if (!hasEarliest)
+                    {
+                        bool constrained = false;
+                        for (const Contact& contact : persistentContacts)
+                        {
+                            BodyRuntime& bodyA = bodies[contact.pair.a];
+                            BodyRuntime& bodyB = bodies[contact.pair.b];
+                            AddTouch(bodyA.collider->touchingThisFrame, bodyB.id);
+                            AddTouch(bodyB.collider->touchingThisFrame, bodyA.id);
+                            constrained |= ConstrainPersistentContactMotion(bodyA, bodyB, contact.normal);
+                        }
+
+                        if (constrained)
+                            continue;
+
+                        bool moved = false;
+                        for (UUID bodyId : islandBodies)
+                        {
+                            BodyRuntime& body = bodies[bodyId];
+                            if (!body.canTranslate)
+                                continue;
+                            if (IsZeroVector(body.remainingDelta))
+                                continue;
+
+                            body.position += body.remainingDelta;
+                            body.transform->SetPosition(body.position);
+                            body.remainingTime = 0.0f;
                             body.remainingDelta = { 0.0f, 0.0f };
                             moved = true;
                         }
@@ -679,6 +786,7 @@ namespace Spoon
                             const sf::Vector2f deltaStep = body.remainingDelta * advance;
                             body.position += deltaStep;
                             body.transform->SetPosition(body.position);
+                            body.remainingTime *= (1.0f - advance);
                             body.remainingDelta -= deltaStep;
                         }
                     }
@@ -774,6 +882,7 @@ namespace Spoon
 
                 body.position += body.remainingDelta;
                 body.transform->SetPosition(body.position);
+                body.remainingTime = 0.0f;
                 body.remainingDelta = { 0.0f, 0.0f };
             }
         }
