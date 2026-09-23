@@ -500,18 +500,21 @@ namespace Spoon
             if (totalInvMass <= 0.0f)
                 return false;
 
+            bool movedA = false;
+            bool movedB = false;
             if (invMassA > 0.0f)
             {
                 const sf::Vector2f correctionA = correctionForA * (invMassA / totalInvMass);
-                ApplyCorrection(manager, entityA, entityB, correctionA);
+                movedA = ApplyCorrection(manager, entityA, entityB, correctionA);
             }
             if (invMassB > 0.0f)
             {
                 const sf::Vector2f correctionB = { -correctionForA.x * (invMassB / totalInvMass), -correctionForA.y * (invMassB / totalInvMass) };
-                ApplyCorrection(manager, entityB, entityA, correctionB);
+                movedB = ApplyCorrection(manager, entityB, entityA, correctionB);
             }
 
-            ApplyVelocityResponse(manager, entityA, entityB, correctionForA, invMassA, invMassB);
+            if (movedA || movedB)
+                ApplyVelocityResponse(manager, entityA, entityB, correctionForA, invMassA, invMassB);
             return true;
         }
 
