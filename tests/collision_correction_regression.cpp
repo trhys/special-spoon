@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <string>
 
 namespace
 {
@@ -42,73 +43,79 @@ namespace
         physics.linearDamping = 0.0f;
         return entity;
     }
+
+    bool RunPushIntoWallScenario(const std::string& scenarioName, const sf::Vector2f& moverSize, float moverVelocityX, const sf::Vector2f& pushedPosition, const sf::Vector2f& pushedSize)
+    {
+        EntityManager manager;
+        const UUID mover = CreateBody(manager, "mover", { 10.0f, 10.0f }, moverSize, BodyType::Dynamic, { moverVelocityX, 0.0f });
+        const UUID pushed = CreateBody(manager, "pushed", pushedPosition, pushedSize, BodyType::Dynamic);
+        const UUID wall = CreateBody(manager, "wall", { 50.0f, 0.0f }, { 1.0f, 80.0f }, BodyType::Static);
+
+        PhysicsSystemConfig physicsConfig;
+        physicsConfig.gravityEnabled = false;
+        physicsConfig.enableSleepSnap = false;
+        physicsConfig.defaultRestitution = 0.0f;
+        physicsConfig.defaultFriction = 0.0f;
+        PhysicsSystem physicsSystem(physicsConfig);
+        CollisionSystem collisionSystem(CollisionSystemConfig{ sf::Vector2f{ 200.0f, 200.0f } });
+
+        const sf::Time tick = sf::seconds(0.05f);
+        const float pushedStartX = manager.GetComponent<TransformComp>(pushed, TransformComp::Name).GetPosition().x;
+
+        physicsSystem.Update(tick, manager);
+
+        const auto& pushedAfterPhysics = manager.GetComponent<TransformComp>(pushed, TransformComp::Name);
+        const auto& moverAfterPhysics = manager.GetComponent<TransformComp>(mover, TransformComp::Name);
+        if (std::abs(pushedAfterPhysics.GetPosition().x - pushedStartX) > kEpsilon)
+        {
+            std::cerr << scenarioName << ": expected pushed body to remain stationary before collision resolution, but moved from "
+                      << pushedStartX << " to " << pushedAfterPhysics.GetPosition().x << ".\n";
+            return false;
+        }
+
+        const sf::FloatRect moverBoundsAfterPhysics = manager.GetComponent<ColliderComp>(mover, ColliderComp::Name).GetWorldBounds(moverAfterPhysics.GetPosition());
+        const sf::FloatRect pushedBoundsAfterPhysics = manager.GetComponent<ColliderComp>(pushed, ColliderComp::Name).GetWorldBounds(pushedAfterPhysics.GetPosition());
+        if (!Overlaps(moverBoundsAfterPhysics, pushedBoundsAfterPhysics))
+        {
+            std::cerr << scenarioName << ": expected mover to overlap the pushed body after physics integration so collision correction is exercised.\n";
+            return false;
+        }
+
+        collisionSystem.Update(tick, manager);
+
+        const auto& pushedTransform = manager.GetComponent<TransformComp>(pushed, TransformComp::Name);
+        const auto& wallTransform = manager.GetComponent<TransformComp>(wall, TransformComp::Name);
+        const auto& pushedCollider = manager.GetComponent<ColliderComp>(pushed, ColliderComp::Name);
+        const auto& wallCollider = manager.GetComponent<ColliderComp>(wall, ColliderComp::Name);
+
+        const sf::FloatRect pushedBounds = pushedCollider.GetWorldBounds(pushedTransform.GetPosition());
+        const sf::FloatRect wallBounds = wallCollider.GetWorldBounds(wallTransform.GetPosition());
+
+        if (Overlaps(pushedBounds, wallBounds))
+        {
+            std::cerr << scenarioName << ": pushed body still overlaps the wall after collision resolution.\n";
+            return false;
+        }
+
+        const float pushedRight = pushedBounds.position.x + pushedBounds.size.x;
+        if (pushedRight > wallBounds.position.x + kEpsilon)
+        {
+            std::cerr << scenarioName << ": pushed body tunneled through the wall. Right edge " << pushedRight
+                      << " is beyond wall left edge " << wallBounds.position.x << ".\n";
+            return false;
+        }
+
+        return true;
+    }
 }
 
 int main()
 {
-    using namespace Spoon;
-
-    EntityManager manager;
-    const UUID mover = CreateBody(manager, "mover", { 10.0f, 10.0f }, { 30.0f, 10.0f }, BodyType::Dynamic, { 200.0f, 0.0f });
-    const UUID pushed = CreateBody(manager, "pushed", { 46.0f, 10.0f }, { 4.0f, 10.0f }, BodyType::Dynamic);
-    const UUID wall = CreateBody(manager, "wall", { 50.0f, 0.0f }, { 1.0f, 40.0f }, BodyType::Static);
-
-    (void)mover;
-    (void)wall;
-
-    PhysicsSystemConfig physicsConfig;
-    physicsConfig.gravityEnabled = false;
-    physicsConfig.enableSleepSnap = false;
-    physicsConfig.defaultRestitution = 0.0f;
-    physicsConfig.defaultFriction = 0.0f;
-    PhysicsSystem physicsSystem(physicsConfig);
-    CollisionSystem collisionSystem(CollisionSystemConfig{ sf::Vector2f{ 200.0f, 200.0f } });
-
-    const sf::Time tick = sf::seconds(0.05f);
-    const float pushedStartX = manager.GetComponent<TransformComp>(pushed, TransformComp::Name).GetPosition().x;
-
-    physicsSystem.Update(tick, manager);
-
-    const auto& pushedAfterPhysics = manager.GetComponent<TransformComp>(pushed, TransformComp::Name);
-    const auto& moverAfterPhysics = manager.GetComponent<TransformComp>(mover, TransformComp::Name);
-    if (std::abs(pushedAfterPhysics.GetPosition().x - pushedStartX) > kEpsilon)
-    {
-        std::cerr << "Expected pushed body to remain stationary before collision resolution, but moved from "
-                  << pushedStartX << " to " << pushedAfterPhysics.GetPosition().x << ".\n";
+    if (!RunPushIntoWallScenario("moderate overlap", { 30.0f, 10.0f }, 200.0f, { 46.0f, 10.0f }, { 4.0f, 10.0f }))
         return 1;
-    }
 
-    const sf::FloatRect moverBoundsAfterPhysics = manager.GetComponent<ColliderComp>(mover, ColliderComp::Name).GetWorldBounds(moverAfterPhysics.GetPosition());
-    const sf::FloatRect pushedBoundsAfterPhysics = manager.GetComponent<ColliderComp>(pushed, ColliderComp::Name).GetWorldBounds(pushedAfterPhysics.GetPosition());
-    if (!Overlaps(moverBoundsAfterPhysics, pushedBoundsAfterPhysics))
-    {
-        std::cerr << "Expected mover to overlap the pushed body after physics integration so collision correction is exercised.\n";
+    if (!RunPushIntoWallScenario("full pass-through attempt", { 30.0f, 40.0f }, 400.0f, { 46.0f, 10.0f }, { 4.0f, 40.0f }))
         return 1;
-    }
-
-    collisionSystem.Update(tick, manager);
-
-    const auto& pushedTransform = manager.GetComponent<TransformComp>(pushed, TransformComp::Name);
-    const auto& wallTransform = manager.GetComponent<TransformComp>(wall, TransformComp::Name);
-    const auto& pushedCollider = manager.GetComponent<ColliderComp>(pushed, ColliderComp::Name);
-    const auto& wallCollider = manager.GetComponent<ColliderComp>(wall, ColliderComp::Name);
-
-    const sf::FloatRect pushedBounds = pushedCollider.GetWorldBounds(pushedTransform.GetPosition());
-    const sf::FloatRect wallBounds = wallCollider.GetWorldBounds(wallTransform.GetPosition());
-
-    if (Overlaps(pushedBounds, wallBounds))
-    {
-        std::cerr << "Pushed body still overlaps the wall after collision resolution.\n";
-        return 1;
-    }
-
-    const float pushedRight = pushedBounds.position.x + pushedBounds.size.x;
-    if (pushedRight > wallBounds.position.x + kEpsilon)
-    {
-        std::cerr << "Pushed body tunneled through the wall. Right edge " << pushedRight
-                  << " is beyond wall left edge " << wallBounds.position.x << ".\n";
-        return 1;
-    }
 
     return 0;
 }

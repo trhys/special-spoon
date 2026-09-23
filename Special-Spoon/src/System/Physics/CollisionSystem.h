@@ -370,6 +370,20 @@ namespace Spoon
 
             const auto& movingCollider = manager.GetComponent<ColliderComp>(entity, ColliderComp::Name);
             const sf::Vector2f attemptedMotion = targetPosition - startPosition;
+            const sf::FloatRect startBounds = movingCollider.GetWorldBounds(startPosition);
+            const sf::FloatRect targetBounds = movingCollider.GetWorldBounds(targetPosition);
+            const sf::Vector2f sweepMin = {
+                std::min(startBounds.position.x, targetBounds.position.x),
+                std::min(startBounds.position.y, targetBounds.position.y)
+            };
+            const sf::Vector2f sweepMax = {
+                std::max(startBounds.position.x + startBounds.size.x, targetBounds.position.x + targetBounds.size.x),
+                std::max(startBounds.position.y + startBounds.size.y, targetBounds.position.y + targetBounds.size.y)
+            };
+            const sf::FloatRect sweptBounds = {
+                sweepMin,
+                { sweepMax.x - sweepMin.x, sweepMax.y - sweepMin.y }
+            };
             for (const UUID otherEntity : colliderArray.m_IndexToId)
             {
                 if (otherEntity == entity || otherEntity == ignoredEntity)
@@ -379,6 +393,10 @@ namespace Spoon
 
                 const auto& otherCollider = manager.GetComponent<ColliderComp>(otherEntity, ColliderComp::Name);
                 auto& otherTransform = manager.GetComponent<TransformComp>(otherEntity, TransformComp::Name);
+                const sf::FloatRect otherBounds = otherCollider.GetWorldBounds(otherTransform.GetPosition());
+                if (!sweptBounds.findIntersection(otherBounds))
+                    continue;
+
                 sf::Vector2f startOverlapCorrection = { 0.0f, 0.0f };
                 const bool overlapsAtStart = ComputePairCorrectionAtPositions(movingCollider, startPosition, otherCollider, otherTransform.GetPosition(), startOverlapCorrection);
                 if (overlapsAtStart)
@@ -407,7 +425,12 @@ namespace Spoon
 
             const sf::Vector2f startPosition = manager.GetComponent<TransformComp>(entity, TransformComp::Name).GetPosition();
             const float correctionLength = std::sqrt(correction.x * correction.x + correction.y * correction.y);
+            // Collider dimensions are clamped to at least 1 world unit, so sweeping in
+            // half-unit increments prevents thin 1-unit blockers from being skipped while
+            // keeping the correction pass independent from collider shape.
             constexpr float maxSweepStep = 0.5f;
+            // A short binary search keeps the final stop point near the first blocking
+            // contact instead of snapping back by a full substep.
             constexpr int maxBinarySearchIterations = 8;
             const int steps = std::max(1, static_cast<int>(std::ceil(correctionLength / maxSweepStep)));
 
@@ -477,20 +500,19 @@ namespace Spoon
             if (totalInvMass <= 0.0f)
                 return false;
 
-            bool appliedCorrection = false;
             if (invMassA > 0.0f)
             {
                 const sf::Vector2f correctionA = correctionForA * (invMassA / totalInvMass);
-                appliedCorrection |= ApplyCorrection(manager, entityA, entityB, correctionA);
+                ApplyCorrection(manager, entityA, entityB, correctionA);
             }
             if (invMassB > 0.0f)
             {
                 const sf::Vector2f correctionB = { -correctionForA.x * (invMassB / totalInvMass), -correctionForA.y * (invMassB / totalInvMass) };
-                appliedCorrection |= ApplyCorrection(manager, entityB, entityA, correctionB);
+                ApplyCorrection(manager, entityB, entityA, correctionB);
             }
 
             ApplyVelocityResponse(manager, entityA, entityB, correctionForA, invMassA, invMassB);
-            return appliedCorrection;
+            return true;
         }
 
         Quadtree quadtree;
