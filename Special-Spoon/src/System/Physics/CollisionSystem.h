@@ -422,6 +422,20 @@ namespace Spoon
             body.remainingDelta = body.physics->velocity * body.remainingTime;
         }
 
+        static void SyncVelocityFromRemainingDelta(BodyRuntime& body)
+        {
+            if (!body.canTranslate || !body.physics)
+                return;
+
+            if (body.remainingTime <= 0.0f)
+            {
+                SetVelocity(body, { 0.0f, 0.0f });
+                return;
+            }
+
+            SetVelocity(body, body.remainingDelta / body.remainingTime);
+        }
+
         static void CommitRemainingMotion(BodyRuntime& body)
         {
             if (!body.canTranslate)
@@ -475,6 +489,9 @@ namespace Spoon
                 bodyA.remainingDelta -= blockedDelta * (weightA / totalWeight);
             if (weightB > 0.0f)
                 bodyB.remainingDelta += blockedDelta * (weightB / totalWeight);
+
+            SyncVelocityFromRemainingDelta(bodyA);
+            SyncVelocityFromRemainingDelta(bodyB);
 
             return true;
         }
