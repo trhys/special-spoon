@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <optional>
+#include <set>
 
 namespace Spoon
 {
@@ -101,6 +102,26 @@ namespace Spoon
                 }
             }
         }
+    }
+
+    std::vector<UUID> Quadtree::Query(const sf::FloatRect& bounds) const
+    {
+        std::vector<UUID> result;
+        std::set<UUID> uniqueEntities;
+
+        for (const auto& leaf : m_GridNodes)
+        {
+            if (!leaf.body.findIntersection(bounds))
+                continue;
+
+            for (const UUID entity : leaf.collision_buffer)
+            {
+                if (uniqueEntities.insert(entity).second)
+                    result.push_back(entity);
+            }
+        }
+
+        return result;
     }
 
     std::set<std::pair<UUID, UUID>> Quadtree::GeneratePairs()

@@ -5,6 +5,7 @@
 #include "SFML/Graphics.hpp"
 #include <functional>
 #include <set>
+#include <vector>
 
 namespace Spoon
 {
@@ -28,7 +29,7 @@ namespace Spoon
 
         void BuildTree(sf::Vector2f gridSize);
         void Populate(EntityManager& manager);
-        void PopulateSwept(EntityManager& manager, float dt, const MotionProvider& motionProvider = nullptr);
+        std::vector<UUID> Query(const sf::FloatRect& bounds) const;
         std::set<std::pair<UUID, UUID>> GeneratePairs();
 
         // std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }
