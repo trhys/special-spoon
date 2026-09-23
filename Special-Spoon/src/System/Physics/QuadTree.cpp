@@ -56,15 +56,15 @@ namespace Spoon
 
     void Quadtree::Populate(EntityManager& manager)
     {
-        Populate(manager, 0.0f, false);
+        Populate(manager, 0.0f, false, nullptr);
     }
 
-    void Quadtree::PopulateSwept(EntityManager& manager, float dt)
+    void Quadtree::PopulateSwept(EntityManager& manager, float dt, const MotionProvider& motionProvider)
     {
-        Populate(manager, dt, true);
+        Populate(manager, dt, true, motionProvider);
     }
 
-    void Quadtree::Populate(EntityManager& manager, float dt, bool useSweptBounds)
+    void Quadtree::Populate(EntityManager& manager, float dt, bool useSweptBounds, const MotionProvider& motionProvider)
     {
         for (auto& leaf : m_GridNodes)
             leaf.collision_buffer.clear();
@@ -80,7 +80,15 @@ namespace Spoon
             sf::FloatRect entityBox = collider.GetWorldBounds(transform.GetPosition());
             if (useSweptBounds)
             {
-                const FrameMotion motion = ComputeFrameMotion(manager, entity, dt);
+                // Prefer the caller-supplied motion provider (e.g. CollisionSystem's per-frame
+                // cache) so the broadphase agrees with the narrowphase on each entity's current
+                // remaining motion. Without this, a second/later resolution pass could build swept
+                // bounds from a stale, unclamped delta while narrowphase already knows the entity
+                // was clamped - causing pairs to be missed and bodies to tunnel through under
+                // multiple simultaneous collisions.
+                const FrameMotion motion = motionProvider
+                    ? motionProvider(manager, entity, dt)
+                    : ComputeFrameMotion(manager, entity, dt);
                 entityBox = ComputeSweptBounds(
                     collider.GetWorldBounds(motion.startPosition),
                     motion.delta);

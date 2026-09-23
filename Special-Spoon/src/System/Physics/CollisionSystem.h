@@ -344,7 +344,15 @@ namespace Spoon
            const sf::Vector2f startTransformA = motionA.startPosition;
            const sf::Vector2f startTransformB = motionB.startPosition;
            if (ComputePairCorrection(colliderA, startTransformA, colliderB, startTransformB, correctionForA))
+           {
+               // Already overlapping at the start of this frame. This isn't a future time-of-impact
+               // event, so it must not be modeled as a swept hit (doing so at time=0 previously zeroed
+               // out the entity's entire delta, including tangential motion, and could mask a second
+               // simultaneous contact when a body is squeezed between two colliders). Positional
+               // separation for this case is instead handled directly in ResolveSweptCollisions via
+               // ResolveOverlappingPair, so simply skip it here.
                return std::nullopt;
+           }
 
            const sf::Vector2f relativeDelta = deltaA - deltaB;
            const sf::FloatRect startBoundsA = colliderA.GetWorldBounds(startTransformA);
@@ -466,59 +474,189 @@ namespace Spoon
            return true;
         }
 
+         bool ResolveOverlappingPair(EntityManager& manager, UUID entityA, UUID entityB)
+        {
+           auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+           auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+           if (!transformArray.m_IdToIndex.count(entityA) || !transformArray.m_IdToIndex.count(entityB))
+               return false;
+           if (!colliderArray.m_IdToIndex.count(entityA) || !colliderArray.m_IdToIndex.count(entityB))
+               return false;
+
+           auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
+           auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
+
+           const FrameMotion& motionA = GetFrameMotion(manager, entityA);
+           const FrameMotion& motionB = GetFrameMotion(manager, entityB);
+
+           sf::Vector2f correctionForA = { 0.0f, 0.0f };
+           if (!ComputePairCorrection(colliderA, motionA.startPosition, colliderB, motionB.startPosition, correctionForA))
+               return false;
+
+           // Only separate pairs that are still approaching (or resting) along the overlap
+           // normal - if they're actively separating this frame, let their own motion resolve it
+           // naturally instead of fighting it with an extra positional push.
+           const float correctionLength = std::sqrt(correctionForA.x * correctionForA.x + correctionForA.y * correctionForA.y);
+           if (correctionLength <= 0.0001f)
+               return false;
+
+           const sf::Vector2f normal = correctionForA / correctionLength;
+           const sf::Vector2f relativeDelta = motionA.delta - motionB.delta;
+           const float approachSpeed = -(relativeDelta.x * normal.x + relativeDelta.y * normal.y);
+           if (approachSpeed <= 0.0001f)
+               return false;
+
+           AddTouch(colliderA.touchingThisFrame, entityB);
+           AddTouch(colliderB.touchingThisFrame, entityA);
+
+           const float invMassA = InverseMass(manager, entityA);
+           const float invMassB = InverseMass(manager, entityB);
+           const float totalInvMass = invMassA + invMassB;
+           if (totalInvMass <= 0.0f)
+               return false;
+
+           // Push each side apart proportional to its inverse mass, and refresh each entity's
+           // cached FrameMotion so subsequent pairs in this same iteration (and the swept pass
+           // that follows) see the corrected position rather than the stale, still-overlapping one.
+           // This is what allows a body squeezed between two colliders to be separated from BOTH
+           // sides within the same frame instead of only one contact "winning".
+           if (invMassA > 0.0f)
+           {
+               const sf::Vector2f correctionA = correctionForA * (invMassA / totalInvMass);
+               ApplyImmediateCorrection(manager, entityA, motionA, correctionA);
+           }
+           if (invMassB > 0.0f)
+           {
+               const sf::Vector2f correctionB = { -correctionForA.x * (invMassB / totalInvMass), -correctionForA.y * (invMassB / totalInvMass) };
+               ApplyImmediateCorrection(manager, entityB, motionB, correctionB);
+           }
+
+           const float invMassAForVelocity = InverseMass(manager, entityA);
+           const float invMassBForVelocity = InverseMass(manager, entityB);
+           ApplyVelocityResponse(manager, entityA, entityB, normal, invMassAForVelocity, invMassBForVelocity);
+           return false;
+        }
+
+         void ApplyImmediateCorrection(EntityManager& manager, UUID entity, const FrameMotion& motion, const sf::Vector2f& correction)
+        {
+           sf::Vector2f updatedPosition = motion.currentPosition;
+           if (!IsZeroVector(correction))
+           {
+               auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+               if (transformArray.m_IdToIndex.count(entity))
+               {
+                   auto& transform = manager.GetComponent<TransformComp>(entity, TransformComp::Name);
+                   transform.Move(correction);
+                   updatedPosition = transform.GetPosition();
+               }
+               else
+               {
+                   updatedPosition += correction;
+               }
+           }
+
+           auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+           if (movementArray.m_IdToIndex.count(entity))
+           {
+               auto& movement = manager.GetComponent<MovementComp>(entity, MovementComp::Name);
+               movement.m_WasCorrectedByPhysics = true;
+           }
+
+           // Keep the entity's remaining swept delta for this frame intact (positional
+           // correction here only nudges it out of overlap, it doesn't consume travel time),
+           // while updating start/current position so later pair checks in this same iteration
+           // use the corrected, non-overlapping position.
+           m_FrameMotionCache[entity] = FrameMotion{
+               updatedPosition,
+               updatedPosition,
+               motion.delta,
+               false
+           };
+        }
+
          void ResolveSweptCollisions(EntityManager& manager, float dt)
         {
            if (dt <= 0.0f)
                return;
 
-           sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
-           quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
-           quadtree.PopulateSwept(manager, dt);
-
-           std::vector<SweptPairHit> hits;
-           for (const auto& [entityA, entityB] : quadtree.GeneratePairs())
+           constexpr int maxSweepIterations = 8;
+           for (int sweepIteration = 0; sweepIteration < maxSweepIterations; sweepIteration++)
            {
-               if (StartedOverlapping(manager, entityA, entityB, dt))
+               sf::Vector2u windowSize = Application::Get().GetWindow().getSize();
+               quadtree.BuildTree((m_Config.bounds.x > 0.0f && m_Config.bounds.y > 0.0f) ? m_Config.bounds : sf::Vector2f{ static_cast<float>(windowSize.x), static_cast<float>(windowSize.y) });
+               quadtree.PopulateSwept(manager, dt, [this](EntityManager& mgr, UUID entity, float frameDt)
                {
-                   auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
-                   auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
-                   AddTouch(colliderA.touchingThisFrame, entityB);
-                   AddTouch(colliderB.touchingThisFrame, entityA);
+                   (void)frameDt;
+                   return GetFrameMotion(mgr, entity);
+               });
+
+               const auto pairs = quadtree.GeneratePairs();
+
+               bool appliedAnyClamp = false;
+
+               // Resolve already-overlapping pairs positionally first, so a body squeezed between
+               // two colliders gets separated from both sides before swept time-of-impact hits
+               // (which only apply to pairs that are not yet touching) are considered.
+               for (const auto& [entityA, entityB] : pairs)
+               {
+                   if (ResolveOverlappingPair(manager, entityA, entityB))
+                       appliedAnyClamp = true;
                }
 
-               if (std::optional<SweptPairHit> hit = ComputeSweptPairHit(manager, entityA, entityB, dt))
-                   hits.push_back(*hit);
-           }
+               std::vector<SweptPairHit> hits;
+               for (const auto& [entityA, entityB] : pairs)
+               {
+                   if (StartedOverlapping(manager, entityA, entityB, dt))
+                   {
+                       auto& colliderA = manager.GetComponent<ColliderComp>(entityA, ColliderComp::Name);
+                       auto& colliderB = manager.GetComponent<ColliderComp>(entityB, ColliderComp::Name);
+                       AddTouch(colliderA.touchingThisFrame, entityB);
+                       AddTouch(colliderB.touchingThisFrame, entityA);
+                   }
 
-           std::sort(hits.begin(), hits.end(), [](const SweptPairHit& lhs, const SweptPairHit& rhs)
-           {
-               return lhs.time < rhs.time;
-           });
+                   if (std::optional<SweptPairHit> hit = ComputeSweptPairHit(manager, entityA, entityB, dt))
+                       hits.push_back(*hit);
+               }
 
-           for (const SweptPairHit& cachedHit : hits)
-           {
-               std::optional<SweptPairHit> hit = ComputeSweptPairHit(manager, cachedHit.entityA, cachedHit.entityB, dt);
-               if (!hit)
-                   continue;
+               std::sort(hits.begin(), hits.end(), [](const SweptPairHit& lhs, const SweptPairHit& rhs)
+               {
+                   return lhs.time < rhs.time;
+               });
 
-               const FrameMotion& motionA = GetFrameMotion(manager, hit->entityA);
-               const FrameMotion& motionB = GetFrameMotion(manager, hit->entityB);
-               const float normalMotionA = motionA.delta.x * hit->normal.x + motionA.delta.y * hit->normal.y;
-               const sf::Vector2f inverseNormal = { -hit->normal.x, -hit->normal.y };
-               const float normalMotionB = motionB.delta.x * inverseNormal.x + motionB.delta.y * inverseNormal.y;
-               const bool movedA = normalMotionA < -0.0001f && ApplySweepClamp(manager, hit->entityA, motionA, hit->normal, hit->time);
-               const bool movedB = normalMotionB < -0.0001f && ApplySweepClamp(manager, hit->entityB, motionB, inverseNormal, hit->time);
-               if (!movedA && !movedB)
-                   continue;
+               for (const SweptPairHit& cachedHit : hits)
+               {
+                   std::optional<SweptPairHit> hit = ComputeSweptPairHit(manager, cachedHit.entityA, cachedHit.entityB, dt);
+                   if (!hit)
+                       continue;
 
-               auto& colliderA = manager.GetComponent<ColliderComp>(hit->entityA, ColliderComp::Name);
-               auto& colliderB = manager.GetComponent<ColliderComp>(hit->entityB, ColliderComp::Name);
-               AddTouch(colliderA.touchingThisFrame, hit->entityB);
-               AddTouch(colliderB.touchingThisFrame, hit->entityA);
+                   const FrameMotion& motionA = GetFrameMotion(manager, hit->entityA);
+                   const FrameMotion& motionB = GetFrameMotion(manager, hit->entityB);
+                   const float normalMotionA = motionA.delta.x * hit->normal.x + motionA.delta.y * hit->normal.y;
+                   const sf::Vector2f inverseNormal = { -hit->normal.x, -hit->normal.y };
+                   const float normalMotionB = motionB.delta.x * inverseNormal.x + motionB.delta.y * inverseNormal.y;
+                   const bool movedA = normalMotionA < -0.0001f && ApplySweepClamp(manager, hit->entityA, motionA, hit->normal, hit->time);
+                   const bool movedB = normalMotionB < -0.0001f && ApplySweepClamp(manager, hit->entityB, motionB, inverseNormal, hit->time);
+                   if (!movedA && !movedB)
+                       continue;
 
-               const float invMassA = InverseMass(manager, hit->entityA);
-               const float invMassB = InverseMass(manager, hit->entityB);
-               ApplyVelocityResponse(manager, hit->entityA, hit->entityB, hit->normal, invMassA, invMassB);
+                   appliedAnyClamp = true;
+
+                   auto& colliderA = manager.GetComponent<ColliderComp>(hit->entityA, ColliderComp::Name);
+                   auto& colliderB = manager.GetComponent<ColliderComp>(hit->entityB, ColliderComp::Name);
+                   AddTouch(colliderA.touchingThisFrame, hit->entityB);
+                   AddTouch(colliderB.touchingThisFrame, hit->entityA);
+
+                   const float invMassA = InverseMass(manager, hit->entityA);
+                   const float invMassB = InverseMass(manager, hit->entityB);
+                   ApplyVelocityResponse(manager, hit->entityA, hit->entityB, hit->normal, invMassA, invMassB);
+               }
+
+               // If no pair needed correction/clamping this pass, the configuration is stable - stop.
+               // Otherwise, re-run using each entity's updated cached motion so bodies squeezed
+               // between multiple colliders in the same frame get fully resolved on both sides
+               // instead of only the first-processed contact "winning" and the other tunneling.
+               if (!appliedAnyClamp)
+                   break;
            }
         }
 
