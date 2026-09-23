@@ -564,7 +564,25 @@ if (bodies.size() == 1)
 		}
 
 		if (totalInvMass <= 0.0f)
-			return changed;
+		{
+			if (bodyA.bodyType == BodyType::Kinematic &&
+		        bodyB.bodyType == BodyType::Static)
+		    {
+		        bodyA.remainingDelta -= normalForA * closingDelta;
+		        SyncVelocityFromRemainingDelta(bodyA);
+		        return true;
+		    }
+		
+		    if (bodyB.bodyType == BodyType::Kinematic &&
+		        bodyA.bodyType == BodyType::Static)
+		    {
+		        bodyB.remainingDelta += normalForA * closingDelta;
+		        SyncVelocityFromRemainingDelta(bodyB);
+		        return true;
+		    }
+		
+		    return false;
+		}
 
 		const sf::Vector2f velocityA = GetVelocity(bodyA);
 		const sf::Vector2f velocityB = GetVelocity(bodyB);
