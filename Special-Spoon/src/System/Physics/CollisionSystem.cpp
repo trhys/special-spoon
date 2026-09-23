@@ -208,7 +208,7 @@ if (bodies.size() == 1)
 			for (const auto& pair : candidatePairs)
 			{
 				const UUID root = findRoot(pair.first);
-				islandPairs[root].push_back(pair);
+				islandPairs[root].insert(pair);
 			}
 			// union-find completed
 			
