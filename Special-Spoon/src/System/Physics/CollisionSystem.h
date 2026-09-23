@@ -451,6 +451,15 @@ namespace Spoon
             body.remainingDelta = { 0.0f, 0.0f };
         }
 
+        static void SyncMovementState(BodyRuntime& body)
+        {
+            if (!body.physics || !body.movement)
+                return;
+
+            body.movement->m_Velocity = body.physics->velocity;
+            body.movement->m_ProposedDelta = body.position - body.startPosition;
+        }
+
         bool ConstrainPersistentContactMotion(BodyRuntime& bodyA, BodyRuntime& bodyB, const sf::Vector2f& normalForA)
         {
             const sf::Vector2f deltaA = bodyA.canTranslate ? bodyA.remainingDelta : sf::Vector2f{ 0.0f, 0.0f };
@@ -927,7 +936,9 @@ namespace Spoon
                     {
                         for (UUID bodyId : islandBodies)
                         {
-                            CommitRemainingMotion(bodies[bodyId]);
+                            BodyRuntime& body = bodies[bodyId];
+                            CommitRemainingMotion(body);
+                            SyncMovementState(body);
                         }
                     }
 
@@ -946,6 +957,7 @@ namespace Spoon
                         for (auto& [id, body] : bodies)
                         {
                             CommitRemainingMotion(body);
+                            SyncMovementState(body);
                         }
                         return;
                     }
