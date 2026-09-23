@@ -1,8 +1,11 @@
 #pragma once
 
 #include "System/System.h"
+#include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "Core/Renderer/Gizmo.h"
 #include "ECS/ECS.h"
+#include "Editor/Utils/EditorSettings.h"
 #include "System/Physics/SystemConfigs.h"
 
 #include <algorithm>

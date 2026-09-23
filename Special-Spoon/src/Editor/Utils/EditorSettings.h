@@ -18,6 +18,7 @@ namespace Spoon
         bool skipProjectSavePrompt = false;         // Skip save project prompt
         bool displayEditorMetrics = true;           // Display editor metrics window
         bool displayImGuiMetrics = false;           // Display ImGui metrics window
+        bool showColliderOverlay = false;           // Draw collider bounds as gizmo overlays in the viewport
 
     private:
         EditorSettings() = default;

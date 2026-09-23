@@ -112,6 +112,7 @@ namespace Spoon
                 ImGui::SeparatorText("Editor Settings");
                 ImGui::Checkbox("Display performance metrics", &EditorSettings::Get().displayEditorMetrics);
                 ImGui::Checkbox("Display ImGui metrics", &EditorSettings::Get().displayImGuiMetrics);
+                ImGui::Checkbox("Show collider overlay", &EditorSettings::Get().showColliderOverlay);
 
                 ImGui::SeparatorText("Global Prompt Settings");
                 ImGui::Checkbox("Confirm component delete", &EditorSettings::Get().skipAskBeforeDeleteComp);
