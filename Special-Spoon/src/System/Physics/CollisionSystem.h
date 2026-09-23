@@ -56,7 +56,7 @@ namespace Spoon
                 collider.touchingThisFrame.clear();
             }
 
-            if (colliderArray.m_Components.size() < 2)
+            if (colliderArray.m_Components.empty())
                 return;
 
             std::unordered_map<UUID, BodyRuntime> bodies;
