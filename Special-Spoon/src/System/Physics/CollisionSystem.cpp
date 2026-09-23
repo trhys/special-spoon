@@ -138,9 +138,13 @@ auto buildCandidatePairs = [&](std::set<std::pair<UUID, UUID>>& candidatePairs)
 			{
 				for (const UUID touchId : body.collider->touchingLastFrame)
 				{
-					if (touchId == id)
+					if (touchId == id || !bodies.count(touchId))
 						continue;
-					candidatePairs.insert({id, touchId});
+					UUID first = id;
+					UUID second = touchId;
+					if (first > second)
+						std::swap(first, second);
+					candidatePairs.insert({ first, second });
 				}
 			}
 		};
