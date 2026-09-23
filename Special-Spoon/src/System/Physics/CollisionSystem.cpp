@@ -127,7 +127,7 @@ if (bodies.size() == 1)
 		};
 
 		std::unordered_map<UUID, sf::FloatRect> sweptBounds;
-		auto buildCandidatePairs = [&](std::set<std::pair<UUID, UUID>> candidatePairs)
+auto buildCandidatePairs = [&](std::set<std::pair<UUID, UUID>>& candidatePairs)
 		{
 			// populate swept aabb vector and push onto broadphase
 			buildSweptBounds(sweptBounds);
