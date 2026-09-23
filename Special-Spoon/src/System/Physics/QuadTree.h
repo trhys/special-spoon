@@ -3,6 +3,7 @@
 #include "ECS/Components/ColliderComp.h"
 #include "SFML/Graphics.hpp"
 #include <set>
+#include <vector>
 
 namespace Spoon
 {
@@ -24,6 +25,7 @@ namespace Spoon
 
         void BuildTree(sf::Vector2f gridSize);
         void Populate(EntityManager& manager);
+        std::vector<UUID> Query(const sf::FloatRect& bounds) const;
         std::set<std::pair<UUID, UUID>> GeneratePairs();
 
         // std::vector<QT_GridNode>& GetNodes() { return m_GridNodes; }

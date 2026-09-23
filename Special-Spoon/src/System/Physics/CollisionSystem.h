@@ -384,7 +384,7 @@ namespace Spoon
                 sweepMin,
                 { sweepMax.x - sweepMin.x, sweepMax.y - sweepMin.y }
             };
-            for (const UUID otherEntity : colliderArray.m_IndexToId)
+            for (const UUID otherEntity : quadtree.Query(sweptBounds))
             {
                 if (otherEntity == entity || otherEntity == ignoredEntity)
                     continue;
@@ -425,12 +425,7 @@ namespace Spoon
 
             const sf::Vector2f startPosition = manager.GetComponent<TransformComp>(entity, TransformComp::Name).GetPosition();
             const float correctionLength = std::sqrt(correction.x * correction.x + correction.y * correction.y);
-            // Collider dimensions are clamped to at least 1 world unit, so sweeping in
-            // half-unit increments prevents thin 1-unit blockers from being skipped while
-            // keeping the correction pass independent from collider shape.
             constexpr float maxSweepStep = 0.5f;
-            // A short binary search keeps the final stop point near the first blocking
-            // contact instead of snapping back by a full substep.
             constexpr int maxBinarySearchIterations = 8;
             const int steps = std::max(1, static_cast<int>(std::ceil(correctionLength / maxSweepStep)));
 
