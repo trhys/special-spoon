@@ -79,7 +79,7 @@ namespace Spoon {
 		}
 
 		// skip the solver algos if there isnt enough material to solve
-if (bodies.size() == 1)
+        if (bodies.size() == 1)
 		{
 			CommitRemainingMotion(bodies.begin()->second);
 			SyncMovementState(bodies.begin()->second);
@@ -102,6 +102,12 @@ if (bodies.size() == 1)
 				body.movement->m_Velocity = body.physics->velocity;
 				body.movement->m_ProposedDelta = body.position - body.startPosition;
 			}
+
+            // update transform
+            if (body.transform)
+            {
+              body.transform->SetPosition(body.position);
+            }
 		}
 	}
 
@@ -459,6 +465,16 @@ auto buildCandidatePairs = [&](std::set<std::pair<UUID, UUID>>& candidatePairs)
 					rebuildBroadphase = true;
 					break;
 				}
+
+                if (eventIndex < k_MaxToiEvents)
+                {
+                    for (UUID bodyId : islandBodies)
+                    {
+                        BodyRuntime& body = bodies[bodyId];
+                        CommitRemainingMotion(body);
+                        SyncMovementState(body);
+                    }
+                }
 			}
 
 			if (rebuildBroadphase)
@@ -500,7 +516,7 @@ auto buildCandidatePairs = [&](std::set<std::pair<UUID, UUID>>& candidatePairs)
 		if (closingDelta >= 0.0f)
 			return false;
 
-		auto motionWeight = [](const BodyRuntime& body, const BodyRuntime& other)
+		auto motionWeight = [&](const BodyRuntime& body, const BodyRuntime& other)
 		{
 			if (!body.canTranslate)
 				return 0.0f;
@@ -567,7 +583,7 @@ auto buildCandidatePairs = [&](std::set<std::pair<UUID, UUID>>& candidatePairs)
 			}
 		}
 
-if (totalInvMass <= 0.0f)
+        if (totalInvMass <= 0.0f)
 		{
 			const sf::Vector2f relativeDelta = bodyA.remainingDelta - bodyB.remainingDelta;
 			const float closingDelta = DotProd(relativeDelta, normalForA);
@@ -821,8 +837,9 @@ if (totalInvMass <= 0.0f)
 		if (!IsZeroVector(body.remainingDelta))
 		{
 			body.position += body.remainingDelta;
-			body.transform->SetPosition(body.position);
 		}
+
+        body.transform->SetPosition(body.position);
 
 		body.remainingTime = 0.0f;
 		body.remainingDelta = { 0.0f, 0.0f };
@@ -1102,3 +1119,4 @@ if (totalInvMass <= 0.0f)
 	{
 	    return a.x * b.x + a.y * b.y;
 	}
+}
