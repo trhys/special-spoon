@@ -10,9 +10,9 @@ namespace Spoon {
   // base tile
   struct Tile {
     uint16_t id;                // index to rect in the atlas
-    bool collidable = false;    // optional: collision extraction flag
+    bool collidable = false;    // collision extraction flag
   };
-
+  
   // atlas reference - we'll probably config this so change the defaults 
   // depending on the asset provided for the project
   struct TileAtlas {
@@ -80,7 +80,7 @@ namespace Spoon {
           sf::Vector2f GetPosition() override { return sf::Vector2f{0.0, 0.0}; }
   };
 
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id, collidable)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileAtlas, textureId, tileWidth, tileHeight, columns, rows, margin, spacing)  
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileLayer, name, visible, collidable, opacity, tiles)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileMapComp, m_MapSize, m_Atlas, m_Layers)

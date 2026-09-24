@@ -11,38 +11,18 @@ namespace Spoon
             if (tileMap.m_RebuildCollision)
             {
                 KillColliderEntities(manager, tileMap.m_ColliderEntities);
-                BuildColliderCache(tileMap);
-                GenerateColliderEntities(manager, tileMap);
+                std::vector<TileCollider> colliders = BuildColliderCache(tileMap);
+                GenerateColliderEntities(manager, tileMap, colliders);
                 tileMap.m_RebuildCollision = false;
             }
         }
     }
 
-    void TileMapCollisionSystem::BuildColliderCache(TileMapComp& tileMap)
+    std::vector<TileCollider> TileMapCollisionSystem::BuildColliderCache(TileMapComp& tileMap)
     {
-        m_TileColliders.clear();
-        auto& layers = tileMap.m_Layers;
-        for (size_t layerIndex = 0; layerIndex < layers.size(); ++layerIndex)
-        {
-            auto& layer = layers[layerIndex];
-            if (!layer.collidable)
-                continue;
-
-            auto& tiles = layer.tiles;
-            for (size_t index = 0; index < tiles.size(); ++index)
-            {
-                if (tiles[index].collidable)
-                {
-                    TileCollider collider;
-                    int tileX = index % tileMap.m_MapSize.x;
-                    int tileY = index / tileMap.m_MapSize.x;
-                    collider.body = tileMap.GetTileBounds(tileX, tileY, static_cast<int>(layerIndex));
-                    m_TileColliders.push_back(collider);
-                }
-            }
-        }
-
-        // merge contiguous collidable tiles into larger rectangles
+        std::vector<TileCollider> tileColliders;
+        // extracts horizontal runs of collidable tiles
+        // into merged rects to create colliders from
         const int mapWidth = tileMap.m_MapSize.x;
         const int mapHeight = tileMap.m_MapSize.y;
         const int tileWidth = tileMap.m_Atlas.tileWidth;
@@ -53,7 +33,7 @@ namespace Spoon
             tileWidth <= 0 ||
             tileHeight <= 0)
         {
-            return;
+            return tileColliders;
         }
 
         const std::size_t expectedTileCount =
@@ -127,17 +107,18 @@ namespace Spoon
                             }
                         };
 
-                        m_TileColliders.push_back(collider);
+                        tileColliders.push_back(collider);
                         runStartX = -1;
                     }
                 }
             }
         }
+        return tileColliders;
     }
 
-    void TileMapCollisionSystem::GenerateColliderEntities(EntityManager& manager, TileMapComp& tileMap)
+    void TileMapCollisionSystem::GenerateColliderEntities(EntityManager& manager, TileMapComp& tileMap, std::vector<TileCollider>& colliders)
     {
-        for (auto& collider : m_TileColliders)
+        for (auto& collider : colliders)
         {
             auto id = manager.CreateEntity();
             tileMap.m_ColliderEntities.push_back(id);
