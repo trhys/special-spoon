@@ -68,6 +68,7 @@ namespace Spoon
             auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
             auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
             auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
             for (size_t index = 0; index < physicsArray.m_Components.size(); index++)
             {
                 auto& physicsComp = physicsArray.m_Components[index];
@@ -140,7 +141,10 @@ namespace Spoon
                 }
 
                 TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-                transform.Move(delta);
+                if (!colliderArray.m_IdToIndex.count(id))
+                {
+                    transform.Move(delta);
+                }
 
                 if (movementArray.m_IdToIndex.count(id))
                 {

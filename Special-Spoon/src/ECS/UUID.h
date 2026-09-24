@@ -32,4 +32,15 @@ namespace std
             return std::hash<std::uint64_t>{}(uuid.ID);
         }
     };
+
+    template <>
+    struct hash<std::pair<Spoon::UUID, Spoon::UUID>>
+    {
+        std::size_t operator()(const std::pair<Spoon::UUID, Spoon::UUID>& p) const noexcept
+        {
+            std::size_t h1 = std::hash<Spoon::UUID>{}(p.first);
+            std::size_t h2 = std::hash<Spoon::UUID>{}(p.second);
+            return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+        }
+    };
 }
