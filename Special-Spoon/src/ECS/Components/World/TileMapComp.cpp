@@ -59,6 +59,12 @@ namespace Spoon {
         ImGui::EndPopup();
     }
 
+    ImGui::TextDisabled("Map Settings");
+    ImGui::Separator();
+
+    ImGui::InputInt("Map Width", &m_MapSize.x);
+    ImGui::InputInt("Map Height", &m_MapSize.y);
+    
 	ImGui::TextDisabled("Atlas Settings"); 
 	ImGui::Separator();
 	  

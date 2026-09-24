@@ -7,6 +7,8 @@ target_sources(Special-Spoon
 
         Tools/AnimationTool.h
         Tools/AnimationTool.cpp
+        Tools/TileMapTool.h
+        Tools/TileMapTool.cpp
         Tools/TextureRectTool.h
 
         Utils/Helpmarker.h        
