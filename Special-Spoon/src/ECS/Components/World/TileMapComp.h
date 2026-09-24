@@ -33,7 +33,7 @@ namespace Spoon {
   struct TileLayer {
     std::string name;              // "Background", "Gameplay", "Foreground"
     bool visible = true;           // runtime/editor visibility
-    bool collidable = false;       // optional: collision extraction
+    bool collidable = false;       // collision extraction
     float opacity = 1.0f;          // editor/runtime blending
     std::vector<Tile> tiles;       // row-major: width * height
   };

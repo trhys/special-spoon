@@ -58,6 +58,7 @@ namespace Spoon
             ResolveTileMap(m_TileMapEntity) == m_TileMap)
         {
             m_TileMap->BuildMap();
+            m_TileMap->m_RebuildCollision = true;
         }
 
         m_HasPendingBuild = false;
@@ -269,6 +270,7 @@ namespace Spoon
         {
             activeLayer.opacity = std::clamp(activeLayer.opacity, 0.0f, 1.0f);
             tileMap.BuildMap();
+            tileMap.m_RebuildCollision = true;
         }
 
         const int tileDataCount = static_cast<int>(activeLayer.tiles.size());
