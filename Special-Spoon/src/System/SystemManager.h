@@ -8,6 +8,8 @@
 
 #include <array>
 #include <memory>
+#include <queue>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -70,7 +72,7 @@ namespace Spoon
         {
             if (m_SystemOrderDirty)
             {
-                EnforceKnownExecutionOrder();
+                ScheduleSystems();
                 m_SystemOrderDirty = false;
             }
             for(auto& system : m_Systems)
@@ -87,82 +89,151 @@ namespace Spoon
             }
         }
 
-        void InitializeStateSystem()
-        {
-            m_StateSystem = std::make_unique<StateSystem>();
-        }
-
+        void InitializeStateSystem(){ m_StateSystem = std::make_unique<StateSystem>(); }
         StateSystem* GetStateSystem() { return m_StateSystem.get(); }
-        
-        std::vector<std::unique_ptr<ISystem>>& GetSystems()
-        {
-            m_SystemOrderDirty = true;
-            return m_Systems;
-        }
+        std::vector<std::unique_ptr<ISystem>>& GetSystems() { return m_Systems; }
 
     private:
-        void EnforceKnownExecutionOrder()
+        // does topological sorting of systems based on their dependencies
+        void ScheduleSystems()
         {
             if (m_Systems.size() < 2)
                 return;
 
-            std::unordered_map<std::string, size_t> nameToIndex;
-            for (size_t index = 0; index < m_Systems.size(); index++)
+            const std::size_t systemCount = m_Systems.size();
+
+            // index system by name for quick lookup
+            std::unordered_map<std::string, std::size_t> nameToIndex;
+            nameToIndex.reserve(systemCount);
+
+            for (std::size_t index = 0; index < systemCount; ++index)
             {
-                nameToIndex[m_Systems[index]->GetDisplayName()] = index;
+                const std::string& name =
+                    m_Systems[index]->GetDisplayName();
+
+                if (nameToIndex.count(name))
+                {
+                    throw std::runtime_error(
+                        "Duplicate system name in scheduler: " + name
+                    );
+                }
+
+                nameToIndex.emplace(name, index);
             }
 
-            std::vector<std::vector<size_t>> edges(m_Systems.size());
-            std::vector<size_t> indegree(m_Systems.size(), 0);
-            constexpr std::array<std::pair<const char*, const char*>, 5> dependencies = {
-                std::pair{ "Movement", "Physics" },
-                std::pair{ "Physics", "Collision" },
-                std::pair{ "Physics", "Animation" },
-                std::pair{ "Movement", "Animation" },
-                std::pair{ "Collision", "Animation" }
+            // build graph edges based on system dependencies
+            std::set<std::pair<std::size_t, std::size_t>> uniqueEdges;
+
+            auto addDependency = [&](std::size_t before,
+                                    std::size_t after)
+            {
+                if (before == after)
+                {
+                    const std::string& name =
+                        m_Systems[before]->GetDisplayName();
+
+                    throw std::runtime_error(
+                        "System declares a dependency on itself: " + name
+                    );
+                }
+
+                uniqueEdges.emplace(before, after);
             };
 
-            for (const auto& [before, after] : dependencies)
+            for (std::size_t index = 0; index < systemCount; ++index)
             {
-                auto beforeIt = nameToIndex.find(before);
-                auto afterIt = nameToIndex.find(after);
-                if (beforeIt == nameToIndex.end() || afterIt == nameToIndex.end())
-                    continue;
+                ISystem& system = *m_Systems[index];
 
-                edges[beforeIt->second].push_back(afterIt->second);
-                indegree[afterIt->second]++;
+                // get system dependencies
+                for (const std::string& dependency : system.RunAfter())
+                {
+                    // get dependency's index in systems vector
+                    auto dependencyIt = nameToIndex.find(dependency);
+
+                    if (dependencyIt == nameToIndex.end())
+                        continue;
+
+                    addDependency(dependencyIt->second, index);
+                }
+
+                // find system dependents
+                for (const std::string& dependent : system.RunBefore())
+                {
+                    // get index
+                    auto dependentIt = nameToIndex.find(dependent);
+
+                    if (dependentIt == nameToIndex.end())
+                        continue;
+
+                    addDependency(index, dependentIt->second);
+                }
             }
 
-            std::vector<size_t> resolvedOrder;
-            resolvedOrder.reserve(m_Systems.size());
-            std::vector<bool> used(m_Systems.size(), false);
+            std::vector<std::vector<std::size_t>> outgoing(systemCount);
+            std::vector<std::size_t> indegree(systemCount, 0);
 
-            for (size_t count = 0; count < m_Systems.size(); count++)
+            for (const auto& [before, after] : uniqueEdges)
             {
-                size_t nextIndex = m_Systems.size();
-                for (size_t index = 0; index < m_Systems.size(); index++)
+                outgoing[before].push_back(after);
+                ++indegree[after];
+            }
+
+            // deterministic sort with index as tie-breaker
+            std::priority_queue<
+                std::size_t,
+                std::vector<std::size_t>,
+                std::greater<std::size_t>
+            > ready;
+
+            for (std::size_t index = 0; index < systemCount; ++index)
+            {
+                if (indegree[index] == 0)
+                    ready.push(index);
+            }
+
+            std::vector<std::size_t> resolvedOrder;
+            resolvedOrder.reserve(systemCount);
+
+            while (!ready.empty())
+            {
+                const std::size_t current = ready.top();
+                ready.pop();
+
+                resolvedOrder.push_back(current);
+
+                for (const std::size_t dependent : outgoing[current])
                 {
-                    if (!used[index] && indegree[index] == 0)
+                    if (--indegree[dependent] == 0)
+                        ready.push(dependent);
+                }
+            }
+
+            if (resolvedOrder.size() != systemCount)
+            {
+                std::string cycleMembers;
+
+                for (std::size_t index = 0; index < systemCount; ++index)
+                {
+                    if (indegree[index] != 0)
                     {
-                        nextIndex = index;
-                        break;
+                        if (!cycleMembers.empty())
+                            cycleMembers += ", ";
+
+                        cycleMembers +=
+                            m_Systems[index]->GetDisplayName();
                     }
                 }
 
-                if (nextIndex == m_Systems.size())
-                    return;
-
-                used[nextIndex] = true;
-                resolvedOrder.push_back(nextIndex);
-
-                for (size_t dependent : edges[nextIndex])
-                {
-                    indegree[dependent]--;
-                }
+                throw std::runtime_error(
+                    "Cycle detected in system dependencies. "
+                    "Systems involved: " + cycleMembers
+                );
             }
 
+            // dont rebuild unless order has changed
             bool changed = false;
-            for (size_t index = 0; index < resolvedOrder.size(); index++)
+
+            for (std::size_t index = 0; index < systemCount; ++index)
             {
                 if (resolvedOrder[index] != index)
                 {
@@ -174,9 +245,11 @@ namespace Spoon
             if (!changed)
                 return;
 
+            // build scheduled vector from sorted graph
             std::vector<std::unique_ptr<ISystem>> orderedSystems;
-            orderedSystems.reserve(m_Systems.size());
-            for (size_t index : resolvedOrder)
+            orderedSystems.reserve(systemCount);
+
+            for (const std::size_t index : resolvedOrder)
             {
                 orderedSystems.push_back(std::move(m_Systems[index]));
             }

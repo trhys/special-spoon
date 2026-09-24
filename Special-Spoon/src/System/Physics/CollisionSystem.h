@@ -64,6 +64,8 @@ namespace Spoon
             return j;
         }
 
+        std::vector<std::string> RunAfter() const override { return { "Physics", "Movement" }; }
+
         void Update(sf::Time tick, EntityManager& manager) override;
 
         void OnReflect() override

@@ -4,6 +4,7 @@ target_sources(Special-Spoon
         AnimationSystem.cpp
         InputSystem.h
         InputSystem.cpp
+        MovementSystem.h
         StateSystem.h
         StateSystem.cpp
         System.h

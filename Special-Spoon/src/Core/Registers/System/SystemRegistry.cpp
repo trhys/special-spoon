@@ -1,5 +1,6 @@
 #include "SystemRegistry.h"
 #include "System/AnimationSystem.h"
+#include "System/MovementSystem.h"
 #include "System/Physics/CollisionSystem.h"
 #include "System/Physics/PhysicsSystem.h"
 #include "System/Physics/SystemConfigs.h"
@@ -9,6 +10,11 @@ namespace Spoon
     std::unique_ptr<ISystem> LoadAnimationSystem(const json* systemData)
     {
         return std::make_unique<AnimationSystem>();
+    }
+
+    std::unique_ptr<ISystem> LoadMovementSystem(const json* systemData)
+    {
+        return std::make_unique<MovementSystem>();
     }
 
     std::unique_ptr<ISystem> LoadPhysicsSystem(const json* systemData)
@@ -27,6 +33,7 @@ namespace Spoon
     {
         SS_DEBUG_LOG("[SYSTEM] Registering default systems...")
         SystemRegistry::Get().RegisterLoader("Animation", &LoadAnimationSystem);
+        SystemRegistry::Get().RegisterLoader("Movement", &LoadMovementSystem);
         SystemRegistry::Get().RegisterLoader("Collision", &LoadCollisionSystem);
         SystemRegistry::Get().RegisterLoader("Physics", &LoadPhysicsSystem);
     }

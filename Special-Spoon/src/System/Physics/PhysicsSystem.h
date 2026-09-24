@@ -24,6 +24,9 @@ namespace Spoon
           return j;
         }
 
+        std::vector<std::string> RunBefore() const override { return { "Collision" }; }
+        std::vector<std::string> RunAfter() const override { return { "Movement" }; }
+
         static PhysicsSystemConfig& GetConfig() { return m_Config; }
         void SetConfig(PhysicsSystemConfig& c) { m_Config = c; }
 

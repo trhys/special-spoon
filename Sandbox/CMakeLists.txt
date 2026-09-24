@@ -16,7 +16,6 @@ target_sources(Sandbox
             # src/ECS/Component/Combat/Hit-Hurt.h
             #
             # src/ECS/System/PatrolSystem.h
-            # src/ECS/System/MovementSystem.h
             # src/ECS/System/AttackSystem.h
 
             src/ECS/CustomCompLoader.h

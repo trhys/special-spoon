@@ -14,6 +14,8 @@ public:
     MovementSystem() : Spoon::ISystem::ISystem("Movement") {}
     ~MovementSystem() {}
 
+    std::vector<std::string> RunBefore() const override { return { "Physics", "Collision" }; }
+
     static bool IsMovementAction(const Spoon::ActionType& action)
     {
         return action.m_ID == Spoon::BuiltInActions::MoveLeft ||
