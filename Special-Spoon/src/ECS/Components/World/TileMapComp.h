@@ -68,6 +68,7 @@ namespace Spoon {
           TileAtlas m_Atlas;
           std::vector<TileLayer> m_Layers;
           std::vector<std::vector<sf::Vertex>> m_LayerVertices;
+          std::vector<UUID> m_ColliderEntities;
 
           // rebuild flags
           bool m_NeedsRebuild = true;

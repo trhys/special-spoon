@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/System.h"
+#include "ECS/Components/World/TileMapComp.h"
 
 namespace Spoon
 {
@@ -25,15 +26,14 @@ namespace Spoon
 
         // create the rects representing the total
         // space occupied by collidable tiles in the tile map
-        void BuildColliderCache(EntityManager& manager);
+        void BuildColliderCache(EntityManager& manager, TileMapComp& tileMap);
         void MergeColliderCache();
 
         // generate entities in the ECS for each merged collider
-        void GenerateColliderEntities(EntityManager& manager);
-        void KillColliderEntities(EntityManager& manager);
+        void GenerateColliderEntities(EntityManager& manager, TileMapComp& tileMap);
+        void KillColliderEntities(EntityManager& manager, std::vector<UUID>& cachedEntities);
 
     private:
         std::vector<TileCollider> m_TileColliders;
-        std::vector<UUID> m_CachedEntities;
     };
 }

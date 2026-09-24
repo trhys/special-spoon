@@ -10,38 +10,34 @@ namespace Spoon
         {
             if (tileMap.m_RebuildCollision)
             {
-                KillColliderEntities(manager);
-                BuildColliderCache(manager);
-                GenerateColliderEntities(manager);
+                KillColliderEntities(manager, tileMap.m_ColliderEntities);
+                BuildColliderCache(manager, tileMap);
+                GenerateColliderEntities(manager, tileMap);
                 tileMap.m_RebuildCollision = false;
             }
         }
     }
 
-    void TileMapCollisionSystem::BuildColliderCache(EntityManager& manager)
+    void TileMapCollisionSystem::BuildColliderCache(EntityManager& manager, TileMapComp& tileMap)
     {
         m_TileColliders.clear();
-        auto& tileMaps = manager.GetArray<TileMapComp>(TileMapComp::Name);
-        for (auto& tileMap : tileMaps.m_Components)
+        auto& layers = tileMap.m_Layers;
+        for (size_t layerIndex = 0; layerIndex < layers.size(); ++layerIndex)
         {
-            auto& layers = tileMap.m_Layers;
-            for (size_t layerIndex = 0; layerIndex < layers.size(); ++layerIndex)
-            {
-                auto& layer = layers[layerIndex];
-                if (!layer.collidable)
-                    continue;
+            auto& layer = layers[layerIndex];
+            if (!layer.collidable)
+                continue;
 
-                auto& tiles = layer.tiles;
-                for (size_t index = 0; index < tiles.size(); ++index)
+            auto& tiles = layer.tiles;
+            for (size_t index = 0; index < tiles.size(); ++index)
+            {
+                if (tiles[index].collidable)
                 {
-                    if (tiles[index].collidable)
-                    {
-                        TileCollider collider;
-                        int tileX = index % tileMap.m_MapSize.x;
-                        int tileY = index / tileMap.m_MapSize.x;
-                        collider.body = tileMap.GetTileBounds(tileX, tileY, static_cast<int>(layerIndex));
-                        m_TileColliders.push_back(collider);
-                    }
+                    TileCollider collider;
+                    int tileX = index % tileMap.m_MapSize.x;
+                    int tileY = index / tileMap.m_MapSize.x;
+                    collider.body = tileMap.GetTileBounds(tileX, tileY, static_cast<int>(layerIndex));
+                    m_TileColliders.push_back(collider);
                 }
             }
         }
@@ -72,25 +68,25 @@ namespace Spoon
         m_TileColliders = std::move(mergedColliders);
     }
 
-    void TileMapCollisionSystem::GenerateColliderEntities(EntityManager& manager)
+    void TileMapCollisionSystem::GenerateColliderEntities(EntityManager& manager, TileMapComp& tileMap)
     {
         for (auto& collider : m_TileColliders)
         {
             auto id = manager.CreateEntity();
-            m_CachedEntities.push_back(id);
+            tileMap.m_ColliderEntities.push_back(id);
             manager.MakeComponent<ColliderComp>(id, ColliderComp::Name, collider.body.size);
             manager.MakeComponent<TransformComp>(id, TransformComp::Name, collider.body.position);
             manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name, BodyType::Static);
         }
     }
 
-    void TileMapCollisionSystem::KillColliderEntities(EntityManager& manager)
+    void TileMapCollisionSystem::KillColliderEntities(EntityManager& manager, std::vector<UUID>& cachedEntities)
     {
-        for (UUID id : m_CachedEntities)
+        for (UUID id : cachedEntities)
         {
             manager.KillEntity(id);
         }
-        m_CachedEntities.clear();
+        cachedEntities.clear();
     }
 
     void TileMapCollisionSystem::OnReflect()
