@@ -9,13 +9,14 @@ namespace Spoon {
 
   // base tile
   struct Tile {
-    uint16_t id;    // index to rect in the atlas
+    uint16_t id;                // index to rect in the atlas
+    bool collidable = false;    // optional: collision extraction flag
   };
 
   // atlas reference - we'll probably config this so change the defaults 
   // depending on the asset provided for the project
   struct TileAtlas {
-    std::string textureId;   						// atlas texture id - fetch from resource manager on resolve()
+    std::string textureId;   						            // atlas texture id - fetch from resource manager on resolve()
     sf::Texture* texture = nullptr;                 // runtime texture ptr - load on resolve()
     int tileWidth = 16;
     int tileHeight = 16;
@@ -23,7 +24,7 @@ namespace Spoon {
     int rows = 1;                                   // derived or serialized
     int margin = 0;                                 // atlas spacing support
     int spacing = 0;
-	bool fetchBadTexture = false;  					// editor flag
+	  bool fetchBadTexture = false;  					        // editor flag
 
     void Resolve();                                 // get texture in memory from resource manager
   };
@@ -54,6 +55,8 @@ namespace Spoon {
           bool ClearLayer(int layerIndex);
 
 		      std::optional<uint16_t> GetTile(int x, int y, int layerIndex) const;
+          std::vector<Tile> GetLayerTiles(int layerIndex) const;
+          sf::FloatRect GetTileBounds(int x, int y, int layerIndex) const;
 
           // build the map
           void BuildMap();

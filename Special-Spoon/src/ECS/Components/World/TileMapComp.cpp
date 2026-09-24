@@ -412,6 +412,30 @@ namespace Spoon {
 		
 		return layer.tiles[tileIndex].id;
 	}
+
+	std::vector<Tile> TileMapComp::GetLayerTiles(int layerIndex) const
+	{
+		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
+			return {};
+		auto& layer = m_Layers[static_cast<std::size_t>(layerIndex)];
+		return layer.tiles;
+	}
+
+	sf::FloatRect TileMapComp::GetTileBounds(int x, int y, int layerIndex) const
+	{
+		if (!ValidateBounds(x, y, layerIndex))
+			return sf::FloatRect{};
+
+		const sf::Vector2f position{
+		    static_cast<float>(x * m_Atlas.tileWidth),
+		    static_cast<float>(y * m_Atlas.tileHeight)
+		};
+		const sf::Vector2f size{
+		    static_cast<float>(m_Atlas.tileWidth),
+		    static_cast<float>(m_Atlas.tileHeight)
+		};
+		return sf::FloatRect{position, size};
+	}
 		
 	void TileAtlas::Resolve() 
 	{ 
