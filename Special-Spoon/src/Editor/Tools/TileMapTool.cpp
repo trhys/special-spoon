@@ -145,6 +145,7 @@ namespace Spoon
             Tile{0}
         );
         tileMap.BuildMap();
+        tileMap.m_RebuildCollision = true;
     }
 
     void TileMapTool::DrawLayerPanel(TileMapComp& tileMap)
@@ -187,6 +188,7 @@ namespace Spoon
                 m_ActiveLayerIndex =
                     static_cast<int>(tileMap.m_Layers.size()) - 1;
                 tileMap.BuildMap();
+                tileMap.m_RebuildCollision = true;
 
                 std::snprintf(
                     m_NewLayerName,

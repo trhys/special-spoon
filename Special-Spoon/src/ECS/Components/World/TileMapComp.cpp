@@ -62,12 +62,22 @@ namespace Spoon {
     ImGui::TextDisabled("Map Settings");
     ImGui::Separator();
 
-    ImGui::InputInt("Map Width", &m_MapSize.x);
-    ImGui::InputInt("Map Height", &m_MapSize.y);
+	// map size controls
+	bool mapSizeChanged = false;
+    mapSizeChanged |= ImGui::InputInt("Map Width", &m_MapSize.x);
+    mapSizeChanged |= ImGui::InputInt("Map Height", &m_MapSize.y);
+    if (mapSizeChanged) 
+	{
+		m_MapSize.x = std::max(0, m_MapSize.x);
+		m_MapSize.y = std::max(0, m_MapSize.y);
+		m_NeedsRebuild = true;
+        m_RebuildCollision = true;
+    }
     
 	ImGui::TextDisabled("Atlas Settings"); 
 	ImGui::Separator();
 	  
+	// texture browser
 	ImGui::Text("Tileset ID: %s", m_Atlas.textureId.c_str());
 
     if (ImGui::BeginChild(
@@ -95,6 +105,7 @@ namespace Spoon {
         ImGui::EndChild();
     }
 
+	// atlas settings controls
 	bool changed = false;
 	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth);
 	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight);
@@ -106,6 +117,7 @@ namespace Spoon {
 	if (changed) {
 		ClampInput();
 		m_NeedsRebuild = true;
+		m_RebuildCollision = true;
 	}
   }
 
@@ -334,6 +346,7 @@ namespace Spoon {
 	    layer.tiles[index].id = id;
 	
 	    m_NeedsRebuild = true;
+		m_RebuildCollision = true;
 	    return true;
 	}
 
@@ -366,6 +379,7 @@ namespace Spoon {
 		for (auto& tile : layer.tiles) 
 			tile.id = tileId;
 		m_NeedsRebuild = true;
+		m_RebuildCollision = true;
 		return true;
 	}
 
@@ -385,6 +399,7 @@ namespace Spoon {
 		for (auto& tile : layer.tiles) 
 			tile.id = 0;
 		m_NeedsRebuild = true;
+		m_RebuildCollision = true;
 		return true;
 	}
 
