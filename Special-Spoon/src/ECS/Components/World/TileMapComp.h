@@ -44,21 +44,21 @@ namespace Spoon {
           static constexpr const char* Name = "TileMap";
 
           void OnReflect() override;
-		  void ClampInput();
-		  bool ValidateBounds(int x, int y, int layerIndex) const;
+          void ClampInput();
+          bool ValidateBounds(int x, int y, int layerIndex) const;
 
           // tile/layer methods
           bool SetTile(uint16_t id, int x, int y, int layerIndex);
           bool ClearTile(int x, int y, int layerIndex);
-		  bool FillLayer(int layerIndex, uint16_t tileId);
-		  bool ClearLayer(int layerIndex);
+          bool FillLayer(int layerIndex, uint16_t tileId);
+          bool ClearLayer(int layerIndex);
 
-		  std::optional<uint16_t> GetTile(int x, int y, int layerIndex) const;
+		      std::optional<uint16_t> GetTile(int x, int y, int layerIndex) const;
 
           // build the map
           void BuildMap();
           sf::IntRect GetAtlasRect(uint16_t id) const;
-		  sf::Color LayerColor(const TileLayer& layer) const;
+		      sf::Color LayerColor(const TileLayer& layer) const;
 
           // members
           sf::Vector2i m_MapSize;      // map size in width/height cells, not px
@@ -66,10 +66,13 @@ namespace Spoon {
           std::vector<TileLayer> m_Layers;
           std::vector<std::vector<sf::Vertex>> m_LayerVertices;
 
-		  // renderable interface
-		  void PreRender(EntityManager& manager, UUID id) override;
-		  void Render(sf::RenderTarget& target, sf::RenderStates states) override;
-		  sf::Vector2f GetPosition() override { return sf::Vector2f{0.0, 0.0}; }
+          // rebuild flag
+          bool m_NeedsRebuild = false;
+
+          // renderable interface
+          void PreRender(EntityManager& manager, UUID id) override;
+          void Render(sf::RenderTarget& target, sf::RenderStates states) override;
+          sf::Vector2f GetPosition() override { return sf::Vector2f{0.0, 0.0}; }
   };
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id)

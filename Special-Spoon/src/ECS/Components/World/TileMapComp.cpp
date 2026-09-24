@@ -31,7 +31,7 @@ namespace Spoon {
             m_Atlas.textureId.clear();
             m_Atlas.texture = nullptr;
             m_Atlas.fetchBadTexture = false;
-            BuildMap();
+            m_NeedsRebuild = true;
         }
     }
 
@@ -85,7 +85,8 @@ namespace Spoon {
             {
                 m_Atlas.textureId = id;
 				m_Atlas.Resolve();
-				if (!m_Atlas.fetchBadTexture) BuildMap();
+				if (!m_Atlas.fetchBadTexture) 
+					m_NeedsRebuild = true;
             }
 
             ImGui::SameLine();
@@ -104,15 +105,19 @@ namespace Spoon {
 
 	if (changed) {
 		ClampInput();
-		BuildMap();
+		m_NeedsRebuild = true;
 	}
   }
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
   {
-      // dont know if we need anything here yet - leaving no-op for now
-	  // at this time i dont see a need for us to use a transform and move the tileset
-	  // we can just let 0, 0 be the origin for now
+      // we'll run BuildMap() here in the prerender instead of potentially
+	  // multiple times a frame in the editor.
+	  if (m_NeedsRebuild)
+	  {
+		BuildMap();
+		m_NeedsRebuild = false;
+	  }
   }
 
   void TileMapComp::Render(sf::RenderTarget& target, sf::RenderStates states)
@@ -328,7 +333,7 @@ namespace Spoon {
 	
 	    layer.tiles[index].id = id;
 	
-	    BuildMap();
+	    m_NeedsRebuild = true;
 	    return true;
 	}
 
@@ -360,7 +365,7 @@ namespace Spoon {
 		
 		for (auto& tile : layer.tiles) 
 			tile.id = tileId;
-		BuildMap();
+		m_NeedsRebuild = true;
 		return true;
 	}
 
@@ -379,7 +384,7 @@ namespace Spoon {
 		
 		for (auto& tile : layer.tiles) 
 			tile.id = 0;
-		BuildMap();
+		m_NeedsRebuild = true;
 		return true;
 	}
 
