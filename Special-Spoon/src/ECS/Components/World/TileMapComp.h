@@ -69,8 +69,9 @@ namespace Spoon {
           std::vector<TileLayer> m_Layers;
           std::vector<std::vector<sf::Vertex>> m_LayerVertices;
 
-          // rebuild flag
-          bool m_NeedsRebuild = false;
+          // rebuild flags
+          bool m_NeedsRebuild = true;
+          bool m_RebuildCollision = true;
 
           // renderable interface
           void PreRender(EntityManager& manager, UUID id) override;

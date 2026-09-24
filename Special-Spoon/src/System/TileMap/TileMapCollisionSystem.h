@@ -26,7 +26,6 @@ namespace Spoon
         // create the rects representing the total
         // space occupied by collidable tiles in the tile map
         void BuildColliderCache(EntityManager& manager);
-        void ClearColliderCache();
         void MergeColliderCache();
 
         // generate entities in the ECS for each merged collider
@@ -36,7 +35,5 @@ namespace Spoon
     private:
         std::vector<TileCollider> m_TileColliders;
         std::vector<UUID> m_CachedEntities;
-
-        bool m_CacheValid = false;
     };
 }

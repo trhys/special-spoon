@@ -5,15 +5,21 @@ namespace Spoon
 {
     void TileMapCollisionSystem::Update(sf::Time tick, EntityManager& manager)
     {
-        if (!m_CacheValid)
-            BuildColliderCache(manager);
+        auto& tileMaps = manager.GetArray<TileMapComp>(TileMapComp::Name);
+        for (auto& tileMap : tileMaps.m_Components)
+        {
+            if (tileMap.m_RebuildCollision)
+            {
+                KillColliderEntities(manager);
+                BuildColliderCache(manager);
+                GenerateColliderEntities(manager);
+                tileMap.m_RebuildCollision = false;
+            }
+        }
     }
 
     void TileMapCollisionSystem::BuildColliderCache(EntityManager& manager)
     {
-        if (m_CacheValid)
-            return;
-
         m_TileColliders.clear();
         auto& tileMaps = manager.GetArray<TileMapComp>(TileMapComp::Name);
         for (auto& tileMap : tileMaps.m_Components)
@@ -40,7 +46,6 @@ namespace Spoon
             }
         }
         MergeColliderCache();
-        m_CacheValid = true;
     }
 
     void TileMapCollisionSystem::MergeColliderCache()
@@ -86,12 +91,6 @@ namespace Spoon
             manager.KillEntity(id);
         }
         m_CachedEntities.clear();
-    }
-
-    void TileMapCollisionSystem::ClearColliderCache()
-    {
-        m_TileColliders.clear();
-        m_CacheValid = false;
     }
 
     void TileMapCollisionSystem::OnReflect()
