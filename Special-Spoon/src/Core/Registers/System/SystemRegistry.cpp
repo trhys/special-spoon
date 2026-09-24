@@ -4,6 +4,7 @@
 #include "System/Physics/CollisionSystem.h"
 #include "System/Physics/PhysicsSystem.h"
 #include "System/Physics/SystemConfigs.h"
+#include "System/TileMap/TileMapCollisionSystem.h"
 
 namespace Spoon
 {
@@ -29,6 +30,11 @@ namespace Spoon
         return std::make_unique<CollisionSystem>(systemData->get<CollisionSystemConfig>());
     }
 
+    std::unique_ptr<ISystem> LoadTileMapCollisionSystem(const json* systemData)
+    {
+        return std::make_unique<TileMapCollisionSystem>();
+    }
+
     void RegisterDefaultSystems()
     {
         SS_DEBUG_LOG("[SYSTEM] Registering default systems...")
@@ -36,5 +42,6 @@ namespace Spoon
         SystemRegistry::Get().RegisterLoader("Movement", &LoadMovementSystem);
         SystemRegistry::Get().RegisterLoader("Collision", &LoadCollisionSystem);
         SystemRegistry::Get().RegisterLoader("Physics", &LoadPhysicsSystem);
+        SystemRegistry::Get().RegisterLoader("TileMapCollision", &LoadTileMapCollisionSystem);
     }
 }

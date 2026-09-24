@@ -15,6 +15,7 @@ namespace Spoon
     {
     public:
         PhysicsComp() : ComponentBase::ComponentBase(Name) {}
+        PhysicsComp(BodyType inBodyType) : ComponentBase::ComponentBase(Name), bodyType(inBodyType) {}
 
         static constexpr const char* Name = "Physics";
 
@@ -40,6 +41,8 @@ namespace Spoon
                 return BodyType::Kinematic;
             return BodyType::Dynamic;
         }
+
+        void SetBodyType(BodyType type) { bodyType = type; }
 
         void OnReflect() override
         {

@@ -60,11 +60,19 @@ namespace Spoon
     {
         m_Entities.erase(id);
         m_RecycledIds.push_back(id);
+        const auto& components = GetAllComponentsOfEntity(id);
+        for (auto* comp : components)
+        {
+            KillComponent(comp->GetType(), id);
+        }
     }
 
     void EntityManager::ClearEntities()
     {
         m_Entities.clear();
+        m_RecycledIds.clear();
+        m_IdCounter = 0;
+        ClearArrays();
     }
 
     // ===========================================

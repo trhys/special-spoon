@@ -69,6 +69,11 @@ namespace Spoon
     {
         ColliderComp() : ComponentBase::ComponentBase(Name), m_Collider(std::make_unique<AABBCollider>()) {}
 
+        ColliderComp(const sf::Vector2f& inSize) : ComponentBase::ComponentBase(Name) 
+        {
+            SetAABBSize(inSize);
+        }
+
         ColliderComp(const ColliderComp& other) : ComponentBase::ComponentBase(Name)
         {
             offset = other.offset;

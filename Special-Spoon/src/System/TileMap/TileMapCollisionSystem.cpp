@@ -16,7 +16,7 @@ namespace Spoon
 
         m_TileColliders.clear();
         auto& tileMaps = manager.GetArray<TileMapComp>(TileMapComp::Name);
-        for (auto& tileMap : tileMaps)
+        for (auto& tileMap : tileMaps.m_Components)
         {
             auto& layers = tileMap.m_Layers;
             for (size_t layerIndex = 0; layerIndex < layers.size(); ++layerIndex)
@@ -39,7 +39,53 @@ namespace Spoon
                 }
             }
         }
+        MergeColliderCache();
         m_CacheValid = true;
+    }
+
+    void TileMapCollisionSystem::MergeColliderCache()
+    {
+        std::vector<TileCollider> mergedColliders;
+        for (size_t index = 0; index < m_TileColliders.size(); ++index)
+        {
+            auto& collider = m_TileColliders[index];
+            if (index + 1 >= m_TileColliders.size())
+                break;
+
+            auto& next = m_TileColliders[index + 1];
+            float rightHandSide = collider.body.position.x + collider.body.size.x;
+            float nextLeftHandSide = next.body.position.x;
+
+            if (rightHandSide == nextLeftHandSide)
+            {
+                collider.body.size.x += next.body.size.x;
+                ++index;
+            }
+            mergedColliders.push_back(collider);
+
+        }
+        m_TileColliders = std::move(mergedColliders);
+    }
+
+    void TileMapCollisionSystem::GenerateColliderEntities(EntityManager& manager)
+    {
+        for (auto& collider : m_TileColliders)
+        {
+            auto id = manager.CreateEntity();
+            m_CachedEntities.push_back(id);
+            manager.MakeComponent<ColliderComp>(id, ColliderComp::Name, collider.body.size);
+            manager.MakeComponent<TransformComp>(id, TransformComp::Name, collider.body.position);
+            manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name, BodyType::Static);
+        }
+    }
+
+    void TileMapCollisionSystem::KillColliderEntities(EntityManager& manager)
+    {
+        for (UUID id : m_CachedEntities)
+        {
+            manager.KillEntity(id);
+        }
+        m_CachedEntities.clear();
     }
 
     void TileMapCollisionSystem::ClearColliderCache()

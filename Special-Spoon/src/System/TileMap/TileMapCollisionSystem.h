@@ -15,7 +15,7 @@ namespace Spoon
         TileMapCollisionSystem() :
             ISystem("TileMapCollision") {}
 
-        std::vector<std::string> RunBefore() override
+        std::vector<std::string> RunBefore() const override
         {
             return { "Collision" };
         }
@@ -23,11 +23,19 @@ namespace Spoon
         void Update(sf::Time tick, EntityManager& manager) override;
         void OnReflect() override;
 
+        // create the rects representing the total
+        // space occupied by collidable tiles in the tile map
         void BuildColliderCache(EntityManager& manager);
         void ClearColliderCache();
+        void MergeColliderCache();
+
+        // generate entities in the ECS for each merged collider
+        void GenerateColliderEntities(EntityManager& manager);
+        void KillColliderEntities(EntityManager& manager);
 
     private:
         std::vector<TileCollider> m_TileColliders;
+        std::vector<UUID> m_CachedEntities;
 
         bool m_CacheValid = false;
     };

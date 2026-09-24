@@ -16,4 +16,7 @@ target_sources(Special-Spoon
         Physics/SystemConfigs.h
         Physics/QuadTree.h            
         Physics/QuadTree.cpp
+
+        TileMap/TileMapCollisionSystem.h
+        TileMap/TileMapCollisionSystem.cpp
 )
