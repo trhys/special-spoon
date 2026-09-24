@@ -11,14 +11,14 @@ namespace Spoon
             if (tileMap.m_RebuildCollision)
             {
                 KillColliderEntities(manager, tileMap.m_ColliderEntities);
-                BuildColliderCache(manager, tileMap);
+                BuildColliderCache(tileMap);
                 GenerateColliderEntities(manager, tileMap);
                 tileMap.m_RebuildCollision = false;
             }
         }
     }
 
-    void TileMapCollisionSystem::BuildColliderCache(EntityManager& manager, TileMapComp& tileMap)
+    void TileMapCollisionSystem::BuildColliderCache(TileMapComp& tileMap)
     {
         m_TileColliders.clear();
         auto& layers = tileMap.m_Layers;
@@ -41,31 +41,98 @@ namespace Spoon
                 }
             }
         }
-        MergeColliderCache();
-    }
 
-    void TileMapCollisionSystem::MergeColliderCache()
-    {
-        std::vector<TileCollider> mergedColliders;
-        for (size_t index = 0; index < m_TileColliders.size(); ++index)
+        // merge contiguous collidable tiles into larger rectangles
+        const int mapWidth = tileMap.m_MapSize.x;
+        const int mapHeight = tileMap.m_MapSize.y;
+        const int tileWidth = tileMap.m_Atlas.tileWidth;
+        const int tileHeight = tileMap.m_Atlas.tileHeight;
+
+        if (mapWidth <= 0 ||
+            mapHeight <= 0 ||
+            tileWidth <= 0 ||
+            tileHeight <= 0)
         {
-            auto& collider = m_TileColliders[index];
-            if (index + 1 >= m_TileColliders.size())
-                break;
-
-            auto& next = m_TileColliders[index + 1];
-            float rightHandSide = collider.body.position.x + collider.body.size.x;
-            float nextLeftHandSide = next.body.position.x;
-
-            if (rightHandSide == nextLeftHandSide)
-            {
-                collider.body.size.x += next.body.size.x;
-                ++index;
-            }
-            mergedColliders.push_back(collider);
-
+            return;
         }
-        m_TileColliders = std::move(mergedColliders);
+
+        const std::size_t expectedTileCount =
+            static_cast<std::size_t>(mapWidth) *
+            static_cast<std::size_t>(mapHeight);
+
+        for (std::size_t layerIndex = 0;
+            layerIndex < tileMap.m_Layers.size();
+            ++layerIndex)
+        {
+            const TileLayer& layer = tileMap.m_Layers[layerIndex];
+
+            if (!layer.collidable)
+                continue;
+
+            for (int y = 0; y < mapHeight; ++y)
+            {
+                int runStartX = -1;
+
+                for (int x = 0; x <= mapWidth; ++x)
+                {
+                    bool solid = false;
+
+                    // x == mapWidth is a sentinel column. It forces any
+                    // active run to be emitted at the end of the row.
+                    if (x < mapWidth)
+                    {
+                        const std::size_t tileIndex =
+                            static_cast<std::size_t>(y) *
+                                static_cast<std::size_t>(mapWidth) +
+                            static_cast<std::size_t>(x);
+
+                        if (tileIndex < layer.tiles.size() &&
+                            tileIndex < expectedTileCount)
+                        {
+                            const Tile& tile = layer.tiles[tileIndex];
+                            solid = tile.id != 0 && tile.collidable;
+                        }
+                    }
+
+                    if (solid)
+                    {
+                        // Begin a new horizontal run.
+                        if (runStartX < 0)
+                            runStartX = x;
+
+                        continue;
+                    }
+
+                    // Current cell is empty, or this is the sentinel column.
+                    // Close the active run if one exists.
+                    if (runStartX >= 0)
+                    {
+                        const int runWidth = x - runStartX;
+
+                        TileCollider collider;
+                        collider.body = sf::FloatRect{
+                            sf::Vector2f{
+                                static_cast<float>(
+                                    runStartX * tileWidth
+                                ),
+                                static_cast<float>(
+                                    y * tileHeight
+                                )
+                            },
+                            sf::Vector2f{
+                                static_cast<float>(
+                                    runWidth * tileWidth
+                                ),
+                                static_cast<float>(tileHeight)
+                            }
+                        };
+
+                        m_TileColliders.push_back(collider);
+                        runStartX = -1;
+                    }
+                }
+            }
+        }
     }
 
     void TileMapCollisionSystem::GenerateColliderEntities(EntityManager& manager, TileMapComp& tileMap)
