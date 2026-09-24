@@ -1,5 +1,6 @@
 #include "Core/Renderer/Renderer.h"
 #include "Core/Application.h"
+#include "Editor/Utils/EditorSettings.h"
 
 namespace Spoon {
     void Renderer::Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager)
@@ -47,12 +48,39 @@ namespace Spoon {
         }
 
         // Editor gizmos
-        for (auto& gizmo : m_Gizmos)
+        /*for (auto& gizmo : m_Gizmos)*/
+        /*{*/
+        /*    gizmo.draw(target, states);*/
+        /*    m_DrawCalls++;*/
+        /*}*/
+        /*ClearActiveGizmos();*/
+
+        // temporary editor overlay
+        // todo : move to better place
+        if (EditorSettings::Get().colliderOverlay)
         {
-            gizmo.draw(target, states);
-            m_DrawCalls++;
+            auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            for (auto& id : manager.GetAllEntitiesWithComponent<ColliderComp>(ColliderComp::Name))
+            {
+                if (!transformArray.m_IdToIndex.count(id))
+                    continue;
+
+                auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+                auto& collider = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
+                const sf::FloatRect bounds = collider.GetWorldBounds(transform.GetPosition());
+
+                if (collider.GetType() == ColliderType::AABB)
+                {
+                  sf::RectangleShape rect(bounds.size);
+                  rect.setPosition(bounds.position);
+                  rect.setFillColor(sf::Color::Transparent);
+                  rect.setOutlineColor(sf::Color::Yellow);
+                  rect.setOutlineThickness(10.0f);
+                  target.draw(rect, states);
+                }
+            }
         }
-        ClearActiveGizmos();
 
         // Return metrics
         m_DrawTime = static_cast<float>(drawClock.getElapsedTime().asMilliseconds());

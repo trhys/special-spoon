@@ -121,6 +121,12 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("Overlay"))
+            {
+                ImGui::Checkbox("Show Colliders", &EditorSettings::Get().colliderOverlay);
+                ImGui::EndMenu();
+            }
+
             if (ImGui::Button("Play")) 
                 m_Play = true;
             if (ImGui::Button("Stop"))
