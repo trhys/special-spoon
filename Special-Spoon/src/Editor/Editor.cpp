@@ -1,5 +1,7 @@
 #include "Editor.h"
 
+#include "ECS/Components/World/TileMapComp.h"
+
 #include "Menus/SceneMenus.h"
 #include "Menus/EntityMenus.h"
 #include "Menus/SystemsMenu.h"
@@ -64,6 +66,7 @@ namespace Spoon
                 if (ImGui::MenuItem("Open Project")) OpenProject = true;
                 if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) SaveProject = true;
                 ImGui::Separator();
+                if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) ProjectProperties = true;
                 if (ImGui::MenuItem("Exit")) Application::Get().Close();
                 ImGui::EndMenu();
             }
@@ -118,6 +121,12 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("Overlay"))
+            {
+                ImGui::Checkbox("Show Colliders", &EditorSettings::Get().colliderOverlay);
+                ImGui::EndMenu();
+            }
+
             if (ImGui::Button("Play")) 
                 m_Play = true;
             if (ImGui::Button("Stop"))
@@ -160,6 +169,7 @@ namespace Spoon
         if (NewProject)         { Application::Get().GetProjectManager().CreateNew(this); }
         if (OpenProject)        { Application::Get().GetProjectManager().LoadProject(this); }
         if (SaveProject)        { Application::Get().GetProjectManager().SaveProject(this); }
+        if (ProjectProperties)  { Application::Get().GetProjectManager().ConfigProject(this); }
 
         // Scene menus
         if (NewScene)           { NewSceneMenu(s_Manager, this); }
@@ -176,6 +186,7 @@ namespace Spoon
 
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
+        if (m_TileMapTool.IsOpen()) m_TileMapTool.Update(tick);
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)
@@ -183,14 +194,46 @@ namespace Spoon
         m_TextureRectTool.Run(comp);
     }
 
+    void Editor::EditTileMap(UUID id)
+    {
+        m_TileMapTool.Open(id);
+    }
+
+    void Editor::SetActiveScene(SceneData* scene)
+    {
+        if (m_ActiveScene != scene)
+            m_TileMapTool.Close();
+
+        m_ActiveScene = scene;
+    }
+
     void Editor::PickEntity(UUID id, EntityManager& e_Manager)
     {
         SelectEntity(id, this, e_Manager);
+    }
+
+    bool Editor::HandleViewportTools(
+        Viewport& viewport,
+        bool viewportHovered,
+        const ImVec2& imageMin,
+        const ImVec2& imageMax
+    )
+    {
+        if (!m_TileMapTool.IsOpen())
+            return false;
+
+        return m_TileMapTool.HandleViewport(
+            viewport,
+            viewportHovered,
+            imageMin,
+            imageMax
+        );
     }
 
     void Editor::Shutdown()
     {
         m_AnimationTool.Shutdown();
         m_TextureRectTool.Shutdown();
+        m_TileMapTool.Close();
     }
 }

@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "SFML/Graphics/Rect.hpp"
+#include <cstdint>
 #include <unordered_map>
 #include <string>
 #include <filesystem>
@@ -48,10 +49,12 @@ namespace Spoon
         // =====================================================================================
         void UnloadScene(EntityManager& entityManager, SystemManager& systemManager);
         void Transition(std::string id, EntityManager& eManager, SystemManager& sManager);
+        std::uint64_t GetSceneGeneration() const { return m_SceneGeneration; }
 
     private:
         std::unordered_map<std::string, SceneData> m_SceneManifest;
         std::filesystem::path m_DataDir;
         std::filesystem::path m_ManifestPath;
+        std::uint64_t m_SceneGeneration = 0;
     };
 }

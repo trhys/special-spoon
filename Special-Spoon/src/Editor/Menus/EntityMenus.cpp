@@ -5,6 +5,7 @@
 
 #include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "ECS/Components/World/TileMapComp.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
@@ -28,7 +29,7 @@ namespace Spoon
         {
             editor->m_SelectionRect.setFillColor(sf::Color::Transparent);
             editor->m_SelectionRect.setOutlineColor(sf::Color::Green);
-            editor->m_SelectionRect.setOutlineThickness(2.f);
+            editor->m_SelectionRect.setOutlineThickness(5.f);
             init = true;
         }
 
@@ -56,7 +57,10 @@ namespace Spoon
     {
         auto& app = Application::Get();
         auto& editor = app.GetEditor();
-        app.GetRenderer().AddActiveGizmo(editor.m_SelectionRect);
+        app.GetRenderer().AddActiveGizmo(GizmoCommand{std::function<void(sf::RenderTarget& target, sf::RenderStates states)>([rect = editor.m_SelectionRect](sf::RenderTarget& target, sf::RenderStates states)
+        {
+            target.draw(rect, states);
+        })});
     }
     
     void ViewEntitiesMenu(EntityManager& e_Manager)
@@ -216,6 +220,13 @@ namespace Spoon
             if(ImGui::BeginChild("Component Inspector"))
             {
                 selectedComponent->OnReflect();
+
+                if (selectedComponent->GetDisplayName() == TileMapComp::Name)
+                {
+                    if (ImGui::Button("Open Tile Map Editor"))
+                        Application::Get().GetEditor().EditTileMap(selectedID);
+                }
+
                 ImGui::EndChild();
             }
         }
@@ -274,14 +285,12 @@ namespace Spoon
                     if (compSelections[type] && !array->HasEntity(id))
                     {
                         manager.GetCreators().at(type)(id);
-                        // cant think of a better way to initialize physics comps with the most sensible default
-                        // without just outright branching here and doing it by hand. oh well
                         auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
-                        if (type == PhysicsComp::Name && spriteArray.m_IdToIndex.count(id)) 
+                        if (type == ColliderComp::Name && spriteArray.m_IdToIndex.count(id))
                         {
-                          PhysicsComp& physics = manager.GetComponent<PhysicsComp>(id, PhysicsComp::Name);
-                          SpriteComp& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
-                          physics.SetBox(sprite.GetBoundingBox());
+                            ColliderComp& collider = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
+                            SpriteComp& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
+                            collider.SetAABBSize(sprite.GetBoundingBox().size);
                         }
                     }
                 }

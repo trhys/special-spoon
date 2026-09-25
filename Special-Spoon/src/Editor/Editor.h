@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Tools/AnimationTool.h"
+#include "Tools/TileMapTool.h"
 #include "Tools/TextureRectTool.h"
 
 #include "SFML/System/Time.hpp"
@@ -9,6 +10,8 @@
 namespace Spoon
 {
     struct Project;
+    struct TileMapComp;
+    struct Viewport;
     class EntityManager;
     class SystemManager;
     class SceneManager;
@@ -22,10 +25,17 @@ namespace Spoon
         bool Play();
         void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);       
         void EditTextureRect(SpriteComp& comp);
+        void EditTileMap(UUID id);
         void PickEntity(UUID id, EntityManager& e_Manager);
+        bool HandleViewportTools(
+            Viewport& viewport,
+            bool viewportHovered,
+            const ImVec2& imageMin,
+            const ImVec2& imageMax
+        );
 
         void SetCurrentProject(Project* project) { m_CurrentProject = project; }
-        void SetActiveScene(SceneData* scene) { m_ActiveScene = scene; }
+        void SetActiveScene(SceneData* scene);
         void SetWorkingDir(AssetNode* dir) { workingDir = dir; }
 
         Project* GetCurrentProject() { return m_CurrentProject; }
@@ -38,6 +48,7 @@ namespace Spoon
         bool NewProject = false;
         bool OpenProject = false;
         bool SaveProject = false;
+        bool ProjectProperties = false;
 
         bool NewScene = false;
         bool LoadScene = false;
@@ -61,5 +72,6 @@ namespace Spoon
 
         TextureRectTool m_TextureRectTool;
         AnimationTool   m_AnimationTool;
+        TileMapTool     m_TileMapTool;
     };
 }

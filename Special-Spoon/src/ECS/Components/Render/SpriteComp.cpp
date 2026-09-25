@@ -25,6 +25,28 @@ namespace Spoon
         SetColor(color);
     }
 
+    void SpriteComp::PreRender(EntityManager& manager, UUID id) 
+    {
+        auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+        auto& colorArray = manager.GetArray<ColorComp>(ColorComp::Name);
+
+        // sync transform
+        if(transformArray.m_IdToIndex.count(id))
+        {
+            TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+            m_Sprite.setPosition(transform.GetPosition());
+            m_Sprite.setScale(transform.GetScale());
+            m_Sprite.setRotation(transform.m_Transform.getRotation());
+        }
+
+        // apply color comp if it exists
+        if(colorArray.m_IdToIndex.count(id)) 
+        {
+            ColorComp& color = manager.GetComponent<ColorComp>(id, ColorComp::Name);
+            m_Sprite.setColor(color.m_Color);
+        }
+    }
+
     void SpriteComp::OnReflect()
     {
         ImGui::Text("Texture ID: %s", m_TextureID.c_str());

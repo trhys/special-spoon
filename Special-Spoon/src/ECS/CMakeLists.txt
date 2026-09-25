@@ -4,6 +4,7 @@ target_sources(Special-Spoon
         Components/InputComp.h
         Components/InputComp.cpp
         Components/MovementComp.h
+        Components/ColliderComp.h
         Components/PhysicsComp.h
         Components/StateActionComp.h
         Components/StatusComp.h
@@ -18,9 +19,15 @@ target_sources(Special-Spoon
         Components/Render/SpriteComp.h
         Components/Render/SpriteComp.cpp
         Components/Render/TextComp.h
+        Components/Render/TextComp.cpp
         Components/Render/ColorComp.h
         Components/Render/RenderLayer.h
         
+        Components/World/TileMapComp.h
+        Components/World/TileMapComp.cpp
+        
+        ComponentReaper.h
+        ComponentReaper.cpp
         ECS.h
         Entity.h
         Entity.inl

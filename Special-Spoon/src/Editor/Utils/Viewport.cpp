@@ -25,7 +25,7 @@ namespace Spoon
             }
         }
         
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && ImGui::IsWindowHovered())
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Middle) && ImGui::IsWindowHovered())
         {
             ImVec2 viewportPos = ImGui::GetCursorScreenPos();
             viewport.state.viewportPos = viewportPos;

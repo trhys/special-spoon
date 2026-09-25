@@ -139,8 +139,8 @@ namespace Spoon
 
     void Application::Shutdown()
     {
-        m_EntityManager.Shutdown();
         m_Editor.Shutdown();
+        m_EntityManager.Shutdown();
 
         if (m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
 
@@ -166,6 +166,9 @@ namespace Spoon
         {
             // Clear action queue
             m_ActionQueue.Clear();
+
+            // reap component cache
+            m_EntityManager.ProcessReaper();
             
             // Event polling
             m_Window.handleEvents
@@ -239,17 +242,28 @@ namespace Spoon
                 m_Viewport.target.display();
 
                 ImGui::Image(m_Viewport.target);
+                const bool viewportHovered = ImGui::IsItemHovered();
+                const ImVec2 viewportImageMin = ImGui::GetItemRectMin();
+                const ImVec2 viewportImageMax = ImGui::GetItemRectMax();
+                const bool viewportConsumed = m_Editor.HandleViewportTools(
+                    m_Viewport,
+                    viewportHovered,
+                    viewportImageMin,
+                    viewportImageMax
+                );
 
                 // Raycast to grab entities on the viewport
-                if (ImGui::IsItemHovered() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !rayPickFlag)
+                if (!viewportConsumed &&
+                    viewportHovered &&
+                    sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
+                    !rayPickFlag)
                 {
                     rayPickFlag = true;
                     static UUID selectedID;
-                    ImVec2 viewportPos = ImGui::GetItemRectMin();
                     ImVec2 mousePos = ImGui::GetIO().MousePos;
                     sf::Vector2i relativeMouse(
-                        static_cast<int>(mousePos.x - viewportPos.x),
-                        static_cast<int>(mousePos.y - viewportPos.y)
+                        static_cast<int>(mousePos.x - viewportImageMin.x),
+                        static_cast<int>(mousePos.y - viewportImageMin.y)
                     );
                     sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
                     std::vector<UUID> entities = m_EntityManager.RayPick(worldMouse);

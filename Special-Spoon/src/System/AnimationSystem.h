@@ -12,6 +12,7 @@ namespace Spoon
         AnimationSystem() : ISystem::ISystem("Animation") {}
         ~AnimationSystem() {}
 
+        std::vector<std::string> RunAfter() const override { return { "Collision" }; };
         void Update(sf::Time tick, EntityManager& manager) override;
 
     private:

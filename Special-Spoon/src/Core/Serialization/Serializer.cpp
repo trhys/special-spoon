@@ -25,6 +25,9 @@ namespace Spoon
 
         for (auto& [id, name] : e_Manager.GetAllEntities())
         {
+            if (id.isRuntimeOnly)
+                continue;
+
             json ent;
             ent["uuid"] = id;
             ent["name"] = name;
@@ -43,7 +46,7 @@ namespace Spoon
         scenedata["Systems"] = json::array();
         for (auto& system : s_Manager.GetSystems())
         {
-            json sys;
+            json sys = system->Serialize();
             sys["Type"] = system->GetDisplayName();
             scenedata["Systems"].push_back(sys);
         }

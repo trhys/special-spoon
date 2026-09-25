@@ -13,6 +13,7 @@ namespace Spoon
         static std::unordered_map<std::string, bool> addedSystems;
         static bool editedSystems = false;
         static std::vector<std::string> existing;
+        static std::string selectedSystemID;
 
         if(init) // Inform the editor of systems that may get loaded by the scene manager elsewhere
         {
@@ -23,6 +24,11 @@ namespace Spoon
                 std::string id = system->GetDisplayName();
                 addedSystems[id] = true;
                 existing.push_back(id);
+            }
+            if (!selectedSystemID.empty() &&
+                std::find(existing.begin(), existing.end(), selectedSystemID) == existing.end())
+            {
+                selectedSystemID.clear();
             }
             init = false;
         }
@@ -45,12 +51,19 @@ namespace Spoon
                     if(addedSystems[id])
                         existing.push_back(id);
                     else
+                    {
                         existing.erase(std::remove(existing.begin(), existing.end(), id), existing.end());
+                        if (selectedSystemID == id)
+                        {
+                            selectedSystemID.clear();
+                        }
+                    }
                     editedSystems = true;
                 }
             }
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
+ 
         if (editedSystems)
         {
             // Remove systems that are unchecked
@@ -83,6 +96,13 @@ namespace Spoon
 
             editedSystems = false;
         }
+
+        if (!selectedSystemID.empty() &&
+            std::find(existing.begin(), existing.end(), selectedSystemID) == existing.end())
+        {
+            selectedSystemID.clear();
+        }
+
         if (ImGui::BeginChild("Active Systems", ImVec2(0, 200)))
         {
             if (ImGui::BeginListBox("##Systems"))
@@ -91,9 +111,10 @@ namespace Spoon
                 {
                     const std::string& id = existing[index];
                     ImGui::PushID(id.c_str());
-                    if (ImGui::Selectable(id.c_str()))
+                    const bool isSelected = selectedSystemID == id;
+                    if (ImGui::Selectable(id.c_str(), isSelected))
                     {
-                        // Placeholder - may put something here later
+                        selectedSystemID = id;
                     }
 
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -121,6 +142,34 @@ namespace Spoon
                     ImGui::PopID();
                 }
                 ImGui::EndListBox();
+            }
+            ImGui::EndChild();
+        }
+
+        ISystem* selectedSystem = nullptr;
+        auto& systems = manager.GetSystems();
+        if (!selectedSystemID.empty())
+        {
+            for (auto& system : systems)
+            {
+                if (system->GetDisplayName() == selectedSystemID)
+                {
+                    selectedSystem = system.get();
+                    break;
+                }
+            }
+            if (!selectedSystem)
+            {
+                selectedSystemID.clear();
+            }
+        }
+
+        if (selectedSystem)
+        {
+            ImGui::SeparatorText("System Inspector");
+            if (ImGui::BeginChild("##System Inspector"))
+            {
+                selectedSystem->OnReflect();
             }
             ImGui::EndChild();
         }

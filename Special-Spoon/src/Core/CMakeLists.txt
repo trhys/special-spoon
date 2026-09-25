@@ -6,9 +6,6 @@ target_sources(Special-Spoon
         ComponentArray.h
         Core.h
         EntryPoint.h
-        ProjectManager.h
-        ProjectManager.cpp
-        Renderer.h
         SceneManager.h
         SceneManager.cpp
 
@@ -16,12 +13,23 @@ target_sources(Special-Spoon
         EntityManager/EntityManager.inl
         EntityManager/EntityManager.cpp
 
+        Project/Config.h
+        Project/Policies.h
+        Project/Policies.cpp
+        Project/ProjectManager.h
+        Project/ProjectManager.cpp
+
         Registers/ActionRegistry.h
         Registers/StateRegistry.h
         Registers/Component/ComponentRegistry.h
         Registers/Component/ComponentRegistry.cpp
         Registers/System/SystemRegistry.h
         Registers/System/SystemRegistry.cpp
+
+        Renderer/Renderer.h
+        Renderer/Renderer.cpp
+        Renderer/Renderable.h
+        Renderer/Gizmo.h
         
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp

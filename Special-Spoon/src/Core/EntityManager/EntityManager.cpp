@@ -12,6 +12,7 @@ namespace Spoon
         LoadArray<SpriteComp>(SpriteComp::Name);
         LoadArray<TextComp>(TextComp::Name);
         LoadArray<ColorComp>(ColorComp::Name);
+        LoadArray<ColliderComp>(ColliderComp::Name);
         LoadArray<PhysicsComp>(PhysicsComp::Name);
         LoadArray<BlinkComp>(BlinkComp::Name);
         LoadArray<FadeComp>(FadeComp::Name);
@@ -19,6 +20,7 @@ namespace Spoon
         LoadArray<StateActionComp>(StateActionComp::Name);
         LoadArray<RenderLayer>(RenderLayer::Name);
         LoadArray<MovementComp>(MovementComp::Name);
+        LoadArray<TileMapComp>(TileMapComp::Name);
     }
 
     // ===========================================
@@ -34,7 +36,7 @@ namespace Spoon
 
     UUID EntityManager::GenerateID()
     {
-        if(!m_RecycledIds.empty())
+        if(!m_RecycledIds.empty() && m_CanRecycle)
         {
             UUID id = m_RecycledIds.back();
             m_RecycledIds.pop_back();
@@ -56,13 +58,39 @@ namespace Spoon
 
     void EntityManager::KillEntity(UUID id)
     {
+        // verify entity is alive
+        if (m_Entities.find(id) == m_Entities.end())
+            return;
+
+        // set this flag to prevent recycling until the reaper is done
+        m_CanRecycle = false;
+
         m_Entities.erase(id);
         m_RecycledIds.push_back(id);
+        const auto& components = GetAllComponentsOfEntity(id);
+        for (auto* comp : components)
+        {
+            // recursively kill child components
+            comp->OnKill(this);
+            KillComponent(comp->GetType(), id);
+        }
     }
 
     void EntityManager::ClearEntities()
     {
         m_Entities.clear();
+        m_RecycledIds.clear();
+        m_IdCounter = 0;
+        ClearArrays();
+    }
+
+    void EntityManager::MarkEntityAsRuntimeOnly(UUID id)
+    {
+        auto found = m_Entities.find(id);
+        if (found != m_Entities.end())
+        {
+            id.isRuntimeOnly = true;
+        }
     }
 
     // ===========================================
@@ -94,6 +122,22 @@ namespace Spoon
             }
         }
         return allComps;
+    }
+
+    // lifecycle management for orphaned components
+    void EntityManager::ReapEntity(UUID id)
+    {
+        m_ComponentReaper.AddId(id);
+    }
+
+    void EntityManager::ProcessReaper()
+    {
+        m_ComponentReaper.ReapComponents(this);
+
+        // now it should be safe to recycle IDs again
+        // as we won't accidentally kill entities made between
+        // the population and reaping phase
+        m_CanRecycle = true;
     }
     
     // ===========================================

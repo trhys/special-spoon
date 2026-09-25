@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Components/ColliderComp.h"
 #include "Components/PhysicsComp.h"
 #include "Components/TransformComp.h"
 #include "Components/InputComp.h"
@@ -15,3 +16,5 @@
 #include "Components/Animation/AnimationComp.h"
 #include "Components/Animation/BlinkComp.h"
 #include "Components/Animation/FadeComp.h"
+
+#include "Components/World/TileMapComp.h"

@@ -2,11 +2,12 @@
 
 #include "ECS/Components/Component.h"
 #include "Core/ResourceManager/ResourceManager.h"
+#include "Core/Renderer/Renderable.h"
 #include "SFML/Graphics/Sprite.hpp"
 
 namespace Spoon
 {
-    struct SpriteComp : public ComponentBase<SpriteComp>
+    struct SpriteComp : public ComponentBase<SpriteComp>, public IRenderable
     {
         SpriteComp(sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>("empty"), const sf::IntRect& rect = sf::IntRect(),
             bool centered = false, const std::string& textureID = "empty")
@@ -25,7 +26,7 @@ namespace Spoon
         bool isCentered;
 
         // Core getters
-        sf::Vector2f GetPosition() { return m_Sprite.getPosition(); }
+        sf::Vector2f GetPosition() override { return m_Sprite.getPosition(); }
         sf::FloatRect GetBoundingBox() { return m_Sprite.getGlobalBounds(); }
 
         // Core setters
@@ -39,6 +40,13 @@ namespace Spoon
 
         // Editor methods
         void OnReflect() override;
+
+		// renderable interface
+		void PreRender(EntityManager& manager, UUID id) override;
+        void Render(sf::RenderTarget& target, sf::RenderStates states) override
+        {
+            target.draw(m_Sprite, states);
+		}
     };
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteComp, m_TextureID, isCentered, m_TextureRect)
