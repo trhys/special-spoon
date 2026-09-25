@@ -36,7 +36,7 @@ namespace Spoon
 
     UUID EntityManager::GenerateID()
     {
-        if(!m_RecycledIds.empty())
+        if(!m_RecycledIds.empty() && m_CanRecycle)
         {
             UUID id = m_RecycledIds.back();
             m_RecycledIds.pop_back();
