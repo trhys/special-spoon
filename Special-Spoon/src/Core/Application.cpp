@@ -228,6 +228,7 @@ namespace Spoon
                 m_Viewport.target.clear();
 
                 // build overlay
+                m_Renderer.ClearOverlay();
                 m_Editor.BuildOverlay();
 
                 if (m_Editor.GetActiveScene() && !m_EntityManager.GetAllEntities().empty())

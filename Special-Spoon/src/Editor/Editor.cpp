@@ -258,6 +258,9 @@ namespace Spoon
 
     void Editor::BuildOverlay()
     {
+        if (!m_ActiveScene)
+            return;
+
         m_Overlay.PushOverlay();
     }
 }

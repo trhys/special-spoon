@@ -15,9 +15,6 @@ namespace Spoon
     class Overlay
     {
     public:
-        Overlay() {}
-        ~Overlay() {}
-
         void PushOverlay();
 
         // ray picked entity overlay
