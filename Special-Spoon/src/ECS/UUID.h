@@ -19,6 +19,10 @@ namespace Spoon
         // Serialization helpers
         std::string ToString() const { return std::to_string(ID); }
         static std::uint64_t ToID(std::string str) { return std::stoull(str); }
+
+        // helper flag to differentiate serialized entities 
+        // from ones generated at runtime only
+        bool isRuntimeOnly = false;
     };
 }
 

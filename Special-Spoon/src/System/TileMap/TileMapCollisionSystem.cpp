@@ -125,6 +125,7 @@ namespace Spoon
             manager.MakeComponent<ColliderComp>(id, ColliderComp::Name, collider.body.size);
             manager.MakeComponent<TransformComp>(id, TransformComp::Name, collider.body.position);
             manager.MakeComponent<PhysicsComp>(id, PhysicsComp::Name, BodyType::Static);
+            manager.MarkEntityAsRuntimeOnly(id);
         }
     }
 

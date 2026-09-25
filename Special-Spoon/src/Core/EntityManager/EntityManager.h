@@ -31,6 +31,8 @@ namespace Spoon
 
         const std::unordered_map<UUID, std::string>& GetAllEntities() { return m_Entities; }
     
+        void MarkEntityAsRuntimeOnly(UUID id);
+        
     public:
         // ===========================================
         // Component management methods

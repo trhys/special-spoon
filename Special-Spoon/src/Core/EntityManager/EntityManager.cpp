@@ -84,6 +84,15 @@ namespace Spoon
         ClearArrays();
     }
 
+    void EntityManager::MarkEntityAsRuntimeOnly(UUID id)
+    {
+        auto found = m_Entities.find(id);
+        if (found != m_Entities.end())
+        {
+            id.isRuntimeOnly = true;
+        }
+    }
+
     // ===========================================
     // Component Management Methods
     // ===========================================

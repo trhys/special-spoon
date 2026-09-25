@@ -25,6 +25,9 @@ namespace Spoon
 
         for (auto& [id, name] : e_Manager.GetAllEntities())
         {
+            if (id.isRuntimeOnly)
+                continue;
+
             json ent;
             ent["uuid"] = id;
             ent["name"] = name;
