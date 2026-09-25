@@ -12,6 +12,8 @@
 
 namespace Spoon
 {
+    class EntityManager;
+    
     class Component
     {
     public:
@@ -25,6 +27,8 @@ namespace Spoon
 
         virtual bool ActiveGizmo() = 0;
         virtual void ToggleGizmo() = 0;
+
+        virtual void OnKill(EntityManager* manager) {};
     };
 
     template<typename COMP>

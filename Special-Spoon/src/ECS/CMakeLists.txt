@@ -26,6 +26,8 @@ target_sources(Special-Spoon
         Components/World/TileMapComp.h
         Components/World/TileMapComp.cpp
         
+        ComponentReaper.h
+        ComponentReaper.cpp
         ECS.h
         Entity.h
         Entity.inl

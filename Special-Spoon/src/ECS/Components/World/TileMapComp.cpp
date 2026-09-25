@@ -1,8 +1,17 @@
 #include "ECS/Components/World/TileMapComp.h"
+#include "Core/EntityManager/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
 #include "Utils/Macros.h"
 
 namespace Spoon {
+
+	void TileMapComp::OnKill(EntityManager* manager)
+	{
+		for (UUID id : m_ColliderEntities)
+		{
+			manager->ReapEntity(id);
+		}
+	}
 
 	void TileMapComp::ClampInput()
 	{

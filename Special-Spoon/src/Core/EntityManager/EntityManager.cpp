@@ -63,6 +63,7 @@ namespace Spoon
         const auto& components = GetAllComponentsOfEntity(id);
         for (auto* comp : components)
         {
+            comp->OnKill(this);
             KillComponent(comp->GetType(), id);
         }
     }
@@ -104,6 +105,17 @@ namespace Spoon
             }
         }
         return allComps;
+    }
+
+    // lifecycle management for orphaned components
+    void EntityManager::ReapEntity(UUID id)
+    {
+        m_ComponentReaper.AddId(id);
+    }
+
+    void EntityManager::ProcessReaper()
+    {
+        m_ComponentReaper.ReapComponents(this);
     }
     
     // ===========================================

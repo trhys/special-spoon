@@ -3,6 +3,7 @@
 #include "Core/Core.h"
 #include "Core/ComponentArray.h"
 
+#include "ECS/ComponentReaper.h"
 #include "ECS/ECS.h"
 #include "ECS/Entity.h"
 
@@ -72,6 +73,12 @@ namespace Spoon
         // Get all component creators
         const std::unordered_map<std::string, std::function<void(UUID)>>& GetCreators() { return m_CompCreators; }
 
+        // send an entity to the component reaper for cleanup
+        void ReapEntity(UUID id);
+
+        // process all entities queued for cleanup
+        void ProcessReaper();
+
     public:
         // ===========================================
         // Misc Methods
@@ -94,6 +101,9 @@ namespace Spoon
         std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays; // Maps type name to array object
         std::unordered_map<std::string, std::function<void(UUID)>> m_CompCreators;  // Stores methods for adding new components
 
+        // a lifecycle helper for dealing with child components
+        // and tricky component dependencies
+        ComponentReaper m_ComponentReaper = ComponentReaper();
     private:
         // Load default component arrays at startup
         void LoadDefaultArrays();

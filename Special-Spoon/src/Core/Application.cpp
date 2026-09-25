@@ -166,6 +166,9 @@ namespace Spoon
         {
             // Clear action queue
             m_ActionQueue.Clear();
+
+            // reap component cache
+            m_EntityManager.ProcessReaper();
             
             // Event polling
             m_Window.handleEvents

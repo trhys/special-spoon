@@ -45,6 +45,8 @@ namespace Spoon {
           static constexpr const char* Name = "TileMap";
 
           void OnReflect() override;
+          void OnKill(EntityManager* manager) override;
+
           void ClampInput();
           bool ValidateBounds(int x, int y, int layerIndex) const;
 
