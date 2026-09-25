@@ -39,6 +39,8 @@ namespace Spoon
             const ImVec2& imageMax
         );
 
+        void BuildOverlay();
+
         void SetCurrentProject(Project* project) { m_CurrentProject = project; }
         void SetActiveScene(SceneData* scene);
         void SetWorkingDir(AssetNode* dir) { workingDir = dir; }

@@ -134,6 +134,7 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Overlay"))
             {
+                ImGui::Checkbox("Show Entity Selector", &m_Overlay.selectedEntityOverlay);
                 ImGui::Checkbox("Show Colliders", &m_Overlay.colliderOverlay);
                 ImGui::EndMenu();
             }
@@ -205,8 +206,6 @@ namespace Spoon
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
         if (m_TileMapTool.IsOpen()) m_TileMapTool.Update(tick);
-
-        m_Overlay.PushOverlay();
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)
@@ -255,5 +254,10 @@ namespace Spoon
         m_AnimationTool.Shutdown();
         m_TextureRectTool.Shutdown();
         m_TileMapTool.Close();
+    }
+
+    void Editor::BuildOverlay()
+    {
+        m_Overlay.PushOverlay();
     }
 }

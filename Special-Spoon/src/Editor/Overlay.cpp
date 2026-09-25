@@ -6,6 +6,11 @@ namespace Spoon
 {
     void Overlay::PushOverlay()
     {
+        if (selectedEntityOverlay)
+        {
+            Application::Get().GetRenderer().PushOverlay(selectedEntityOverlayCmd);
+        }
+
         if (colliderOverlay)
         {
             Application::Get().GetRenderer().PushOverlay(colliderOverlayCmd);
@@ -16,7 +21,6 @@ namespace Spoon
             .draw = [](sf::RenderTarget& target, sf::RenderStates states) 
             {
                 auto& manager = Application::Get().GetEntityManager();
-                auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
                 auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
                 for (auto& id : manager.GetAllEntitiesWithComponent<ColliderComp>(ColliderComp::Name))
                 {
@@ -29,14 +33,22 @@ namespace Spoon
 
                     if (collider.GetType() == ColliderType::AABB)
                     {
-                    sf::RectangleShape rect(bounds.size);
-                    rect.setPosition(bounds.position);
-                    rect.setFillColor(sf::Color::Transparent);
-                    rect.setOutlineColor(sf::Color::Yellow);
-                    rect.setOutlineThickness(10.0f);
-                    target.draw(rect, states);
+                        sf::RectangleShape rect(bounds.size);
+                        rect.setPosition(bounds.position);
+                        rect.setFillColor(sf::Color::Transparent);
+                        rect.setOutlineColor(sf::Color::Yellow);
+                        rect.setOutlineThickness(10.0f);
+                        target.draw(rect, states);
                     }
                 }
             } 
+        };
+
+    OverlayCmd Overlay::selectedEntityOverlayCmd = OverlayCmd{
+            .draw = [](sf::RenderTarget& target, sf::RenderStates states)
+            {
+                auto& editor = Application::Get().GetEditor();
+                target.draw(editor.m_SelectionRect, states);
+            }
         };
 }

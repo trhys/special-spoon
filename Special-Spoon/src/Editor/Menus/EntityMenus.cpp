@@ -53,16 +53,6 @@ namespace Spoon
         else
             editor->m_SelectionRect.setSize(sf::Vector2f(100.f, 100.f)); // Default size
     }
-
-    void PushSelectedEntity()
-    {
-        Application::Get().GetRenderer().PushOverlay(OverlayCmd{ 
-            .draw = [](sf::RenderTarget& target, sf::RenderStates states)
-            {
-                target.draw(Application::Get().GetEditor().m_SelectionRect, states);
-            }
-        });
-    }
     
     void ViewEntitiesMenu(EntityManager& e_Manager)
     {
@@ -231,9 +221,6 @@ namespace Spoon
                 ImGui::EndChild();
             }
         }
-
-        if (!entities.empty() && init)
-            PushSelectedEntity();
     }
 
     void AddComponentMenu(UUID& id, EntityManager& manager)

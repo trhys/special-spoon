@@ -1,8 +1,9 @@
 #pragma once
 
-#include <functional>
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
+
+#include <functional>
 
 namespace Spoon
 {
@@ -18,6 +19,10 @@ namespace Spoon
         ~Overlay() {}
 
         void PushOverlay();
+
+        // ray picked entity overlay
+        bool selectedEntityOverlay = false;
+        static OverlayCmd selectedEntityOverlayCmd;
 
         // displays an outline on all colliders in the scene
         bool colliderOverlay = false;
