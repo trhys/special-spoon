@@ -42,4 +42,11 @@ note: Previous changes will not be in this log. This record will keep all change
 ### Editor
 - Improved tile map tool behavior for painting, erasing, layer management, and atlas-based placement.
 
+### Serialization
+- Added support for marking entities as runtime-only, which prevents them from being serialized.
+
+### Misc
+- Hardened entity generation and destruction to prevent invalid states and ensure proper recycling of entity IDs.
+- Implemented buffered component reaping to safely handle orphaned components.
+
 ---
