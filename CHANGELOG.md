@@ -35,7 +35,7 @@ note: Previous changes will not be in this log. This record will keep all change
 - Added a robust collision system for ECS-driven physics using continuous AABB sweep resolution and broadphase pruning.
 - Added runtime body construction and contact processing for static, dynamic, and kinematic bodies.
 - Added discrete correction passes, persistent contact handling, restitution, friction, and motion syncing between physics and movement state.
-- Added quadtree broadphase support and TOI-based collision resolution for AABB and circle collision primitives.
+- Added quadtree broadphase support, TOI-based AABB collision resolution, and discrete circle collision handling.
 - Integrated collision response with movement and transform updates so collider interactions resolve cleanly against entity motion.
 - Added support for layer-driven tile-map collision generation by baking solid tile regions into static collider bodies.
 
