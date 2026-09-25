@@ -5,10 +5,12 @@ namespace Spoon
 {
     void ComponentReaper::ReapComponents(EntityManager* manager)
     {
-        for (UUID id : m_IdCache)
+        std::vector<UUID> idsToReap = m_IdCache;
+        m_IdCache.clear();
+
+        for (UUID id : idsToReap)
         {
             manager->KillEntity(id);
         }
-        m_IdCache.clear();
     }
 }
