@@ -29,6 +29,17 @@ namespace Spoon
         return m_Play;
     }
 
+    void Editor::ResetScene(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
+    {
+        if (!m_ActiveScene)
+            return;
+
+        m_Play = false;
+        SetActiveScene(s_Manager.LoadScene(
+            m_ActiveScene->ID, e_Manager, sys_Manager)
+        );
+    }
+
     void Editor::Run(sf::Time tick, EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
     {
         if (!workingDir)
@@ -123,14 +134,21 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Overlay"))
             {
-                ImGui::Checkbox("Show Colliders", &EditorSettings::Get().colliderOverlay);
+                ImGui::Checkbox("Show Colliders", &m_Overlay.colliderOverlay);
                 ImGui::EndMenu();
             }
 
+            // play-bar controls
             if (ImGui::Button("Play")) 
                 m_Play = true;
+
             if (ImGui::Button("Stop"))
                 Stop();
+
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor(255, 0, 0, 255));
+            if (ImGui::Button("Reset"))
+                ResetScene(e_Manager, s_Manager, sys_Manager);
+            ImGui::PopStyleColor();
 
             ImGui::EndMainMenuBar();
         }
@@ -187,6 +205,8 @@ namespace Spoon
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
         if (m_TileMapTool.IsOpen()) m_TileMapTool.Update(tick);
+
+        m_Overlay.PushOverlay();
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)

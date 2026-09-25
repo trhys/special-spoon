@@ -103,11 +103,12 @@ namespace Spoon
             
             // Close the dialog
             ImGuiFileDialog::Instance()->Close();
-            if (m_CurrentProject)
-            {
-                editor->SetCurrentProject(m_CurrentProject.get());
-                editor->OpenProject = false;
-            }
+        }
+        
+        if (m_CurrentProject)
+        {
+            editor->SetCurrentProject(m_CurrentProject.get());
+            editor->OpenProject = false;
         }
     }
 

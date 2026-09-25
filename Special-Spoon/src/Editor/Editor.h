@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Overlay.h"
+
 #include "Tools/AnimationTool.h"
 #include "Tools/TileMapTool.h"
 #include "Tools/TextureRectTool.h"
@@ -21,8 +23,11 @@ namespace Spoon
     class Editor
     {
     public:
+        // Scene controls
         void Stop();
         bool Play();
+        void ResetScene(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager);
+
         void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);       
         void EditTextureRect(SpriteComp& comp);
         void EditTileMap(UUID id);
@@ -70,6 +75,7 @@ namespace Spoon
         SceneData* m_ActiveScene = nullptr;
         bool m_Play = false;
 
+        Overlay         m_Overlay;
         TextureRectTool m_TextureRectTool;
         AnimationTool   m_AnimationTool;
         TileMapTool     m_TileMapTool;

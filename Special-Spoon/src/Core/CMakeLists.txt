@@ -29,7 +29,6 @@ target_sources(Special-Spoon
         Renderer/Renderer.h
         Renderer/Renderer.cpp
         Renderer/Renderable.h
-        Renderer/Gizmo.h
         
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp

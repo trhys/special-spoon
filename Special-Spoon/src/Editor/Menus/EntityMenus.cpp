@@ -1,4 +1,5 @@
 #include "EntityMenus.h"
+#include "Editor/Overlay.h"
 #include "Editor/Utils/EditorSettings.h"
 #include "Editor/Utils/Helpmarker.h"
 #include "Editor/Blueprints/Blueprint.h"
@@ -55,12 +56,12 @@ namespace Spoon
 
     void PushSelectedEntity()
     {
-        auto& app = Application::Get();
-        auto& editor = app.GetEditor();
-        app.GetRenderer().AddActiveGizmo(GizmoCommand{std::function<void(sf::RenderTarget& target, sf::RenderStates states)>([rect = editor.m_SelectionRect](sf::RenderTarget& target, sf::RenderStates states)
-        {
-            target.draw(rect, states);
-        })});
+        Application::Get().GetRenderer().PushOverlay(OverlayCmd{ 
+            .draw = [](sf::RenderTarget& target, sf::RenderStates states)
+            {
+                target.draw(Application::Get().GetEditor().m_SelectionRect, states);
+            }
+        });
     }
     
     void ViewEntitiesMenu(EntityManager& e_Manager)
