@@ -66,7 +66,7 @@ namespace Spoon
                 if (ImGui::MenuItem("Open Project")) OpenProject = true;
                 if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) SaveProject = true;
                 ImGui::Separator();
-                if (ImGui::MenuItem("Project Properties")) ProjectProperties = true;
+                if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) ProjectProperties = true;
                 if (ImGui::MenuItem("Exit")) Application::Get().Close();
                 ImGui::EndMenu();
             }

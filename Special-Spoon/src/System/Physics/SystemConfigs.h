@@ -17,6 +17,6 @@ namespace Spoon {
 
   struct CollisionSystemConfig
   {
-    sf::Vector2f bounds = {0.0f, 0.0f};
+    sf::Vector2f bounds = {4000.0f, 4000.0f};
   };
 }

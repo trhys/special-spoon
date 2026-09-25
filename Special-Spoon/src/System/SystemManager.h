@@ -91,7 +91,12 @@ namespace Spoon
 
         void InitializeStateSystem(){ m_StateSystem = std::make_unique<StateSystem>(); }
         StateSystem* GetStateSystem() { return m_StateSystem.get(); }
-        std::vector<std::unique_ptr<ISystem>>& GetSystems() { return m_Systems; }
+        
+        std::vector<std::unique_ptr<ISystem>>& GetSystems()
+        { 
+          m_SystemOrderDirty = true;
+          return m_Systems; 
+        }
 
     private:
         // does topological sorting of systems based on their dependencies
