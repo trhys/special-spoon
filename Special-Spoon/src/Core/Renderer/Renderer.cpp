@@ -48,12 +48,12 @@ namespace Spoon {
         }
 
         // Editor gizmos
-        /*for (auto& gizmo : m_Gizmos)*/
-        /*{*/
-        /*    gizmo.draw(target, states);*/
-        /*    m_DrawCalls++;*/
-        /*}*/
-        /*ClearActiveGizmos();*/
+        for (auto& gizmo : m_Gizmos)
+        {
+            gizmo.draw(target, states);
+            m_DrawCalls++;
+        }
+        ClearActiveGizmos();
 
         // temporary editor overlay
         // todo : move to better place

@@ -334,6 +334,7 @@ namespace Spoon
                 static_cast<std::ptrdiff_t>(m_ActiveLayerIndex)
             );
             tileMap.BuildMap();
+            tileMap.m_RebuildCollision = true;
             EnsureValidState(tileMap);
         }
         ImGui::EndDisabled();
