@@ -96,6 +96,7 @@ namespace Spoon
     private:
         std::uint64_t m_IdCounter = 0;
         std::vector<UUID> m_RecycledIds;
+        bool m_CanRecycle = true;
 
         std::unordered_map<UUID, std::string> m_Entities;                           // Maps UUID to a debug name
         std::unordered_map<std::string, std::unique_ptr<IComponentArray>> m_Arrays; // Maps type name to array object

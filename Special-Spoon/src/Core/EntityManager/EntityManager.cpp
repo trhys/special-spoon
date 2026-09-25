@@ -58,11 +58,19 @@ namespace Spoon
 
     void EntityManager::KillEntity(UUID id)
     {
+        // verify entity is alive
+        if (m_Entities.find(id) == m_Entities.end())
+            return;
+
+        // set this flag to prevent recycling until the reaper is done
+        m_CanRecycle = false;
+
         m_Entities.erase(id);
         m_RecycledIds.push_back(id);
         const auto& components = GetAllComponentsOfEntity(id);
         for (auto* comp : components)
         {
+            // recursively kill child components
             comp->OnKill(this);
             KillComponent(comp->GetType(), id);
         }
@@ -116,6 +124,11 @@ namespace Spoon
     void EntityManager::ProcessReaper()
     {
         m_ComponentReaper.ReapComponents(this);
+
+        // now it should be safe to recycle IDs again
+        // as we won't accidentally kill entities made between
+        // the population and reaping phase
+        m_CanRecycle = true;
     }
     
     // ===========================================
