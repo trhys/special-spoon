@@ -1,4 +1,5 @@
 #include "EntityMenus.h"
+#include "Editor/Overlay.h"
 #include "Editor/Utils/EditorSettings.h"
 #include "Editor/Utils/Helpmarker.h"
 #include "Editor/Blueprints/Blueprint.h"
@@ -15,7 +16,6 @@ namespace Spoon
     static bool AddingComponent = false;
     static UUID selectedID = 0;
     static bool changedSelection = false;
-    static bool init = false;
 
     // Sets the currently selected entity in the editor
     // and sets the selection rectangle to size of the
@@ -24,14 +24,6 @@ namespace Spoon
     {
         selectedID = id;
         changedSelection = true;
-
-        if (!init)
-        {
-            editor->m_SelectionRect.setFillColor(sf::Color::Transparent);
-            editor->m_SelectionRect.setOutlineColor(sf::Color::Green);
-            editor->m_SelectionRect.setOutlineThickness(5.f);
-            init = true;
-        }
 
         auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
         auto& textArray = manager.GetArray<TextComp>(TextComp::Name);
@@ -51,16 +43,6 @@ namespace Spoon
         }
         else
             editor->m_SelectionRect.setSize(sf::Vector2f(100.f, 100.f)); // Default size
-    }
-
-    void PushSelectedEntity()
-    {
-        auto& app = Application::Get();
-        auto& editor = app.GetEditor();
-        app.GetRenderer().AddActiveGizmo(GizmoCommand{std::function<void(sf::RenderTarget& target, sf::RenderStates states)>([rect = editor.m_SelectionRect](sf::RenderTarget& target, sf::RenderStates states)
-        {
-            target.draw(rect, states);
-        })});
     }
     
     void ViewEntitiesMenu(EntityManager& e_Manager)
@@ -230,9 +212,6 @@ namespace Spoon
                 ImGui::EndChild();
             }
         }
-
-        if (!entities.empty() && init)
-            PushSelectedEntity();
     }
 
     void AddComponentMenu(UUID& id, EntityManager& manager)

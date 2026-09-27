@@ -2,6 +2,8 @@ target_sources(Special-Spoon
     PRIVATE
         Editor.h
         Editor.cpp
+        Overlay.h
+        Overlay.cpp
 
         Blueprints/Blueprint.h
 

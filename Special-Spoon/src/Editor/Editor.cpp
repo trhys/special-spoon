@@ -19,6 +19,14 @@
 
 namespace Spoon
 {
+
+    Editor::Editor()
+    {
+        m_SelectionRect.setFillColor(sf::Color::Transparent);
+        m_SelectionRect.setOutlineColor(sf::Color::Green);
+        m_SelectionRect.setOutlineThickness(2.0f);
+    }
+
     void Editor::Stop() 
     {
         m_Play = false;
@@ -27,6 +35,17 @@ namespace Spoon
     bool Editor::Play()
     {
         return m_Play;
+    }
+
+    void Editor::ResetScene(EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
+    {
+        if (!m_ActiveScene)
+            return;
+
+        m_Play = false;
+        SetActiveScene(s_Manager.LoadScene(
+            m_ActiveScene->ID, e_Manager, sys_Manager)
+        );
     }
 
     void Editor::Run(sf::Time tick, EntityManager& e_Manager, SceneManager& s_Manager, SystemManager& sys_Manager)
@@ -123,14 +142,22 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Overlay"))
             {
-                ImGui::Checkbox("Show Colliders", &EditorSettings::Get().colliderOverlay);
+                ImGui::Checkbox("Show Entity Selector", &m_Overlay.selectedEntityOverlay);
+                ImGui::Checkbox("Show Colliders", &m_Overlay.colliderOverlay);
                 ImGui::EndMenu();
             }
 
+            // play-bar controls
             if (ImGui::Button("Play")) 
                 m_Play = true;
+
             if (ImGui::Button("Stop"))
                 Stop();
+
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor(255, 0, 0, 255));
+            if (ImGui::Button("Reset"))
+                ResetScene(e_Manager, s_Manager, sys_Manager);
+            ImGui::PopStyleColor();
 
             ImGui::EndMainMenuBar();
         }
@@ -235,5 +262,13 @@ namespace Spoon
         m_AnimationTool.Shutdown();
         m_TextureRectTool.Shutdown();
         m_TileMapTool.Close();
+    }
+
+    void Editor::BuildOverlay()
+    {
+        if (!m_ActiveScene)
+            return;
+
+        m_Overlay.PushOverlay();
     }
 }

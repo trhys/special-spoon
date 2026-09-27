@@ -1,6 +1,5 @@
 #include "TransformComp.h"
 #include "Core/Application.h"
-#include "Core/Renderer/Gizmo.h"
 
 namespace Spoon
 {
@@ -18,20 +17,6 @@ namespace Spoon
             ImGui::Text("X: %s", std::to_string(m_Transform.getPosition().x).c_str());
             ImGui::Text("Y: %s", std::to_string(m_Transform.getPosition().y).c_str());
             ImGui::EndTooltip();
-        }
-
-        if (ImGui::Button(ActiveGizmo() ? "Confirm" : "Edit"))
-        {
-            rect.setOutlineThickness(1.0);
-            rect.setOutlineColor(sf::Color::Red);
-            rect.setFillColor(sf::Color(255, 0, 0, 100));
-            rect.setPosition(m_Transform.getPosition());
-            rect.setSize({ 16.0, 16.0 });
-            ToggleGizmo();
-        }
-        if (ActiveGizmo())
-        {
-            MoveTransform();
         }
 
         float tranScale[2] = { m_Transform.getScale().x, m_Transform.getScale().y };
@@ -80,11 +65,5 @@ namespace Spoon
             }
         }
         else dragging = false;
-        Application::Get().GetRenderer().AddActiveGizmo(GizmoCommand{
-            [rect = this->rect](sf::RenderTarget& target, sf::RenderStates states)
-            {
-                target.draw(rect, states);
-            }
-        });
     }
 }

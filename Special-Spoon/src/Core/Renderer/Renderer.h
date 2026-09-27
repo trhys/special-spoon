@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Renderable.h"
-#include "Gizmo.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "Core/Project/Policies.h"
 #include "ECS/ECS.h"
+#include "Editor/Overlay.h"
+
 #include "SFML/Graphics.hpp"
 
 namespace Spoon
@@ -22,14 +23,16 @@ namespace Spoon
         int GetDrawCalls() const { return m_DrawCalls; }
         float GetDrawTime() const { return m_DrawTime; }
 
-        // Editor gizmos
-        void AddActiveGizmo(GizmoCommand cmd) { m_Gizmos.push_back(std::move(cmd)); }
-        void ClearActiveGizmos() { m_Gizmos.clear(); }
+        // Editor overlay
+        void PushOverlay(OverlayCmd cmd) { m_OverlayCommands.push_back(std::move(cmd)); }
+        void ClearOverlay() { m_OverlayCommands.clear(); }
 
     private:
         std::vector<Renderable> m_Renderables;
-        std::vector<GizmoCommand> m_Gizmos;
+        std::vector<OverlayCmd> m_OverlayCommands;
+        
         ActiveSortPolicy activeSortPolicy = ActiveSortPolicy::Isometric;
+
         int m_DrawCalls = 0;
         float m_DrawTime = 0.f;
     };
