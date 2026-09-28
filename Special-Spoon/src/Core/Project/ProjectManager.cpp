@@ -34,6 +34,7 @@ namespace Spoon
                     
                 Project newProject;
                 newProject.ID = std::string(newProjectBuf);
+                newProject.blueprints = GetDefaultBlueprints();
 
                 // Create dirs
 				std::filesystem::create_directories("projects/");
@@ -70,7 +71,7 @@ namespace Spoon
                 projectJson["Version"] = newProject.version;
                 projectJson["RecentFiles"] = newProject.recentFiles;
 				projectJson["Config"] = ProjectConfig{};
-                projectJson["Blueprints"] = GetBlueprints();
+                projectJson["Blueprints"] = newProject.blueprints; 
                 newProj << projectJson.dump(4);
                 newProj.close();
 
@@ -274,6 +275,15 @@ namespace Spoon
 
         if (m_Saving)
         {
+            json projectJson;
+            projectJson["ID"] = m_CurrentProject->ID;
+            projectJson["DataPath"] = m_CurrentProject->dataPath.string();
+            projectJson["AssetsPath"] = m_CurrentProject->assetsPath.string();
+            projectJson["Version"] = m_CurrentProject->version;
+			projectJson["Config"] = m_CurrentProject->config;
+            projectJson["Blueprints"] = m_CurrentProject->blueprints;
+
+            const std::string serializedProject = projectJson.dump(4);
             std::ofstream fileStream(m_CurrentProject->filePath, std::ios::out | std::ios::trunc);
             if (!fileStream.is_open())
             {
@@ -292,16 +302,7 @@ namespace Spoon
                 return;
             }
 
-            // Dump data to JSON
-            json projectJson;
-            projectJson["ID"] = m_CurrentProject->ID;
-            projectJson["DataPath"] = m_CurrentProject->dataPath.string();
-            projectJson["AssetsPath"] = m_CurrentProject->assetsPath.string();
-            projectJson["Version"] = m_CurrentProject->version;
-			projectJson["Config"] = m_CurrentProject->config;
-            projectJson["Blueprints"] = m_CurrentProject->blueprints;
-
-            fileStream << projectJson.dump(4);
+            fileStream << serializedProject;
             fileStream.close();
 
             // Reset flags
