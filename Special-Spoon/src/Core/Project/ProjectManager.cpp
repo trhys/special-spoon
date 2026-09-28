@@ -3,6 +3,7 @@
 #include "Core/Serialization/Serializer.h"
 #include "Editor/Editor.h"
 #include "Editor/Utils/EditorSettings.h"
+#include "Editor/Blueprints/Blueprint.h"
 
 #include "nlohmann/json.hpp"
 
@@ -69,6 +70,7 @@ namespace Spoon
                 projectJson["Version"] = newProject.version;
                 projectJson["RecentFiles"] = newProject.recentFiles;
 				projectJson["Config"] = ProjectConfig{};
+                projectJson["Blueprints"] = GetBlueprints();
                 newProj << projectJson.dump(4);
                 newProj.close();
 
@@ -220,6 +222,7 @@ namespace Spoon
             newProject.version = projectJson.value("Version", "1.0");
             newProject.recentFiles = projectJson.value("RecentFiles", std::vector<std::filesystem::path>{});
 			newProject.config = projectJson.value("Config", ProjectConfig{});
+            newProject.blueprints = projectJson.value("Blueprints", GetDefaultBlueprints());
 
             Application::Get().GetSceneManager().LoadManifest(newProject.dataPath.string());
             ResourceManager::Get().ScanAssets(newProject.assetsPath);
@@ -296,6 +299,7 @@ namespace Spoon
             projectJson["AssetsPath"] = m_CurrentProject->assetsPath.string();
             projectJson["Version"] = m_CurrentProject->version;
 			projectJson["Config"] = m_CurrentProject->config;
+            projectJson["Blueprints"] = m_CurrentProject->blueprints;
 
             fileStream << projectJson.dump(4);
             fileStream.close();

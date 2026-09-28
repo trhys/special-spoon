@@ -6,10 +6,13 @@
 
 #include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "Core/Project/ProjectManager.h"
 #include "ECS/Components/World/TileMapComp.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
+
+#include <cstdio>
 
 namespace Spoon
 {
@@ -82,12 +85,12 @@ namespace Spoon
         
         // Static variables for new entity popup +
         // Helper lambda to clear and close popup
-        static const Blueprint* selectedBP = nullptr;
+        static Blueprint selectedBP = Blueprint{"None", {}};
         static char newEntityBuf[64];
         auto clear = [&]()
         {
             newEntityBuf[0] = '\0';
-            selectedBP = nullptr;
+            selectedBP = Blueprint{"None", {}};
             ImGui::CloseCurrentPopup();
         };
 
@@ -103,11 +106,11 @@ namespace Spoon
             
             if (ImGui::BeginChild("Blueprint Selector", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                if (ImGui::BeginCombo("##Blueprints", selectedBP ? selectedBP->GetDisplayName().c_str() : "None"))
+                if (ImGui::BeginCombo("##Blueprints", selectedBP.GetDisplayName().c_str()))
                 {
-                    for (const auto* blueprint : GetBlueprints())
+                    for (auto blueprint : Application::Get().GetProjectManager().GetBlueprints())
                     {
-                        if (ImGui::Selectable(blueprint->GetDisplayName().c_str(), selectedBP == blueprint))
+                        if (ImGui::Selectable(blueprint.GetDisplayName().c_str(), selectedBP == blueprint))
                         {
                             selectedBP = blueprint;
                         }
@@ -123,12 +126,9 @@ namespace Spoon
             if (ImGui::Button("Submit"))
             {
                 UUID id = e_Manager.CreateEntity(newEntityBuf);
-                if (selectedBP)
+                for (const auto& compID : selectedBP.GetComps())
                 {
-                    for (const auto& compID : selectedBP->GetComps())
-                    {
-                        e_Manager.GetCreators().at(compID)(id);
-                    }
+                    e_Manager.GetCreators().at(compID)(id);
                 }
                 clear();
             }
@@ -203,6 +203,7 @@ namespace Spoon
             {
                 selectedComponent->OnReflect();
 
+                // todo: copilot put this here --- it goes in the components implementation onreflect()
                 if (selectedComponent->GetDisplayName() == TileMapComp::Name)
                 {
                     if (ImGui::Button("Open Tile Map Editor"))
@@ -285,4 +286,116 @@ namespace Spoon
             ImGui::EndPopup();
         }
     }
+
+    // create/edit prefab blueprints
+    void BlueprintsMenu(EntityManager& manager)
+    {
+        static std::string selectedBlueprintID;
+        static char blueprintName[64] = "";
+        static std::unordered_map<std::string, bool> componentSelections;
+        static ImGuiTextFilter componentFilter;
+
+        ImGui::SetNextWindowSize(ImVec2(760, 520), ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Blueprint Creator"))
+        {
+            ImGui::End();
+            return;
+        }
+
+        if (ImGui::BeginTable(
+            "##BlueprintLayout",
+            2,
+            ImGuiTableFlags_Resizable |
+            ImGuiTableFlags_BordersInnerV |
+            ImGuiTableFlags_SizingStretchProp))
+        {
+            ImGui::TableSetupColumn("Blueprints", ImGuiTableColumnFlags_WidthFixed, 220.0f);
+            ImGui::TableSetupColumn("Editor", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::SeparatorText("Existing Blueprints");
+            if (ImGui::Button("New Blueprint", ImVec2(-FLT_MIN, 0)))
+            {
+                selectedBlueprintID.clear();
+                blueprintName[0] = '\0';
+                componentSelections.clear();
+                componentFilter.Clear();
+            }
+
+            if (ImGui::BeginChild("##BlueprintList", ImVec2(0, 0), ImGuiChildFlags_Borders))
+            {
+                for (Blueprint blueprint : Application::Get().GetProjectManager().GetBlueprints())
+                {
+                    const std::string& name = blueprint.GetDisplayName();
+                    const bool selected = selectedBlueprintID == name;
+                    if (ImGui::Selectable(name.c_str(), selected))
+                    {
+                        selectedBlueprintID = name;
+                        std::snprintf(blueprintName, IM_ARRAYSIZE(blueprintName), "%s", name.c_str());
+                        componentSelections.clear();
+                        for (const std::string& component : blueprint.GetComps())
+                        {
+                            componentSelections[component] = true;
+                        }
+                        componentFilter.Clear();
+                    }
+                    if (selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndChild();
+
+            ImGui::TableSetColumnIndex(1);
+            const bool editing = !selectedBlueprintID.empty();
+            ImGui::SeparatorText(editing ? "Edit Blueprint" : "Create Blueprint");
+            ImGui::InputText("Name", blueprintName, IM_ARRAYSIZE(blueprintName));
+
+            ImGui::Spacing();
+            ImGui::TextUnformatted("Components");
+            componentFilter.Draw("Search##BlueprintComponents", -FLT_MIN);
+
+            if (ImGui::BeginChild("##BlueprintComponents", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 2.0f), ImGuiChildFlags_Borders))
+            {
+                for (const auto& [type, array] : manager.GetAllArrays())
+                {
+                    if (!componentFilter.PassFilter(type.c_str()))
+                        continue;
+
+                    ImGui::PushID(type.c_str());
+                    ImGui::Checkbox(type.c_str(), &componentSelections[type]);
+                    ImGui::PopID();
+                }
+            }
+            ImGui::EndChild();
+
+            if (ImGui::Button(editing ? "Save Changes" : "Create Blueprint", ImVec2(140, 0)))
+            {
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(100, 0)))
+            {
+                selectedBlueprintID.clear();
+                blueprintName[0] = '\0';
+                componentSelections.clear();
+                componentFilter.Clear();
+            }
+
+            if (editing)
+            {
+                ImGui::SameLine();
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+                if (ImGui::Button("Delete", ImVec2(100, 0)))
+                {
+                }
+                ImGui::PopStyleColor();
+            }
+
+            ImGui::EndTable();
+        }
+
+        ImGui::End();
+    }
+
 }

@@ -7,3 +7,5 @@
 *.vcxproj.filters
 /build
 user_config.json
+.github
+

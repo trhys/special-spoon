@@ -66,6 +66,7 @@ namespace Spoon
         bool ViewSceneManifest = false;
 
         bool ViewEntities = true;
+        bool OpenBlueprintsMenu = false;
 
         bool ViewResources = false;
         bool LoadResources = false;

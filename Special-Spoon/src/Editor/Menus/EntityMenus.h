@@ -9,4 +9,6 @@ namespace Spoon
     void ViewEntitiesMenu(EntityManager& e_Manager);
     void AddComponentMenu(UUID& id, EntityManager& manager);
     void SelectEntity(UUID id, Editor* editor, EntityManager& manager);
+
+    void BlueprintsMenu(EntityManager& e_Manager);
 }
