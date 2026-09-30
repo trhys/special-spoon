@@ -3,6 +3,7 @@
 #include "Core/Serialization/Serializer.h"
 #include "Editor/Editor.h"
 #include "Editor/Utils/EditorSettings.h"
+#include "Editor/Blueprints/Blueprint.h"
 
 #include "nlohmann/json.hpp"
 
@@ -33,6 +34,7 @@ namespace Spoon
                     
                 Project newProject;
                 newProject.ID = std::string(newProjectBuf);
+                newProject.blueprints = GetDefaultBlueprints();
 
                 // Create dirs
 				std::filesystem::create_directories("projects/");
@@ -69,6 +71,7 @@ namespace Spoon
                 projectJson["Version"] = newProject.version;
                 projectJson["RecentFiles"] = newProject.recentFiles;
 				projectJson["Config"] = ProjectConfig{};
+                projectJson["Blueprints"] = newProject.blueprints; 
                 newProj << projectJson.dump(4);
                 newProj.close();
 
@@ -220,6 +223,7 @@ namespace Spoon
             newProject.version = projectJson.value("Version", "1.0");
             newProject.recentFiles = projectJson.value("RecentFiles", std::vector<std::filesystem::path>{});
 			newProject.config = projectJson.value("Config", ProjectConfig{});
+            newProject.blueprints = projectJson.value("Blueprints", GetDefaultBlueprints());
 
             Application::Get().GetSceneManager().LoadManifest(newProject.dataPath.string());
             ResourceManager::Get().ScanAssets(newProject.assetsPath);
@@ -271,6 +275,15 @@ namespace Spoon
 
         if (m_Saving)
         {
+            json projectJson;
+            projectJson["ID"] = m_CurrentProject->ID;
+            projectJson["DataPath"] = m_CurrentProject->dataPath.string();
+            projectJson["AssetsPath"] = m_CurrentProject->assetsPath.string();
+            projectJson["Version"] = m_CurrentProject->version;
+			projectJson["Config"] = m_CurrentProject->config;
+            projectJson["Blueprints"] = m_CurrentProject->blueprints;
+
+            const std::string serializedProject = projectJson.dump(4);
             std::ofstream fileStream(m_CurrentProject->filePath, std::ios::out | std::ios::trunc);
             if (!fileStream.is_open())
             {
@@ -289,15 +302,7 @@ namespace Spoon
                 return;
             }
 
-            // Dump data to JSON
-            json projectJson;
-            projectJson["ID"] = m_CurrentProject->ID;
-            projectJson["DataPath"] = m_CurrentProject->dataPath.string();
-            projectJson["AssetsPath"] = m_CurrentProject->assetsPath.string();
-            projectJson["Version"] = m_CurrentProject->version;
-			projectJson["Config"] = m_CurrentProject->config;
-
-            fileStream << projectJson.dump(4);
+            fileStream << serializedProject;
             fileStream.close();
 
             // Reset flags

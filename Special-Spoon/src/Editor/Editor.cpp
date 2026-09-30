@@ -104,7 +104,7 @@ namespace Spoon
             if (ImGui::BeginMenu("Entity Manager"))
             {
                 if (ImGui::MenuItem("Entity View")) ViewEntities = !ViewEntities;
-                if (ImGui::MenuItem("Entity Blueprints")) ImGui::SetTooltip("todo");
+                if (ImGui::MenuItem("Entity Blueprints")) OpenBlueprintsMenu = !OpenBlueprintsMenu;
                 ImGui::EndMenu();
             }
 
@@ -214,6 +214,9 @@ namespace Spoon
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
         if (m_TileMapTool.IsOpen()) m_TileMapTool.Update(tick);
+
+        //Blueprints
+        if (OpenBlueprintsMenu)     { BlueprintsMenu(e_Manager); }
     }
 
     void Editor::EditTextureRect(SpriteComp& comp)

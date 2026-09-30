@@ -2,6 +2,7 @@
 
 #include "Core/Core.h"
 #include "Core/Project/Config.h"
+#include "Editor/Blueprints/Blueprint.h"
 
 #include <filesystem>
 #include <string>
@@ -21,6 +22,7 @@ namespace Spoon
         std::string version = "1.0";                        // Project version
         std::vector<std::filesystem::path> recentFiles;     // List of recently opened files
         ProjectConfig config;                               // Config settings for project
+        std::vector<Blueprint> blueprints;                  // Project prefabs
     };
     
     class SPOON_API ProjectManager
@@ -39,6 +41,14 @@ namespace Spoon
         void OpenFromFile(const std::filesystem::path& filepath);
 
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
+
+        std::vector<Blueprint>& GetBlueprints()
+        {
+            if (!m_CurrentProject)
+              throw std::runtime_error("fetching blueprints with no project loaded");
+
+            return m_CurrentProject->blueprints;
+        }
 
     private:
         std::unique_ptr<Project> m_CurrentProject = nullptr;

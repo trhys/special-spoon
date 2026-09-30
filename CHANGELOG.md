@@ -50,3 +50,12 @@ note: Previous changes will not be in this log. This record will keep all change
 - Implemented buffered component reaping to safely handle orphaned components.
 
 ---
+
+## 9/30/26:
+
+### Blueprints
+- Added an editor for creating, editing, and deleting entity blueprints with searchable component selection and unique-name validation.
+- Added project-scoped blueprint storage and JSON serialization, including default blueprints for new projects and projects without saved blueprint data.
+- Updated entity creation to use the current project's blueprints and automatically add their selected components.
+
+---
