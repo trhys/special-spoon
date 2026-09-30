@@ -448,6 +448,10 @@ namespace Spoon
                 if (ImGui::Button("Delete", ImVec2(100, 0)))
                 {
                     blueprints.erase(selectedBlueprint);
+                    selectedBlueprintID.clear();
+                    blueprintName[0] = '\0';
+                    componentSelections.clear();
+                    componentFilter.Clear();
                 }
                 ImGui::PopStyleColor();
             }
