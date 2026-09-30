@@ -447,6 +447,7 @@ namespace Spoon
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
                 if (ImGui::Button("Delete", ImVec2(100, 0)))
                 {
+                    blueprints.erase(selectedBlueprint);
                 }
                 ImGui::PopStyleColor();
             }
