@@ -205,9 +205,20 @@ namespace Spoon {
                 if (tile.id == 0)
                     continue;
 
-                const sf::FloatRect worldRect{
+                /*const sf::FloatRect worldRect{
                     sf::Vector2f{static_cast<float>(x * m_Atlas.tileWidth), static_cast<float>(y * m_Atlas.tileHeight)},
                     sf::Vector2f{static_cast<float>(m_Atlas.tileWidth), static_cast<float>(m_Atlas.tileHeight)}
+                };*/
+                const float cellWidth = static_cast<float>(m_Atlas.tileWidth);
+                const float cellHeight = static_cast<float>(m_Atlas.tileHeight);
+                const sf::Vector2f cellTop{
+                    static_cast<float>(x - y) * cellWidth * 0.5f,
+                    static_cast<float>(x + y) * cellHeight * 0.5f
+                };
+
+                const sf::FloatRect worldRect{
+                    sf::Vector2f{cellTop.x - cellWidth * 0.5f, cellTop.y},
+                    sf::Vector2f{cellWidth, cellHeight}
                 };
 
                 const sf::IntRect atlasRect =
