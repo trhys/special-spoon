@@ -414,11 +414,16 @@ namespace Spoon
                     rectMin.y + atlasRect.size.y * m_PaletteScale
                 );
 
-                // Diamond footprint inside the atlas slot.
-                const ImVec2 top   ((rectMin.x + rectMax.x) * 0.5f, rectMin.y);
-                const ImVec2 right (rectMax.x, (rectMin.y + rectMax.y) * 0.5f);
-                const ImVec2 bottom((rectMin.x + rectMax.x) * 0.5f, rectMax.y);
-                const ImVec2 left  (rectMin.x, (rectMin.y + rectMax.y) * 0.5f);
+                // project from the top face of the tile anchored
+                // to the top center
+                const sf::Vector2f cell = m_TileMap->GetCellSize();
+                const float cx = (rectMin.x + rectMax.x) * 0.5f;
+                const float dHalfW = cell.x * 0.5f * m_PaletteScale;
+                const float dHalfH = cell.y * 0.5f * m_PaletteScale;
+                const ImVec2 top   (cx,          rectMin.y);
+                const ImVec2 right (cx + dHalfW, rectMin.y + dHalfH);
+                const ImVec2 bottom(cx,          rectMin.y + dHalfH * 2.0f);
+                const ImVec2 left  (cx - dHalfW, rectMin.y + dHalfH);
                 ImVec2 diamond[4] = { top, right, bottom, left };
 
                 const bool isSelected =
@@ -436,12 +441,13 @@ namespace Spoon
                 // Diamond hit test in normalized local slot space.
                 const float localX = localClick.x - static_cast<float>(atlasRect.position.x);
                 const float localY = localClick.y - static_cast<float>(atlasRect.position.y);
-                const float halfW = static_cast<float>(atlasRect.size.x) * 0.5f;
-                const float halfH = static_cast<float>(atlasRect.size.y) * 0.5f;
+                const float halfW = cell.x * 0.5f;
+                const float halfH = cell.y * 0.5f;
+                const float centerX = static_cast<float>(atlasRect.size.x) * 0.5f;
                 const bool insideDiamond =
                     halfW > 0.0f &&
                     halfH > 0.0f &&
-                    (std::abs((localX - halfW) / halfW) + std::abs((localY - halfH) / halfH) <= 1.0f);
+                    (std::abs((localX - centerX) / halfW) + std::abs((localY - halfH) / halfH) <= 1.0f);
 
                 if (clicked && insideDiamond)
                 {
@@ -485,8 +491,9 @@ namespace Spoon
         const sf::Vector2f worldMouse =
             viewport.target.mapPixelToCoords(relativeMouse);
 
-        const float w = static_cast<float>(m_TileMap->m_Atlas.tileWidth);
-        const float h = static_cast<float>(m_TileMap->m_Atlas.tileHeight);
+        const sf::Vector2f cell = m_TileMap->GetCellSize();
+        const float w = cell.x;
+        const float h = cell.y;
         if (w <= 0.0f || h <= 0.0f)
             return false;
 
@@ -510,8 +517,9 @@ namespace Spoon
         if (!m_TileMap)
             return;
 
-        const float w = static_cast<float>(m_TileMap->m_Atlas.tileWidth);
-        const float h = static_cast<float>(m_TileMap->m_Atlas.tileHeight);
+        const sf::Vector2f cell = m_TileMap->GetCellSize();
+        const float w = cell.x;
+        const float h = cell.y;
 
         auto project = [w, h](float x, float y) -> sf::Vector2f {
             return {
@@ -567,8 +575,9 @@ namespace Spoon
             return false;
         }
 
-        const float w = static_cast<float>(m_TileMap->m_Atlas.tileWidth);
-        const float h = static_cast<float>(m_TileMap->m_Atlas.tileHeight);
+        const sf::Vector2f cell = m_TileMap->GetCellSize();
+        const float w = cell.x;
+        const float h = cell.y;
         const int columns = m_TileMap->m_MapSize.x;
         const int rows = m_TileMap->m_MapSize.y;
 

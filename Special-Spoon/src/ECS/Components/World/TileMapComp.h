@@ -18,8 +18,10 @@ namespace Spoon {
   struct TileAtlas {
     std::string textureId;   						            // atlas texture id - fetch from resource manager on resolve()
     sf::Texture* texture = nullptr;                 // runtime texture ptr - load on resolve()
-    int tileWidth = 16;
-    int tileHeight = 16;
+    int tileWidth = 16;                             // width of a single tile in the atlas
+    int tileHeight = 16;                            // height of a single tile
+    int tileFootprintX = 0;                         // horizontal footprint of a tile in the world
+    int tileFootprintY = 0;                         // vertical footprint
     int columns = 1;                                // derived or serialized
     int rows = 1;                                   // derived or serialized
     int margin = 0;                                 // atlas spacing support
@@ -59,6 +61,7 @@ namespace Spoon {
 		      std::optional<uint16_t> GetTile(int x, int y, int layerIndex) const;
           std::vector<Tile> GetLayerTiles(int layerIndex) const;
           sf::FloatRect GetTileBounds(int x, int y, int layerIndex) const;
+          sf::Vector2f GetCellSize() const;
 
           // build the map
           void BuildMap();
@@ -83,7 +86,7 @@ namespace Spoon {
   };
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id, collidable)
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileAtlas, textureId, tileWidth, tileHeight, columns, rows, margin, spacing)  
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileAtlas, textureId, tileWidth, tileHeight, tileFootprintX, tileFootprintY, columns, rows, margin, spacing)  
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileLayer, name, visible, collidable, opacity, tiles)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileMapComp, m_MapSize, m_Atlas, m_Layers)
 }
