@@ -27,6 +27,8 @@ namespace Spoon
 
     void SpriteComp::PreRender(EntityManager& manager, UUID id) 
     {
+        if (!active) return;
+        
         auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
         auto& colorArray = manager.GetArray<ColorComp>(ColorComp::Name);
 

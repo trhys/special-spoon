@@ -8,7 +8,7 @@ namespace Spoon
     {
         static int setMaxParticles = 0;
         ImGui::TextDisabled("Emitter Settings");
-        ImGui::SliderFloat2("Emission Rate:", &emissionRate.x, 0.0f, 100.0f);
+        ImGui::SliderFloat("Emission Rate:", &emissionRate, 0.0f, 100.0f);
         ImGui::InputFloat("Emission Spread:", &emissionSpread);
         ImGui::SliderFloat2("Velocity Range:", &velocityRange.x, -100.0f, 100.0f);
 

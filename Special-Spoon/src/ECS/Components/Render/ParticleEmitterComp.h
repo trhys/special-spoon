@@ -14,7 +14,7 @@ namespace Spoon
         static constexpr const char* Name = "ParticleEmitter";
 
         // emittor settings
-        sf::Vector2f emissionRate;
+        float emissionRate;
         float emissionSpread;
         sf::Vector2f velocityRange;
 
@@ -27,8 +27,9 @@ namespace Spoon
         // lifecycle
         bool isActive;
         bool looping;
-        float elapsedTime;
+        float elapsedTime = 0.0f;
         float totalLifetime;
+        float accumulatedTime = 0.0f;
 
         // pooling - runtime state only
         std::queue<UUID> particlePool;
@@ -36,20 +37,21 @@ namespace Spoon
         size_t maxParticles;
 
         // helper for initializing the particle emitter
-        bool IsInitialized() const { return !particlePool.empty(); }
+        bool IsInitialized() const { return !particlePool.empty() && !activeParticles.empty(); }
 
         // editor interface
         void OnReflect() override;
         bool editingRect = false;
     };
 
-    struct ParticleComp : public ComponentBase<ParticleComp>, public IRenderable {
+    struct ParticleComp : public ComponentBase<ParticleComp> {
         ParticleComp() : ComponentBase::ComponentBase(Name) {}
         static constexpr const char* Name = "Particle";
 
         float remainingLifetime;
         float maxLifetime;
-        UUID parentEmitter;
+
+        sf::Vector2f velocity;
     };
 }
 

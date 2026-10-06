@@ -25,13 +25,15 @@ namespace Spoon
         std::string m_TextureID;
         bool isCentered;
         sf::Vector2f m_LogicalPosition;     // logical (transform) position synced in PreRender
+        bool active = true;
 
         // Core getters
         // depth sorting uses the logical position. m_Sprite holds the
         // presentation (possibly projected) position.
         sf::Vector2f GetPosition() override { return m_LogicalPosition; }
         sf::FloatRect GetBoundingBox() { return m_Sprite.getGlobalBounds(); }
-
+        bool IsActive() const { return active; }
+        
         // Core setters
         void SetTextureRect(const sf::IntRect& rect) { m_Sprite.setTextureRect(rect); m_TextureRect = rect; }
         void SetColor(sf::Color color) { m_Sprite.setColor(color); }
@@ -40,7 +42,8 @@ namespace Spoon
         void SetRotation(float rot) { m_Sprite.setRotation(sf::degrees(rot)); }
         void CenterOrigin();
         void SetAlpha(float alpha);
-
+        void SetActive(bool isActive) { active = isActive; }
+        
         // Editor methods
         void OnReflect() override;
         bool editingRect = false;
@@ -49,7 +52,8 @@ namespace Spoon
 		void PreRender(EntityManager& manager, UUID id) override;
         void Render(sf::RenderTarget& target, sf::RenderStates states) override
         {
-            target.draw(m_Sprite, states);
+            if (active)
+                target.draw(m_Sprite, states);
 		}
     };
 
