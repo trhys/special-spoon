@@ -73,30 +73,29 @@ namespace Spoon
         }
 
         // create entities at emission rate if queue is not empty
-        for (size_t i = 0; i < emitter.particlePool.size(); i++)
+        emitter.accumulatedTime += tick.asSeconds();
+
+        while (!emitter.particlePool.empty() && emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
         {
-            if (emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
-            {
-                UUID id = emitter.particlePool.front();
-                emitter.particlePool.pop();
-                emitter.activeParticles.push_back(id);
+            emitter.accumulatedTime -= 1.0f / emitter.emissionRate;
 
-                auto& particle = manager.GetComponent<ParticleComp>(id, ParticleComp::Name);
-                auto& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
-                auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+            UUID id = emitter.particlePool.front();
+            emitter.particlePool.pop();
+            emitter.activeParticles.push_back(id);
 
-                particle.remainingLifetime = particle.maxLifetime;
-                sprite.SetActive(true);
-                // TODO: scale, color, etc
+            auto& particle = manager.GetComponent<ParticleComp>(id, ParticleComp::Name);
+            auto& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
+            auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
 
-                // set velocity at a random angle from emission spread
-                // and select speed from velocity range
-                float angle = ((float)rand() / RAND_MAX - 0.5f) * emitter.emissionSpread;
-                float speed = emitter.velocityRange.x + ((float)rand() / RAND_MAX) * (emitter.velocityRange.y - emitter.velocityRange.x);
-                particle.velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
-            } else {
-                emitter.accumulatedTime += tick.asSeconds();
-            }
+            particle.remainingLifetime = particle.maxLifetime;
+            sprite.SetActive(true);
+            // TODO: scale, color, etc
+
+            // set velocity at a random angle from emission spread
+            // and select speed from velocity range
+            float angle = ((float)rand() / RAND_MAX - 0.5f) * emitter.emissionSpread;
+            float speed = emitter.velocityRange.x + ((float)rand() / RAND_MAX) * (emitter.velocityRange.y - emitter.velocityRange.x);
+            particle.velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
         }
     }
 }
