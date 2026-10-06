@@ -11,7 +11,7 @@ namespace Spoon
 	class TextureRectTool
 	{
 	public:
-		void Run(SpriteComp& comp)
+		bool Run(sf::Texture& texture, sf::IntRect& returnedRect)
 		{
             // Center this window only when it first appears
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -33,7 +33,7 @@ namespace Spoon
                     rectPreview.setOutlineThickness(1.0);
 
                     m_Viewport.target.clear(sf::Color(50, 50, 50));
-                    m_Viewport.target.draw(sf::Sprite(comp.m_Sprite.getTexture()));
+                    m_Viewport.target.draw(sf::Sprite(texture));
                     m_Viewport.target.draw(rectPreview);
                     m_Viewport.target.display();
 
@@ -67,26 +67,22 @@ namespace Spoon
                 }
                 if (ImGui::Button("Confirm", ImVec2(120, 0)))
                 {
-                    comp.SetTextureRect(m_Rect);
+                    returnedRect = m_Rect;
                     m_Rect = sf::IntRect();
                     m_Dragging = false;
+                    return false;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Cancel", ImVec2(120, 0)))
                 {
                     m_Rect = sf::IntRect();
                     m_Dragging = false;
-                    comp.ToggleGizmo();
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Close", ImVec2(120, 0)))
-                {
-                    m_Rect = sf::IntRect();
-                    m_Dragging = false;
-                    comp.ToggleGizmo();
+                    return false;
                 }
             }
             ImGui::End();
+
+            return true;
 		}
 
         void Shutdown()

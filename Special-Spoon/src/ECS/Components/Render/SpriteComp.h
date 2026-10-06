@@ -43,6 +43,7 @@ namespace Spoon
 
         // Editor methods
         void OnReflect() override;
+        bool editingRect = false;
 
 		// renderable interface
 		void PreRender(EntityManager& manager, UUID id) override;

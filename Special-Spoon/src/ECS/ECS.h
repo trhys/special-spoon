@@ -12,6 +12,7 @@
 #include "Components/Render/SpriteComp.h"
 #include "Components/Render/ColorComp.h"
 #include "Components/Render/RenderLayer.h"
+#include "Components/Render/ParticleEmitterComp.h"
 
 #include "Components/Animation/AnimationComp.h"
 #include "Components/Animation/BlinkComp.h"

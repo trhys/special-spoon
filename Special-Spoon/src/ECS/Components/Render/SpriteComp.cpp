@@ -90,13 +90,15 @@ namespace Spoon
             ImGui::EndChild();
         }
 
-        if (ImGui::Button(!ActiveGizmo() ? "Set Texture Rect" : "Cancel"))
+        if (ImGui::Button("Set Texture Rect"))
         {
-            ToggleGizmo();
+            editingRect = true;
         }
-        if (ActiveGizmo())
+
+        if (editingRect)
         {
-            Application::Get().GetEditor().EditTextureRect(*this);
+            sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(m_TextureID);
+            Application::Get().GetEditor().EditTextureRect(editingRect, texture, m_TextureRect);
         }
 
         ImGui::SeparatorText("Center Origin");
