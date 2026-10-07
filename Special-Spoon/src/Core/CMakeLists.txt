@@ -29,6 +29,7 @@ target_sources(Special-Spoon
         Renderer/Renderer.h
         Renderer/Renderer.cpp
         Renderer/Renderable.h
+        Renderer/WorldProjection.h
         
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp
