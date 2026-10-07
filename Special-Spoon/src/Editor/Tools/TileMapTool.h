@@ -42,6 +42,12 @@ namespace Spoon
             int& cellY
         ) const;
 
+        void DrawGridOverlay(
+            Viewport& viewport,
+            const ImVec2& imageMin,
+            const ImVec2& imageMax
+        ) const;
+
         void DrawCellOverlay(
             Viewport& viewport,
             const ImVec2& imageMin,

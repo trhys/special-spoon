@@ -17,6 +17,8 @@ namespace Spoon {
 	{
 		if (m_Atlas.tileWidth < 0) m_Atlas.tileWidth = 0;
 		if (m_Atlas.tileHeight < 0) m_Atlas.tileHeight = 0;
+		if (m_Atlas.tileFootprintX < 0) m_Atlas.tileFootprintX = 0;
+		if (m_Atlas.tileFootprintY < 0) m_Atlas.tileFootprintY = 0;
 		if (m_Atlas.columns < 0) m_Atlas.columns = 0;
 		if (m_Atlas.rows < 0) m_Atlas.rows = 0;
 	    if (m_Atlas.margin < 0) m_Atlas.margin = 0;
@@ -128,6 +130,16 @@ namespace Spoon {
 		m_NeedsRebuild = true;
 		m_RebuildCollision = true;
 	}
+
+	bool footprintChanged = false;
+	footprintChanged |= ImGui::InputInt("Tile Footprint X", &m_Atlas.tileFootprintX);
+	footprintChanged |= ImGui::InputInt("Tile Footprint Y", &m_Atlas.tileFootprintY);
+	if (footprintChanged)
+	{
+		m_Atlas.tileFootprintX = std::max(0, m_Atlas.tileFootprintX);
+		m_Atlas.tileFootprintY = std::max(0, m_Atlas.tileFootprintY);
+		m_NeedsRebuild = true;
+	}
   }
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
@@ -205,9 +217,14 @@ namespace Spoon {
                 if (tile.id == 0)
                     continue;
 
+                const sf::Vector2f cellTop = ProjectCellToWorld(x, y);
+                const sf::Vector2f cellSize = GetCellSize();
                 const sf::FloatRect worldRect{
-                    sf::Vector2f{static_cast<float>(x * m_Atlas.tileWidth), static_cast<float>(y * m_Atlas.tileHeight)},
-                    sf::Vector2f{static_cast<float>(m_Atlas.tileWidth), static_cast<float>(m_Atlas.tileHeight)}
+                    sf::Vector2f{
+                        cellTop.x - cellSize.x * 0.5f,
+                        cellTop.y
+                    },
+                    cellSize
                 };
 
                 const sf::IntRect atlasRect =
@@ -322,6 +339,43 @@ namespace Spoon {
 	        return false;
 
 		return true;
+	}
+
+	sf::Vector2f TileMapComp::GetCellSize() const
+	{
+		return {
+			static_cast<float>(
+				m_Atlas.tileFootprintX > 0
+					? m_Atlas.tileFootprintX
+					: m_Atlas.tileWidth
+			),
+			static_cast<float>(
+				m_Atlas.tileFootprintY > 0
+					? m_Atlas.tileFootprintY
+					: m_Atlas.tileHeight
+			)
+		};
+	}
+
+	sf::Vector2f TileMapComp::ProjectCellToWorld(int x, int y) const
+	{
+		const sf::Vector2f cellSize = GetCellSize();
+		return {
+			static_cast<float>(x - y) * cellSize.x * 0.5f,
+			static_cast<float>(x + y) * cellSize.y * 0.5f
+		};
+	}
+
+	sf::Vector2f TileMapComp::ProjectWorldToCell(const sf::Vector2f& world) const
+	{
+		const sf::Vector2f cellSize = GetCellSize();
+		if (cellSize.x <= 0.0f || cellSize.y <= 0.0f)
+			return {0.0f, 0.0f};
+
+		return {
+			world.x / cellSize.x + world.y / cellSize.y,
+			world.y / cellSize.y - world.x / cellSize.x
+		};
 	}
 
 	bool TileMapComp::SetTile(uint16_t id, int x, int y, int layerIndex)

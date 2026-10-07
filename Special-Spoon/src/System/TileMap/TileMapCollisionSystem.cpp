@@ -21,6 +21,8 @@ namespace Spoon
     std::vector<TileCollider> TileMapCollisionSystem::BuildColliderCache(TileMapComp& tileMap)
     {
         std::vector<TileCollider> tileColliders;
+        // Collision remains in logical grid space; render projection is not an
+        // AABB collision shape.
         // extracts horizontal runs of collidable tiles
         // into merged rects to create colliders from
         const int mapWidth = tileMap.m_MapSize.x;

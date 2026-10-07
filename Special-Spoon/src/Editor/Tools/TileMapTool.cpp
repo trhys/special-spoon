@@ -456,13 +456,14 @@ namespace Spoon
     ) const
     {
         if (!m_TileMap ||
-            m_TileMap->m_Atlas.tileWidth <= 0 ||
-            m_TileMap->m_Atlas.tileHeight <= 0 ||
             m_TileMap->m_MapSize.x <= 0 ||
             m_TileMap->m_MapSize.y <= 0)
         {
             return false;
         }
+        const sf::Vector2f cellSize = m_TileMap->GetCellSize();
+        if (cellSize.x <= 0.0f || cellSize.y <= 0.0f)
+            return false;
 
         const ImVec2 mousePos = ImGui::GetIO().MousePos;
         sf::Vector2i relativeMouse(
@@ -473,12 +474,9 @@ namespace Spoon
         const sf::Vector2f worldMouse =
             viewport.target.mapPixelToCoords(relativeMouse);
 
-        cellX = static_cast<int>(
-            std::floor(worldMouse.x / static_cast<float>(m_TileMap->m_Atlas.tileWidth))
-        );
-        cellY = static_cast<int>(
-            std::floor(worldMouse.y / static_cast<float>(m_TileMap->m_Atlas.tileHeight))
-        );
+        const sf::Vector2f cell = m_TileMap->ProjectWorldToCell(worldMouse);
+        cellX = static_cast<int>(std::floor(cell.x));
+        cellY = static_cast<int>(std::floor(cell.y));
 
         return m_TileMap->ValidateBounds(cellX, cellY, m_ActiveLayerIndex);
     }
@@ -494,26 +492,27 @@ namespace Spoon
         if (!m_TileMap)
             return;
 
-        const sf::Vector2f worldMin(
-            static_cast<float>(cellX * m_TileMap->m_Atlas.tileWidth),
-            static_cast<float>(cellY * m_TileMap->m_Atlas.tileHeight)
-        );
-        const sf::Vector2f worldMax(
-            worldMin.x + static_cast<float>(m_TileMap->m_Atlas.tileWidth),
-            worldMin.y + static_cast<float>(m_TileMap->m_Atlas.tileHeight)
-        );
-
-        const sf::Vector2i pixelMin = viewport.target.mapCoordsToPixel(worldMin);
-        const sf::Vector2i pixelMax = viewport.target.mapCoordsToPixel(worldMax);
-
-        const ImVec2 rectMin(
-            imageMin.x + static_cast<float>(pixelMin.x),
-            imageMin.y + static_cast<float>(pixelMin.y)
-        );
-        const ImVec2 rectMax(
-            imageMin.x + static_cast<float>(pixelMax.x),
-            imageMin.y + static_cast<float>(pixelMax.y)
-        );
+        auto toScreen = [&](const sf::Vector2f& world)
+        {
+            const sf::Vector2i pixel = viewport.target.mapCoordsToPixel(world);
+            return ImVec2(
+                imageMin.x + static_cast<float>(pixel.x),
+                imageMin.y + static_cast<float>(pixel.y)
+            );
+        };
+        auto drawDiamond = [&](int x, int y, ImU32 color, float thickness)
+        {
+            const ImVec2 top = toScreen(m_TileMap->ProjectCellToWorld(x, y));
+            const ImVec2 right = toScreen(m_TileMap->ProjectCellToWorld(x + 1, y));
+            const ImVec2 bottom =
+                toScreen(m_TileMap->ProjectCellToWorld(x + 1, y + 1));
+            const ImVec2 left = toScreen(m_TileMap->ProjectCellToWorld(x, y + 1));
+            auto* drawList = ImGui::GetWindowDrawList();
+            drawList->AddLine(top, right, color, thickness);
+            drawList->AddLine(right, bottom, color, thickness);
+            drawList->AddLine(bottom, left, color, thickness);
+            drawList->AddLine(left, top, color, thickness);
+        };
 
         const bool erasePreview =
             m_EraseMode || m_SelectedTileId == 0 ||
@@ -527,8 +526,60 @@ namespace Spoon
 
         auto* drawList = ImGui::GetWindowDrawList();
         drawList->PushClipRect(imageMin, imageMax, true);
-        drawList->AddRectFilled(rectMin, rectMax, fillColor);
-        drawList->AddRect(rectMin, rectMax, outlineColor, 0.0f, 0, 2.0f);
+        const ImVec2 diamond[] = {
+            toScreen(m_TileMap->ProjectCellToWorld(cellX, cellY)),
+            toScreen(m_TileMap->ProjectCellToWorld(cellX + 1, cellY)),
+            toScreen(m_TileMap->ProjectCellToWorld(cellX + 1, cellY + 1)),
+            toScreen(m_TileMap->ProjectCellToWorld(cellX, cellY + 1))
+        };
+        drawList->AddConvexPolyFilled(diamond, 4, fillColor);
+        drawDiamond(cellX, cellY, outlineColor, 2.0f);
+        drawList->PopClipRect();
+    }
+
+    void TileMapTool::DrawGridOverlay(
+        Viewport& viewport,
+        const ImVec2& imageMin,
+        const ImVec2& imageMax
+    ) const
+    {
+        if (!m_TileMap)
+            return;
+
+        auto toScreen = [&](const sf::Vector2f& world)
+        {
+            const sf::Vector2i pixel = viewport.target.mapCoordsToPixel(world);
+            return ImVec2(
+                imageMin.x + static_cast<float>(pixel.x),
+                imageMin.y + static_cast<float>(pixel.y)
+            );
+        };
+
+        auto* drawList = ImGui::GetWindowDrawList();
+        drawList->PushClipRect(imageMin, imageMax, true);
+        const ImU32 gridColor = IM_COL32(255, 255, 255, 70);
+        for (int y = 0; y <= m_TileMap->m_MapSize.y; ++y)
+        {
+            for (int x = 0; x < m_TileMap->m_MapSize.x; ++x)
+            {
+                drawList->AddLine(
+                    toScreen(m_TileMap->ProjectCellToWorld(x, y)),
+                    toScreen(m_TileMap->ProjectCellToWorld(x + 1, y)),
+                    gridColor
+                );
+            }
+        }
+        for (int x = 0; x <= m_TileMap->m_MapSize.x; ++x)
+        {
+            for (int y = 0; y < m_TileMap->m_MapSize.y; ++y)
+            {
+                drawList->AddLine(
+                    toScreen(m_TileMap->ProjectCellToWorld(x, y)),
+                    toScreen(m_TileMap->ProjectCellToWorld(x, y + 1)),
+                    gridColor
+                );
+            }
+        }
         drawList->PopClipRect();
     }
 
@@ -564,6 +615,8 @@ namespace Spoon
 
         m_LastLeftDown = leftDown;
         m_LastRightDown = rightDown;
+
+        DrawGridOverlay(viewport, imageMin, imageMax);
 
         int cellX = -1;
         int cellY = -1;
