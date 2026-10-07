@@ -64,11 +64,12 @@ namespace Spoon
 
     void ParticleEmitterComp::Render(sf::RenderTarget& target, sf::RenderStates states)
     {
+        states.texture = &ResourceManager::Get().GetResource<sf::Texture>(textureID);
         target.draw(vertices.data(), vertices.size(), sf::PrimitiveType::Triangles, states);
     }
 
     sf::Vector2f ParticleEmitterComp::GetPosition()
     {
-        // no op for now
+        return sf::Vector2f({0.0f, 0.0f});
     }
 }
