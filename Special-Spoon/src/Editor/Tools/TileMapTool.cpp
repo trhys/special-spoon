@@ -414,24 +414,42 @@ namespace Spoon
                     rectMin.y + atlasRect.size.y * m_PaletteScale
                 );
 
+                // project from the top face of the tile anchored
+                // to the top center
+                const sf::Vector2f cell = m_TileMap->GetCellSize();
+                const float cx = (rectMin.x + rectMax.x) * 0.5f;
+                const float dHalfW = cell.x * 0.5f * m_PaletteScale;
+                const float dHalfH = cell.y * 0.5f * m_PaletteScale;
+                const ImVec2 top   (cx,          rectMin.y);
+                const ImVec2 right (cx + dHalfW, rectMin.y + dHalfH);
+                const ImVec2 bottom(cx,          rectMin.y + dHalfH * 2.0f);
+                const ImVec2 left  (cx - dHalfW, rectMin.y + dHalfH);
+                ImVec2 diamond[4] = { top, right, bottom, left };
+
                 const bool isSelected =
                     !m_EraseMode && m_SelectedTileId == tileIndex;
 
-                drawList->AddRect(
-                    rectMin,
-                    rectMax,
+                drawList->AddPolyline(
+                    diamond,
+                    4,
                     isSelected ? IM_COL32(255, 255, 0, 255)
                                : IM_COL32(255, 255, 255, 100),
-                    0.0f,
-                    0,
+                    ImDrawFlags_Closed,
                     isSelected ? 2.0f : 1.0f
                 );
 
-                if (clicked &&
-                    localClick.x >= atlasRect.position.x &&
-                    localClick.x < atlasRect.position.x + atlasRect.size.x &&
-                    localClick.y >= atlasRect.position.y &&
-                    localClick.y < atlasRect.position.y + atlasRect.size.y)
+                // Diamond hit test in normalized local slot space.
+                const float localX = localClick.x - static_cast<float>(atlasRect.position.x);
+                const float localY = localClick.y - static_cast<float>(atlasRect.position.y);
+                const float halfW = cell.x * 0.5f;
+                const float halfH = cell.y * 0.5f;
+                const float centerX = static_cast<float>(atlasRect.size.x) * 0.5f;
+                const bool insideDiamond =
+                    halfW > 0.0f &&
+                    halfH > 0.0f &&
+                    (std::abs((localX - centerX) / halfW) + std::abs((localY - halfH) / halfH) <= 1.0f);
+
+                if (clicked && insideDiamond)
                 {
                     selectedFromClick = tileIndex;
                 }
@@ -473,12 +491,17 @@ namespace Spoon
         const sf::Vector2f worldMouse =
             viewport.target.mapPixelToCoords(relativeMouse);
 
-        cellX = static_cast<int>(
-            std::floor(worldMouse.x / static_cast<float>(m_TileMap->m_Atlas.tileWidth))
-        );
-        cellY = static_cast<int>(
-            std::floor(worldMouse.y / static_cast<float>(m_TileMap->m_Atlas.tileHeight))
-        );
+        const sf::Vector2f cell = m_TileMap->GetCellSize();
+        const float w = cell.x;
+        const float h = cell.y;
+        if (w <= 0.0f || h <= 0.0f)
+            return false;
+
+        // Inverse of:
+        // px = (x - y) * (w/2)
+        // py = (x + y) * (h/2)
+        cellX = static_cast<int>(std::floor(worldMouse.x / w + worldMouse.y / h));
+        cellY = static_cast<int>(std::floor(worldMouse.y / h - worldMouse.x / w));
 
         return m_TileMap->ValidateBounds(cellX, cellY, m_ActiveLayerIndex);
     }
@@ -494,26 +517,33 @@ namespace Spoon
         if (!m_TileMap)
             return;
 
-        const sf::Vector2f worldMin(
-            static_cast<float>(cellX * m_TileMap->m_Atlas.tileWidth),
-            static_cast<float>(cellY * m_TileMap->m_Atlas.tileHeight)
-        );
-        const sf::Vector2f worldMax(
-            worldMin.x + static_cast<float>(m_TileMap->m_Atlas.tileWidth),
-            worldMin.y + static_cast<float>(m_TileMap->m_Atlas.tileHeight)
-        );
+        const sf::Vector2f cell = m_TileMap->GetCellSize();
+        const float w = cell.x;
+        const float h = cell.y;
 
-        const sf::Vector2i pixelMin = viewport.target.mapCoordsToPixel(worldMin);
-        const sf::Vector2i pixelMax = viewport.target.mapCoordsToPixel(worldMax);
+        auto project = [w, h](float x, float y) -> sf::Vector2f {
+            return {
+                (x - y) * (w * 0.5f),
+                (x + y) * (h * 0.5f)
+            };
+        };
 
-        const ImVec2 rectMin(
-            imageMin.x + static_cast<float>(pixelMin.x),
-            imageMin.y + static_cast<float>(pixelMin.y)
-        );
-        const ImVec2 rectMax(
-            imageMin.x + static_cast<float>(pixelMax.x),
-            imageMin.y + static_cast<float>(pixelMax.y)
-        );
+        const sf::Vector2f top    = project(static_cast<float>(cellX),     static_cast<float>(cellY));
+        const sf::Vector2f right  = project(static_cast<float>(cellX + 1), static_cast<float>(cellY));
+        const sf::Vector2f bottom = project(static_cast<float>(cellX + 1), static_cast<float>(cellY + 1));
+        const sf::Vector2f left   = project(static_cast<float>(cellX),     static_cast<float>(cellY + 1));
+
+        const sf::Vector2i pTop    = viewport.target.mapCoordsToPixel(top);
+        const sf::Vector2i pRight  = viewport.target.mapCoordsToPixel(right);
+        const sf::Vector2i pBottom = viewport.target.mapCoordsToPixel(bottom);
+        const sf::Vector2i pLeft   = viewport.target.mapCoordsToPixel(left);
+
+        ImVec2 poly[4] = {
+            ImVec2(imageMin.x + static_cast<float>(pTop.x),    imageMin.y + static_cast<float>(pTop.y)),
+            ImVec2(imageMin.x + static_cast<float>(pRight.x),  imageMin.y + static_cast<float>(pRight.y)),
+            ImVec2(imageMin.x + static_cast<float>(pBottom.x), imageMin.y + static_cast<float>(pBottom.y)),
+            ImVec2(imageMin.x + static_cast<float>(pLeft.x),   imageMin.y + static_cast<float>(pLeft.y))
+        };
 
         const bool erasePreview =
             m_EraseMode || m_SelectedTileId == 0 ||
@@ -527,8 +557,8 @@ namespace Spoon
 
         auto* drawList = ImGui::GetWindowDrawList();
         drawList->PushClipRect(imageMin, imageMax, true);
-        drawList->AddRectFilled(rectMin, rectMax, fillColor);
-        drawList->AddRect(rectMin, rectMax, outlineColor, 0.0f, 0, 2.0f);
+        drawList->AddConvexPolyFilled(poly, 4, fillColor);
+        drawList->AddPolyline(poly, 4, outlineColor, true, 2.0f);
         drawList->PopClipRect();
     }
 
@@ -543,6 +573,54 @@ namespace Spoon
         {
             Close();
             return false;
+        }
+
+        const sf::Vector2f cell = m_TileMap->GetCellSize();
+        const float w = cell.x;
+        const float h = cell.y;
+        const int columns = m_TileMap->m_MapSize.x;
+        const int rows = m_TileMap->m_MapSize.y;
+
+        if (w > 0.0f && h > 0.0f && columns > 0 && rows > 0)
+        {
+            auto projectToScreen = [&](float x, float y) -> ImVec2 {
+                const sf::Vector2f world{
+                    (x - y) * w * 0.5f,
+                    (x + y) * h * 0.5f
+                };
+                const sf::Vector2i pixel =
+                    viewport.target.mapCoordsToPixel(world);
+                return {
+                    imageMin.x + static_cast<float>(pixel.x),
+                    imageMin.y + static_cast<float>(pixel.y)
+                };
+            };
+
+            auto* drawList = ImGui::GetWindowDrawList();
+            const ImU32 color = IM_COL32(255, 255, 255, 65);
+            drawList->PushClipRect(imageMin, imageMax, true);
+
+            // Constant-column lines, including both map edges.
+            for (int x = 0; x <= columns; ++x)
+            {
+                drawList->AddLine(
+                    projectToScreen(static_cast<float>(x), 0.0f),
+                    projectToScreen(static_cast<float>(x), static_cast<float>(rows)),
+                    color
+                );
+            }
+
+            // Constant-row lines, including both map edges.
+            for (int y = 0; y <= rows; ++y)
+            {
+                drawList->AddLine(
+                    projectToScreen(0.0f, static_cast<float>(y)),
+                    projectToScreen(static_cast<float>(columns), static_cast<float>(y)),
+                    color
+                );
+            }
+
+            drawList->PopClipRect();
         }
 
         const bool leftDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);

@@ -17,6 +17,8 @@ namespace Spoon {
 	{
 		if (m_Atlas.tileWidth < 0) m_Atlas.tileWidth = 0;
 		if (m_Atlas.tileHeight < 0) m_Atlas.tileHeight = 0;
+		if (m_Atlas.tileFootprintX < 0) m_Atlas.tileFootprintX = 0;
+		if (m_Atlas.tileFootprintY < 0) m_Atlas.tileFootprintY = 0;
 		if (m_Atlas.columns < 0) m_Atlas.columns = 0;
 		if (m_Atlas.rows < 0) m_Atlas.rows = 0;
 	    if (m_Atlas.margin < 0) m_Atlas.margin = 0;
@@ -118,6 +120,8 @@ namespace Spoon {
 	bool changed = false;
 	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth);
 	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight);
+	changed |= ImGui::InputInt("Tile Footprint X", &m_Atlas.tileFootprintX);
+	changed |= ImGui::InputInt("Tile Footprint Y", &m_Atlas.tileFootprintY);
 	changed |= ImGui::InputInt("Columns", &m_Atlas.columns);
 	changed |= ImGui::InputInt("Rows", &m_Atlas.rows);
     changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin);
@@ -205,9 +209,18 @@ namespace Spoon {
                 if (tile.id == 0)
                     continue;
 
+                const sf::Vector2f cellSize = GetCellSize();
+                const sf::Vector2f cellTop{
+                    static_cast<float>(x - y) * cellSize.x * 0.5f,
+                    static_cast<float>(x + y) * cellSize.y * 0.5f
+                };
+
+				const float slotW = static_cast<float>(m_Atlas.tileFootprintX > 0 ? m_Atlas.tileFootprintX : m_Atlas.tileWidth);
+				const float slotH = static_cast<float>(m_Atlas.tileFootprintY > 0 ? m_Atlas.tileFootprintY : m_Atlas.tileHeight);
+
                 const sf::FloatRect worldRect{
-                    sf::Vector2f{static_cast<float>(x * m_Atlas.tileWidth), static_cast<float>(y * m_Atlas.tileHeight)},
-                    sf::Vector2f{static_cast<float>(m_Atlas.tileWidth), static_cast<float>(m_Atlas.tileHeight)}
+                    sf::Vector2f{cellTop.x - slotW * 0.5f, cellTop.y},
+                    sf::Vector2f{slotW, slotH}
                 };
 
                 const sf::IntRect atlasRect =
@@ -459,6 +472,14 @@ namespace Spoon {
 		    static_cast<float>(m_Atlas.tileHeight)
 		};
 		return sf::FloatRect{position, size};
+	}
+
+	sf::Vector2f TileMapComp::GetCellSize() const
+	{
+		return {
+			static_cast<float>(m_Atlas.tileFootprintX > 0 ? m_Atlas.tileFootprintX : m_Atlas.tileWidth),
+			static_cast<float>(m_Atlas.tileFootprintY > 0 ? m_Atlas.tileFootprintY : m_Atlas.tileHeight)
+		};
 	}
 		
 	void TileAtlas::Resolve() 
