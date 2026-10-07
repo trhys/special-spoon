@@ -53,7 +53,7 @@ namespace Spoon
         // create entities at emission rate if queue is not empty
         emitter.accumulatedTime += tick.asSeconds();
 
-        while (!(emitter.particlePool.size() == emitter.maxParticles) && emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
+        while (emitter.particlePool.size() < emitter.maxParticles && emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
         {
             emitter.accumulatedTime -= 1.0f / emitter.emissionRate;
 
@@ -61,7 +61,7 @@ namespace Spoon
             particle.remainingLifetime = emitter.particleLifetime;
             particle.maxLifetime = emitter.particleLifetime;
             particle.position = transform.GetPosition(); // initial position, set to emitter position
-            emitter.particlePool.push_back(particle);
+            
             // TODO: scale, color, etc
 
             // set velocity at a random angle from emission spread
@@ -69,6 +69,7 @@ namespace Spoon
             float angle = ((float)rand() / RAND_MAX - 0.5f) * emitter.emissionSpread;
             float speed = emitter.velocityRange.x + ((float)rand() / RAND_MAX) * (emitter.velocityRange.y - emitter.velocityRange.x);
             particle.velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
+            emitter.particlePool.push_back(particle);
         }
 
         RebuildEmitterVertexArray(emitter);
