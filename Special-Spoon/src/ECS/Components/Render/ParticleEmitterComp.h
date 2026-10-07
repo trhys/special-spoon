@@ -9,14 +9,26 @@
 
 namespace Spoon
 {
-    struct ParticleEmitterComp : public ComponentBase<ParticleEmitterComp> {
-        ParticleEmitterComp() : ComponentBase::ComponentBase(Name) {}
+    struct Particle {
+        float remainingLifetime;
+        float maxLifetime;
+        sf::Vector2f velocity;
+        sf::Vector2f position;
+    };
+    
+    struct ParticleEmitterComp : public ComponentBase<ParticleEmitterComp>, public IRenderable {
+        ParticleEmitterComp() : ComponentBase::ComponentBase(Name) {
+            // initialize particle pool memory
+            particlePool.reserve(maxParticles);
+        }
+
         static constexpr const char* Name = "ParticleEmitter";
 
         // emittor settings
         float emissionRate;
         float emissionSpread;
         sf::Vector2f velocityRange;
+        size_t maxParticles = 1000;
 
         // particle settings
         float particleLifetime;
@@ -30,28 +42,19 @@ namespace Spoon
         float elapsedTime = 0.0f;
         float totalLifetime;
         float accumulatedTime = 0.0f;
-
+        
         // pooling - runtime state only
-        std::queue<UUID> particlePool;
-        std::vector<UUID> activeParticles;
-        size_t maxParticles;
-
-        // helper for initializing the particle emitter
-        bool IsInitialized() const { return !particlePool.empty() && !activeParticles.empty(); }
+        std::vector<Particle> particlePool;
+        std::vector<sf::Vertex> vertices;
 
         // editor interface
         void OnReflect() override;
         bool editingRect = false;
-    };
 
-    struct ParticleComp : public ComponentBase<ParticleComp> {
-        ParticleComp() : ComponentBase::ComponentBase(Name) {}
-        static constexpr const char* Name = "Particle";
-
-        float remainingLifetime;
-        float maxLifetime;
-
-        sf::Vector2f velocity;
+        // renderable interface
+        void PreRender(EntityManager& manager, UUID id) override;
+        void Render(sf::RenderTarget& target, sf::RenderStates states) override;
+        sf::Vector2f GetPosition() override;
     };
 }
 
@@ -91,7 +94,4 @@ namespace Spoon
         j.at("totalLifetime").get_to(comp.totalLifetime);
         j.at("maxParticles").get_to(comp.maxParticles);
     }
-
-    inline void to_json(json& j, const ParticleComp& comp) {}
-    inline void from_json(const json& j, ParticleComp& comp) {}
 }

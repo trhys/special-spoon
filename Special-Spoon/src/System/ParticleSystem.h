@@ -5,6 +5,7 @@
 namespace Spoon
 {
     struct ParticleEmitterComp;
+    struct TransformComp;
 
     class ParticleSystem : public ISystem {
         public:
@@ -20,8 +21,7 @@ namespace Spoon
             void OnReflect() override {}
 
         private:
-            void InitializeEmitter(EntityManager& manager, ParticleEmitterComp& emitter);
-            void UpdateEmitter(sf::Time tick, EntityManager& manager, ParticleEmitterComp& emitter);
-
+            void UpdateEmitter(sf::Time tick, EntityManager& manager, ParticleEmitterComp& emitter, TransformComp& transform);
+            void RebuildEmitterVertexArray(ParticleEmitterComp& emitter);
     };
 }

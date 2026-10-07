@@ -23,7 +23,6 @@ namespace Spoon
         LoadArray<TileMapComp>(TileMapComp::Name);
         LoadArray<AudioComp>(AudioComp::Name);
         LoadArray<ParticleEmitterComp>(ParticleEmitterComp::Name);
-        LoadArray<ParticleComp>(ParticleComp::Name);
     }
 
     // ===========================================

@@ -54,7 +54,21 @@ namespace Spoon
         maxParticles = static_cast<size_t>(setMaxParticles);
 
         ImGui::TextDisabled("Runtime Stats");
-        ImGui::Text("Active Particles: %zu", activeParticles.size());
         ImGui::Text("Particle Pool Size: %zu", particlePool.size());
+    }
+
+    void ParticleEmitterComp::PreRender(EntityManager& manager, UUID id)
+    {
+        // no op for now - may change
+    }
+
+    void ParticleEmitterComp::Render(sf::RenderTarget& target, sf::RenderStates states)
+    {
+        target.draw(vertices.data(), vertices.size(), sf::PrimitiveType::Triangles, states);
+    }
+
+    sf::Vector2f ParticleEmitterComp::GetPosition()
+    {
+        // no op for now
     }
 }

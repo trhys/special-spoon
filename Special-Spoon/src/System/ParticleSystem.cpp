@@ -8,87 +8,60 @@ namespace Spoon
 {
     void ParticleSystem::Update(sf::Time tick, EntityManager& manager)
     {
-        // get all emitters
+        // get all emitters + transform
         auto& emitterArray = manager.GetArray<ParticleEmitterComp>(ParticleEmitterComp::Name);
+        auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
         for (size_t index = 0; index < emitterArray.m_Components.size(); index++)
         {
             auto& emitter = emitterArray.m_Components[index];
-            UUID id = emitterArray.m_IndexToId[index];
-            if (!emitter.IsInitialized())
-                InitializeEmitter(manager, emitter);
             if (!emitter.isActive)
                 continue;
+
+            UUID id = emitterArray.m_IndexToId[index];
+            auto& transform = transformArray.m_Components[transformArray.m_IdToIndex[id]];
+            
             if (emitter.elapsedTime >= emitter.totalLifetime && !emitter.looping)
                 emitter.isActive = false;
             emitter.elapsedTime += tick.asSeconds();
 
-            UpdateEmitter(tick, manager, emitter);
+            UpdateEmitter(tick, manager, emitter, transform);
         }
     }
 
-    void ParticleSystem::InitializeEmitter(EntityManager& manager, ParticleEmitterComp& emitter)
+    void ParticleSystem::UpdateEmitter(sf::Time tick, EntityManager& manager, ParticleEmitterComp& emitter, TransformComp& transform)
     {
-        for (size_t i = 0; i < emitter.maxParticles; i++)
+        // iterate emitter particle pool
+        for (size_t i = 0; i < emitter.particlePool.size(); /* no increment here */)
         {
-            UUID id = manager.GenerateID();
-            manager.MarkEntityAsRuntimeOnly(id);
+            auto& particle = emitter.particlePool[i];
 
-            // add comps
-            manager.MakeComponent<SpriteComp>(id, SpriteComp::Name,
-                ResourceManager::Get().GetResource<sf::Texture>(emitter.textureID),
-                emitter.textureRect, false, emitter.textureID);
-            manager.MakeComponent<TransformComp>(id, TransformComp::Name);
-            manager.MakeComponent<ParticleComp>(id, ParticleComp::Name);
+            particle.remainingLifetime -= tick.asSeconds();
 
-            emitter.particlePool.push(id);
-        }
-    }
-
-    void ParticleSystem::UpdateEmitter(sf::Time tick, EntityManager& manager, ParticleEmitterComp& emitter)
-    {
-        // get active particles and cull the dead ones
-        for (size_t i = 0; i < emitter.activeParticles.size(); i++)
-        {
-            // get the entity
-            UUID particleID = emitter.activeParticles[i];
-            auto& particle = manager.GetComponent<ParticleComp>(particleID, ParticleComp::Name);
-            auto& sprite = manager.GetComponent<SpriteComp>(particleID, SpriteComp::Name);
-            auto& transform = manager.GetComponent<TransformComp>(particleID, TransformComp::Name);
-            
             // check lifetime
             if (particle.remainingLifetime <= 0.0f)
             {
-                sprite.SetActive(false);
-                emitter.activeParticles.erase(emitter.activeParticles.begin() + i);
-                emitter.particlePool.push(particleID);
-                i--;
+                // swap and pop dead particle
+                std::swap(particle, emitter.particlePool.back());
+                emitter.particlePool.pop_back();
+            } else {
+                // update particle position based on its velocity
+                particle.position += (particle.velocity * tick.asSeconds());
+                i++;
             }
-            else
-            {
-                particle.remainingLifetime -= tick.asSeconds();
-            }
-
-            // update the transform with the particle's current state
-            transform.Move(particle.velocity * tick.asSeconds());
         }
 
         // create entities at emission rate if queue is not empty
         emitter.accumulatedTime += tick.asSeconds();
 
-        while (!emitter.particlePool.empty() && emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
+        while (!(emitter.particlePool.size() == emitter.maxParticles) && emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
         {
             emitter.accumulatedTime -= 1.0f / emitter.emissionRate;
 
-            UUID id = emitter.particlePool.front();
-            emitter.particlePool.pop();
-            emitter.activeParticles.push_back(id);
-
-            auto& particle = manager.GetComponent<ParticleComp>(id, ParticleComp::Name);
-            auto& sprite = manager.GetComponent<SpriteComp>(id, SpriteComp::Name);
-            auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-
-            particle.remainingLifetime = particle.maxLifetime;
-            sprite.SetActive(true);
+            Particle particle;
+            particle.remainingLifetime = emitter.particleLifetime;
+            particle.maxLifetime = emitter.particleLifetime;
+            particle.position = transform.GetPosition(); // initial position, set to emitter position
+            emitter.particlePool.push_back(particle);
             // TODO: scale, color, etc
 
             // set velocity at a random angle from emission spread
@@ -96,6 +69,48 @@ namespace Spoon
             float angle = ((float)rand() / RAND_MAX - 0.5f) * emitter.emissionSpread;
             float speed = emitter.velocityRange.x + ((float)rand() / RAND_MAX) * (emitter.velocityRange.y - emitter.velocityRange.x);
             particle.velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
+        }
+
+        RebuildEmitterVertexArray(emitter);
+    }
+
+    void ParticleSystem::RebuildEmitterVertexArray(ParticleEmitterComp& emitter)
+    {
+        // clear and reserve the vertex array for the current particle pool
+        emitter.vertices.clear();
+        emitter.vertices.reserve(emitter.particlePool.size() * 6);
+
+        for (size_t i = 0; i < emitter.particlePool.size(); ++i)
+        {
+            auto& particle = emitter.particlePool[i];
+
+            // get half size of texture
+            sf::Vector2f texSize = sf::Vector2f(
+                static_cast<float>(emitter.textureRect.size.x),
+                static_cast<float>(emitter.textureRect.size.y)
+            );
+            sf::Vector2f halfSize = texSize * 0.5f;
+            
+            // center quad on particle position
+            sf::Vector2f topLeft = particle.position - halfSize;
+            sf::Vector2f topRight = particle.position + sf::Vector2f(halfSize.x, -halfSize.y);
+            sf::Vector2f bottomRight = particle.position + halfSize;
+            sf::Vector2f bottomLeft = particle.position + sf::Vector2f(-halfSize.x, halfSize.y);
+
+            // texture coordinates
+            sf::Vector2f texPos(emitter.textureRect.position);
+            sf::Vector2f texBottomRight = texPos + texSize;
+
+            // color
+            sf::Color color = sf::Color::White; // default color
+
+            // push vertices
+            emitter.vertices.push_back(sf::Vertex{topLeft, color, texPos});
+            emitter.vertices.push_back(sf::Vertex{topRight, color, sf::Vector2f(texBottomRight.x, texPos.y)});
+            emitter.vertices.push_back(sf::Vertex{bottomRight, color, texBottomRight});
+            emitter.vertices.push_back(sf::Vertex{topLeft, color, texPos});
+            emitter.vertices.push_back(sf::Vertex{bottomRight, color, texBottomRight});
+            emitter.vertices.push_back(sf::Vertex{bottomLeft, color, sf::Vector2f(texPos.x, texBottomRight.y)});
         }
     }
 }
