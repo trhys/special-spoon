@@ -1,0 +1,9 @@
+// include all system headers for engine registry
+#include "AnimationSystem.h"
+#include "InputSystem.h"
+#include "MovementSystem.h"
+#include "StateSystem.h"
+#include "Physics/PhysicsSystem.h"
+#include "Physics/CollisionSystem.h"
+#include "TileMap/TileMapCollisionSystem.h"
+#include "Sound/AudioSystem.h"
