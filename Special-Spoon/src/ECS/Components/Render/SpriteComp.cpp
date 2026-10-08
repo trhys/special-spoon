@@ -30,13 +30,36 @@ namespace Spoon
         auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
         auto& colorArray = manager.GetArray<ColorComp>(ColorComp::Name);
 
-        // sync transform
+        // sync transform - the transform is logical space, the sprite is
+        // presentation space (see Core/Renderer/WorldProjection.h)
         if(transformArray.m_IdToIndex.count(id))
         {
             TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
-            m_Sprite.setPosition(transform.GetPosition());
+            m_LogicalPosition = transform.GetPosition();
+            m_Sprite.setPosition(m_LogicalPosition);
             m_Sprite.setScale(transform.GetScale());
             m_Sprite.setRotation(transform.m_Transform.getRotation());
+
+            // when projected, keep the artwork upright and only move it: the
+            // sprite's logical rect is treated as its ground footprint and the
+            // sprite's bottom-center (feet) is placed on the projected center
+            // of that footprint. nothing is written back to the transform.
+            const WorldProjection& projection = Application::Get().GetRenderer().GetProjection();
+            if (projection.IsActive())
+            {
+                const sf::FloatRect logicalBounds = m_Sprite.getGlobalBounds();
+                const sf::Vector2f footprintCenter = logicalBounds.getCenter();
+                const sf::Vector2f feet{
+                    footprintCenter.x,
+                    logicalBounds.position.y + logicalBounds.size.y
+                };
+                const sf::Vector2f projectedFeet = projection.LogicalToScreen(footprintCenter);
+                m_Sprite.setPosition(m_LogicalPosition + (projectedFeet - feet));
+            }
+        }
+        else
+        {
+            m_LogicalPosition = m_Sprite.getPosition();
         }
 
         // apply color comp if it exists

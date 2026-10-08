@@ -1,6 +1,7 @@
 #include "ECS/Components/World/TileMapComp.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
+#include "Core/Application.h"
 #include "Utils/Macros.h"
 
 namespace Spoon {
@@ -136,6 +137,14 @@ namespace Spoon {
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
   {
+      // rebuild the render cache when the project's projection gate changes
+	  const bool projected = Application::Get().GetRenderer().IsProjectionEnabled();
+	  if (projected != m_BuiltProjected)
+	  {
+		m_BuiltProjected = projected;
+		m_NeedsRebuild = true;
+	  }
+
       // we'll run BuildMap() here in the prerender instead of potentially
 	  // multiple times a frame in the editor.
 	  if (m_NeedsRebuild)
@@ -164,6 +173,9 @@ namespace Spoon {
 		}
   }
 
+  // BuildMap() only produces the render cache (presentation space). Tile
+  // collision is built separately from the logical tile grid by
+  // TileMapCollisionSystem and never reads these vertices.
   void TileMapComp::BuildMap() {
     m_LayerVertices.clear();
     m_LayerVertices.resize(m_Layers.size());
@@ -173,6 +185,8 @@ namespace Spoon {
 
     if (m_Atlas.tileWidth <= 0 || m_Atlas.tileHeight <= 0)
         return;
+
+    const WorldProjection projection = GetProjection(m_BuiltProjected);
 
     for (std::size_t layerIndex = 0; layerIndex < m_Layers.size(); ++layerIndex)
     {
@@ -209,19 +223,8 @@ namespace Spoon {
                 if (tile.id == 0)
                     continue;
 
-                const sf::Vector2f cellSize = GetCellSize();
-                const sf::Vector2f cellTop{
-                    static_cast<float>(x - y) * cellSize.x * 0.5f,
-                    static_cast<float>(x + y) * cellSize.y * 0.5f
-                };
-
-				const float slotW = static_cast<float>(m_Atlas.tileFootprintX > 0 ? m_Atlas.tileFootprintX : m_Atlas.tileWidth);
-				const float slotH = static_cast<float>(m_Atlas.tileFootprintY > 0 ? m_Atlas.tileFootprintY : m_Atlas.tileHeight);
-
-                const sf::FloatRect worldRect{
-                    sf::Vector2f{cellTop.x - slotW * 0.5f, cellTop.y},
-                    sf::Vector2f{slotW, slotH}
-                };
+                const sf::FloatRect worldRect =
+                    GetTileDrawRect(x, y, projection);
 
                 const sf::IntRect atlasRect =
                     GetAtlasRect(tile.id);
@@ -463,15 +466,20 @@ namespace Spoon {
 		if (!ValidateBounds(x, y, layerIndex))
 			return sf::FloatRect{};
 
-		const sf::Vector2f position{
-		    static_cast<float>(x * m_Atlas.tileWidth),
-		    static_cast<float>(y * m_Atlas.tileHeight)
+		// logical space - matches the tile collision cache
+		const sf::Vector2f cellSize = GetLogicalCellSize();
+		return sf::FloatRect{
+			sf::Vector2f{static_cast<float>(x) * cellSize.x, static_cast<float>(y) * cellSize.y},
+			cellSize
 		};
-		const sf::Vector2f size{
-		    static_cast<float>(m_Atlas.tileWidth),
-		    static_cast<float>(m_Atlas.tileHeight)
+	}
+
+	sf::Vector2f TileMapComp::GetLogicalCellSize() const
+	{
+		return {
+			static_cast<float>(m_Atlas.tileWidth),
+			static_cast<float>(m_Atlas.tileHeight)
 		};
-		return sf::FloatRect{position, size};
 	}
 
 	sf::Vector2f TileMapComp::GetCellSize() const
@@ -479,6 +487,38 @@ namespace Spoon {
 		return {
 			static_cast<float>(m_Atlas.tileFootprintX > 0 ? m_Atlas.tileFootprintX : m_Atlas.tileWidth),
 			static_cast<float>(m_Atlas.tileFootprintY > 0 ? m_Atlas.tileFootprintY : m_Atlas.tileHeight)
+		};
+	}
+
+	WorldProjection TileMapComp::GetProjection(bool projectionEnabled) const
+	{
+		WorldProjection projection;
+		projection.enabled = projectionEnabled;
+		projection.logicalCell = GetLogicalCellSize();
+		projection.projectedCell = GetCellSize();
+		return projection;
+	}
+
+	sf::FloatRect TileMapComp::GetTileDrawRect(int x, int y, const WorldProjection& projection) const
+	{
+		// the atlas tile is drawn at its full atlas size. when projected, its
+		// top-center is anchored to the top corner of the cell's diamond so the
+		// tile's top face covers the cell footprint.
+		const sf::Vector2f tileSize{
+			static_cast<float>(m_Atlas.tileWidth),
+			static_cast<float>(m_Atlas.tileHeight)
+		};
+		const sf::Vector2f anchor = projection.CellToScreen({
+			static_cast<float>(x),
+			static_cast<float>(y)
+		});
+
+		if (!projection.IsActive())
+			return sf::FloatRect{anchor, tileSize};
+
+		return sf::FloatRect{
+			sf::Vector2f{anchor.x - tileSize.x * 0.5f, anchor.y},
+			tileSize
 		};
 	}
 		

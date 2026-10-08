@@ -37,33 +37,21 @@ namespace Spoon
         }
     }
 
-    void TransformComp::MoveTransform()
+    void TransformComp::MoveTransform(const sf::Vector2f& worldMouse, bool beginDrag)
     {
-        auto& viewport = Spoon::Application::Get().GetViewport();
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+        const WorldProjection& projection = Application::Get().GetRenderer().GetProjection();
+        const sf::Vector2f logicalMouse = projection.ScreenToLogical(worldMouse);
+
+        // keep the grab offset in logical space so the entity doesn't jump
+        if (beginDrag || !dragging)
         {
-            ImVec2 viewportPos = viewport.state.viewportPos;
-            sf::Vector2i mousePos = sf::Mouse::getPosition(Spoon::Application::Get().GetWindow());
-            sf::Vector2f relativePos{
-                static_cast<float>(mousePos.x) - viewportPos.x,
-                static_cast<float>(mousePos.y) - viewportPos.y
-            };
-            sf::Vector2f worldPos = viewport.target.mapPixelToCoords(sf::Vector2i(relativePos));
-            if (!dragging)
-            {
-                drag = {
-                GetPosition().x - worldPos.x,
-                GetPosition().y - worldPos.y
-                };
-                dragging = true;
-            }
-            if (dragging)
-            {
-                SetPosition(worldPos + drag);
-                iPos = GetPosition();
-                rect.setPosition(GetPosition());
-            }
+            drag = GetPosition() - logicalMouse;
+            dragging = true;
+            return;
         }
-        else dragging = false;
+
+        SetPosition(logicalMouse + drag);
+        iPos = GetPosition();
+        rect.setPosition(GetPosition());
     }
 }
