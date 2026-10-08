@@ -25,6 +25,9 @@ target_sources(Special-Spoon
         
         Components/World/TileMapComp.h
         Components/World/TileMapComp.cpp
+
+        Components/Sound/AudioComp.h
+        Components/Sound/AudioComp.cpp
         
         ComponentReaper.h
         ComponentReaper.cpp
