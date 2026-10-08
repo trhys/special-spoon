@@ -20,10 +20,7 @@ namespace Spoon
         // Update render config
         void UpdateRenderConfig();
 
-        // Projection - gated by the project config's Projection Style. The
-        // active projection maps logical space to presentation space for this
-        // frame, using the scene's tilemap grid (identity when there is none).
-        // See WorldProjection.h for the coordinate-space contract.
+        // projection helpers
         bool IsProjectionEnabled() const { return UsesIsometricProjection(activeSortPolicy); }
         const WorldProjection& GetProjection() const { return m_Projection; }
         void UpdateProjection(EntityManager& manager);
@@ -37,12 +34,17 @@ namespace Spoon
         void ClearOverlay() { m_OverlayCommands.clear(); }
 
     private:
+        // iterable renderables for the current frame
         std::vector<Renderable> m_Renderables;
         std::vector<OverlayCmd> m_OverlayCommands;
+
+        // helper struct for managing projection state
         WorldProjection m_Projection;
         
+        // project level config for active projection policy
         ActiveSortPolicy activeSortPolicy = ActiveSortPolicy::Isometric;
 
+        // metrics
         int m_DrawCalls = 0;
         float m_DrawTime = 0.f;
     };

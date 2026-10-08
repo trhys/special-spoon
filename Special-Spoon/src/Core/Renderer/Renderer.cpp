@@ -80,9 +80,9 @@ namespace Spoon {
 
 	void Renderer::UpdateProjection(EntityManager& manager)
 	{
-		// the scene's (first) tilemap defines the logical grid that is projected.
-		// without one there is nothing to project against, so presentation
-		// space stays identical to logical space.
+		// rebuild projection each from from active tilemap
+		// the tile map provides helpers for aqcuiring it's
+		// logical dims separate from its projected ones
 		m_Projection = WorldProjection{};
 		auto& tileMaps = manager.GetArray<TileMapComp>(TileMapComp::Name);
 		if (!tileMaps.m_Components.empty())

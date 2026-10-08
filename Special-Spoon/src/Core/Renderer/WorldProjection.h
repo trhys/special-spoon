@@ -4,41 +4,15 @@
 
 namespace Spoon
 {
-    // ==========================================================================
-    // Coordinate-space contract
-    // ==========================================================================
-    //
-    // Logical space (authoritative)
-    //   - TransformComp positions, ColliderComp shapes/offsets, physics,
-    //     tilemap collision and everything that is serialized.
-    //   - One tilemap cell is `logicalCell` units (the atlas tile width/height),
-    //     so cell (x, y) covers [x * w, (x + 1) * w) x [y * h, (y + 1) * h).
-    //   - Gameplay code never stores presentation coordinates.
-    //
-    // Cell space
-    //   - Fractional tile grid coordinates: cell = logical / logicalCell.
-    //
-    // Presentation space
-    //   - The SFML world coordinates things are drawn in (and what
-    //     `mapPixelToCoords` returns for the viewport).
-    //   - When projection is active (gated by the project's Projection Style,
-    //     see `UsesIsometricProjection()`) cells are projected into isometric
-    //     diamonds of `projectedCell` size:
-    //         screen.x = (cell.x - cell.y) * projectedCell.x / 2
-    //         screen.y = (cell.x + cell.y) * projectedCell.y / 2
-    //   - When projection is inactive, presentation == logical.
-    //
-    // Boundaries
-    //   - Rendering projects logical -> presentation (tile vertices, sprites,
-    //     debug collider outlines). Projected values are never written back.
-    //   - Editor/runtime input inverse projects presentation -> logical before
-    //     touching transforms or picking tile cells.
-    // ==========================================================================
+    // centralized helper for managing logical vs projected world coordinates
+    // artistically, the world can be projected into an isometric view
+    // but we maintain a separate logical grid system for the engine
+    // to run it's simulation on. only the on screen presentation is projected.
     struct WorldProjection
     {
-        bool enabled = false;                       // project config gate
-        sf::Vector2f logicalCell{ 16.0f, 16.0f };   // logical size of one tile cell
-        sf::Vector2f projectedCell{ 16.0f, 16.0f }; // projected diamond footprint of one cell
+        bool enabled = false;                       
+        sf::Vector2f logicalCell{ 16.0f, 16.0f };   
+        sf::Vector2f projectedCell{ 16.0f, 16.0f };
 
         bool IsActive() const
         {

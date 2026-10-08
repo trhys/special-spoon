@@ -61,10 +61,11 @@ namespace Spoon {
 
 		      std::optional<uint16_t> GetTile(int x, int y, int layerIndex) const;
           std::vector<Tile> GetLayerTiles(int layerIndex) const;
-          // coordinate space helpers - see Core/Renderer/WorldProjection.h
-          sf::FloatRect GetTileBounds(int x, int y, int layerIndex) const;  // logical (collision) bounds
-          sf::Vector2f GetLogicalCellSize() const;                          // logical size of one cell
-          sf::Vector2f GetCellSize() const;                                 // projected diamond footprint of one cell
+
+          // helpers for deriving projection state
+          sf::FloatRect GetTileBounds(int x, int y, int layerIndex) const;  
+          sf::Vector2f GetLogicalCellSize() const;                          
+          sf::Vector2f GetCellSize() const;                                 
           WorldProjection GetProjection(bool projectionEnabled) const;
           sf::FloatRect GetTileDrawRect(int x, int y, const WorldProjection& projection) const;
 

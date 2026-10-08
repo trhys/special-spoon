@@ -19,11 +19,15 @@ namespace Spoon {
 	// helper for editor
 	const char* SortPolicyToString(ActiveSortPolicy policy);
 
-	// projection gate - whether logical positions are isometrically
-	// projected for presentation (see Core/Renderer/WorldProjection.h)
+	// inlined helpers for checking config
 	inline bool UsesIsometricProjection(ActiveSortPolicy policy)
 	{
 		return policy == ActiveSortPolicy::Isometric;
+	}
+
+	inline bool UsesTopDownProjection(ActiveSortPolicy policy)
+	{
+		return policy == ActiveSortPolicy::TopDown;
 	}
 
 	// interface for depth sorting policies

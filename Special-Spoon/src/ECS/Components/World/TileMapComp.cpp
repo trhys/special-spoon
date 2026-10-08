@@ -119,14 +119,22 @@ namespace Spoon {
 
 	// atlas settings controls
 	bool changed = false;
-	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth);
-	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight);
-	changed |= ImGui::InputInt("Tile Footprint X", &m_Atlas.tileFootprintX);
-	changed |= ImGui::InputInt("Tile Footprint Y", &m_Atlas.tileFootprintY);
-	changed |= ImGui::InputInt("Columns", &m_Atlas.columns);
-	changed |= ImGui::InputInt("Rows", &m_Atlas.rows);
-    changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin);
-    changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing);
+	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth); ImGui::Sameline();
+	ImGui::Helpmarker("The width of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight); ImGui::Sameline();
+	ImGui::Helpmarker("The height of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Footprint X", &m_Atlas.tileFootprintX); ImGui::Sameline();
+	ImGui::Helpmarker("The horizontal footprint of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Footprint Y", &m_Atlas.tileFootprintY); ImGui::Sameline();
+	ImGui::Helpmarker("The vertical footprint of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Columns", &m_Atlas.columns); ImGui::Sameline();
+	ImGui::Helpmarker("The number of columns in the atlas texture.");
+	changed |= ImGui::InputInt("Rows", &m_Atlas.rows); ImGui::Sameline();
+	ImGui::Helpmarker("The number of rows in the atlas texture.");
+    changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin); ImGui::Sameline();
+    ImGui::Helpmarker("The margin around the atlas texture. Follows a {1, 1} line from the top-left corner. If your first tile starts at px (1, 1), set this to 1.");
+    changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing); ImGui::Sameline();
+    ImGui::Helpmarker("The horizontal spacing between tiles in the same row of the atlas texture.");
 
 	if (changed) {
 		ClampInput();
@@ -145,8 +153,6 @@ namespace Spoon {
 		m_NeedsRebuild = true;
 	  }
 
-      // we'll run BuildMap() here in the prerender instead of potentially
-	  // multiple times a frame in the editor.
 	  if (m_NeedsRebuild)
 	  {
 		BuildMap();
