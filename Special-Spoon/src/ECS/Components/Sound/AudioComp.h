@@ -13,7 +13,8 @@ namespace Spoon
         static constexpr const char* Name = "AudioComp";
 
         // sound settings
-        float volume = 100.0f;
+        std::string bufferId;   // id to buffer loaded in resource manager
+        float volume = 100.0f;  // sound volume
 
         std::optional<sf::Sound> sound;
 
@@ -26,5 +27,5 @@ namespace Spoon
         void OnReflect() override;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AudioComp, volume)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AudioComp, bufferId, volume)
 }

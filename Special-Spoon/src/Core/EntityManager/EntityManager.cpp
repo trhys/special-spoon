@@ -21,6 +21,7 @@ namespace Spoon
         LoadArray<RenderLayer>(RenderLayer::Name);
         LoadArray<MovementComp>(MovementComp::Name);
         LoadArray<TileMapComp>(TileMapComp::Name);
+        LoadArray<AudioComp>(AudioComp::Name);
     }
 
     // ===========================================
