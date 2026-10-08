@@ -46,7 +46,10 @@ namespace Spoon
 
         // Editor methods
         void OnReflect() override;
-        void MoveTransform();
+        // editor placement - `worldMouse` is presentation space (viewport
+        // coords) and is inverse projected before being stored, so the
+        // transform always stays in logical space
+        void MoveTransform(const sf::Vector2f& worldMouse, bool beginDrag);
     };
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TransformComp, iPos, iScale, iRot)

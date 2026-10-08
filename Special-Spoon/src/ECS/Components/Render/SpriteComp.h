@@ -24,16 +24,19 @@ namespace Spoon
         sf::IntRect m_TextureRect;
         std::string m_TextureID;
         bool isCentered;
+        sf::Vector2f m_LogicalPosition;     // logical (transform) position synced in PreRender
 
         // Core getters
-        sf::Vector2f GetPosition() override { return m_Sprite.getPosition(); }
+        // depth sorting uses the logical position. m_Sprite holds the
+        // presentation (possibly projected) position.
+        sf::Vector2f GetPosition() override { return m_LogicalPosition; }
         sf::FloatRect GetBoundingBox() { return m_Sprite.getGlobalBounds(); }
 
         // Core setters
         void SetTextureRect(const sf::IntRect& rect) { m_Sprite.setTextureRect(rect); m_TextureRect = rect; }
         void SetColor(sf::Color color) { m_Sprite.setColor(color); }
         void SetScale(sf::Vector2f scale) { m_Sprite.setScale(scale); }
-        void SetPosition(sf::Vector2f pos) { m_Sprite.setPosition(pos); }
+        void SetPosition(sf::Vector2f pos) { m_Sprite.setPosition(pos); m_LogicalPosition = pos; }
         void SetRotation(float rot) { m_Sprite.setRotation(sf::degrees(rot)); }
         void CenterOrigin();
         void SetAlpha(float alpha);

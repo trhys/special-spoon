@@ -22,16 +22,20 @@ namespace Spoon
     {
         std::vector<TileCollider> tileColliders;
         // extracts horizontal runs of collidable tiles
-        // into merged rects to create colliders from
+        // into merged rects to create colliders from.
+        // colliders live in logical space (tile grid * logical cell size) and
+        // are never derived from the projected render cache - see
+        // Core/Renderer/WorldProjection.h
         const int mapWidth = tileMap.m_MapSize.x;
         const int mapHeight = tileMap.m_MapSize.y;
-        const int tileWidth = tileMap.m_Atlas.tileWidth;
-        const int tileHeight = tileMap.m_Atlas.tileHeight;
+        const sf::Vector2f cellSize = tileMap.GetLogicalCellSize();
+        const float tileWidth = cellSize.x;
+        const float tileHeight = cellSize.y;
 
         if (mapWidth <= 0 ||
             mapHeight <= 0 ||
-            tileWidth <= 0 ||
-            tileHeight <= 0)
+            tileWidth <= 0.0f ||
+            tileHeight <= 0.0f)
         {
             return tileColliders;
         }
@@ -92,18 +96,12 @@ namespace Spoon
                         TileCollider collider;
                         collider.body = sf::FloatRect{
                             sf::Vector2f{
-                                static_cast<float>(
-                                    runStartX * tileWidth
-                                ),
-                                static_cast<float>(
-                                    y * tileHeight
-                                )
+                                static_cast<float>(runStartX) * tileWidth,
+                                static_cast<float>(y) * tileHeight
                             },
                             sf::Vector2f{
-                                static_cast<float>(
-                                    runWidth * tileWidth
-                                ),
-                                static_cast<float>(tileHeight)
+                                static_cast<float>(runWidth) * tileWidth,
+                                tileHeight
                             }
                         };
 

@@ -1,6 +1,7 @@
 #include "ECS/Components/World/TileMapComp.h"
 #include "Core/EntityManager/EntityManager.h"
 #include "Core/ResourceManager/ResourceManager.h"
+#include "Core/Application.h"
 #include "Utils/Macros.h"
 
 namespace Spoon {
@@ -17,6 +18,8 @@ namespace Spoon {
 	{
 		if (m_Atlas.tileWidth < 0) m_Atlas.tileWidth = 0;
 		if (m_Atlas.tileHeight < 0) m_Atlas.tileHeight = 0;
+		if (m_Atlas.tileFootprintX < 0) m_Atlas.tileFootprintX = 0;
+		if (m_Atlas.tileFootprintY < 0) m_Atlas.tileFootprintY = 0;
 		if (m_Atlas.columns < 0) m_Atlas.columns = 0;
 		if (m_Atlas.rows < 0) m_Atlas.rows = 0;
 	    if (m_Atlas.margin < 0) m_Atlas.margin = 0;
@@ -116,12 +119,22 @@ namespace Spoon {
 
 	// atlas settings controls
 	bool changed = false;
-	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth);
-	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight);
-	changed |= ImGui::InputInt("Columns", &m_Atlas.columns);
-	changed |= ImGui::InputInt("Rows", &m_Atlas.rows);
-    changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin);
-    changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing);
+	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth); ImGui::SameLine();
+	HelpMarker("The width of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight); ImGui::SameLine();
+	HelpMarker("The height of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Footprint X", &m_Atlas.tileFootprintX); ImGui::SameLine();
+	HelpMarker("The horizontal footprint of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Footprint Y", &m_Atlas.tileFootprintY); ImGui::SameLine();
+	HelpMarker("The vertical footprint of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Columns", &m_Atlas.columns); ImGui::SameLine();
+	HelpMarker("The number of columns in the atlas texture.");
+	changed |= ImGui::InputInt("Rows", &m_Atlas.rows); ImGui::SameLine();
+	HelpMarker("The number of rows in the atlas texture.");
+    changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin); ImGui::SameLine();
+    HelpMarker("The margin around the atlas texture. Follows a {1, 1} line from the top-left corner. If your first tile starts at px (1, 1), set this to 1.");
+    changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing); ImGui::SameLine();
+    HelpMarker("The horizontal spacing between tiles in the same row of the atlas texture.");
 
 	if (changed) {
 		ClampInput();
@@ -132,8 +145,14 @@ namespace Spoon {
 
   void TileMapComp::PreRender(EntityManager& manager, UUID id)
   {
-      // we'll run BuildMap() here in the prerender instead of potentially
-	  // multiple times a frame in the editor.
+      // rebuild the render cache when the project's projection gate changes
+	  const bool projected = Application::Get().GetRenderer().IsProjectionEnabled();
+	  if (projected != m_BuiltProjected)
+	  {
+		m_BuiltProjected = projected;
+		m_NeedsRebuild = true;
+	  }
+
 	  if (m_NeedsRebuild)
 	  {
 		BuildMap();
@@ -160,6 +179,9 @@ namespace Spoon {
 		}
   }
 
+  // BuildMap() only produces the render cache (presentation space). Tile
+  // collision is built separately from the logical tile grid by
+  // TileMapCollisionSystem and never reads these vertices.
   void TileMapComp::BuildMap() {
     m_LayerVertices.clear();
     m_LayerVertices.resize(m_Layers.size());
@@ -169,6 +191,8 @@ namespace Spoon {
 
     if (m_Atlas.tileWidth <= 0 || m_Atlas.tileHeight <= 0)
         return;
+
+    const WorldProjection projection = GetProjection(m_BuiltProjected);
 
     for (std::size_t layerIndex = 0; layerIndex < m_Layers.size(); ++layerIndex)
     {
@@ -205,10 +229,8 @@ namespace Spoon {
                 if (tile.id == 0)
                     continue;
 
-                const sf::FloatRect worldRect{
-                    sf::Vector2f{static_cast<float>(x * m_Atlas.tileWidth), static_cast<float>(y * m_Atlas.tileHeight)},
-                    sf::Vector2f{static_cast<float>(m_Atlas.tileWidth), static_cast<float>(m_Atlas.tileHeight)}
-                };
+                const sf::FloatRect worldRect =
+                    GetTileDrawRect(x, y, projection);
 
                 const sf::IntRect atlasRect =
                     GetAtlasRect(tile.id);
@@ -450,15 +472,60 @@ namespace Spoon {
 		if (!ValidateBounds(x, y, layerIndex))
 			return sf::FloatRect{};
 
-		const sf::Vector2f position{
-		    static_cast<float>(x * m_Atlas.tileWidth),
-		    static_cast<float>(y * m_Atlas.tileHeight)
+		// logical space - matches the tile collision cache
+		const sf::Vector2f cellSize = GetLogicalCellSize();
+		return sf::FloatRect{
+			sf::Vector2f{static_cast<float>(x) * cellSize.x, static_cast<float>(y) * cellSize.y},
+			cellSize
 		};
-		const sf::Vector2f size{
-		    static_cast<float>(m_Atlas.tileWidth),
-		    static_cast<float>(m_Atlas.tileHeight)
+	}
+
+	sf::Vector2f TileMapComp::GetLogicalCellSize() const
+	{
+		return {
+			static_cast<float>(m_Atlas.tileWidth),
+			static_cast<float>(m_Atlas.tileHeight)
 		};
-		return sf::FloatRect{position, size};
+	}
+
+	sf::Vector2f TileMapComp::GetCellSize() const
+	{
+		return {
+			static_cast<float>(m_Atlas.tileFootprintX > 0 ? m_Atlas.tileFootprintX : m_Atlas.tileWidth),
+			static_cast<float>(m_Atlas.tileFootprintY > 0 ? m_Atlas.tileFootprintY : m_Atlas.tileHeight)
+		};
+	}
+
+	WorldProjection TileMapComp::GetProjection(bool projectionEnabled) const
+	{
+		WorldProjection projection;
+		projection.enabled = projectionEnabled;
+		projection.logicalCell = GetLogicalCellSize();
+		projection.projectedCell = GetCellSize();
+		return projection;
+	}
+
+	sf::FloatRect TileMapComp::GetTileDrawRect(int x, int y, const WorldProjection& projection) const
+	{
+		// the atlas tile is drawn at its full atlas size. when projected, its
+		// top-center is anchored to the top corner of the cell's diamond so the
+		// tile's top face covers the cell footprint.
+		const sf::Vector2f tileSize{
+			static_cast<float>(m_Atlas.tileWidth),
+			static_cast<float>(m_Atlas.tileHeight)
+		};
+		const sf::Vector2f anchor = projection.CellToScreen({
+			static_cast<float>(x),
+			static_cast<float>(y)
+		});
+
+		if (!projection.IsActive())
+			return sf::FloatRect{anchor, tileSize};
+
+		return sf::FloatRect{
+			sf::Vector2f{anchor.x - tileSize.x * 0.5f, anchor.y},
+			tileSize
+		};
 	}
 		
 	void TileAtlas::Resolve() 

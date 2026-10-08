@@ -157,7 +157,8 @@ namespace Spoon
             ImGui::SameLine(); HelpMarker("TODO: not implemented");
 
             static constexpr ActiveSortPolicy policies[] = {
-                ActiveSortPolicy::Isometric
+                ActiveSortPolicy::Isometric,
+                ActiveSortPolicy::TopDown
             };
             ActiveSortPolicy* selectedPolicy = nullptr;
             if (ImGui::BeginListBox("Projection Style"))
@@ -177,7 +178,7 @@ namespace Spoon
                 }
                 ImGui::EndListBox();
             }
-            ImGui::SameLine(); HelpMarker("Determines the rendering style");
+            ImGui::SameLine(); HelpMarker("Determines the rendering style.");
             
             ImGui::Separator();
             if (ImGui::Button("Save Project"))

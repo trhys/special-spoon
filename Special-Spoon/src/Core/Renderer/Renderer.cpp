@@ -9,6 +9,9 @@ namespace Spoon {
         m_DrawTime = 0.f;
         sf::Clock drawClock;
 
+        // Resolve logical -> presentation mapping before any PreRender
+        UpdateProjection(manager);
+
         // Begin sorting renderables by layer
         m_Renderables.clear();
         auto& layerArray = manager.GetArray<RenderLayer>(RenderLayer::Name);
@@ -67,7 +70,23 @@ namespace Spoon {
 				policy.ComputeDepth(m_Renderables); 
 				break;
 			}
+			case ActiveSortPolicy::TopDown: {
+				TopDownProjection policy;
+				policy.ComputeDepth(m_Renderables);
+				break;
+			}
 		}
+	}
+
+	void Renderer::UpdateProjection(EntityManager& manager)
+	{
+		// rebuild projection each from from active tilemap
+		// the tile map provides helpers for aqcuiring it's
+		// logical dims separate from its projected ones
+		m_Projection = WorldProjection{};
+		auto& tileMaps = manager.GetArray<TileMapComp>(TileMapComp::Name);
+		if (!tileMaps.m_Components.empty())
+			m_Projection = tileMaps.m_Components.front().GetProjection(IsProjectionEnabled());
 	}
 
 	void Renderer::UpdateRenderConfig()

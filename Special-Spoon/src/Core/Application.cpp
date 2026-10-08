@@ -159,6 +159,11 @@ namespace Spoon
 
         bool play = true;
         bool rayPickFlag = false;
+
+        // editor entity placement (viewport drag)
+        bool draggingEntity = false;
+        UUID dragEntity;
+        sf::Vector2f lastDragMouse;
         
         m_SystemManager.InitializeStateSystem();
         
@@ -280,7 +285,44 @@ namespace Spoon
                             selectedID = entities.front();
                     }
                     m_Editor.PickEntity(selectedID, m_EntityManager);
+
+                    // begin dragging the picked entity while not simulating
+                    auto& transformArray = m_EntityManager.GetArray<TransformComp>(TransformComp::Name);
+                    draggingEntity = !play && !entities.empty() && transformArray.HasEntity(selectedID);
+                    if (draggingEntity)
+                    {
+                        dragEntity = selectedID;
+                        lastDragMouse = worldMouse;
+                        m_EntityManager.GetComponent<TransformComp>(dragEntity, TransformComp::Name)
+                            .MoveTransform(worldMouse, true);
+                    }
                 }
+                else if (draggingEntity &&
+                    !viewportConsumed &&
+                    !play &&
+                    sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+                {
+                    // mouse is presentation space - MoveTransform inverse
+                    // projects it so the stored transform stays logical
+                    ImVec2 mousePos = ImGui::GetIO().MousePos;
+                    sf::Vector2i relativeMouse(
+                        static_cast<int>(mousePos.x - viewportImageMin.x),
+                        static_cast<int>(mousePos.y - viewportImageMin.y)
+                    );
+                    sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
+                    auto& transformArray = m_EntityManager.GetArray<TransformComp>(TransformComp::Name);
+                    if (!transformArray.HasEntity(dragEntity))
+                        draggingEntity = false;
+                    else if (worldMouse != lastDragMouse)
+                    {
+                        lastDragMouse = worldMouse;
+                        m_EntityManager.GetComponent<TransformComp>(dragEntity, TransformComp::Name)
+                            .MoveTransform(worldMouse, false);
+                        m_Editor.PickEntity(dragEntity, m_EntityManager);
+                    }
+                }
+                else
+                    draggingEntity = false;
 
                 ImGui::End();
                 
