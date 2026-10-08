@@ -119,22 +119,22 @@ namespace Spoon {
 
 	// atlas settings controls
 	bool changed = false;
-	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth); ImGui::Sameline();
-	ImGui::Helpmarker("The width of a single tile in the atlas texture.");
-	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight); ImGui::Sameline();
-	ImGui::Helpmarker("The height of a single tile in the atlas texture.");
-	changed |= ImGui::InputInt("Tile Footprint X", &m_Atlas.tileFootprintX); ImGui::Sameline();
-	ImGui::Helpmarker("The horizontal footprint of a single tile in the atlas texture.");
-	changed |= ImGui::InputInt("Tile Footprint Y", &m_Atlas.tileFootprintY); ImGui::Sameline();
-	ImGui::Helpmarker("The vertical footprint of a single tile in the atlas texture.");
-	changed |= ImGui::InputInt("Columns", &m_Atlas.columns); ImGui::Sameline();
-	ImGui::Helpmarker("The number of columns in the atlas texture.");
-	changed |= ImGui::InputInt("Rows", &m_Atlas.rows); ImGui::Sameline();
-	ImGui::Helpmarker("The number of rows in the atlas texture.");
-    changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin); ImGui::Sameline();
-    ImGui::Helpmarker("The margin around the atlas texture. Follows a {1, 1} line from the top-left corner. If your first tile starts at px (1, 1), set this to 1.");
-    changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing); ImGui::Sameline();
-    ImGui::Helpmarker("The horizontal spacing between tiles in the same row of the atlas texture.");
+	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth); ImGui::SameLine();
+	HelpMarker("The width of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Height", &m_Atlas.tileHeight); ImGui::SameLine();
+	HelpMarker("The height of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Footprint X", &m_Atlas.tileFootprintX); ImGui::SameLine();
+	HelpMarker("The horizontal footprint of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Tile Footprint Y", &m_Atlas.tileFootprintY); ImGui::SameLine();
+	HelpMarker("The vertical footprint of a single tile in the atlas texture.");
+	changed |= ImGui::InputInt("Columns", &m_Atlas.columns); ImGui::SameLine();
+	HelpMarker("The number of columns in the atlas texture.");
+	changed |= ImGui::InputInt("Rows", &m_Atlas.rows); ImGui::SameLine();
+	HelpMarker("The number of rows in the atlas texture.");
+    changed |= ImGui::InputInt("Atlas Margin", &m_Atlas.margin); ImGui::SameLine();
+    HelpMarker("The margin around the atlas texture. Follows a {1, 1} line from the top-left corner. If your first tile starts at px (1, 1), set this to 1.");
+    changed |= ImGui::InputInt("Atlas Spacing", &m_Atlas.spacing); ImGui::SameLine();
+    HelpMarker("The horizontal spacing between tiles in the same row of the atlas texture.");
 
 	if (changed) {
 		ClampInput();
