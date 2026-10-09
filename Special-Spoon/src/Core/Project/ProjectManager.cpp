@@ -61,6 +61,8 @@ namespace Spoon
                 std::filesystem::create_directories(newProject.dataPath);
                 newProject.assetsPath = std::filesystem::path("projects/") / newProject.ID / "assets/";
                 std::filesystem::create_directories(newProject.assetsPath);
+                newProject.presetsPath = newProject.assetsPath / "presets/";
+                std::filesystem::create_directories(newProject.presetsPath);
                 newProject.version = "1.0";
 
                 // Dump data to JSON
@@ -68,6 +70,7 @@ namespace Spoon
                 projectJson["ID"] = newProject.ID;
                 projectJson["DataPath"] = newProject.dataPath;
                 projectJson["AssetsPath"] = newProject.assetsPath;
+                projectJson["PresetsPath"] = newProject.presetsPath;
                 projectJson["Version"] = newProject.version;
                 projectJson["RecentFiles"] = newProject.recentFiles;
 				projectJson["Config"] = ProjectConfig{};
@@ -221,6 +224,7 @@ namespace Spoon
             newProject.filePath = filepath;
             newProject.dataPath = projectJson.value("DataPath", "");
             newProject.assetsPath = projectJson.value("AssetsPath", "");
+            newProject.presetsPath = projectJson.value("PresetsPath", newProject.assetsPath / "presets/");
             newProject.version = projectJson.value("Version", "1.0");
             newProject.recentFiles = projectJson.value("RecentFiles", std::vector<std::filesystem::path>{});
 			newProject.config = projectJson.value("Config", ProjectConfig{});
@@ -280,6 +284,7 @@ namespace Spoon
             projectJson["ID"] = m_CurrentProject->ID;
             projectJson["DataPath"] = m_CurrentProject->dataPath.string();
             projectJson["AssetsPath"] = m_CurrentProject->assetsPath.string();
+            projectJson["PresetsPath"] = m_CurrentProject->presetsPath.string();
             projectJson["Version"] = m_CurrentProject->version;
 			projectJson["Config"] = m_CurrentProject->config;
             projectJson["Blueprints"] = m_CurrentProject->blueprints;

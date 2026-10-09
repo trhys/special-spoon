@@ -65,6 +65,11 @@ namespace Spoon
         void PreRender(EntityManager& manager, UUID id) override;
         void Render(sf::RenderTarget& target, sf::RenderStates states) override;
         sf::Vector2f GetPosition() override;
+
+        // preset save/load
+        void SavePreset(const std::string& presetName);
+        void LoadPreset(const std::string& presetName);
+        void LoadFromPreset(const json& j);
     };
 }
 

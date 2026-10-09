@@ -36,6 +36,52 @@ namespace Spoon
         static int setMaxParticles = static_cast<int>(maxParticles);
         static bool setMaxParticlesChanged = false;
 
+        // popup info for prompting preset save
+        const char* presetSavePopupLabel = "Name New Preset";
+        const char* presetOverwritePopupLabel = "Overwrite Existing Preset?";
+        static char presetSaveInputBuffer[32] = "";
+
+        ImGui::TextDisabled("Presets");
+        if (ImGui::Button("Load Preset"))
+        {
+            // Implementation for loading the preset
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Save Preset"))
+        {
+            auto path = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath / "particles" / (std::string(presetSaveInputBuffer) + ".json");
+            if (std::filesystem::exists(path))
+                ImGui::OpenPopup(presetOverwritePopupLabel);
+            else
+                ImGui::OpenPopup(presetSavePopupLabel);
+        }
+        if (ImGui::BeginPopupModal(presetSavePopupLabel, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::InputText("Preset Name", presetSaveInputBuffer, IM_ARRAYSIZE(presetSaveInputBuffer));
+            if (ImGui::Button("Save"))
+            {
+                SavePreset(presetSaveInputBuffer);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        if (ImGui::BeginPopupModal(presetOverwritePopupLabel, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("A preset with this name already exists. Overwrite?");
+            if (ImGui::Button("Yes"))
+            {
+                SavePreset(presetSaveInputBuffer);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        ImGui::Separator();
+
         ImGui::TextDisabled("Emitter Settings");
         ImGui::SliderFloat("Emission Rate:", &emissionRate, 0.0f, 1000.0f); ImGui::SameLine();
         HelpMarker("Controls the rate at which particles are emitted. Unit is particles/second.");
@@ -157,5 +203,46 @@ namespace Spoon
     sf::Vector2f ParticleEmitterComp::GetPosition()
     {
         return sf::Vector2f({0.0f, 0.0f});
+    }
+
+    void ParticleEmitterComp::SavePreset(const std::string& presetName)
+    {
+        std::filesystem::path presetsPath = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath;
+        std::filesystem::create_directories(presetsPath / "particles");
+        const std::filesystem::path presetFile = presetsPath / "particles" / (presetName + ".json");
+        
+        json j = this->Serialize();
+        std::ofstream fileStream(presetFile, std::ios::out | std::ios::trunc);
+        if (fileStream.is_open())
+        {
+            fileStream << j.dump(4);
+            fileStream.close();
+        }
+    }
+
+    void ParticleEmitterComp::LoadPreset(const std::string& presetName)
+    {
+        const std::filesystem::path presetFile = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath / "particles" / (presetName + ".json");
+        if (std::filesystem::exists(presetFile))
+        {
+            std::ifstream fileStream(presetFile, std::ios::in);
+            if (fileStream.is_open())
+            {
+                json j;
+                fileStream >> j;
+                fileStream.close();
+                
+                // reconstruct preset
+                LoadFromPreset(j);
+            }
+        } else {
+            SS_DEBUG_LOG("[ParticleEmitterComp] Preset file not found: " + presetFile.string());
+            throw std::runtime_error("Preset file not found: " + presetFile.string());
+        }
+    }
+
+    void ParticleEmitterComp::LoadFromPreset(const json& j)
+    {
+        from_json(j, *this);
     }
 }
