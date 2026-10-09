@@ -33,7 +33,7 @@ namespace Spoon
         // particle settings
         float particleLifetime;
         sf::Vector2f particleSizeRange;
-        std::string textureID;
+        std::string textureID = "empty";
         sf::IntRect textureRect;
 
         // lifecycle

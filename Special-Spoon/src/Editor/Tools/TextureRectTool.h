@@ -13,6 +13,8 @@ namespace Spoon
 	public:
 		bool Run(sf::Texture& texture, sf::IntRect& returnedRect)
 		{
+            bool running = true;
+
             // Center this window only when it first appears
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -70,19 +72,19 @@ namespace Spoon
                     returnedRect = m_Rect;
                     m_Rect = sf::IntRect();
                     m_Dragging = false;
-                    return false;
+                    running = false;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Cancel", ImVec2(120, 0)))
                 {
                     m_Rect = sf::IntRect();
                     m_Dragging = false;
-                    return false;
+                    running = false;
                 }
             }
             ImGui::End();
 
-            return true;
+            return running;
 		}
 
         void Shutdown()
