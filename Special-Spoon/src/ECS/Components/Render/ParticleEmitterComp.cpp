@@ -35,6 +35,7 @@ namespace Spoon
     {
         int setMaxParticles = static_cast<int>(maxParticles);
         bool setMaxParticlesChanged = false;
+        static bool displaySaveError = false;
 
         // popup info for prompting preset save
         const char* presetSavePopupLabel = "Name New Preset";
@@ -74,16 +75,26 @@ namespace Spoon
             ImGui::InputText("Preset Name", presetSaveInputBuffer, IM_ARRAYSIZE(presetSaveInputBuffer));
             if (ImGui::Button("Save"))
             {
+                if (presetSaveInputBuffer[0] == '\0')
+                {
+                    displaySaveError = true;
+                }
                 auto path = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath / "particles" / (std::string(presetSaveInputBuffer) + ".json");
                 if (std::filesystem::exists(path))
                 {
+                    displaySaveError = false;
                     ImGui::OpenPopup(presetOverwritePopupLabel);
                 }
                 else
                 {
                     SavePreset(presetSaveInputBuffer);
+                    displaySaveError = false;
                     ImGui::CloseCurrentPopup();
                 }
+            }
+            if (displaySaveError)
+            {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "Preset name cannot be empty.");
             }
             ImGui::EndPopup();
         }
@@ -181,6 +192,9 @@ namespace Spoon
 
     void ParticleEmitterComp::PreRender(EntityManager& manager, UUID id)
     {
+        // sync emitters position with transform from entity
+        auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+        position = transform.GetPosition();
         const auto& projection = Application::Get().GetRenderer().GetProjection();
 
         if (vertices.size() != particlePool.size() * 6)
@@ -221,7 +235,7 @@ namespace Spoon
 
     sf::Vector2f ParticleEmitterComp::GetPosition()
     {
-        return sf::Vector2f({0.0f, 0.0f});
+        return position;
     }
 
     void ParticleEmitterComp::SavePreset(const std::string& presetName)

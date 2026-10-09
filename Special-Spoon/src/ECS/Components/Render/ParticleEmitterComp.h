@@ -66,6 +66,8 @@ namespace Spoon
         void Render(sf::RenderTarget& target, sf::RenderStates states) override;
         sf::Vector2f GetPosition() override;
 
+        sf::Vector2f position = {0.0f, 0.0f}; // logical position of the emitter
+
         // preset save/load
         void SavePreset(const std::string& presetName);
         void LoadPreset(const std::string& presetName);

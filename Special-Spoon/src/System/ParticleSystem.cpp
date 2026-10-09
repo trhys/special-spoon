@@ -69,13 +69,14 @@ namespace Spoon
         }
 
         // create entities at emission rate if queue is not empty
-        emitter.accumulatedTime += tick.asSeconds();
+        if (emitter.isActive)
+            emitter.accumulatedTime += tick.asSeconds();
 
         while (emitter.particlePool.size() < emitter.maxParticles && emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
         {
             if (!emitter.isActive)
                 break;
-            
+
             emitter.accumulatedTime -= 1.0f / emitter.emissionRate;
 
             Particle particle;
