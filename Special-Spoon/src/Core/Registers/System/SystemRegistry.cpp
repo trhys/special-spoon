@@ -1,10 +1,5 @@
 #include "SystemRegistry.h"
-#include "System/AnimationSystem.h"
-#include "System/MovementSystem.h"
-#include "System/Physics/CollisionSystem.h"
-#include "System/Physics/PhysicsSystem.h"
-#include "System/Physics/SystemConfigs.h"
-#include "System/TileMap/TileMapCollisionSystem.h"
+#include "System/Include.h"
 
 namespace Spoon
 {
@@ -35,6 +30,11 @@ namespace Spoon
         return std::make_unique<TileMapCollisionSystem>();
     }
 
+    std::unique_ptr<ISystem> LoadAudioSystem(const json* systemData)
+    {
+        return std::make_unique<AudioSystem>();
+    }
+
     void RegisterDefaultSystems()
     {
         SS_DEBUG_LOG("[SYSTEM] Registering default systems...")
@@ -43,5 +43,6 @@ namespace Spoon
         SystemRegistry::Get().RegisterLoader("Collision", &LoadCollisionSystem);
         SystemRegistry::Get().RegisterLoader("Physics", &LoadPhysicsSystem);
         SystemRegistry::Get().RegisterLoader("TileMapCollision", &LoadTileMapCollisionSystem);
+        SystemRegistry::Get().RegisterLoader("Audio", &LoadAudioSystem);
     }
 }

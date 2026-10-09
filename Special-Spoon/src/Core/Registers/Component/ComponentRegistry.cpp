@@ -115,6 +115,14 @@ namespace Spoon
         loaded.BuildMap();
     }
 
+    void LoadAudioComp(EntityManager& manager, UUID id, const json& comp)
+    {
+        auto audio = comp.get<AudioComp>();
+        manager.MakeComponent<AudioComp>(id, AudioComp::Name);
+        auto& loaded = manager.GetComponent<AudioComp>(id, AudioComp::Name);
+        loaded = audio;
+    }
+
     void RegisterDefaultLoaders()
     {
         SS_DEBUG_LOG("[COMPONENT] Registering default component loaders...")
@@ -133,5 +141,6 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(ColorComp::Name, &LoadColorComponent);
         ComponentRegistry::Get().RegisterLoader(MovementComp::Name, &LoadMovementComp);
         ComponentRegistry::Get().RegisterLoader(TileMapComp::Name, &LoadTileMapComp);
+        ComponentRegistry::Get().RegisterLoader(AudioComp::Name, &LoadAudioComp);
     }
 }

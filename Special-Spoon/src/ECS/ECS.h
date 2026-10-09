@@ -18,3 +18,5 @@
 #include "Components/Animation/FadeComp.h"
 
 #include "Components/World/TileMapComp.h"
+
+#include "Components/Sound/AudioComp.h"

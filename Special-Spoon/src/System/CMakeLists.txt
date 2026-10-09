@@ -1,5 +1,6 @@
 target_sources(Special-Spoon
     PRIVATE
+        Include.h
         AnimationSystem.h
         AnimationSystem.cpp
         InputSystem.h
@@ -19,4 +20,7 @@ target_sources(Special-Spoon
 
         TileMap/TileMapCollisionSystem.h
         TileMap/TileMapCollisionSystem.cpp
+
+        Sound/AudioSystem.h
+        Sound/AudioSystem.cpp
 )
