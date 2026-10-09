@@ -117,6 +117,9 @@ namespace Spoon {
         ImGui::EndChild();
     }
 
+    if (ImGui::Button("Open Tile Map Editor"))
+        Application::Get().GetEditor().EditTileMap(this);
+
 	// atlas settings controls
 	bool changed = false;
 	changed |= ImGui::InputInt("Tile Width", &m_Atlas.tileWidth); ImGui::SameLine();

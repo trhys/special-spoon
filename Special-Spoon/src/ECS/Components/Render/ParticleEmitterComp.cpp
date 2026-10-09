@@ -169,8 +169,8 @@ namespace Spoon
             ImGui::Text("Texture Rect: (%d, %d, %d, %d)", 
                 textureRect.position.x, textureRect.position.y,
                 textureRect.size.x, textureRect.size.y);
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
 
         ImGui::TextDisabled("Lifecycle");
         ImGui::Checkbox("Is Active", &isActive);

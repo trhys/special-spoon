@@ -33,7 +33,7 @@ namespace Spoon
 
         void Run(sf::Time tick, EntityManager& manager, SceneManager& s_Manager, SystemManager& sys_Manager);       
         void EditTextureRect(bool& editing, sf::Texture& texture, sf::IntRect& rect);
-        void EditTileMap(UUID id);
+        void EditTileMap(TileMapComp* comp);
         void PickEntity(UUID id, EntityManager& e_Manager);
         bool HandleViewportTools(
             Viewport& viewport,

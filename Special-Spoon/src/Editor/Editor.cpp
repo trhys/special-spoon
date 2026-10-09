@@ -224,9 +224,9 @@ namespace Spoon
         editing = m_TextureRectTool.Run(texture, rect);
     }
 
-    void Editor::EditTileMap(UUID id)
+    void Editor::EditTileMap(TileMapComp* comp)
     {
-        m_TileMapTool.Open(id);
+        m_TileMapTool.Open(comp);
     }
 
     void Editor::SetActiveScene(SceneData* scene)
