@@ -27,7 +27,7 @@ namespace Spoon
 
         static constexpr const char* Name = "ParticleEmitter";
 
-        // emittor settings
+        // emitter settings
         float emissionRate = 1000.0f;                           // particles emitted per second
         float emissionSpread = 6.28f;                           // spread angle in radians
         sf::Vector2f velocityRange = {0.0f, 100.0f};            // min and max velocity for particles

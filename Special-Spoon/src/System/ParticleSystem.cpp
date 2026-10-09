@@ -20,10 +20,9 @@ namespace Spoon
         for (size_t index = 0; index < emitterArray.m_Components.size(); index++)
         {
             auto& emitter = emitterArray.m_Components[index];
-            if (!emitter.isActive)
-                continue;
-
             UUID id = emitterArray.m_IndexToId[index];
+            if (!transformArray.m_IdToIndex.count(id))
+                continue;
             auto& transform = transformArray.m_Components[transformArray.m_IdToIndex[id]];
             
             if (emitter.elapsedTime >= emitter.totalLifetime && !emitter.looping)
@@ -74,12 +73,15 @@ namespace Spoon
 
         while (emitter.particlePool.size() < emitter.maxParticles && emitter.accumulatedTime >= 1.0f / emitter.emissionRate)
         {
+            if (!emitter.isActive)
+                break;
+            
             emitter.accumulatedTime -= 1.0f / emitter.emissionRate;
 
             Particle particle;
             particle.remainingLifetime = emitter.particleLifetime;
             particle.maxLifetime = emitter.particleLifetime;
-            particle.position = transform.GetPosition();
+            particle.position = transform.GetPosition() + emitter.particleSpawnOffset;
             particle.color = emitter.particleStartColor;
             std::uniform_real_distribution<float> sizeDist(emitter.particleSizeRange.x, emitter.particleSizeRange.y);
             particle.sizeJitter = sizeDist(gen);

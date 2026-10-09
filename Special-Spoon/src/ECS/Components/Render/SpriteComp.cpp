@@ -101,6 +101,8 @@ namespace Spoon
         {
             sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(m_TextureID);
             Application::Get().GetEditor().EditTextureRect(editingRect, texture, m_TextureRect);
+            if (!editingRect)
+                SetTextureRect(m_TextureRect);
         }
 
         ImGui::SeparatorText("Center Origin");

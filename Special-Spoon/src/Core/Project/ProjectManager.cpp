@@ -327,10 +327,14 @@ namespace Spoon
 
     // get all presets from the assets folder by category
     // ex: GetAvailablePresets("particles") will return all JSON presets in the "particles" category folder.
-    const std::vector<std::string>& ProjectManager::GetAvailablePresets(const std::string& category)
+    std::vector<std::string> ProjectManager::GetAvailablePresets(const std::string& category)
     {
         if (!m_CurrentProject)
             throw std::runtime_error("fetching available presets with no project loaded");
+
+        // verify category is a valid dir
+        if (!std::filesystem::exists(m_CurrentProject->presetsPath / category) || !std::filesystem::is_directory(m_CurrentProject->presetsPath / category))
+            throw std::runtime_error("invalid presets category: " + category);
 
         std::vector<std::string> presets;
         for (const auto& entry : std::filesystem::directory_iterator(m_CurrentProject->presetsPath / category))

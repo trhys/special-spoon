@@ -44,7 +44,7 @@ namespace Spoon
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
 
         std::vector<Blueprint>& GetBlueprints();
-        const std::vector<std::string>& GetAvailablePresets(const std::string& category);
+        std::vector<std::string> GetAvailablePresets(const std::string& category);
 
     private:
         std::unique_ptr<Project> m_CurrentProject = nullptr;

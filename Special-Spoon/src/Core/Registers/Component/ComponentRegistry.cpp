@@ -128,18 +128,7 @@ namespace Spoon
         auto emitter = comp.get<ParticleEmitterComp>();
         manager.MakeComponent<ParticleEmitterComp>(id, ParticleEmitterComp::Name);
         auto& loaded = manager.GetComponent<ParticleEmitterComp>(id, ParticleEmitterComp::Name);
-        loaded.emissionRate = emitter.emissionRate;
-        loaded.emissionSpread = emitter.emissionSpread;
-        loaded.velocityRange = emitter.velocityRange;
-        loaded.particleLifetime = emitter.particleLifetime;
-        loaded.particleSizeRange = emitter.particleSizeRange;
-        loaded.textureID = emitter.textureID;
-        loaded.textureRect = emitter.textureRect;
-        loaded.isActive = emitter.isActive;
-        loaded.looping = emitter.looping;
-        loaded.elapsedTime = emitter.elapsedTime;
-        loaded.totalLifetime = emitter.totalLifetime;
-        loaded.maxParticles = emitter.maxParticles;
+        loaded = emitter;
     }
 
     void RegisterDefaultLoaders()

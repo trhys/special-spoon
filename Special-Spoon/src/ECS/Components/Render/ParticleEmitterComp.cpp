@@ -33,8 +33,8 @@ namespace Spoon
 
     void ParticleEmitterComp::OnReflect()
     {
-        static int setMaxParticles = static_cast<int>(maxParticles);
-        static bool setMaxParticlesChanged = false;
+        int setMaxParticles = static_cast<int>(maxParticles);
+        bool setMaxParticlesChanged = false;
 
         // popup info for prompting preset save
         const char* presetSavePopupLabel = "Name New Preset";
@@ -52,7 +52,7 @@ namespace Spoon
             if (ImGui::BeginListBox("Available Presets"))
             {
                 const auto& presets = Application::Get().GetProjectManager().GetAvailablePresets("particles");
-                for (const auto& preset : presets)
+                for (auto preset : presets)
                 {
                     if (ImGui::Selectable(preset.c_str()))
                     {
@@ -67,19 +67,23 @@ namespace Spoon
         ImGui::SameLine();
         if (ImGui::Button("Save Preset"))
         {
-            auto path = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath / "particles" / (std::string(presetSaveInputBuffer) + ".json");
-            if (std::filesystem::exists(path))
-                ImGui::OpenPopup(presetOverwritePopupLabel);
-            else
-                ImGui::OpenPopup(presetSavePopupLabel);
+            ImGui::OpenPopup(presetSavePopupLabel);
         }
         if (ImGui::BeginPopupModal(presetSavePopupLabel, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::InputText("Preset Name", presetSaveInputBuffer, IM_ARRAYSIZE(presetSaveInputBuffer));
             if (ImGui::Button("Save"))
             {
-                SavePreset(presetSaveInputBuffer);
-                ImGui::CloseCurrentPopup();
+                auto path = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath / "particles" / (std::string(presetSaveInputBuffer) + ".json");
+                if (std::filesystem::exists(path))
+                {
+                    ImGui::OpenPopup(presetOverwritePopupLabel);
+                }
+                else
+                {
+                    SavePreset(presetSaveInputBuffer);
+                    ImGui::CloseCurrentPopup();
+                }
             }
             ImGui::EndPopup();
         }
@@ -167,7 +171,7 @@ namespace Spoon
         setMaxParticlesChanged |= ImGui::InputInt("Max Particles:", &setMaxParticles);
         if (setMaxParticlesChanged)
         {
-            maxParticles = static_cast<size_t>(setMaxParticles);
+            maxParticles = static_cast<size_t>(std::max(setMaxParticles, 0));
             setMaxParticlesChanged = false;
         }
 
@@ -177,30 +181,27 @@ namespace Spoon
 
     void ParticleEmitterComp::PreRender(EntityManager& manager, UUID id)
     {
-        const auto& projection =
-        Application::Get().GetRenderer().GetProjection();
+        const auto& projection = Application::Get().GetRenderer().GetProjection();
 
         if (vertices.size() != particlePool.size() * 6)
             return;
 
-        const sf::Vector2f halfSize{
-            static_cast<float>(textureRect.size.x) * 0.5f,
-            static_cast<float>(textureRect.size.y) * 0.5f
-        };
-
         for (size_t i = 0; i < particlePool.size(); ++i)
         {
-            const sf::Vector2f center =
-                projection.LogicalToScreen(particlePool[i].position);
+            const Particle& particle = particlePool[i];
+            const sf::Vector2f halfSize{
+                static_cast<float>(textureRect.size.x) * 0.5f * particle.size,
+                static_cast<float>(textureRect.size.y) * 0.5f * particle.size
+            };
+            const sf::Vector2f center = projection.LogicalToScreen(particle.position);
 
             // Calculate the positions of the particle's vertices based on its center and half size.
-            // Apply offset to manually adjust the particle's position based on the spawn offset.
-            const sf::Vector2f topLeft = center - halfSize + particleSpawnOffset;
+            const sf::Vector2f topLeft = center - halfSize;
             const sf::Vector2f topRight =
-                center + sf::Vector2f{halfSize.x, -halfSize.y} + particleSpawnOffset;
-            const sf::Vector2f bottomRight = center + halfSize + particleSpawnOffset;
+                center + sf::Vector2f{halfSize.x, -halfSize.y};
+            const sf::Vector2f bottomRight = center + halfSize;
             const sf::Vector2f bottomLeft =
-                center + sf::Vector2f{-halfSize.x, halfSize.y} + particleSpawnOffset;
+                center + sf::Vector2f{-halfSize.x, halfSize.y};
 
             const size_t base = i * 6;
             vertices[base + 0].position = topLeft;
