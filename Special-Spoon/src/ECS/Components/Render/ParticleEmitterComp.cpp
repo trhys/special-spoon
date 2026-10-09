@@ -59,7 +59,37 @@ namespace Spoon
 
     void ParticleEmitterComp::PreRender(EntityManager& manager, UUID id)
     {
-        // no op for now - may change
+        const auto& projection =
+        Application::Get().GetRenderer().GetProjection();
+
+        if (vertices.size() != particlePool.size() * 6)
+            return;
+
+        const sf::Vector2f halfSize{
+            static_cast<float>(textureRect.size.x) * 0.5f,
+            static_cast<float>(textureRect.size.y) * 0.5f
+        };
+
+        for (size_t i = 0; i < particlePool.size(); ++i)
+        {
+            const sf::Vector2f center =
+                projection.LogicalToScreen(particlePool[i].position);
+
+            const sf::Vector2f topLeft = center - halfSize;
+            const sf::Vector2f topRight =
+                center + sf::Vector2f{halfSize.x, -halfSize.y};
+            const sf::Vector2f bottomRight = center + halfSize;
+            const sf::Vector2f bottomLeft =
+                center + sf::Vector2f{-halfSize.x, halfSize.y};
+
+            const size_t base = i * 6;
+            vertices[base + 0].position = topLeft;
+            vertices[base + 1].position = topRight;
+            vertices[base + 2].position = bottomRight;
+            vertices[base + 3].position = topLeft;
+            vertices[base + 4].position = bottomRight;
+            vertices[base + 5].position = bottomLeft;
+        }
     }
 
     void ParticleEmitterComp::Render(sf::RenderTarget& target, sf::RenderStates states)
