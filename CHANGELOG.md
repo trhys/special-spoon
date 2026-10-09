@@ -68,3 +68,10 @@ note: Previous changes will not be in this log. This record will keep all change
 - Tilemap render cache, editor tile picking/overlays and the collider debug overlay share the projection helpers. Tile collision is still built from the logical tile grid.
 - Sprites keep logical transforms and are projected at render time (feet placed on the projected center of their logical footprint).
 - Dragging an entity in the editor viewport inverse-projects the mouse before storing the transform.
+
+### Audi System/Component
+- Added AudioComp to ECS with it's editor methods attached
+- Added Audio System to iterate on AudioComp and pulls actions from the ActionQueue, checks them against the component's mappings, and plays and matches
+- Added a large sampling of UI sound effects in the Sandbox/Assets folder
+
+---
