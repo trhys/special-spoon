@@ -2,6 +2,7 @@
 #include "AnimationSystem.h"
 #include "InputSystem.h"
 #include "MovementSystem.h"
+#include "ParticleSystem.h"
 #include "StateSystem.h"
 #include "Physics/PhysicsSystem.h"
 #include "Physics/CollisionSystem.h"

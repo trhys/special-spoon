@@ -209,16 +209,8 @@ namespace Spoon
             if(ImGui::BeginChild("Component Inspector"))
             {
                 selectedComponent->OnReflect();
-
-                // todo: copilot put this here --- it goes in the components implementation onreflect()
-                if (selectedComponent->GetDisplayName() == TileMapComp::Name)
-                {
-                    if (ImGui::Button("Open Tile Map Editor"))
-                        Application::Get().GetEditor().EditTileMap(selectedID);
-                }
-
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
         }
     }
 

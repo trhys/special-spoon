@@ -13,24 +13,6 @@ namespace Spoon
     {
         constexpr const char* addLayerPopup = "Add Tile Layer";
 
-        TileMapComp* ResolveTileMap(UUID entity)
-        {
-            auto& entityManager = Application::Get().GetEntityManager();
-            const auto& arrays = entityManager.GetAllArrays();
-            const auto arrayIt = arrays.find(TileMapComp::Name);
-            if (arrayIt == arrays.end())
-                return nullptr;
-
-            auto* tileMaps =
-                static_cast<ComponentArray<TileMapComp>*>(arrayIt->second.get());
-
-            const auto found = tileMaps->m_IdToIndex.find(entity);
-            if (found == tileMaps->m_IdToIndex.end())
-                return nullptr;
-
-            return &tileMaps->m_Components[found->second];
-        }
-
         // the tool works on its own tilemap's grid, gated by the project config
         WorldProjection ToolProjection(const TileMapComp& tileMap)
         {
@@ -53,11 +35,10 @@ namespace Spoon
         }
     }
 
-    void TileMapTool::Open(UUID tileMapEntity)
+    void TileMapTool::Open(TileMapComp* tileMap)
     {
-        m_TileMapEntity = tileMapEntity;
         m_SceneGeneration = Application::Get().GetSceneManager().GetSceneGeneration();
-        m_TileMap = ResolveTileMap(m_TileMapEntity);
+        m_TileMap = tileMap;
         m_Open = (m_TileMap != nullptr);
         m_HasPendingBuild = false;
         m_LastPaintedCell = {-1, -1};
@@ -73,14 +54,8 @@ namespace Spoon
         if (!m_HasPendingBuild)
             return;
 
-        if (m_TileMap &&
-            Application::Get().GetSceneManager().GetSceneGeneration() ==
-                m_SceneGeneration &&
-            ResolveTileMap(m_TileMapEntity) == m_TileMap)
-        {
-            m_TileMap->BuildMap();
-            m_TileMap->m_RebuildCollision = true;
-        }
+        m_TileMap->BuildMap();
+        m_TileMap->m_RebuildCollision = true;
 
         m_HasPendingBuild = false;
     }
@@ -89,7 +64,6 @@ namespace Spoon
     {
         FlushPendingBuild();
         m_Open = false;
-        m_TileMapEntity = {};
         m_TileMap = nullptr;
         m_LastPaintedCell = {-1, -1};
         m_LastLeftDown = false;
@@ -104,11 +78,7 @@ namespace Spoon
             return false;
         }
 
-        TileMapComp* tileMap = ResolveTileMap(m_TileMapEntity);
-        if (!tileMap)
-            return false;
-
-        m_TileMap = tileMap;
+        /*m_TileMap = tileMap;*/
         return true;
     }
 

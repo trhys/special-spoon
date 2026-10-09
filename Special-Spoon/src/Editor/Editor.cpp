@@ -219,14 +219,14 @@ namespace Spoon
         if (OpenBlueprintsMenu)     { BlueprintsMenu(e_Manager); }
     }
 
-    void Editor::EditTextureRect(SpriteComp& comp)
+    void Editor::EditTextureRect(bool& editing, sf::Texture& texture, sf::IntRect& rect)
     {
-        m_TextureRectTool.Run(comp);
+        editing = m_TextureRectTool.Run(texture, rect);
     }
 
-    void Editor::EditTileMap(UUID id)
+    void Editor::EditTileMap(TileMapComp* comp)
     {
-        m_TileMapTool.Open(id);
+        m_TileMapTool.Open(comp);
     }
 
     void Editor::SetActiveScene(SceneData* scene)

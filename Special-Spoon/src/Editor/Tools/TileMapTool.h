@@ -12,7 +12,7 @@ namespace Spoon
     class TileMapTool
     {
     public:
-        void Open(UUID tileMapEntity);
+        void Open(TileMapComp* tileMap);
         void Close();
 
         bool IsOpen() const { return m_Open; }
@@ -51,7 +51,6 @@ namespace Spoon
         ) const;
 
         bool m_Open = false;
-        UUID m_TileMapEntity{};
         TileMapComp* m_TileMap = nullptr;
         std::uint64_t m_SceneGeneration = 0;
         bool m_HasPendingBuild = false;

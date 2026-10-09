@@ -16,6 +16,8 @@ target_sources(Special-Spoon
         Components/Animation/BlinkComp.h
         Components/Animation/FadeComp.h
 
+        Components/Render/ParticleEmitterComp.h
+        Components/Render/ParticleEmitterComp.cpp
         Components/Render/SpriteComp.h
         Components/Render/SpriteComp.cpp
         Components/Render/TextComp.h
