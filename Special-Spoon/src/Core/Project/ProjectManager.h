@@ -43,13 +43,8 @@ namespace Spoon
 
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
 
-        std::vector<Blueprint>& GetBlueprints()
-        {
-            if (!m_CurrentProject)
-              throw std::runtime_error("fetching blueprints with no project loaded");
-
-            return m_CurrentProject->blueprints;
-        }
+        std::vector<Blueprint>& GetBlueprints();
+        const std::vector<std::string>& GetAvailablePresets(const std::string& category);
 
     private:
         std::unique_ptr<Project> m_CurrentProject = nullptr;

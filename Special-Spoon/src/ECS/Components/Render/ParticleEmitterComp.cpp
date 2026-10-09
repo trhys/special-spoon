@@ -40,11 +40,29 @@ namespace Spoon
         const char* presetSavePopupLabel = "Name New Preset";
         const char* presetOverwritePopupLabel = "Overwrite Existing Preset?";
         static char presetSaveInputBuffer[32] = "";
+        const char* presetSelectPopupLabel = "Select Preset";
 
         ImGui::TextDisabled("Presets");
         if (ImGui::Button("Load Preset"))
         {
-            // Implementation for loading the preset
+            ImGui::OpenPopup(presetSelectPopupLabel);
+        }
+        if (ImGui::BeginPopupModal(presetSelectPopupLabel, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            if (ImGui::BeginListBox("Available Presets"))
+            {
+                const auto& presets = Application::Get().GetProjectManager().GetAvailablePresets("particles");
+                for (const auto& preset : presets)
+                {
+                    if (ImGui::Selectable(preset.c_str()))
+                    {
+                        LoadPreset(preset.c_str());
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                ImGui::EndListBox();
+            }
+            ImGui::EndPopup();
         }
         ImGui::SameLine();
         if (ImGui::Button("Save Preset"))
