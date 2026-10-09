@@ -75,3 +75,27 @@ note: Previous changes will not be in this log. This record will keep all change
 - Added a large sampling of UI sound effects in the Sandbox/Assets folder
 
 ---
+
+## 10/9/26:
+
+### Particle System
+
+- Added a new particle emitter component and particle system for spawning, updating, and rendering configurable particle effects.
+- Added editor controls for particle emitters, including emission rate, spread, velocity, lifetime, size, colors, texture selection, and active/looping state.
+- Added particle preset save/load support, with project-scoped preset storage under the assets presets directory.
+- Registered the particle emitter component and particle system in the ECS/system registries so they are available in-game and in the editor.
+- Added support for loading and editing particle emitter texture regions directly from the editor.
+
+### Project / Editor
+
+- Added project preset path handling to project creation and serialization.
+- Updated texture rect editing to work through the editor’s texture rect tool API.
+- Adjusted tile map editor access to work directly from the selected tile map component.
+
+### Misc
+
+- Updated sprite rendering so inactive sprites no longer render.
+- Refactored editor and component interfaces to support the new particle and texture editing workflows.
+
+---
+
