@@ -6,7 +6,7 @@ namespace Spoon
 {
     class AudioSystem : public ISystem {
     public:
-        AudioSystem() : ISystem::ISystem("AudioSystem") {}
+        AudioSystem() : ISystem::ISystem("Audio") {}
 
         // scheduler methods
         std::vector<std::string> RunBefore() const override {

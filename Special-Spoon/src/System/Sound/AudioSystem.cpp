@@ -16,9 +16,18 @@ namespace Spoon
             UUID id = audioArray.m_IndexToId[index];
             
             // check action queue for audio cue
-            for (const auto& action : queue)
+            
+            for (const auto& action : queue.m_Queue)
             {
-                // todo
+                uint32_t actionId = action.m_ActionType.m_ID;
+                if (action.m_EntityID == id)
+                {
+                  if (audioComp.IsActionMapped(actionId))
+                  {
+                    audioComp.LoadSound(audioComp.actionBuffers[actionId]);
+                    audioComp.PlaySound();
+                  }
+                }
             }
         }
     }

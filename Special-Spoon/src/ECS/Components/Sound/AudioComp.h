@@ -16,6 +16,9 @@ namespace Spoon
         std::string bufferId;   // id to buffer loaded in resource manager
         float volume = 100.0f;  // sound volume
 
+        // action -> sound mappings
+        std::unordered_map<uint32_t, std::string> actionBuffers;
+
         std::optional<sf::Sound> sound;
 
         void PlaySound();
@@ -24,8 +27,11 @@ namespace Spoon
         // load sound buffer from the resource manager
         void LoadSound(const std::string& fileId);
 
+        // check if action is mapped
+        bool IsActionMapped(uint32_t id);
+
         void OnReflect() override;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AudioComp, bufferId, volume)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AudioComp, actionBuffers, bufferId, volume)
 }
