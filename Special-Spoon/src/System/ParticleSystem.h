@@ -23,5 +23,7 @@ namespace Spoon
         private:
             void UpdateEmitter(sf::Time tick, EntityManager& manager, ParticleEmitterComp& emitter, TransformComp& transform);
             void RebuildEmitterVertexArray(ParticleEmitterComp& emitter);
+            sf::Color InterpolateColor(const sf::Color& start, const sf::Color& end, float lifeRatio);
+            float InterpolateSize(const float& start, const float& end, float lifeRatio);
     };
 }

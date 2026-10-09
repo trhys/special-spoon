@@ -14,6 +14,9 @@ namespace Spoon
         float maxLifetime;
         sf::Vector2f velocity;
         sf::Vector2f position;
+        float sizeJitter;
+        sf::Color color;
+        float size;
     };
     
     struct ParticleEmitterComp : public ComponentBase<ParticleEmitterComp>, public IRenderable {
@@ -32,8 +35,12 @@ namespace Spoon
 
         // particle settings
         float particleLifetime = 1.0f;
-        sf::Vector2f particleSizeRange = {1.0f, 1.0f};
+        sf::Vector2f particleSizeRange = {0.0f, 2.0f};      // scalar modification - a range
+        float particleStartSize = 1.0f;                     // selected from above
+        float particleEndSize = 1.0f;                       // ""
         sf::Vector2f particleSpawnOffset = {0.0f, 0.0f};
+        sf::Color particleStartColor = sf::Color::White;
+        sf::Color particleEndColor = sf::Color::White;
         std::string textureID = "empty";
         sf::IntRect textureRect;
 
@@ -77,6 +84,10 @@ namespace Spoon
             {"looping", comp.looping},
             {"elapsedTime", comp.elapsedTime},
             {"totalLifetime", comp.totalLifetime},
+            {"particleStartColor", comp.particleStartColor},
+            {"particleEndColor", comp.particleEndColor},
+            {"particleStartSize", comp.particleStartSize},
+            {"particleEndSize", comp.particleEndSize},
             {"maxParticles", comp.maxParticles}
         };
     }
@@ -95,6 +106,10 @@ namespace Spoon
         j.at("looping").get_to(comp.looping);
         j.at("elapsedTime").get_to(comp.elapsedTime);
         j.at("totalLifetime").get_to(comp.totalLifetime);
+        j.at("particleStartColor").get_to(comp.particleStartColor);
+        j.at("particleEndColor").get_to(comp.particleEndColor);
+        j.at("particleStartSize").get_to(comp.particleStartSize);
+        j.at("particleEndSize").get_to(comp.particleEndSize);
         j.at("maxParticles").get_to(comp.maxParticles);
     }
 }

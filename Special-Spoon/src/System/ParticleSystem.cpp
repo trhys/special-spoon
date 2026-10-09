@@ -4,8 +4,14 @@
 #include "ECS/Components/TransformComp.h"
 #include "Core/ResourceManager/ResourceManager.h"
 
+#include <random>
+
 namespace Spoon
 {
+    // random generator for particle properties such as size jitter and velocity
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
     void ParticleSystem::Update(sf::Time tick, EntityManager& manager)
     {
         // get all emitters + transform
@@ -46,6 +52,14 @@ namespace Spoon
             } else {
                 // update particle position based on its velocity
                 particle.position += (particle.velocity * tick.asSeconds());
+
+                // interpolate particle color and size based on its remaining lifetime
+                float lifeRatio = particle.remainingLifetime / particle.maxLifetime;
+                particle.color = InterpolateColor(emitter.particleStartColor, emitter.particleEndColor, 1.0f - lifeRatio);
+                float startSize = emitter.particleStartSize * particle.sizeJitter;
+                float endSize = emitter.particleEndSize * particle.sizeJitter;
+                particle.size = InterpolateSize(startSize, endSize, 1.0f - lifeRatio);
+
                 i++;
             }
         }
@@ -60,9 +74,11 @@ namespace Spoon
             Particle particle;
             particle.remainingLifetime = emitter.particleLifetime;
             particle.maxLifetime = emitter.particleLifetime;
-            particle.position = transform.GetPosition(); // initial position, set to emitter position
-            
-            // TODO: scale, color, etc
+            particle.position = transform.GetPosition();
+            particle.color = emitter.particleStartColor;
+            std::uniform_real_distribution<float> sizeDist(emitter.particleSizeRange.x, emitter.particleSizeRange.y);
+            particle.sizeJitter = sizeDist(gen);
+            particle.size = emitter.particleStartSize * particle.sizeJitter;
 
             // set velocity at a random angle from emission spread
             // and select speed from velocity range
@@ -81,16 +97,19 @@ namespace Spoon
         emitter.vertices.clear();
         emitter.vertices.reserve(emitter.particlePool.size() * 6);
 
+        // get half size of texture
+        sf::Vector2f texSize = sf::Vector2f(
+            static_cast<float>(emitter.textureRect.size.x),
+            static_cast<float>(emitter.textureRect.size.y)
+        );
+        sf::Vector2f baseSize = texSize * 0.5f;
+
         for (size_t i = 0; i < emitter.particlePool.size(); ++i)
         {
             auto& particle = emitter.particlePool[i];
-
-            // get half size of texture
-            sf::Vector2f texSize = sf::Vector2f(
-                static_cast<float>(emitter.textureRect.size.x),
-                static_cast<float>(emitter.textureRect.size.y)
-            );
-            sf::Vector2f halfSize = texSize * 0.5f;
+            
+            // compute this particles vertex size
+            sf::Vector2f halfSize = baseSize * particle.size;
             
             // center quad on particle position
             sf::Vector2f topLeft = particle.position - halfSize;
@@ -103,7 +122,7 @@ namespace Spoon
             sf::Vector2f texBottomRight = texPos + texSize;
 
             // color
-            sf::Color color = sf::Color::White; // default color
+            sf::Color color = particle.color;
 
             // push vertices
             emitter.vertices.push_back(sf::Vertex{topLeft, color, texPos});
@@ -113,5 +132,24 @@ namespace Spoon
             emitter.vertices.push_back(sf::Vertex{bottomRight, color, texBottomRight});
             emitter.vertices.push_back(sf::Vertex{bottomLeft, color, sf::Vector2f(texPos.x, texBottomRight.y)});
         }
+    }
+
+    sf::Color ParticleSystem::InterpolateColor(const sf::Color& start, const sf::Color& end, float lifeRatio)
+    {
+        lifeRatio = std::clamp(lifeRatio, 0.0f, 1.0f);
+        return sf::Color(
+            static_cast<uint8_t>(start.r + (end.r - start.r) * lifeRatio),
+            static_cast<uint8_t>(start.g + (end.g - start.g) * lifeRatio),
+            static_cast<uint8_t>(start.b + (end.b - start.b) * lifeRatio),
+            static_cast<uint8_t>(start.a + (end.a - start.a) * lifeRatio)
+        );
+    }
+
+    float ParticleSystem::InterpolateSize(const float& start, const float& end, float lifeRatio)
+    {
+        lifeRatio = std::clamp(lifeRatio, 0.0f, 1.0f);
+        return float(
+            start + (end - start) * lifeRatio
+        );
     }
 }

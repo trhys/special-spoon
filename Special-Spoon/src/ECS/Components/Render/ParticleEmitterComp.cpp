@@ -4,9 +4,38 @@
 
 namespace Spoon
 {
+    // helper for the color edits
+    auto editColor = [](const char* label, sf::Color& color)
+    {
+        float rgba[4]{
+            color.r / 255.0f,
+            color.g / 255.0f,
+            color.b / 255.0f,
+            color.a / 255.0f
+        };
+
+        if (ImGui::ColorEdit4(label, rgba))
+        {
+            auto toByte = [](float value) -> std::uint8_t
+            {
+                return static_cast<std::uint8_t>(
+                    std::clamp(value, 0.0f, 1.0f) * 255.0f + 0.5f);
+            };
+
+            color = sf::Color{
+                toByte(rgba[0]),
+                toByte(rgba[1]),
+                toByte(rgba[2]),
+                toByte(rgba[3])
+            };
+        }
+    };
+
     void ParticleEmitterComp::OnReflect()
     {
-        static int setMaxParticles = 0;
+        static int setMaxParticles = static_cast<int>(maxParticles);
+        static bool setMaxParticlesChanged = false;
+
         ImGui::TextDisabled("Emitter Settings");
         ImGui::SliderFloat("Emission Rate:", &emissionRate, 0.0f, 1000.0f); ImGui::SameLine();
         HelpMarker("Controls the rate at which particles are emitted. Unit is particles/second.");
@@ -19,10 +48,20 @@ namespace Spoon
         ImGui::InputFloat("Particle Lifetime:", &particleLifetime); ImGui::SameLine();
         HelpMarker("Controls the lifetime of each emitted particle in seconds.");
         ImGui::SliderFloat2("Particle Size Range:", &particleSizeRange.x, 0.0f, 100.0f); ImGui::SameLine();
-        HelpMarker("Controls the range of sizes for emitted particles.");
+        HelpMarker("Controls the range of size jitter for emitted particles. A scalar modifier of the particle's base size.");
         ImGui::SliderFloat2("Particle Spawn Offset:", &particleSpawnOffset.x, -100.0f, 100.0f); ImGui::SameLine();
         HelpMarker("Controls the offset from the emitter's position where particles are spawned.");
         
+        ImGui::TextDisabled("Particle Interpolation Settings");
+        editColor("Particle Start Color:", particleStartColor); ImGui::SameLine();
+        HelpMarker("Controls the starting color of each emitted particle.");
+        editColor("Particle End Color:", particleEndColor); ImGui::SameLine();
+        HelpMarker("Controls the ending color of each emitted particle.");
+        ImGui::InputFloat("Particle Start Size:", &particleStartSize); ImGui::SameLine();
+        HelpMarker("Controls the starting size of each emitted particle.");
+        ImGui::InputFloat("Particle End Size:", &particleEndSize); ImGui::SameLine();
+        HelpMarker("Controls the ending size of each emitted particle.");
+
         ImGui::TextDisabled("Texture Settings");
         if (ImGui::BeginChild("Texture Explorer"))
         {
@@ -57,8 +96,14 @@ namespace Spoon
         ImGui::Checkbox("Looping", &looping);
         ImGui::Text("Elapsed Time: %f", elapsedTime);
         ImGui::InputFloat("Total Lifetime:", &totalLifetime);
-        ImGui::InputInt("Max Particles:", &setMaxParticles);
-        maxParticles = static_cast<size_t>(setMaxParticles);
+
+        // have to put this bool so the static var doesn't overwrite the actual maxParticles value  
+        setMaxParticlesChanged |= ImGui::InputInt("Max Particles:", &setMaxParticles);
+        if (setMaxParticlesChanged)
+        {
+            maxParticles = static_cast<size_t>(setMaxParticles);
+            setMaxParticlesChanged = false;
+        }
 
         ImGui::TextDisabled("Runtime Stats");
         ImGui::Text("Particle Pool Size: %zu", particlePool.size());
