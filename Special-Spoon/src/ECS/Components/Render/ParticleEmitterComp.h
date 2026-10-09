@@ -28,19 +28,21 @@ namespace Spoon
         static constexpr const char* Name = "ParticleEmitter";
 
         // emittor settings
-        float emissionRate = 1000.0f;
-        float emissionSpread = 6.28f;
-        sf::Vector2f velocityRange = {0.0f, 100.0f};
-        size_t maxParticles = 1000;
+        float emissionRate = 1000.0f;                           // particles emitted per second
+        float emissionSpread = 6.28f;                           // spread angle in radians
+        sf::Vector2f velocityRange = {0.0f, 100.0f};            // min and max velocity for particles
+        size_t maxParticles = 1000;                             // maximum number of particles in the pool
 
         // particle settings
-        float particleLifetime = 1.0f;
+        float particleLifetime = 1.0f;                      // particle lifecycle in seconds
+        float particleVelocityDamping = 0.98f;              // how much the particle velocity is reduced each frame
         sf::Vector2f particleSizeRange = {0.0f, 2.0f};      // scalar modification - a range
         float particleStartSize = 1.0f;                     // selected from above
         float particleEndSize = 1.0f;                       // ""
-        sf::Vector2f particleSpawnOffset = {0.0f, 0.0f};
-        sf::Color particleStartColor = sf::Color::White;
-        sf::Color particleEndColor = sf::Color::White;
+        sf::Vector2f particleSpawnOffset = {0.0f, 0.0f};    // offset from the emitter's position where particles spawn
+        sf::Color particleStartColor = sf::Color::White;    // interpolation settings for color
+        sf::Color particleEndColor = sf::Color::White;      // ""
+
         std::string textureID = "empty";
         sf::IntRect textureRect;
 
@@ -75,6 +77,7 @@ namespace Spoon
             {"emissionRate", comp.emissionRate},
             {"emissionSpread", comp.emissionSpread},
             {"velocityRange", comp.velocityRange},
+            {"particleVelocityDamping", comp.particleVelocityDamping},
             {"particleLifetime", comp.particleLifetime},
             {"particleSizeRange", comp.particleSizeRange},
             {"particleSpawnOffset", comp.particleSpawnOffset},
@@ -82,7 +85,6 @@ namespace Spoon
             {"textureRect", comp.textureRect},
             {"isActive", comp.isActive},
             {"looping", comp.looping},
-            {"elapsedTime", comp.elapsedTime},
             {"totalLifetime", comp.totalLifetime},
             {"particleStartColor", comp.particleStartColor},
             {"particleEndColor", comp.particleEndColor},
@@ -97,6 +99,7 @@ namespace Spoon
         j.at("emissionRate").get_to(comp.emissionRate);
         j.at("emissionSpread").get_to(comp.emissionSpread);
         j.at("velocityRange").get_to(comp.velocityRange);
+        j.at("particleVelocityDamping").get_to(comp.particleVelocityDamping);
         j.at("particleLifetime").get_to(comp.particleLifetime);
         j.at("particleSizeRange").get_to(comp.particleSizeRange);
         j.at("particleSpawnOffset").get_to(comp.particleSpawnOffset);
@@ -104,7 +107,6 @@ namespace Spoon
         j.at("textureRect").get_to(comp.textureRect);
         j.at("isActive").get_to(comp.isActive);
         j.at("looping").get_to(comp.looping);
-        j.at("elapsedTime").get_to(comp.elapsedTime);
         j.at("totalLifetime").get_to(comp.totalLifetime);
         j.at("particleStartColor").get_to(comp.particleStartColor);
         j.at("particleEndColor").get_to(comp.particleEndColor);

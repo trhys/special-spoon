@@ -51,6 +51,8 @@ namespace Spoon
         HelpMarker("Controls the range of size jitter for emitted particles. A scalar modifier of the particle's base size.");
         ImGui::SliderFloat2("Particle Spawn Offset:", &particleSpawnOffset.x, -100.0f, 100.0f); ImGui::SameLine();
         HelpMarker("Controls the offset from the emitter's position where particles are spawned.");
+        ImGui::InputFloat("Particle Velocity Damping:", &particleVelocityDamping); ImGui::SameLine();
+        HelpMarker("Controls the damping factor applied to particle velocities each frame. Value should be between 0.0 and 1.0.\n 0.0 applies instant stop. 1.0 applies no change.");
         
         ImGui::TextDisabled("Particle Interpolation Settings");
         editColor("Particle Start Color:", particleStartColor); ImGui::SameLine();

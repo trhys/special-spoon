@@ -50,6 +50,11 @@ namespace Spoon
                 std::swap(particle, emitter.particlePool.back());
                 emitter.particlePool.pop_back();
             } else {
+                // apply velocity damping
+                particle.velocity *= emitter.particleVelocityDamping;
+                if (particle.velocity.x == 0.0f && particle.velocity.y == 0.0f)
+                    particle.velocity = sf::Vector2f(0.0f, 0.0f);
+                
                 // update particle position based on its velocity
                 particle.position += (particle.velocity * tick.asSeconds());
 
