@@ -8,13 +8,20 @@ namespace Spoon
     {
         static int setMaxParticles = 0;
         ImGui::TextDisabled("Emitter Settings");
-        ImGui::SliderFloat("Emission Rate:", &emissionRate, 0.0f, 100.0f);
-        ImGui::InputFloat("Emission Spread:", &emissionSpread);
-        ImGui::SliderFloat2("Velocity Range:", &velocityRange.x, -100.0f, 100.0f);
+        ImGui::SliderFloat("Emission Rate:", &emissionRate, 0.0f, 1000.0f); ImGui::SameLine();
+        HelpMarker("Controls the rate at which particles are emitted. Unit is particles/second.");
+        ImGui::InputFloat("Emission Spread:", &emissionSpread); ImGui::SameLine();
+        HelpMarker("Controls the spread angle of emitted particles in radians.");
+        ImGui::SliderFloat2("Velocity Range:", &velocityRange.x, -100.0f, 100.0f); ImGui::SameLine();
+        HelpMarker("Controls the range of initial velocities for emitted particles.");
 
         ImGui::TextDisabled("Particle Settings");
-        ImGui::InputFloat("Particle Lifetime:", &particleLifetime);
-        ImGui::SliderFloat2("Particle Size Range:", &particleSizeRange.x, 0.0f, 100.0f);
+        ImGui::InputFloat("Particle Lifetime:", &particleLifetime); ImGui::SameLine();
+        HelpMarker("Controls the lifetime of each emitted particle in seconds.");
+        ImGui::SliderFloat2("Particle Size Range:", &particleSizeRange.x, 0.0f, 100.0f); ImGui::SameLine();
+        HelpMarker("Controls the range of sizes for emitted particles.");
+        ImGui::SliderFloat2("Particle Spawn Offset:", &particleSpawnOffset.x, -100.0f, 100.0f); ImGui::SameLine();
+        HelpMarker("Controls the offset from the emitter's position where particles are spawned.");
         
         ImGui::TextDisabled("Texture Settings");
         if (ImGui::BeginChild("Texture Explorer"))
@@ -75,12 +82,14 @@ namespace Spoon
             const sf::Vector2f center =
                 projection.LogicalToScreen(particlePool[i].position);
 
-            const sf::Vector2f topLeft = center - halfSize;
+            // Calculate the positions of the particle's vertices based on its center and half size.
+            // Apply offset to manually adjust the particle's position based on the spawn offset.
+            const sf::Vector2f topLeft = center - halfSize + particleSpawnOffset;
             const sf::Vector2f topRight =
-                center + sf::Vector2f{halfSize.x, -halfSize.y};
-            const sf::Vector2f bottomRight = center + halfSize;
+                center + sf::Vector2f{halfSize.x, -halfSize.y} + particleSpawnOffset;
+            const sf::Vector2f bottomRight = center + halfSize + particleSpawnOffset;
             const sf::Vector2f bottomLeft =
-                center + sf::Vector2f{-halfSize.x, halfSize.y};
+                center + sf::Vector2f{-halfSize.x, halfSize.y} + particleSpawnOffset;
 
             const size_t base = i * 6;
             vertices[base + 0].position = topLeft;

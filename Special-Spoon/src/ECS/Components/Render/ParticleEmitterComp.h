@@ -25,22 +25,23 @@ namespace Spoon
         static constexpr const char* Name = "ParticleEmitter";
 
         // emittor settings
-        float emissionRate;
-        float emissionSpread;
-        sf::Vector2f velocityRange;
+        float emissionRate = 1000.0f;
+        float emissionSpread = 6.28f;
+        sf::Vector2f velocityRange = {0.0f, 100.0f};
         size_t maxParticles = 1000;
 
         // particle settings
-        float particleLifetime;
-        sf::Vector2f particleSizeRange;
+        float particleLifetime = 1.0f;
+        sf::Vector2f particleSizeRange = {1.0f, 1.0f};
+        sf::Vector2f particleSpawnOffset = {0.0f, 0.0f};
         std::string textureID = "empty";
         sf::IntRect textureRect;
 
         // lifecycle
-        bool isActive;
-        bool looping;
+        bool isActive = true;
+        bool looping = true;
         float elapsedTime = 0.0f;
-        float totalLifetime;
+        float totalLifetime = 1.0f;
         float accumulatedTime = 0.0f;
         
         // pooling - runtime state only
@@ -69,6 +70,7 @@ namespace Spoon
             {"velocityRange", comp.velocityRange},
             {"particleLifetime", comp.particleLifetime},
             {"particleSizeRange", comp.particleSizeRange},
+            {"particleSpawnOffset", comp.particleSpawnOffset},
             {"textureID", comp.textureID},
             {"textureRect", comp.textureRect},
             {"isActive", comp.isActive},
@@ -86,6 +88,7 @@ namespace Spoon
         j.at("velocityRange").get_to(comp.velocityRange);
         j.at("particleLifetime").get_to(comp.particleLifetime);
         j.at("particleSizeRange").get_to(comp.particleSizeRange);
+        j.at("particleSpawnOffset").get_to(comp.particleSpawnOffset);
         j.at("textureID").get_to(comp.textureID);
         j.at("textureRect").get_to(comp.textureRect);
         j.at("isActive").get_to(comp.isActive);
