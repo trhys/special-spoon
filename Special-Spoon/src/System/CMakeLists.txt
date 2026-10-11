@@ -6,6 +6,7 @@ target_sources(Special-Spoon
         InputSystem.h
         InputSystem.cpp
         MovementSystem.h
+        MovementSystem.cpp
         ParticleSystem.h
         ParticleSystem.cpp
         StateSystem.h
