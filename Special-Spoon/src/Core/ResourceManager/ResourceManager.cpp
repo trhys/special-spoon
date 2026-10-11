@@ -190,10 +190,7 @@ namespace Spoon
     const std::vector<AssetNode*> ResourceManager::GetAssetLibrary(const std::string& type)
     {
         std::vector<AssetNode*> library;
-        for (auto& node : fileRoot->m_Children)
-        {
-            PopulateLib(node.get(), library, type);
-        }
+        PopulateLib(fileRoot.get(), library, type);
         return library;
     }
 

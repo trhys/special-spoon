@@ -33,6 +33,8 @@ namespace Spoon
         SpriteComp previewSprite;
         SpriteComp editorSprite;
         sf::IntRect rect;
+        sf::Vector2i m_DragStart;
+        bool m_Dragging = false;
         bool m_Looping = true;
         bool m_Playback = false;
         int frameIndex = 0;
