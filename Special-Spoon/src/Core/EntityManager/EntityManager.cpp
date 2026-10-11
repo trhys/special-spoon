@@ -17,7 +17,6 @@ namespace Spoon
         LoadArray<BlinkComp>(BlinkComp::Name);
         LoadArray<FadeComp>(FadeComp::Name);
         LoadArray<AnimationComp>(AnimationComp::Name);
-        LoadArray<StateActionComp>(StateActionComp::Name);
         LoadArray<RenderLayer>(RenderLayer::Name);
         LoadArray<MovementComp>(MovementComp::Name);
         LoadArray<TileMapComp>(TileMapComp::Name);

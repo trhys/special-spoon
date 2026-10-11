@@ -11,7 +11,6 @@ namespace Spoon
 {
     struct AnimationData;
     struct AnimationComp;
-    struct SpriteComp;
 
     class AnimationTool
     {

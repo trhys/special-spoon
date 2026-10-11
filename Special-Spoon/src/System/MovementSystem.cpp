@@ -16,7 +16,7 @@ namespace Spoon
             action.m_ID == BuiltInActions::MoveDown;
     }
 
-    sf::Vector2f MovementSystem::BuildIntent(const std::vector<const Action*>& actions)
+    sf::Vector2f MovementSystem::BuildIntent(const std::vector<const Action*>& actions, const WorldProjection& projection)
     {
         bool moveLeft = false;
         bool moveRight = false;
@@ -55,12 +55,13 @@ namespace Spoon
             intent *= diagonalScale;
         }
 
-        return intent;
+        return projection.ScreenToLogical(intent);
     }
 
     void MovementSystem::Update(sf::Time tick, EntityManager& manager)
     {
         auto& queue = Application::Get().GetActionQueue();
+		auto& projection = Application::Get().GetRenderer().GetProjection();
         auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
         auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
         auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
@@ -87,7 +88,7 @@ namespace Spoon
             auto actionRange = movementActions.find(ID);
             if (actionRange != movementActions.end())
             {
-                moveComp.m_FrameIntent = BuildIntent(actionRange->second);
+                moveComp.m_FrameIntent = BuildIntent(actionRange->second, projection);
                 moveComp.m_Velocity = moveComp.m_FrameIntent * moveComp.m_Speed;
                 m_ActionDrivenEntities.insert(ID);
                 m_LastActionVelocity[ID] = moveComp.m_Velocity;
@@ -153,7 +154,12 @@ namespace Spoon
 
                 if (facingVector.x != 0.0f || facingVector.y != 0.0f)
                 {
-                    moveComp.m_Facing.m_Angle = std::atan2(facingVector.y, facingVector.x) * 180.f / 3.14159f;
+                    facingVector = projection.LogicalToScreen(facingVector);
+                    const float angle =
+                        std::atan2(facingVector.y, facingVector.x) *
+                        180.f / 3.14159265f;
+                    moveComp.m_Facing.m_Angle =
+                        std::fmod(angle + 360.f, 360.f);
                     moveComp.m_Facing.UpdateDirection();
                 }
             }

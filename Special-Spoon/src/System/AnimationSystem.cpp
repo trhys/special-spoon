@@ -105,9 +105,11 @@ namespace Spoon
             if(statusArray.m_IdToIndex.count(id))
             {
                 StatusComp& statusComp = statusArray.m_Components[statusArray.m_IdToIndex[id]];
-                if(animComp.m_AnimationData->ID != animComp.m_AnimationMap[statusComp.m_CurrentState])
+				// If the current state has a corresponding animation in the map, update the animation data
+				// otherwise, keep the current animation data
+                const std::string& newAnimID = animComp.m_AnimationMap.find(StateRegistry::Get().GetName(statusComp.m_CurrentState))->second;
+                if(animComp.m_AnimationData == nullptr || animComp.m_AnimationData->ID != newAnimID)
                 {
-                    std::string newAnimID = animComp.m_AnimationMap[statusComp.m_CurrentState];
                     animComp.SetAnimationData(newAnimID);
                     animComp.currentFrame = 0;
                     animComp.elapsedTime = 0.0f;

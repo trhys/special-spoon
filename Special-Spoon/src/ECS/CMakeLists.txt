@@ -6,8 +6,8 @@ target_sources(Special-Spoon
         Components/MovementComp.h
         Components/ColliderComp.h
         Components/PhysicsComp.h
-        Components/StateActionComp.h
         Components/StatusComp.h
+        Components/StatusComp.cpp
         Components/TransformComp.h
         Components/TransformComp.cpp
 

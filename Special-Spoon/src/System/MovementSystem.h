@@ -17,7 +17,7 @@ namespace Spoon
         std::vector<std::string> RunBefore() const override { return { "Physics", "Collision" }; }
 
         // returns a vector representing movement intent - modifiable downstream
-        sf::Vector2f BuildIntent(const std::vector<const Action*>& actions);
+        sf::Vector2f BuildIntent(const std::vector<const Action*>& actions,  const WorldProjection& projection);
 
         void Update(sf::Time tick, EntityManager& manager) override;
 
