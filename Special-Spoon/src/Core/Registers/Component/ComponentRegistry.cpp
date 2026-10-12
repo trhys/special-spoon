@@ -38,7 +38,9 @@ namespace Spoon
     void LoadStatusComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto status = comp.get<StatusComp>();
-        manager.MakeComponent<StatusComp>(id, StatusComp::Name, status.is_Active, status.m_CurrentState);
+        manager.MakeComponent<StatusComp>(id, StatusComp::Name);
+		auto& loaded = manager.GetComponent<StatusComp>(id, StatusComp::Name);
+		loaded = status;
     }
 
     void LoadBlinkComponent(EntityManager& manager, UUID id, const json& comp)
@@ -57,12 +59,6 @@ namespace Spoon
     {
          auto input = comp.get<InputComp>();
          manager.MakeComponent<InputComp>(id, InputComp::Name, input.m_KeyBindings);
-    }
-
-    void LoadStateActionComponent(EntityManager& manager, UUID id, const json& comp)
-    {
-        auto component = comp.get<StateActionComp>();
-        manager.MakeComponent<StateActionComp>(id, StateActionComp::Name, component.m_Actions);
     }
 
     void LoadRenderLayer(EntityManager& manager, UUID id, const json& comp)
@@ -142,7 +138,6 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(BlinkComp::Name, &LoadBlinkComponent);
         ComponentRegistry::Get().RegisterLoader(FadeComp::Name, &LoadFadeComponent);
         ComponentRegistry::Get().RegisterLoader(InputComp::Name, &LoadInputComponent);
-        ComponentRegistry::Get().RegisterLoader(StateActionComp::Name, &LoadStateActionComponent);
         ComponentRegistry::Get().RegisterLoader(RenderLayer::Name, &LoadRenderLayer);
         ComponentRegistry::Get().RegisterLoader(ColliderComp::Name, &LoadColliderComponent);
         ComponentRegistry::Get().RegisterLoader(PhysicsComp::Name, &LoadPhysicsComponent);

@@ -16,6 +16,7 @@ namespace Spoon
         }
 
         static constexpr const char* Name = "Animation";
+
         AnimationData* m_AnimationData = nullptr;
         std::string iAnimationID;
         std::unordered_map<std::string, std::string> m_AnimationMap; // [key, value] = [state, animationID]
@@ -104,7 +105,56 @@ namespace Spoon
 
             if (ImGui::Button("Add New"))
             {
-                // todo
+				ImGui::OpenPopup("Add New Animation Mapping");
+            }
+
+			// Always center this window when appearing
+            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            if (ImGui::BeginPopupModal("Add New Animation Mapping"))
+            {
+                static char newStateIDbuf[64];
+                static char newAnimationIDbuf[64];
+                if (ImGui::BeginCombo("State ID", newStateIDbuf[0] ? newStateIDbuf : "Select State"))
+                {
+                    for (const auto& [name, id] : StateRegistry::Get().m_NameToID)
+                    {
+                        if (ImGui::Selectable(name.c_str()))
+                        {
+                            strncpy(newStateIDbuf, name.c_str(), sizeof(newStateIDbuf));
+                        }
+                    }
+                    ImGui::EndCombo();
+                } ImGui::SameLine();
+                if (ImGui::BeginCombo("Animation ID", newAnimationIDbuf[0] ? newAnimationIDbuf : "Select Animation"))
+                {
+                    for (const auto& [name, id] : ResourceManager::Get().GetAnimations())
+                    {
+                        if (ImGui::Selectable(name.c_str()))
+                        {
+                            strncpy(newAnimationIDbuf, name.c_str(), sizeof(newAnimationIDbuf));
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+
+                if (ImGui::Button("Submit"))
+                {
+                    if (newStateIDbuf[0] != '\0' && newAnimationIDbuf[0] != '\0')
+                    {
+                        m_AnimationMap[newStateIDbuf] = newAnimationIDbuf;
+                        newStateIDbuf[0] = '\0';
+                        newAnimationIDbuf[0] = '\0';
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    newStateIDbuf[0] = '\0';
+                    newAnimationIDbuf[0] = '\0';
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
             }
         }
     };

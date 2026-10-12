@@ -9,18 +9,30 @@ namespace Spoon {
   struct FacingDirection
   {
       float m_Angle = 0.0f; // In degrees
-      const char* m_Direction = "Right"; // "Up", "Down", "Left", "Right"
+      const char* m_Direction = "Down";
 
       void UpdateDirection()
       {
-          if (m_Angle >= 45.f && m_Angle < 135.f)
+          // Normalize angle to [0, 360)
+          float normalizedAngle = std::fmod(m_Angle + 360.f, 360.f);
+
+          // Map to 8 directions: each occupies 45 degrees, centered on cardinal/diagonal
+          if (normalizedAngle >= 337.5f || normalizedAngle < 22.5f)
+              m_Direction = "Right";
+          else if (normalizedAngle < 67.5f)
+              m_Direction = "DownRight";
+          else if (normalizedAngle < 112.5f)
               m_Direction = "Down";
-          else if (m_Angle >= 135.f && m_Angle < 225.f)
+          else if (normalizedAngle < 157.5f)
+              m_Direction = "DownLeft";
+          else if (normalizedAngle < 202.5f)
               m_Direction = "Left";
-          else if (m_Angle >= 225.f && m_Angle < 315.f)
+          else if (normalizedAngle < 247.5f)
+              m_Direction = "UpLeft";
+          else if (normalizedAngle < 292.5f)
               m_Direction = "Up";
           else
-              m_Direction = "Right";
+              m_Direction = "UpRight";
       }
   };
 

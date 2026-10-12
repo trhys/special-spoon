@@ -19,6 +19,15 @@ namespace Spoon
     {
         constexpr uint32_t None = 0;
         constexpr uint32_t Quit = 1;
+		constexpr uint32_t Idle = 2;      // idle state for movement
+		constexpr uint32_t MoveUp = 3;      // move up state for movement
+		constexpr uint32_t MoveDown = 4;    // move down state for movement
+		constexpr uint32_t MoveLeft = 5;    // move left state for movement
+		constexpr uint32_t MoveRight = 6;   // move right state for movement
+		constexpr uint32_t MoveUR = 7;      // move up-right state for movement
+		constexpr uint32_t MoveUL = 8;      // move up-left state for movement
+		constexpr uint32_t MoveDR = 9;      // move down-right state for movement
+		constexpr uint32_t MoveDL = 10;      // move down-left state for movement
 
         constexpr uint32_t BeginCustomRange = 1000;
     }
@@ -42,6 +51,15 @@ namespace Spoon
         {
             RegisterState("None", BuiltInStates::None);
             RegisterState("Quit", BuiltInStates::Quit);
+			RegisterState("Idle", BuiltInStates::Idle);
+			RegisterState("MoveUp", BuiltInStates::MoveUp);
+			RegisterState("MoveDown", BuiltInStates::MoveDown);
+			RegisterState("MoveLeft", BuiltInStates::MoveLeft);
+			RegisterState("MoveRight", BuiltInStates::MoveRight);
+			RegisterState("MoveUR", BuiltInStates::MoveUR);
+			RegisterState("MoveUL", BuiltInStates::MoveUL);
+			RegisterState("MoveDR", BuiltInStates::MoveDR);
+			RegisterState("MoveDL", BuiltInStates::MoveDL);
         }
 
         void RegisterCustom(const std::string& name)

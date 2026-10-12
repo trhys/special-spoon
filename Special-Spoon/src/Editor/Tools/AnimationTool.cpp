@@ -1,5 +1,8 @@
 #include "AnimationTool.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace Spoon
 {
     void AnimationTool::Update(sf::Time tick)
@@ -97,8 +100,8 @@ namespace Spoon
                     m_MainVP.target.draw(previewSprite.m_Sprite);
                     m_MainVP.target.display();
                     ImGui::Image(m_MainVP.target);
-                    ImGui::EndChild();
                 }
+                ImGui::EndChild();
                 ImGui::Checkbox("Loop Animation", &m_Looping);
                 ImGui::SameLine(); HelpMarker("Checked if you want the animation to continue playing when finished");
 
@@ -109,9 +112,6 @@ namespace Spoon
                     {
                         RenderViewport(m_EditorVP);
 
-                        static sf::Vector2f drag;
-                        static bool dragging = false;
-
                         sf::RectangleShape rectPreview;
                         rectPreview.setSize({ (float)rect.size.x, (float)rect.size.y });
                         rectPreview.setPosition({ (float)rect.position.x, (float)rect.position.y });
@@ -121,7 +121,9 @@ namespace Spoon
 
                         m_EditorVP.target.clear(sf::Color(50, 50, 50));
                         m_EditorVP.target.draw(editorSprite.m_Sprite);
-                        m_EditorVP.target.draw(rectPreview);
+                        sf::RenderStates selectionStates;
+                        selectionStates.transform = editorSprite.m_Sprite.getTransform();
+                        m_EditorVP.target.draw(rectPreview, selectionStates);
                         m_EditorVP.target.display();
 
                         ImGui::Image(m_EditorVP.target);
@@ -135,26 +137,30 @@ namespace Spoon
                                 static_cast<int>(mousePos.y - viewportPos.y)
                             );
                             sf::Vector2f worldMouse = m_EditorVP.target.mapPixelToCoords(relativeMouse);
-                            if (!dragging)
+                            sf::Vector2f localMouse = editorSprite.m_Sprite.getInverseTransform().transformPoint(worldMouse);
+                            const sf::Vector2i sheetSize = editorSprite.m_Sprite.getTextureRect().size;
+                            sf::Vector2i textureMouse(
+                                static_cast<int>(std::floor(std::clamp(localMouse.x, 0.0f, static_cast<float>(sheetSize.x)))),
+                                static_cast<int>(std::floor(std::clamp(localMouse.y, 0.0f, static_cast<float>(sheetSize.y))))
+                            );
+                            if (!m_Dragging)
                             {
-                                drag = worldMouse;
-                                dragging = true;
+                                m_DragStart = textureMouse;
+                                m_Dragging = true;
                             }
-                            if (dragging)
-                            {
-                                rect.position.x = std::min(drag.x, worldMouse.x);
-                                rect.position.y = std::min(drag.y, worldMouse.y);
-                                rect.size.x = std::abs(worldMouse.x - drag.x);
-                                rect.size.y = std::abs(worldMouse.y - drag.y);
-                            }
+                            rect.position.x = std::min(m_DragStart.x, textureMouse.x);
+                            rect.position.y = std::min(m_DragStart.y, textureMouse.y);
+                            rect.size.x = std::abs(textureMouse.x - m_DragStart.x);
+                            rect.size.y = std::abs(textureMouse.y - m_DragStart.y);
                         }
-                        else dragging = false;
+                        else m_Dragging = false;
 
-
-                        ImGui::EndChild();
                     }
+                    ImGui::EndChild();
 
                     ImGui::Separator();
+                    const bool selectionValid = rect.size.x > 0 && rect.size.y > 0;
+                    ImGui::BeginDisabled(!selectionValid);
                     if (ImGui::Button("Add Frame"))
                     {
                         SpriteCords cords(
@@ -167,10 +173,12 @@ namespace Spoon
                     }
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips) 
                         ImGui::SetTooltip("Adds a new frame from drawn preview rect. This is pushed to the back of the loop");
+                    ImGui::EndDisabled();
 
                     ImGui::SameLine();
                     ImGui::BeginDisabled(currentData->spriteCords.empty());
 
+                    ImGui::BeginDisabled(!selectionValid);
                     if (ImGui::Button("Update Frame"))
                     {
                         SpriteCords cords(
@@ -183,6 +191,7 @@ namespace Spoon
                     }
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips) 
                         ImGui::SetTooltip("Updates current selected frame index");
+                    ImGui::EndDisabled();
 
                     ImGui::SameLine();
                     if (ImGui::Button("Delete Frame"))
@@ -227,12 +236,13 @@ namespace Spoon
         isFinished = false;
         m_isOpen = true;
         rect = sf::IntRect();
+        m_Dragging = false;
 
         if (currentData && ResourceManager::Get().GetTextures().count(data->textureID))
         {
-            previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID));
+            previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID), true);
             previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
-            editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID));
+            editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(data->textureID), true);
             editorSprite.m_Sprite.setPosition(m_EditorVP.camera.getCenter());
             if (!currentData->spriteCords.empty())
             {
@@ -243,9 +253,9 @@ namespace Spoon
         }
         else
         {
-            previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
+            previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"), true);
             previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
-            editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"));
+            editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>("empty"), true);
             editorSprite.m_Sprite.setPosition(m_EditorVP.camera.getCenter());
         }
         m_Playback = autoPlayEnabled;
@@ -310,8 +320,8 @@ namespace Spoon
                     ImGui::SameLine();
                     ImGui::PopID();
                 }
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
 
             if (ImGui::BeginChild("Preview", ImVec2(0, 600), ImGuiChildFlags_Borders))
             {
@@ -327,11 +337,11 @@ namespace Spoon
                 {
                     ImGui::Text("No texture selected");
                 }
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
             if (ImGui::InputText("Animation ID", newAnimDatabuf, IM_ARRAYSIZE(newAnimDatabuf), ImGuiInputTextFlags_CharsNoBlank)) {}
             bool bufferValid = newAnimDatabuf[0] != '\0';
-            ImGui::BeginDisabled(!bufferValid);
+            ImGui::BeginDisabled(!bufferValid || !selectedNode);
             if (ImGui::Button("Confirm"))
             {
                 std::string selectedID = selectedNode->m_Name;
@@ -339,19 +349,13 @@ namespace Spoon
                 {
                     ResourceManager::Get().LoadResource<sf::Texture>(selectedNode->m_Name, selectedNode->m_Path);
                 }
-                previewSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
-                previewSprite.m_Sprite.setPosition(m_MainVP.camera.getCenter());
-                editorSprite.m_Sprite.setTexture(ResourceManager::Get().GetResource<sf::Texture>(selectedID), true);
-                editorSprite.m_Sprite.setPosition(m_EditorVP.camera.getCenter());
-
                 AnimationData data;
                 data.ID = newAnimDatabuf;
                 data.textureID = selectedID;
                 ResourceManager::Get().LoadAnimationData(data.ID, data);
-                currentData = ResourceManager::Get().GetAnimationData(data.ID);
+                Open(ResourceManager::Get().GetAnimationData(data.ID));
 
                 newAnimDatabuf[0] = '\0';
-                rect = sf::IntRect();
                 selectedNode = nullptr;
                 createModal = false;
                 editTool = true;

@@ -18,7 +18,7 @@ namespace Spoon
     }
 
     OverlayCmd Overlay::colliderOverlayCmd = OverlayCmd{ 
-            .draw = [](sf::RenderTarget& target, sf::RenderStates states) 
+            [](sf::RenderTarget& target, sf::RenderStates states) 
             {
                 auto& manager = Application::Get().GetEntityManager();
                 auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
@@ -57,7 +57,7 @@ namespace Spoon
         };
 
     OverlayCmd Overlay::selectedEntityOverlayCmd = OverlayCmd{
-            .draw = [](sf::RenderTarget& target, sf::RenderStates states)
+            [](sf::RenderTarget& target, sf::RenderStates states)
             {
                 auto& editor = Application::Get().GetEditor();
                 target.draw(editor.m_SelectionRect, states);

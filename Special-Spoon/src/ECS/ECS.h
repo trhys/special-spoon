@@ -4,7 +4,6 @@
 #include "Components/PhysicsComp.h"
 #include "Components/TransformComp.h"
 #include "Components/InputComp.h"
-#include "Components/StateActionComp.h"
 #include "Components/StatusComp.h"
 #include "Components/MovementComp.h"
 

@@ -1,4 +1,5 @@
 #include "AnimationSystem.h"
+#include "Utils/Macros.h"
 
 namespace Spoon
 {
@@ -105,9 +106,19 @@ namespace Spoon
             if(statusArray.m_IdToIndex.count(id))
             {
                 StatusComp& statusComp = statusArray.m_Components[statusArray.m_IdToIndex[id]];
-                if(animComp.m_AnimationData->ID != animComp.m_AnimationMap[statusComp.m_CurrentState])
+                // safety check on the map lookup
+				auto state = animComp.m_AnimationMap.find(StateRegistry::Get().GetName(statusComp.m_CurrentState));
+                if (state == animComp.m_AnimationMap.end())
                 {
-                    std::string newAnimID = animComp.m_AnimationMap[statusComp.m_CurrentState];
+					// If the current state does not have a corresponding animation in the map, log a debug message and continue
+					SS_DEBUG_LOG("[ANIMATION] No animation mapping found for state: " + StateRegistry::Get().GetName(statusComp.m_CurrentState) + " on entity: " + id.ToString());
+                    continue;
+				}
+				// If the current state has a corresponding animation in the map, update the animation data
+				// otherwise, keep the current animation data
+                const std::string& newAnimID = state->second;
+                if(animComp.m_AnimationData == nullptr || animComp.m_AnimationData->ID != newAnimID)
+                {
                     animComp.SetAnimationData(newAnimID);
                     animComp.currentFrame = 0;
                     animComp.elapsedTime = 0.0f;
