@@ -99,3 +99,20 @@ note: Previous changes will not be in this log. This record will keep all change
 
 ---
 
+## 10/12/26:
+
+### Movement / Animation
+- Reworked movement-driven animation state selection to support 8-direction facing and idle transitions.
+- Consolidated action-to-state mappings into `StatusComp` and removed the legacy `StateAction` component.
+- Updated animation mapping UI and lookup logic to better handle missing or changing mappings.
+- Refactored movement projection and facing logic so animation state matches logical movement direction.
+
+### Editor / Serialization
+- Improved animation frame selection tooling with better drag behavior and selection handling.
+- Updated component loading and serialization to support the new `StatusComp` structure.
+
+### Misc
+- Adjusted resource and entity loading to match the new component layout.
+- Updated system registration and build configuration for the movement pipeline changes.
+
+---
