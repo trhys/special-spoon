@@ -18,6 +18,10 @@ namespace Spoon
                 {
                     m_KeyStates[pair.first] = false;
                 }
+                for (const auto& pair : m_MouseButtonBindings)
+                {
+                    m_MouseButtonStates[pair.first] = false;
+                }
             }
 
         static constexpr const char* Name = "Input";
@@ -27,6 +31,12 @@ namespace Spoon
 
         // Key: Pressed state mapping
         std::unordered_map<sf::Keyboard::Key, bool> m_KeyStates;
+
+        // mouse input
+        std::unordered_map<sf::Mouse::Button, ActionType> m_MouseButtonBindings;
+
+        // mouse button states
+        std::unordered_map<sf::Mouse::Button, bool> m_MouseButtonStates;
 
         void OnReflect() override;
     };
@@ -39,6 +49,15 @@ namespace Spoon
             j["m_KeyBindings"].push_back(
             {
                 {"Key", static_cast<int>(key)},
+                {"Action", action}
+            });
+        }
+        j["m_MouseButtonBindings"] = json::array();
+        for (const auto& [button, action] : comp.m_MouseButtonBindings)
+        {
+            j["m_MouseButtonBindings"].push_back(
+            {
+                {"Button", static_cast<int>(button)},
                 {"Action", action}
             });
         }
@@ -55,6 +74,16 @@ namespace Spoon
             sf::Keyboard::Key key = static_cast<sf::Keyboard::Key>(binding.at("Key").get<int>());
             ActionType action = binding.at("Action").get<ActionType>();
             comp.m_KeyBindings[key] = action;
+        }
+        comp.m_MouseButtonBindings.clear();
+        if (!j.contains("m_MouseButtonBindings") || !j["m_MouseButtonBindings"].is_array())
+            return;
+
+        for (const auto& binding : j["m_MouseButtonBindings"])
+        {
+            sf::Mouse::Button button = static_cast<sf::Mouse::Button>(binding.at("Button").get<int>());
+            ActionType action = binding.at("Action").get<ActionType>();
+            comp.m_MouseButtonBindings[button] = action;
         }
     }
 }

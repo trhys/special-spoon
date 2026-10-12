@@ -33,6 +33,7 @@ namespace Spoon
 		void Run();
 		void Update(sf::Time tick);
 		void Shutdown();
+		void HandleInput(bool& rayPickFlag);
 		
 		static Application& Get() { return *s_Instance; }
 

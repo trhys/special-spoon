@@ -1,12 +1,14 @@
 #include "InputSystem.h"
 #include "Core/Application.h"
+#include "Core/EntityManager/EntityManager.h"
 
 namespace Spoon
 {
     void InputSystem::Update(sf::Time tick, EntityManager& manager)
     {
-        (void)tick;
-        //manager.ClearActionsBuffer();
+        (void)tick; // unused
+
+        // prefetch action queue and arrays
         auto& queue = Application::Get().GetActionQueue();
         auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
 
@@ -17,19 +19,16 @@ namespace Spoon
 
             for(const auto& keyEvent : m_KeyPressEvents)
             {
-                //std::string keyDesc = sf::Keyboard::getDescription(keyEvent.scancode).toAnsiString();
                 sf::Keyboard::Key key = keyEvent.code;
                 auto found = inputComp.m_KeyBindings.find(key);
                 if(found != inputComp.m_KeyBindings.end())
                 {
                     inputComp.m_KeyStates[found->first] = true;
                 }
-                
             }
 
             for (const auto& keyEvent : m_KeyReleaseEvents)
             {
-                //std::string keyDesc = sf::Keyboard::getDescription(keyEvent.scancode).toAnsiString();
                 sf::Keyboard::Key key = keyEvent.code;
                 auto found = inputComp.m_KeyBindings.find(key);
                 if (found != inputComp.m_KeyBindings.end())
@@ -51,8 +50,27 @@ namespace Spoon
                     queue.CreateAndPush(ID, binding->second, 0);
                 }
             }
+
+            // process mouse button events
+            for (const auto& mouseEvent : m_MouseButtonPressEvents)
+            {
+                auto found = inputComp.m_MouseButtonBindings.find(mouseEvent.button);
+                if (found != inputComp.m_MouseButtonBindings.end())
+                {
+                    inputComp.m_MouseButtonStates[found->first] = true;
+                }
+            }
+
+            for (const auto& mouseEvent : m_MouseButtonReleaseEvents)
+            {
+                auto found = inputComp.m_MouseButtonBindings.find(mouseEvent.button);
+                if (found != inputComp.m_MouseButtonBindings.end())
+                {
+                    inputComp.m_MouseButtonStates[found->first] = false;
+                }
+            }
         }
-        m_KeyPressEvents.clear();
-        m_KeyReleaseEvents.clear();
+
+        ClearEvents();
     }
 }
