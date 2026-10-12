@@ -46,8 +46,11 @@ namespace Spoon
 
 				// normal action -> state mapping
 				stateComp.m_CurrentState = stateComp.m_Actions[found->m_ActionType];
-                
+                continue;
             }
+
+            // no action found - return to idle
+            stateComp.m_CurrentState = StateType{ BuiltInStates::Idle };
         }
 
         if(sceneChangeFlag)

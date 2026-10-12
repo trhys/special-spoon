@@ -38,14 +38,16 @@ namespace Spoon
     inline void from_json(const json& j, StatusComp& comp)
     {
         comp.m_Actions.clear();
-        if (!j.contains("m_Actions") || !j["m_Actions"].is_array())
-            return;
+        
 
-        for (const auto& item : j["m_Actions"])
+        if (j.contains("m_Actions") && j["m_Actions"].is_array())
         {
-            ActionType action = item.at("Action").get<ActionType>();
-            StateType state = item.at("State").get<StateType>();
-            comp.m_Actions[action] = state;
+            for (const auto& item : j["m_Actions"])
+            {
+                ActionType action = item.at("Action").get<ActionType>();
+                StateType state = item.at("State").get<StateType>();
+                comp.m_Actions[action] = state;
+            }
         }
         comp.is_Active = j.at("is_Active").get<bool>();
 		comp.m_CurrentState = StateType{ BuiltInStates::Idle }; // Default to Idle on load

@@ -142,6 +142,9 @@ namespace Spoon
                     if (newStateIDbuf[0] != '\0' && newAnimationIDbuf[0] != '\0')
                     {
                         m_AnimationMap[newStateIDbuf] = newAnimationIDbuf;
+                        newStateIDbuf[0] = '\0';
+                        newAnimationIDbuf[0] = '\0';
+                        ImGui::CloseCurrentPopup();
                     }
                 }
                 ImGui::SameLine();

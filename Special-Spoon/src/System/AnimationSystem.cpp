@@ -107,7 +107,7 @@ namespace Spoon
             {
                 StatusComp& statusComp = statusArray.m_Components[statusArray.m_IdToIndex[id]];
                 // safety check on the map lookup
-				auto& state = animComp.m_AnimationMap.find(StateRegistry::Get().GetName(statusComp.m_CurrentState));
+				auto state = animComp.m_AnimationMap.find(StateRegistry::Get().GetName(statusComp.m_CurrentState));
                 if (state == animComp.m_AnimationMap.end())
                 {
 					// If the current state does not have a corresponding animation in the map, log a debug message and continue

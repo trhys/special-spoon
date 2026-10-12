@@ -76,13 +76,18 @@ namespace Spoon
             (moveDown ? 1.0f : 0.0f) - (moveUp ? 1.0f : 0.0f)
         );
 
-        if (intent.x != 0.0f && intent.y != 0.0f)
+        // project intent from screen space to logical space
+        // before normalizing diagonal movement
+        // this ensures that diagonal movement is correctly scaled in logical space
+        intent = projection.ScreenToLogical(intent);
+
+        float magnitude = std::sqrt(intent.x * intent.x + intent.y * intent.y);
+        if (magnitude > 0.0f)
         {
-            constexpr float diagonalScale = 0.70710678f;
-            intent *= diagonalScale;
+            intent /= magnitude;
         }
 
-        return projection.ScreenToLogical(intent);
+        return intent;
     }
 
     void MovementSystem::Update(sf::Time tick, EntityManager& manager)
