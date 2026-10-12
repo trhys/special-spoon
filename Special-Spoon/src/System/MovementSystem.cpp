@@ -8,14 +8,41 @@
 
 namespace Spoon
 {
-    static bool IsMovementAction(const ActionType& action)
+	namespace MovementSystemUtil
     {
-        return action.m_ID == BuiltInActions::MoveLeft ||
-            action.m_ID == BuiltInActions::MoveRight ||
-            action.m_ID == BuiltInActions::MoveUp ||
-            action.m_ID == BuiltInActions::MoveDown;
-    }
+        // Maps the 8-way facing direction computed by MovementSystem onto the
+        // matching built-in movement state so StatusComp::m_CurrentState can
+        // drive animation selection (see AnimationSystem).
+        uint32_t DirectionToStateID(const char* direction)
+        {
+            if (std::strcmp(direction, "Up") == 0)        return BuiltInStates::MoveUp;
+            if (std::strcmp(direction, "Down") == 0)      return BuiltInStates::MoveDown;
+            if (std::strcmp(direction, "Left") == 0)      return BuiltInStates::MoveLeft;
+            if (std::strcmp(direction, "Right") == 0)     return BuiltInStates::MoveRight;
+            if (std::strcmp(direction, "UpRight") == 0)   return BuiltInStates::MoveUR;
+            if (std::strcmp(direction, "UpLeft") == 0)    return BuiltInStates::MoveUL;
+            if (std::strcmp(direction, "DownRight") == 0) return BuiltInStates::MoveDR;
+            if (std::strcmp(direction, "DownLeft") == 0)  return BuiltInStates::MoveDL;
 
+            return BuiltInStates::Idle;
+        }
+
+        bool IsMovementAction(const ActionType& action)
+        {
+            return action.m_ID == BuiltInActions::MoveLeft ||
+                action.m_ID == BuiltInActions::MoveRight ||
+                action.m_ID == BuiltInActions::MoveUp ||
+                action.m_ID == BuiltInActions::MoveDown;
+        }
+
+        bool IsMoving(const MovementComp& moveComp)
+        {
+            constexpr float epsilon = 0.0001f;
+            return std::abs(moveComp.m_Velocity.x) > epsilon ||
+                std::abs(moveComp.m_Velocity.y) > epsilon;
+        }
+    }
+    
     sf::Vector2f MovementSystem::BuildIntent(const std::vector<const Action*>& actions, const WorldProjection& projection)
     {
         bool moveLeft = false;
@@ -69,7 +96,7 @@ namespace Spoon
 
         for (const auto& action : queue.m_Queue)
         {
-            if (IsMovementAction(action.m_ActionType))
+            if (MovementSystemUtil::IsMovementAction(action.m_ActionType))
             {
                 movementActions[action.m_EntityID].push_back(&action);
             }
