@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System.h"
+#include "System/System.h"
 #include "ECS/ECS.h"
 #include "Core/EntityManager/EntityManager.h"
 

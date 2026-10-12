@@ -7,7 +7,7 @@
 #include "EntityManager/EntityManager.h"
 #include "Renderer/Renderer.h"
 
-#include "System/InputSystem.h"
+#include "System/Core/InputSystem.h"
 #include "System/SystemManager.h"
 
 #include "Editor/Editor.h"

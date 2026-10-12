@@ -1,8 +1,8 @@
 #pragma once
 
 #include "System.h"
-#include "StateSystem.h"
-#include "InputSystem.h"
+#include "System/Core/StateSystem.h"
+#include "System/Core/InputSystem.h"
 
 #include "Core/Registers/System/SystemRegistry.h"
 

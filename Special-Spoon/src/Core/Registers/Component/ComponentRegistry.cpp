@@ -127,6 +127,14 @@ namespace Spoon
         loaded = emitter;
     }
 
+    void LoadUIComp(EntityManager& manager, UUID id, const json& comp)
+    {
+        auto ui = comp.get<UIComp>();
+        manager.MakeComponent<UIComp>(id, UIComp::Name);
+        auto& loaded = manager.GetComponent<UIComp>(id, UIComp::Name);
+        loaded = ui;
+    }
+
     void RegisterDefaultLoaders()
     {
         SS_DEBUG_LOG("[COMPONENT] Registering default component loaders...")
@@ -146,5 +154,6 @@ namespace Spoon
         ComponentRegistry::Get().RegisterLoader(TileMapComp::Name, &LoadTileMapComp);
         ComponentRegistry::Get().RegisterLoader(AudioComp::Name, &LoadAudioComp);
         ComponentRegistry::Get().RegisterLoader(ParticleEmitterComp::Name, &LoadParticleEmitterComp);
+        ComponentRegistry::Get().RegisterLoader(UIComp::Name, &LoadUIComp);
     }
 }

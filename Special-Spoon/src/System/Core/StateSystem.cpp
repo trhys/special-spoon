@@ -1,7 +1,7 @@
 #include "StateSystem.h"
 #include "Core/Application.h"
 #include "Core/Registers/ActionRegistry.h"
-#include "System/MovementSystem.h"
+#include "System/Physics/MovementSystem.h"
 
 namespace Spoon
 {
