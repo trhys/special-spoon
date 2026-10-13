@@ -6,5 +6,6 @@
 #include "Physics/MovementSystem.h"
 #include "Render/AnimationSystem.h"
 #include "Render/ParticleSystem.h"
+#include "Render/UISystem.h"
 #include "Sound/AudioSystem.h"
 #include "TileMap/TileMapCollisionSystem.h"
