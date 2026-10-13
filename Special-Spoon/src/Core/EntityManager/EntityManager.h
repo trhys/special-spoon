@@ -42,6 +42,10 @@ namespace Spoon
         template<typename COMP, typename... Args>
         void MakeComponent(UUID id, const std::string& displayName, Args&&... args);
 
+        // Template specialization alternative for checking if an entity has a component
+        template<typename COMP>
+        bool HasComponent(UUID id, const std::string& displayName);
+        
         // Template specialization alternative for removing components
         template<typename COMP>
         void KillComponent(UUID id);
