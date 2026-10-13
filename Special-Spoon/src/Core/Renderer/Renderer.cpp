@@ -13,13 +13,17 @@ namespace Spoon {
         BuildRenderables(manager);	
 		DepthSort();
 		
-        std::sort(m_WorldRenderables.begin(), m_WorldRenderables.end(),
-            [](Renderable& a, Renderable& b) { 
-				return  std::tie(a.m_Layer, a.m_Depth, a.m_ID) <
-       					std::tie(b.m_Layer, b.m_Depth, b.m_ID); 
-			});
-
+		// draw - world first then the ui overlay
         for (auto& renderable : m_WorldRenderables)
+        {
+			if (!renderable.m_Component)
+				continue;
+			
+			renderable.m_Component->Render(target, states);
+            m_DrawCalls++;
+        }
+
+		for (auto& renderable : m_ScreenRenderables)
         {
 			if (!renderable.m_Component)
 				continue;
@@ -55,6 +59,13 @@ namespace Spoon {
 				break;
 			}
 		}
+
+		// sort by calculated depth with layer and ID as tie-breakers
+		std::sort(m_WorldRenderables.begin(), m_WorldRenderables.end(),
+            [](Renderable& a, Renderable& b) { 
+				return  std::tie(a.m_Layer, a.m_Depth, a.m_ID) <
+       					std::tie(b.m_Layer, b.m_Depth, b.m_ID); 
+			});
 	}
 
 	void Renderer::BuildRenderables(EntityManager& manager)
