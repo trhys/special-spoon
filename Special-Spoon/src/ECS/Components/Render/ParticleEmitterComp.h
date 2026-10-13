@@ -65,6 +65,7 @@ namespace Spoon
         void PreRender(EntityManager& manager, UUID id) override;
         void Render(sf::RenderTarget& target, sf::RenderStates states) override;
         sf::Vector2f GetPosition() override;
+        void SetProjection(const WorldProjection& projection) override;
 
         sf::Vector2f position = {0.0f, 0.0f}; // logical position of the emitter
 

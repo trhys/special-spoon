@@ -1,26 +1,46 @@
 #include "UIComp.h"
+#include "Editor/Utils/Tooltips.h"
 
 namespace Spoon
 {
+    void UIComp::HitTest(sf::Vector2f mousePosition, const sf::FloatRect* spriteBounds, const sf::FloatRect* textBounds)
+    {
+        isHovered = false;
+        if (!active)
+            return;
+
+        // check that mousePosition is inside the UI element's bounds
+        if ((spriteBounds && spriteBounds->contains(mousePosition)) || (textBounds && textBounds->contains(mousePosition)))
+        {
+            isHovered = true;
+        }
+
+    }
+
+    void UIComp::ClearActiveState(bool* spriteState, bool* textState)
+    {
+        if (spriteState)
+            *spriteState = false;
+        if (textState)
+            *textState = false;
+        active = false;
+    }
+
+    void UIComp::SetActiveState(bool* spriteState, bool* textState)
+    {
+        if (spriteState)
+            *spriteState = true;
+        if (textState)
+            *textState = true;
+        active = true;
+    }
+
     void UIComp::OnReflect()
     {
         ImGui::Checkbox("Active", &active);
         ImGui::Checkbox("Focused", &isFocused);
         ImGui::Checkbox("Hovered", &isHovered);
 
-        if (ImGui::BeginCombo("Emitted Action", ActionRegistry::Get().GetName(emittedAction).c_str()))
-        {
-            for (const auto& [id, name] : ActionRegistry::Get().m_IDToName)
-            {
-                bool isSelected = (emittedAction == ActionRegistry::Get().GetAction(name));
-                if (ImGui::Selectable(name.c_str(), isSelected))
-                {
-                    emittedAction = ActionRegistry::Get().GetAction(name);
-                }
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
+        AvailableActionsList(emittedAction.m_ID, "Emitted Action");
     }
 }

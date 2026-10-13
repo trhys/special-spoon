@@ -28,16 +28,14 @@ namespace Spoon
 
         // Key: Action string mapping
         std::unordered_map<sf::Keyboard::Key, ActionType> m_KeyBindings;
-
-        // Key: Pressed state mapping
         std::unordered_map<sf::Keyboard::Key, bool> m_KeyStates;
 
         // mouse input
         std::unordered_map<sf::Mouse::Button, ActionType> m_MouseButtonBindings;
-		sf::Vector2f m_MousePosition;
-
-        // mouse button states
         std::unordered_map<sf::Mouse::Button, bool> m_MouseButtonStates;
+        sf::Vector2f m_MousePosition;
+
+        sf::Vector2f GetMousePosition() const { return m_MousePosition; }
 
         void OnReflect() override;
     };

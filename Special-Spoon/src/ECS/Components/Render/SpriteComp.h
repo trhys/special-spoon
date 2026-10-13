@@ -27,10 +27,6 @@ namespace Spoon
         sf::Vector2f m_LogicalPosition;     // logical (transform) position synced in PreRender
         bool active = true;
 
-        // Core getters
-        // depth sorting uses the logical position. m_Sprite holds the
-        // presentation (possibly projected) position.
-        sf::Vector2f GetPosition() override { return m_LogicalPosition; }
         sf::FloatRect GetBoundingBox() { return m_Sprite.getGlobalBounds(); }
         bool IsActive() const { return active; }
         
@@ -55,6 +51,10 @@ namespace Spoon
             if (active)
                 target.draw(m_Sprite, states);
 		}
+        sf::Vector2f GetPosition() override { return m_LogicalPosition; }
+        void SetProjection(const WorldProjection& projection) override;
+        
+
     };
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteComp, m_TextureID, isCentered, m_TextureRect)

@@ -155,6 +155,23 @@ namespace Spoon {
 
   void TextComp::Render(sf::RenderTarget& target, sf::RenderStates states)
   {
+      if (!active)
+          return;
       target.draw(m_Text, states);
+  }
+
+  void TextComp::SetProjection(const WorldProjection& projection)
+  {
+      if (projection.IsActive())
+      {
+          const sf::FloatRect logicalBounds = m_Text.getGlobalBounds();
+          const sf::Vector2f footprintCenter = logicalBounds.getCenter();
+          const sf::Vector2f feet{
+              footprintCenter.x,
+              logicalBounds.position.y + logicalBounds.size.y
+          };
+          const sf::Vector2f projectedFeet = projection.LogicalToScreen(footprintCenter);
+          m_Text.setPosition(m_Text.getPosition() + (projectedFeet - feet));
+      }
   }
 }

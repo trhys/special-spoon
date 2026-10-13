@@ -9,38 +9,17 @@ namespace Spoon {
         m_DrawTime = 0.f;
         sf::Clock drawClock;
 
-        // Resolve logical -> presentation mapping before any PreRender
         UpdateProjection(manager);
-
-        // Begin sorting renderables by layer
-        m_Renderables.clear();
-        auto& layerArray = manager.GetArray<RenderLayer>(RenderLayer::Name);
-        for (size_t index = 0; index < layerArray.m_Components.size(); index++)
-        {
-            RenderLayer& renderLayer = layerArray.m_Components[index];
-            UUID ID = layerArray.m_IndexToId[index];
-
-			// cast where the entity has a renderable component
-			// this comsumes the renderable interface and allows for custom rendering logic
-            for (Component* comp : manager.GetAllComponentsOfEntity(ID))
-            {
-                if (IRenderable* renderableComp = dynamic_cast<IRenderable*>(comp))
-                {
-					renderableComp->PreRender(manager, ID);
-                    m_Renderables.emplace_back(Renderable{ ID, renderLayer.m_Layer, 0.0f, renderableComp });
-                }
-			}
-        }
-		
+        BuildRenderables(manager);	
 		DepthSort();
 		
-        std::sort(m_Renderables.begin(), m_Renderables.end(),
+        std::sort(m_WorldRenderables.begin(), m_WorldRenderables.end(),
             [](Renderable& a, Renderable& b) { 
 				return  std::tie(a.m_Layer, a.m_Depth, a.m_ID) <
        					std::tie(b.m_Layer, b.m_Depth, b.m_ID); 
 			});
 
-        for (auto& renderable : m_Renderables)
+        for (auto& renderable : m_WorldRenderables)
         {
 			if (!renderable.m_Component)
 				continue;
@@ -67,15 +46,54 @@ namespace Spoon {
 		switch (activeSortPolicy) {
 			case ActiveSortPolicy::Isometric: {
 				IsometricProjection policy;
-				policy.ComputeDepth(m_Renderables); 
+				policy.ComputeDepth(m_WorldRenderables); 
 				break;
 			}
 			case ActiveSortPolicy::TopDown: {
 				TopDownProjection policy;
-				policy.ComputeDepth(m_Renderables);
+				policy.ComputeDepth(m_WorldRenderables);
 				break;
 			}
 		}
+	}
+
+	void Renderer::BuildRenderables(EntityManager& manager)
+	{
+		m_WorldRenderables.clear();
+		m_ScreenRenderables.clear();
+
+		auto& layerArray = manager.GetArray<RenderLayer>(RenderLayer::Name);
+        for (size_t index = 0; index < layerArray.m_Components.size(); index++)
+        {
+            RenderLayer& renderLayer = layerArray.m_Components[index];
+            UUID ID = layerArray.m_IndexToId[index];
+
+			// cast where the entity has a renderable component
+			// this comsumes the renderable interface and allows for custom rendering logic
+            for (Component* comp : manager.GetAllComponentsOfEntity(ID))
+            {
+                if (IRenderable* renderableComp = dynamic_cast<IRenderable*>(comp))
+                {
+					bool isScreenSpace = false;
+
+					// check for ui comp and determine what bucket it belongs in
+					if (manager.HasComponent<UIComp>(ID, UIComp::Name))
+					{
+						auto& uiComp = manager.GetComponent<UIComp>(ID, UIComp::Name);
+						isScreenSpace = uiComp.IsScreenSpace();
+					}
+					renderableComp->PreRender(manager, ID);
+
+					if (isScreenSpace)
+						m_ScreenRenderables.emplace_back(Renderable{ ID, renderLayer.m_Layer, 0.0f, renderableComp });
+					else 
+					{
+						renderableComp->SetProjection(m_Projection);
+						m_WorldRenderables.emplace_back(Renderable{ ID, renderLayer.m_Layer, 0.0f, renderableComp });
+					}
+                }
+			}
+        }
 	}
 
 	void Renderer::UpdateProjection(EntityManager& manager)
