@@ -40,7 +40,16 @@ namespace Spoon
         ImGui::Checkbox("Active", &active);
         ImGui::Checkbox("Focused", &isFocused);
         ImGui::Checkbox("Hovered", &isHovered);
-
+        
+        ImGui::TextDisabled("Select projection type for the UI element");
+        if (ImGui::BeginCombo("Projection Space", nullptr))
+        {
+            if (ImGui::Selectable("World Space", space == UISpace::World))
+                space = UISpace::World;
+            if (ImGui::Selectable("Screen Space", space == UISpace::Screen))
+                space = UISpace::Screen;
+            ImGui::EndCombo();
+        }
         AvailableActionsList(emittedAction.m_ID, "Emitted Action");
     }
 }

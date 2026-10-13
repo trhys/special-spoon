@@ -20,7 +20,6 @@ namespace Spoon
 		// prefetch queue and arrays
 		auto queue = Application::Get().GetActionQueue().GetActionsByEntity();
         auto& uiArray = manager.GetArray<UIComp>(UIComp::Name);
-        auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
         auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
         auto& textArray = manager.GetArray<TextComp>(TextComp::Name);
 
@@ -28,16 +27,9 @@ namespace Spoon
         {
             UIComp& uiComp = uiArray.m_Components[in];
             UUID ID = uiArray.m_IndexToId[in];
-
-            // get input component for the entity
-            // and update its state from mouse position
-            if (inputArray.m_IdToIndex.find(ID) == inputArray.m_IdToIndex.end())
-                continue;
-            auto& inputComp = inputArray.m_Components[inputArray.m_IdToIndex[ID]];
-            sf::Vector2f mousePosition = inputComp.GetMousePosition();
-
+            
             // get sprite/text for the UI element - 
-            // we'll hold its bounds and active state for later
+            // we'll hold its bounds and active state for hit testing
             std::optional<sf::FloatRect> spriteBounds;
             bool* spriteActive = nullptr;
             std::optional<sf::FloatRect> textBounds;
@@ -58,13 +50,12 @@ namespace Spoon
 
             // update UI component's hover state
             uiComp.HitTest(
-                mousePosition, 
+                sf::Vector2f(sf::Mouse::getPosition().x, sf::Mouse::getPosition().y), 
                 spriteBounds ? &(*spriteBounds) : nullptr, 
                 textBounds ? &(*textBounds) : nullptr
             );
-            
-            // reset active state before checking
-            uiComp.ClearActiveState(spriteActive, textActive);
+            // update the UICursor with the hover state
+            m_Cursor.UpdateHover(&uiComp);
 
 			auto it = queue.find(ID);
             if (it == queue.end())
@@ -77,7 +68,12 @@ namespace Spoon
             {
 				if (UISystemUtil::IsUIAction(action.m_ActionType))
 				{
-					
+					if (action.m_ActionType.m_ID == BuiltInActions::UISelect && (uiComp.isHovered || uiComp.isFocused))
+						m_Cursor.UpdatePressed(&uiComp);
+                    if (action.m_ActionType.m_ID == BuiltInActions::UICancel && (uiComp.isHovered || uiComp.isFocused))
+                        m_Cursor.UpdatePressed(nullptr);
+                    if (action.m_ActionType.m_ID == BuiltInActions::UINavigate)
+                        m_Cursor.UpdateFocus(&uiComp);
 				}
 			}
 			

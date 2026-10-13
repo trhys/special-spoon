@@ -59,7 +59,6 @@ namespace Spoon
                 if (found != inputComp.m_MouseButtonBindings.end())
                 {
                     inputComp.m_MouseButtonStates[found->first] = true;
-					inputComp.m_MousePosition = sf::Vector2f(static_cast<float>(mouseEvent.position.x), static_cast<float>(mouseEvent.position.y));
                 }
             }
             for (const auto& mouseEvent : m_MouseButtonReleaseEvents)
@@ -68,7 +67,6 @@ namespace Spoon
                 if (found != inputComp.m_MouseButtonBindings.end())
                 {
                     inputComp.m_MouseButtonStates[found->first] = false;
-					inputComp.m_MousePosition = sf::Vector2f(static_cast<float>(mouseEvent.position.x), static_cast<float>(mouseEvent.position.y));
                 }
             }
 

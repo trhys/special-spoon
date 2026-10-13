@@ -33,9 +33,6 @@ namespace Spoon
         // mouse input
         std::unordered_map<sf::Mouse::Button, ActionType> m_MouseButtonBindings;
         std::unordered_map<sf::Mouse::Button, bool> m_MouseButtonStates;
-        sf::Vector2f m_MousePosition;
-
-        sf::Vector2f GetMousePosition() const { return m_MousePosition; }
 
         void OnReflect() override;
     };

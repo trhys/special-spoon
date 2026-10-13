@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/System.h"
+#include "UICursor.h"
 
 namespace Spoon
 {
@@ -23,5 +24,7 @@ namespace Spoon
 
         void Update(sf::Time tick, EntityManager& manager) override;
         void OnReflect() override;
+    private:
+        UICursor m_Cursor;
     };
 }

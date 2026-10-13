@@ -31,6 +31,7 @@ namespace Spoon
         void HitTest(sf::Vector2f mousePosition, const sf::FloatRect* spriteBounds, const sf::FloatRect* textBounds);
         void ClearActiveState(bool* spriteState, bool* textState);
         void SetActiveState(bool* spriteState, bool* textState);
+        void SetFocused(bool focused) { isFocused = focused; }
         bool IsScreenSpace() const { return space == UISpace::Screen; }
         bool IsWorldSpace() const { return space == UISpace::World; }
         void OnReflect() override;
