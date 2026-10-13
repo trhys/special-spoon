@@ -13,7 +13,9 @@ target_sources(Special-Spoon
         Tools/TileMapTool.cpp
         Tools/TextureRectTool.h
 
-        Utils/Helpmarker.h        
+        Utils/Helpmarker.h    
+        Utils/Tooltips.h
+        Utils/Tooltips.cpp
         Utils/Viewport.h
         Utils/Viewport.cpp
 )

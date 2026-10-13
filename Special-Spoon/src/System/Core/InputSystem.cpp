@@ -17,6 +17,7 @@ namespace Spoon
             InputComp& inputComp = inputArray.m_Components[in];
             UUID ID = inputArray.m_IndexToId[in];
 
+			// process key events
             for(const auto& keyEvent : m_KeyPressEvents)
             {
                 sf::Keyboard::Key key = keyEvent.code;
@@ -26,7 +27,6 @@ namespace Spoon
                     inputComp.m_KeyStates[found->first] = true;
                 }
             }
-
             for (const auto& keyEvent : m_KeyReleaseEvents)
             {
                 sf::Keyboard::Key key = keyEvent.code;
@@ -37,6 +37,7 @@ namespace Spoon
                 }
             }
 
+			// process held keys and queue actions
             for (const auto& [key, isHeld] : inputComp.m_KeyStates)
             {
                 if (!isHeld)
@@ -58,19 +59,65 @@ namespace Spoon
                 if (found != inputComp.m_MouseButtonBindings.end())
                 {
                     inputComp.m_MouseButtonStates[found->first] = true;
+					inputComp.m_MousePosition = sf::Vector2f(static_cast<float>(mouseEvent.position.x), static_cast<float>(mouseEvent.position.y));
                 }
             }
-
             for (const auto& mouseEvent : m_MouseButtonReleaseEvents)
             {
                 auto found = inputComp.m_MouseButtonBindings.find(mouseEvent.button);
                 if (found != inputComp.m_MouseButtonBindings.end())
                 {
                     inputComp.m_MouseButtonStates[found->first] = false;
+					inputComp.m_MousePosition = sf::Vector2f(static_cast<float>(mouseEvent.position.x), static_cast<float>(mouseEvent.position.y));
                 }
             }
+
+			// process held mouse buttons and queue actions
+            for (const auto& [button, isHeld] : inputComp.m_MouseButtonStates)
+            {
+                if (!isHeld)
+                {
+                    continue;
+                }
+                auto binding = inputComp.m_MouseButtonBindings.find(button);
+                if (binding != inputComp.m_MouseButtonBindings.end())
+                {
+                    queue.CreateAndPush(ID, binding->second, 0);
+                }
+			}
         }
 
         ClearEvents();
     }
+
+	// Clear all input events after processing
+    void InputSystem::ClearEvents()
+    {
+        m_KeyPressEvents.clear();
+        m_KeyReleaseEvents.clear();
+        m_MouseButtonPressEvents.clear();
+        m_MouseButtonReleaseEvents.clear();
+	}
+
+	// mouse + keyboard input event pushing
+
+    void InputSystem::PushMouseButtonPress(const sf::Event::MouseButtonPressed& mousePress)
+    {
+        m_MouseButtonPressEvents.push_back(mousePress);
+	}
+
+    void InputSystem::PushMouseButtonRelease(const sf::Event::MouseButtonReleased& mouseRelease)
+    {
+        m_MouseButtonReleaseEvents.push_back(mouseRelease);
+	}
+
+    void InputSystem::PushKeyPress(const sf::Event::KeyPressed& keyPress)
+    {
+        m_KeyPressEvents.push_back(keyPress);
+    }
+
+    void InputSystem::PushKeyRelease(const sf::Event::KeyReleased& keyRelease)
+    {
+        m_KeyReleaseEvents.push_back(keyRelease);
+	}
 }

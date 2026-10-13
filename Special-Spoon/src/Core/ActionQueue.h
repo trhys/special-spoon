@@ -2,6 +2,7 @@
 
 #include "ECS/UUID.h"
 #include "Registers/ActionRegistry.h"
+#include <unordered_map>
 
 namespace Spoon
 {
@@ -39,5 +40,15 @@ namespace Spoon
             m_Queue.clear();
             m_NextTimestamp = 0;
         }
+
+        std::unordered_map<UUID, std::vector<Action>> GetActionsByEntity() const
+        {
+            std::unordered_map<UUID, std::vector<Action>> actionsByEntity;
+            for (const auto& action : m_Queue)
+            {
+                actionsByEntity[action.m_EntityID].push_back(action);
+            }
+            return actionsByEntity;
+		}
     };
 }

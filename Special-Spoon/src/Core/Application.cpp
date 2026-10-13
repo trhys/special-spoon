@@ -235,6 +235,7 @@ namespace Spoon
             // Rendering
             m_Window.clear();
 
+            // todo: see #85
             if (m_Specs.editorEnabled)
             {
                 ImGui::Begin("Viewport");
