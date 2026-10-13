@@ -2,6 +2,7 @@
 
 #include "System/System.h"
 #include "UICursor.h"
+#include "Core/ActionQueue.h"
 
 namespace Spoon
 {
@@ -21,6 +22,9 @@ namespace Spoon
         {
             return {};
         }
+
+        void BuildUIIntent(const std::vector<Action>& actions);
+        void SetCursor(EntityManager& manager);
 
         void Update(sf::Time tick, EntityManager& manager) override;
         void OnReflect() override;

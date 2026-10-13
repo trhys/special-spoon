@@ -28,7 +28,7 @@ namespace Spoon
         ActionType emittedAction = ActionType{BuiltInActions::None};
 
         // methods
-        void HitTest(sf::Vector2f mousePosition, const sf::FloatRect* spriteBounds, const sf::FloatRect* textBounds);
+        bool HitTest(sf::Vector2f mousePosition, const sf::FloatRect* spriteBounds, const sf::FloatRect* textBounds);
         void ClearActiveState(bool* spriteState, bool* textState);
         void SetActiveState(bool* spriteState, bool* textState);
         void SetFocused(bool focused) { isFocused = focused; }
@@ -37,5 +37,5 @@ namespace Spoon
         void OnReflect() override;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(UIComp, active, isFocused, isHovered, space, emittedAction)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(UIComp, active, space, emittedAction)
 }

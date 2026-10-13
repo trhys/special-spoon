@@ -1,16 +1,30 @@
 #pragma once
 
+#include "ECS/UUID.h"
+#include <optional>
+
 namespace Spoon
 {
-    struct UIComp;
-    
-    struct UICursor {
-        UIComp* hoveredComp = nullptr;
-        UIComp* focusedComp = nullptr;
-        UIComp* pressedComp = nullptr;
+    struct UIIntent {
+        bool select = false;
+        bool cancel = false;
+        bool navigate = false;
+    };
 
-        void UpdateHover(UIComp* comp);
-        void UpdateFocus(UIComp* comp);
-        void UpdatePressed(UIComp* comp);
+    struct UICursor {
+        std::optional<UUID> hoveredComp;
+        std::optional<UUID> focusedComp;
+        std::optional<UUID> pressedComp;
+        UIIntent intent;
+        bool selectHeldLastFrame = false;
+
+        void Reset()
+        {
+            hoveredComp.reset();
+            focusedComp.reset();
+            pressedComp.reset();
+            intent = UIIntent{};
+        }
+
     };
 }

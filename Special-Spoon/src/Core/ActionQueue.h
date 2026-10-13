@@ -19,6 +19,7 @@ namespace Spoon
         std::vector<Action> m_Queue;
         int m_NextTimestamp = 0;
 
+        const std::vector<Action>& GetQueue() const { return m_Queue; }
         void CreateAndPush(UUID entityID, ActionType actionType, int priority)
         {
             Action action;

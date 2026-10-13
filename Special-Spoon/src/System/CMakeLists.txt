@@ -25,7 +25,6 @@ target_sources(Special-Spoon
         Render/UISystem.h
         Render/UISystem.cpp
         Render/UICursor.h
-        Render/UICursor.cpp
 
         TileMap/TileMapCollisionSystem.h
         TileMap/TileMapCollisionSystem.cpp

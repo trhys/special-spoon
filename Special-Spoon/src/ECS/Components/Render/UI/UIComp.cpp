@@ -3,18 +3,17 @@
 
 namespace Spoon
 {
-    void UIComp::HitTest(sf::Vector2f mousePosition, const sf::FloatRect* spriteBounds, const sf::FloatRect* textBounds)
+    bool UIComp::HitTest(sf::Vector2f mousePosition, const sf::FloatRect* spriteBounds, const sf::FloatRect* textBounds)
     {
-        isHovered = false;
         if (!active)
-            return;
+            return false;
 
         // check that mousePosition is inside the UI element's bounds
         if ((spriteBounds && spriteBounds->contains(mousePosition)) || (textBounds && textBounds->contains(mousePosition)))
         {
-            isHovered = true;
+            return true;
         }
-
+        return false;
     }
 
     void UIComp::ClearActiveState(bool* spriteState, bool* textState)
