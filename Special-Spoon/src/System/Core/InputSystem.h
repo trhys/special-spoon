@@ -20,12 +20,22 @@ namespace Spoon
         void PushMouseButtonPress(const sf::Event::MouseButtonPressed& mousePress);
         void PushMouseButtonRelease(const sf::Event::MouseButtonReleased& mouseRelease);
         void ClearEvents();
-        
         void Update(sf::Time tick, EntityManager& manager) override;
+
+        // viewport methods
+        void SetViewport(sf::RenderTarget* target, sf::FloatRect screenRect, bool hovered);
+        void ResolveMouse(const sf::RenderWindow& window);
+        std::optional<sf::Vector2f> const GetMousePosition();
     private:
         std::vector<sf::Event::KeyPressed> m_KeyPressEvents;
         std::vector<sf::Event::KeyReleased> m_KeyReleaseEvents;
         std::vector<sf::Event::MouseButtonPressed> m_MouseButtonPressEvents;
         std::vector<sf::Event::MouseButtonReleased> m_MouseButtonReleaseEvents;
+
+        // viewport members
+        sf::RenderTarget* m_ActiveViewport = nullptr;  // null expect for editor viewport
+        sf::FloatRect m_ViewportRect;
+        bool m_ViewportHovered = false;
+        std::optional<sf::Vector2f> m_MousePos;
     };
 }

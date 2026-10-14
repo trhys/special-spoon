@@ -91,7 +91,7 @@ namespace Spoon {
 					if (manager.HasComponent<UIComp>(ID, UIComp::Name))
 					{
 						auto& uiComp = manager.GetComponent<UIComp>(ID, UIComp::Name);
-						if (!uiComp.IsActive())
+						if (!uiComp.active)
 							continue;
 						isScreenSpace = uiComp.IsScreenSpace();
 					}

@@ -8,6 +8,9 @@ namespace Spoon
     {
         (void)tick; // unused
 
+        // set mouse data
+        ResolveMouse(Application::Get().GetWindow());
+
         // prefetch action queue and arrays
         auto& queue = Application::Get().GetActionQueue();
         auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
@@ -118,4 +121,44 @@ namespace Spoon
     {
         m_KeyReleaseEvents.push_back(keyRelease);
 	}
+
+    void InputSystem::SetViewport(sf::RenderTarget* target, sf::FloatRect screenRect, bool hovered)
+    {
+        m_ActiveViewport = target;
+        m_ViewportRect = screenRect;
+        m_ViewportHovered = hovered;
+    }
+
+    void InputSystem::ResolveMouse(const sf::RenderWindow& window)
+    {
+        // get pointer coordinates
+        const sf::Vector2i pixel = sf::Mouse::getPosition(window);
+
+        // editor viewport branch
+        if (m_ActiveViewport) 
+        {
+            // mouse out of viewport
+            if (!m_ViewportHovered)
+            {
+                m_MousePos.reset();
+                return;
+            }
+
+            // get relative position for editor viewport
+            sf::Vector2i pos(
+                static_cast<int>(pixel.x - m_ViewportRect.position.x),
+                static_cast<int>(pixel.y - m_ViewportRect.position.y)    
+            );
+            m_MousePos = m_ActiveViewport->mapPixelToCoords(pos);
+        }
+        else // non editor viewport 
+        {
+            m_MousePos = window.mapPixelToCoords(pixel);
+        }
+    }
+
+    std::optional<sf::Vector2f> const InputSystem::GetMousePosition()
+    {
+        return m_MousePos;
+    }       
 }

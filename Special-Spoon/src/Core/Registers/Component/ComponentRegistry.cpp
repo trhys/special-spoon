@@ -58,7 +58,9 @@ namespace Spoon
     void LoadInputComponent(EntityManager& manager, UUID id, const json& comp)
     {
          auto input = comp.get<InputComp>();
-         manager.MakeComponent<InputComp>(id, InputComp::Name, input.m_KeyBindings);
+         manager.MakeComponent<InputComp>(id, InputComp::Name);
+         auto& loaded = manager.GetComponent<InputComp>(id, InputComp::Name);
+         loaded = input;
     }
 
     void LoadRenderLayer(EntityManager& manager, UUID id, const json& comp)

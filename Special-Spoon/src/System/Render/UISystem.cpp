@@ -33,8 +33,8 @@ namespace Spoon
 
     void UISystem::SetCursor(EntityManager& manager)
     {
-        // get window
-        sf::RenderWindow& window = Application::Get().GetWindow();
+        // get mouse from input system
+        auto mousePosition = Application::Get().GetInputSystem().GetMousePosition();
 
         // reset hovered component each frame
         m_Cursor.hoveredComp.reset(); 
@@ -70,7 +70,7 @@ namespace Spoon
             }
 
             bool hit = uiComp.HitTest(
-                sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y), 
+                mousePosition.value_or(sf::Vector2f{}), 
                 spriteBounds ? &(*spriteBounds) : nullptr, 
                 textBounds ? &(*textBounds) : nullptr
             );
@@ -167,13 +167,13 @@ namespace Spoon
             if (isActiveUI(m_Cursor.pressedComp.value_or(UUID{})) &&
                 m_Cursor.pressedComp == m_Cursor.focusedComp)
             {
-                auto it = uiArray.m_IdToIndex.find(*m_Cursor.focusedComp);
+                auto it = uiArray.m_IdToIndex.find(m_Cursor.focusedComp.value());
                 if (it != uiArray.m_IdToIndex.end())
                 {
                     UIComp& focusedUI = uiArray.m_Components[it->second];
                     if (focusedUI.emittedAction)
                     {
-                        queue.CreateAndPush(*m_Cursor.focusedComp, focusedUI.emittedAction, 0);
+                        queue.CreateAndPush(m_Cursor.focusedComp.value(), focusedUI.emittedAction, 0);
                     }
                 }
             }
@@ -201,8 +201,8 @@ namespace Spoon
                 continue;
             }
 
-            uiComp.isHovered = (m_Cursor.hoveredComp && id == *m_Cursor.hoveredComp);
-            uiComp.isFocused = (m_Cursor.focusedComp && id == *m_Cursor.focusedComp);
+            uiComp.isHovered = (m_Cursor.hoveredComp && id == m_Cursor.hoveredComp.value());
+            uiComp.isFocused = (m_Cursor.focusedComp && id == m_Cursor.focusedComp.value());
         }
     }
 

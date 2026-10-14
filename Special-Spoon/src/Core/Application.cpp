@@ -267,6 +267,17 @@ namespace Spoon
                 const bool viewportHovered = ImGui::IsItemHovered();
                 const ImVec2 viewportImageMin = ImGui::GetItemRectMin();
                 const ImVec2 viewportImageMax = ImGui::GetItemRectMax();
+                
+                // set input systems viewport
+                m_InputSystem.SetViewport(
+                    &m_Viewport.target,
+                    sf::FloatRect(
+                        {viewportImageMin.x, viewportImageMin.y},
+                        {viewportImageMax.x, viewportImageMax.y}
+                    ),
+                    viewportHovered
+                );
+                
                 const bool viewportConsumed = m_Editor.HandleViewportTools(
                     m_Viewport,
                     viewportHovered,

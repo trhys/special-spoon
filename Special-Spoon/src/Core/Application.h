@@ -37,6 +37,7 @@ namespace Spoon
 		
 		static Application& Get() { return *s_Instance; }
 
+		InputSystem& GetInputSystem()		{ return m_InputSystem; }
 		ProjectManager& GetProjectManager() { return m_ProjectManager; }
 		EntityManager& GetEntityManager() 	{ return m_EntityManager; }
 		SceneManager& GetSceneManager()  	{ return m_SceneManager; }
