@@ -46,7 +46,7 @@ namespace Spoon
         {
             for(auto& [key, action] : m_KeyBindings)
             {   
-                std::string keyName = sf::Keyboard::getDescription(static_cast<sf::Keyboard::Scancode>(key)).toAnsiString();
+                std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(key)).toAnsiString();
                 ImGui::PushID(keyName.c_str());
                 const bool is_selected = (currentKey == key);
                 if(ImGui::Selectable(keyName.c_str(), is_selected))
@@ -66,7 +66,7 @@ namespace Spoon
         {
             const char* editWindow = "Edit Binding";
 
-            std::string keyName = sf::Keyboard::getDescription(static_cast<sf::Keyboard::Scancode>(currentKey)).toAnsiString();
+            std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(currentKey)).toAnsiString();
             ImGui::Text("Key: %s", keyName.c_str());
             ImGui::Text("Action: %s", ActionRegistry::Get().GetName(m_KeyBindings[currentKey]).c_str());
             
@@ -93,7 +93,7 @@ namespace Spoon
                         if (m_KeyBindings.find(key) != m_KeyBindings.end() && key != editKey)
                             continue;
 
-                        std::string keyName = sf::Keyboard::getDescription(static_cast<sf::Keyboard::Scancode>(key)).toAnsiString();
+                        std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(key)).toAnsiString();
                         ImGui::PushID(keyName.c_str());
                         const bool is_selected = (editKey == key);
                         if (ImGui::Selectable(keyName.c_str(), is_selected))
@@ -163,7 +163,7 @@ namespace Spoon
                     if (m_KeyBindings.find(key) != m_KeyBindings.end() && key != editKey)
                         continue;
 
-                    std::string keyName = sf::Keyboard::getDescription(static_cast<sf::Keyboard::Scancode>(key)).toAnsiString();
+                    std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(key)).toAnsiString();
                     ImGui::PushID(keyName.c_str());
                     const bool is_selected = (editKey == key);
                     if (ImGui::Selectable(keyName.c_str(), is_selected))

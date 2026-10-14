@@ -155,6 +155,11 @@ namespace Spoon
                 m_Cursor.focusedComp = nextActiveUI(m_Cursor.focusedComp.value_or(UUID{}));
         }
 
+        // fall back to the first active UI component if nothing is focused yet,
+        // so keyboard-only select/cancel can work before any hover/navigate has occurred
+        if (!isActiveUI(m_Cursor.focusedComp.value_or(UUID{})))
+            m_Cursor.focusedComp = firstActiveUI();
+
         const bool selectHeld = m_Cursor.intent.select;
         const bool selectDown =  selectHeld && !m_Cursor.selectHeldLastFrame;
         const bool selectUp   = !selectHeld &&  m_Cursor.selectHeldLastFrame;

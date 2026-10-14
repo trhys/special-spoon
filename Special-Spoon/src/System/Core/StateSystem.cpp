@@ -20,7 +20,7 @@ namespace Spoon
             UUID ID = statusArray.m_IndexToId[in];
             
             auto found = std::find_if(queue.m_Queue.begin(), queue.m_Queue.end(),
-                [ID](const Action& action) { return action.m_EntityID == ID; });
+                [ID, &stateComp](const Action& action) { return action.m_EntityID == ID && stateComp.m_Actions.count(action.m_ActionType); });
             if(found != queue.m_Queue.end() && stateComp.m_Actions.count(found->m_ActionType))
             {
                 // return early on quit request
