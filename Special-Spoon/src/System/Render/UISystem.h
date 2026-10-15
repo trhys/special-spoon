@@ -20,12 +20,10 @@ namespace Spoon
         }
         std::vector<std::string> RunBefore() const override
         {
-            return {};
+            return { "Movement", "Animation" };
         }
 
-        void BuildUIIntent(const std::vector<Action>& actions);
         void SetCursor(EntityManager& manager);
-
         void Update(sf::Time tick, EntityManager& manager) override;
         void OnReflect() override;
     private:

@@ -37,18 +37,22 @@ namespace Spoon
     void UIComp::OnReflect()
     {
         ImGui::Checkbox("Active", &active);
-        ImGui::Checkbox("Focused", &isFocused);
-        ImGui::Checkbox("Hovered", &isHovered);
+
+        ImGui::TextDisabled("Cursor Status");
+        ImGui::TextDisabled(isFocused ? "Focused" : "Not Focused");
+        ImGui::TextDisabled(isHovered ? "Hovered" : "Not Hovered");
         
         ImGui::TextDisabled("Select projection type for the UI element");
-        if (ImGui::BeginCombo("Projection Space", nullptr))
+        if (ImGui::BeginCombo("Projection Space", space == UISpace::World ? "World Space" : "Screen Space"))
         {
             if (ImGui::Selectable("World Space", space == UISpace::World))
                 space = UISpace::World;
             if (ImGui::Selectable("Screen Space", space == UISpace::Screen))
                 space = UISpace::Screen;
             ImGui::EndCombo();
-        }
+        } ImGui::SameLine();
+        HelpMarker("Projection space is the coordinate space in which the UI element is rendered.\n"
+            "Screen represents an overlay/hud, where world is rendered in the game world.");
         AvailableActionsList(emittedAction.m_ID, "Emitted Action");
     }
 }

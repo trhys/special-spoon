@@ -11,23 +11,6 @@ namespace Spoon
             return action.m_ID == BuiltInActions::UISelect ||
                    action.m_ID == BuiltInActions::UICancel ||
                    action.m_ID == BuiltInActions::UINavigate;
-		}
-    }
-
-    void UISystem::BuildUIIntent(const std::vector<Action>& actions)
-    {
-        m_Cursor.intent = UIIntent{};
-        for (const auto& action : actions)
-        {
-            if (UISystemUtil::IsUIAction(action.m_ActionType))
-            {
-                if (action.m_ActionType.m_ID == BuiltInActions::UISelect)
-                    m_Cursor.intent.select = true;
-                if (action.m_ActionType.m_ID == BuiltInActions::UICancel)
-                    m_Cursor.intent.cancel = true;
-                if (action.m_ActionType.m_ID == BuiltInActions::UINavigate)
-                    m_Cursor.intent.navigate = true;
-            }
         }
     }
 
@@ -82,7 +65,6 @@ namespace Spoon
         }
     }
 
-
     void UISystem::Update(sf::Time tick, EntityManager& manager)
     {
         (void)tick;
@@ -90,108 +72,82 @@ namespace Spoon
         SetCursor(manager);
 
         auto& queue = Application::Get().GetActionQueue();
-        BuildUIIntent(queue.GetQueue());
-
         auto& uiArray = manager.GetArray<UIComp>(UIComp::Name);
 
-        auto firstActiveUI = [&]() -> UUID {
-            for (size_t i = 0; i < uiArray.m_Components.size(); ++i)
+        // move cursor to next active UI component
+        auto nextActiveUI = [&](UUID current) -> std::optional<UUID> {
+            if (uiArray.m_Components.empty()) // no components available
+                return std::nullopt;
+            else if (uiArray.m_Components.size() == 1) // only one component, return it
             {
-                if (uiArray.m_Components[i].active)
-                    return uiArray.m_IndexToId[i];
+                if (uiArray.m_Components[0].active)
+                    return uiArray.m_IndexToId[0];
+                else
+                    return std::nullopt;
             }
-            return UUID{};
+
+            auto index = uiArray.m_IdToIndex.find(current);
+            if (index == uiArray.m_IdToIndex.end())
+                if (uiArray.m_Components[0].active)
+                    return uiArray.m_IndexToId[0]; // return to start if current not found
+                else
+                    return std::nullopt;
+
+            // move to the next component in the array, wrapping around if necessary
+            auto i = (index->second + 1) % uiArray.m_Components.size();
+            if (uiArray.m_Components[i].active)
+                return uiArray.m_IndexToId[i];
+
+            return std::nullopt; // no active component found
         };
 
-        auto nextActiveUI = [&](UUID current) -> UUID {
-            if (uiArray.m_Components.empty())
-                return UUID{};
-
-            int currentIndex = -1;
-            for (size_t i = 0; i < uiArray.m_Components.size(); ++i)
-            {
-                if (uiArray.m_IndexToId[i] == current)
-                {
-                    currentIndex = static_cast<int>(i);
-                    break;
-                }
-            }
-
-            const size_t n = uiArray.m_Components.size();
-            if (currentIndex < 0)
-                return firstActiveUI();
-
-            for (size_t step = 1; step <= n; ++step)
-            {
-                size_t idx = (static_cast<size_t>(currentIndex) + step) % n;
-                if (uiArray.m_Components[idx].active)
-                    return uiArray.m_IndexToId[idx];
-            }
-
-            return UUID{};
-        };
-
-        auto isActiveUI = [&](UUID id) -> bool {
-            if (id == UUID{}) return false;
-            auto it = uiArray.m_IdToIndex.find(id);
+        // check if the given UI component ID corresponds to an active component
+        auto isActiveUI = [&](std::optional<UUID> id) -> bool {
+            if (id == std::nullopt) return false;
+            auto it = uiArray.m_IdToIndex.find(id.value());
             if (it == uiArray.m_IdToIndex.end())
                 return false;
             return uiArray.m_Components[it->second].active;
         };
 
-        if (!isActiveUI(m_Cursor.focusedComp.value_or(UUID{})))
+        // reset cursor if the associated UI component is no longer active
+        if (!isActiveUI(m_Cursor.focusedComp))
             m_Cursor.focusedComp.reset();
-        if (!isActiveUI(m_Cursor.pressedComp.value_or(UUID{})))
-            m_Cursor.pressedComp.reset();
 
-        if (isActiveUI(m_Cursor.hoveredComp.value_or(UUID{})))
+        // set focused component to hovered component if it is active
+        if (isActiveUI(m_Cursor.hoveredComp))
             m_Cursor.focusedComp = m_Cursor.hoveredComp;
 
-        if (m_Cursor.intent.navigate)
+        // build frame intent for ui commands
+        bool uiSelect = false, uiCancel = false, uiNavigate = false;
+        for (auto& action : queue.GetQueue())
         {
-            if (!isActiveUI(m_Cursor.focusedComp.value_or(UUID{})))
-                m_Cursor.focusedComp = firstActiveUI();
-            else
-                m_Cursor.focusedComp = nextActiveUI(m_Cursor.focusedComp.value_or(UUID{}));
+            if (action.m_ActionType.m_ID == BuiltInActions::UISelect)
+                uiSelect = true;
+            else if (action.m_ActionType.m_ID == BuiltInActions::UICancel)
+                uiCancel = true;
+            else if (action.m_ActionType.m_ID == BuiltInActions::UINavigate)
+                uiNavigate = true;
         }
 
-        // fall back to the first active UI component if nothing is focused yet,
-        // so keyboard-only select/cancel can work before any hover/navigate has occurred
-        if (!isActiveUI(m_Cursor.focusedComp.value_or(UUID{})))
-            m_Cursor.focusedComp = firstActiveUI();
-
-        const bool selectHeld = m_Cursor.intent.select;
-        const bool selectDown =  selectHeld && !m_Cursor.selectHeldLastFrame;
-        const bool selectUp   = !selectHeld &&  m_Cursor.selectHeldLastFrame;
-
-        if (selectDown)
-            m_Cursor.pressedComp = m_Cursor.focusedComp;
-
-        if (selectUp)
+        if (uiCancel)
         {
-            if (isActiveUI(m_Cursor.pressedComp.value_or(UUID{})) &&
-                m_Cursor.pressedComp == m_Cursor.focusedComp)
+            // reset cursor
+            if (m_Cursor.focusedComp)
+                m_Cursor.focusedComp.reset();
+        } 
+        else
+        {
+            auto focusedCompId = m_Cursor.focusedComp;
+            if (uiSelect && focusedCompId)
             {
-                auto it = uiArray.m_IdToIndex.find(m_Cursor.focusedComp.value());
-                if (it != uiArray.m_IdToIndex.end())
-                {
-                    UIComp& focusedUI = uiArray.m_Components[it->second];
-                    if (focusedUI.emittedAction)
-                    {
-                        queue.CreateAndPush(m_Cursor.focusedComp.value(), focusedUI.emittedAction, 0);
-                    }
-                }
+                auto& comp = uiArray.m_Components[uiArray.m_IdToIndex[focusedCompId.value()]];
+                queue.CreateAndPush(focusedCompId.value(), comp.emittedAction, 0);
+            } else if (uiNavigate && focusedCompId)
+            {
+                m_Cursor.focusedComp = nextActiveUI(focusedCompId.value());
             }
-            m_Cursor.pressedComp.reset();
         }
-
-        if (m_Cursor.intent.cancel)
-        {
-            m_Cursor.pressedComp.reset();
-            m_Cursor.focusedComp.reset();
-        }
-
-        m_Cursor.selectHeldLastFrame = selectHeld;
 
         // Mirror cursor state onto components for debug/render/editor
         for (size_t i = 0; i < uiArray.m_Components.size(); ++i)
