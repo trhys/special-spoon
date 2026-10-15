@@ -1,380 +1,203 @@
 #include "InputComp.h"
-#include "Core/Application.h"
-#include "Editor/Utils/Tooltips.h"
 
-#include <optional>
+#include "Imgui/imgui.h"
+
+#include <cmath>
+#include <cstddef>
+#include <string>
 
 namespace Spoon
 {
-    namespace InputCompUtil
+    namespace
     {
-        // sfml doesn't provide a native mouse button to string mapping, so we have to do it ourselves
-        std::string MouseButtonToString(sf::Mouse::Button button)
+        const char* MouseButtonToString(sf::Mouse::Button button)
         {
             switch (button)
             {
-            case sf::Mouse::Button::Left: return "LeftMouseButton";
-            case sf::Mouse::Button::Right: return "RightMouseButton";
-            case sf::Mouse::Button::Middle: return "MiddleMouseButton";
-            case sf::Mouse::Button::Extra1: return "X1MouseButton";
-            case sf::Mouse::Button::Extra2: return "X2MouseButton";
+            case sf::Mouse::Button::Left: return "Left";
+            case sf::Mouse::Button::Right: return "Right";
+            case sf::Mouse::Button::Middle: return "Middle";
+            case sf::Mouse::Button::Extra1: return "X1";
+            case sf::Mouse::Button::Extra2: return "X2";
             }
-			return "UnknownMouseButton";
-        }
-
-        std::optional<sf::Mouse::Button>
-        StringToMouseButton(const std::string& str)
-        {
-            if (str == "LeftMouseButton") return sf::Mouse::Button::Left;
-            if (str == "RightMouseButton") return sf::Mouse::Button::Right;
-            if (str == "MiddleMouseButton") return sf::Mouse::Button::Middle;
-            if (str == "X1MouseButton") return sf::Mouse::Button::Extra1;
-            if (str == "X2MouseButton") return sf::Mouse::Button::Extra2;
-			return std::nullopt;
+            return "Unknown";
         }
     }
 
     void InputComp::OnReflect()
     {
-        static sf::Keyboard::Key currentKey = sf::Keyboard::Key::Unknown; // Currently selected key
-        static sf::Keyboard::Key editKey = sf::Keyboard::Key::Unknown;    // Key to replace binding
-        static uint32_t editAction = 0;                                   // Action ID to replace binding
-		static bool submitKeyError = false;                                      // Flag to indicate if there was an error during submission
+        static constexpr const char* triggerNames[] = {
+            "Pressed", "Released", "Held", "Repeat"
+        };
+        static constexpr const char* triggerDescriptions[] = {
+            "Emits once when the input is pressed.",
+            "Emits once when the input is released.",
+            "Emits on each input-system update while held.",
+            "Emits on press, then at the repeat interval while held."
+        };
+        constexpr int triggerCount = static_cast<int>(IM_ARRAYSIZE(triggerNames));
 
-        ImGui::SeparatorText("Current Key Bindings");
-        if(ImGui::BeginListBox("##Key Bindings"))
+        ImGui::SeparatorText("Input Bindings");
+        int newBindingIndex = -1;
+        if (ImGui::Button("Add Binding"))
         {
-            for(auto& [key, action] : m_KeyBindings)
-            {   
-                std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(key)).toAnsiString();
-                ImGui::PushID(keyName.c_str());
-                const bool is_selected = (currentKey == key);
-                if(ImGui::Selectable(keyName.c_str(), is_selected))
-                {
-                    currentKey = key;
-                }
-                if(is_selected)
-                    ImGui::SetItemDefaultFocus();
-                ImGui::PopID();
-            }
-            ImGui::EndListBox();
+            m_Bindings.emplace_back();
+            newBindingIndex = static_cast<int>(m_Bindings.size()) - 1;
         }
-        ImGui::SameLine(); HelpMarker("Map a key to a registered event. The event is pushed to the action queue to be consumed by some system.");
-        
-        ImGui::SeparatorText("Action String Mapping");
-        if(currentKey != sf::Keyboard::Key::Unknown && m_KeyBindings.count(currentKey))
+
+        for (std::size_t i = 0; i < m_Bindings.size(); ++i)
         {
-            const char* editWindow = "Edit Binding";
-
-            std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(currentKey)).toAnsiString();
-            ImGui::Text("Key: %s", keyName.c_str());
-            ImGui::Text("Action: %s", ActionRegistry::Get().GetName(m_KeyBindings[currentKey]).c_str());
-            
-            if (ImGui::Button("Edit Key Binding"))
+            InputBinding& binding = m_Bindings[i];
+            bool bindingChanged = false;
+            if (!binding.HasValidSource())
             {
-                editKey = currentKey;
-                editAction = m_KeyBindings[currentKey].m_ID;
-                ImGui::OpenPopup(editWindow);
-			} ImGui::SameLine();
-            if (ImGui::Button("Remove Key Binding"))
+                binding.source = sf::Keyboard::Key::A;
+                bindingChanged = true;
+            }
+            const int triggerValue = static_cast<int>(binding.trigger);
+            if (triggerValue < static_cast<int>(InputTrigger::Pressed)
+                || triggerValue > static_cast<int>(InputTrigger::Repeat))
             {
-                m_KeyBindings.erase(currentKey);
-                currentKey = sf::Keyboard::Key::Unknown;
-			}
+                binding.trigger = InputTrigger::Pressed;
+                bindingChanged = true;
+            }
+            if (!std::isfinite(binding.repeatIntervalSeconds) || binding.repeatIntervalSeconds <= 0.0f)
+            {
+                binding.repeatIntervalSeconds = 0.2f;
+                bindingChanged = true;
+            }
 
-            if(ImGui::BeginPopup(editWindow))
-            {   
-                ImGui::BeginChild("Available Keys", ImVec2(200, 300), true);
-                if (ImGui::BeginListBox("##keylist", ImVec2(-FLT_MIN, -FLT_MIN)))
+            ImGui::PushID(static_cast<int>(i));
+            if (static_cast<int>(i) == newBindingIndex)
+                ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+
+            const std::string label = "Binding " + std::to_string(i + 1);
+            if (ImGui::CollapsingHeader(label.c_str()))
+            {
+                bool isMouseBinding = std::holds_alternative<sf::Mouse::Button>(binding.source);
+                if (ImGui::BeginCombo("Input Type", isMouseBinding ? "Mouse Button" : "Keyboard Key"))
                 {
-                    for (int k = static_cast<int>(sf::Keyboard::Key::A); k <= static_cast<int>(sf::Keyboard::KeyCount); k++)
+                    if (ImGui::Selectable("Keyboard Key", !isMouseBinding) && isMouseBinding)
                     {
-                        sf::Keyboard::Key key = static_cast<sf::Keyboard::Key>(k);
-                        if (m_KeyBindings.find(key) != m_KeyBindings.end() && key != editKey)
-                            continue;
+                        isMouseBinding = false;
+                        binding.source = sf::Keyboard::Key::A;
+                        bindingChanged = true;
+                    }
+                    if (ImGui::Selectable("Mouse Button", isMouseBinding) && !isMouseBinding)
+                    {
+                        isMouseBinding = true;
+                        binding.source = sf::Mouse::Button::Left;
+                        bindingChanged = true;
+                    }
+                    ImGui::EndCombo();
+                }
 
-                        std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(key)).toAnsiString();
-                        ImGui::PushID(keyName.c_str());
-                        const bool is_selected = (editKey == key);
-                        if (ImGui::Selectable(keyName.c_str(), is_selected))
+                if (isMouseBinding)
+                {
+                    const sf::Mouse::Button currentButton = std::get<sf::Mouse::Button>(binding.source);
+                    const char* buttonName = MouseButtonToString(currentButton);
+                    if (ImGui::BeginCombo("Mouse Button", buttonName))
+                    {
+                        for (int button = static_cast<int>(sf::Mouse::Button::Left);
+                            button <= static_cast<int>(sf::Mouse::Button::Extra2); ++button)
                         {
-                            editKey = key;
+                            const auto mouseButton = static_cast<sf::Mouse::Button>(button);
+                            if (ImGui::Selectable(MouseButtonToString(mouseButton),
+                                currentButton == mouseButton) && currentButton != mouseButton)
+                            {
+                                binding.source = mouseButton;
+                                bindingChanged = true;
+                            }
                         }
-                        if (is_selected)
-                            ImGui::SetItemDefaultFocus();
-                        ImGui::PopID();
-                    }
-                    ImGui::EndListBox();
-                }
-                ImGui::EndChild();
-                
-                ImGui::SameLine();
-                
-				// display available actions
-				AvailableActionsList(editAction, "##actionlist");
-
-                if (submitKeyError)
-                {
-                    ErrorMessage("Please select a key and an action before submitting.");
-				}
-                
-                if(ImGui::Button("Submit"))
-                {
-                    if (editKey == sf::Keyboard::Key::Unknown || editAction == 0)
-                    {
-                        submitKeyError = true;
-                    }
-                    else 
-                    {
-                        submitKeyError = false;
-                        m_KeyBindings.erase(currentKey);
-                        m_KeyBindings[editKey] = ActionType{ editAction };
-                        currentKey = sf::Keyboard::Key::Unknown;
-                        editAction = 0;
-                        ImGui::CloseCurrentPopup();
+                        ImGui::EndCombo();
                     }
                 }
-                ImGui::SameLine();
-                if(ImGui::Button("Cancel"))
+                else
                 {
-                    editAction = 0;
-                    editKey = sf::Keyboard::Key::Unknown;
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-        }
-        else
-        {
-            ImGui::TextDisabled("No mapping available");
-        }
-
-        const char* newBindWindow = "New Binding";
-        if (ImGui::Button("Add New"))
-            ImGui::OpenPopup(newBindWindow);
-        if (ImGui::BeginPopup(newBindWindow))
-        {
-            ImGui::BeginChild("Available Keys", ImVec2(200, 300), true);
-            if (ImGui::BeginListBox("##keylist", ImVec2(-FLT_MIN, -FLT_MIN)))
-            {
-                for (int k = static_cast<int>(sf::Keyboard::Key::A); k <= static_cast<int>(sf::Keyboard::KeyCount); k++)
-                {
-                    sf::Keyboard::Key key = static_cast<sf::Keyboard::Key>(k);
-                    if (m_KeyBindings.find(key) != m_KeyBindings.end() && key != editKey)
-                        continue;
-
-                    std::string keyName = sf::Keyboard::getDescription(sf::Keyboard::delocalize(key)).toAnsiString();
-                    ImGui::PushID(keyName.c_str());
-                    const bool is_selected = (editKey == key);
-                    if (ImGui::Selectable(keyName.c_str(), is_selected))
+                    const sf::Keyboard::Key currentKey = std::get<sf::Keyboard::Key>(binding.source);
+                    const std::string keyName = sf::Keyboard::getDescription(
+                        sf::Keyboard::delocalize(currentKey)).toAnsiString();
+                    if (ImGui::BeginCombo("Keyboard Key", keyName.c_str()))
                     {
-                        editKey = key;
-                    }
-                    if (is_selected)
-                        ImGui::SetItemDefaultFocus();
-                    ImGui::PopID();
-                }
-                ImGui::EndListBox();
-            }
-            ImGui::EndChild();
-            
-            ImGui::SameLine();
-            
-			// display available actions
-			AvailableActionsList(editAction, "##actionlist");
-
-            if (submitKeyError)
-            {
-                ErrorMessage("Please select a key and an action before submitting.");
-            }
-            
-            if(ImGui::Button("Submit"))
-            {
-                if (editKey == sf::Keyboard::Key::Unknown || editAction == 0)
-                {
-                    submitKeyError = true;
-                }
-                else 
-                {
-                    submitKeyError = false;
-                    m_KeyBindings[editKey] = ActionType{ editAction };
-                    editAction = 0;
-                    editKey = sf::Keyboard::Key::Unknown;
-                    ImGui::CloseCurrentPopup();
-                }
-            }
-            ImGui::EndPopup();
-        }
-
-		// MOUSE BINDINGS 
-
-        // mouse binding ui vars
-		static std::optional<sf::Mouse::Button> currentMouseButton; // Currently selected mouse button
-        static std::optional<sf::Mouse::Button> editMouseButton;    // Mouse button to replace binding
-		static uint32_t editMouseAction = 0;                        // Action ID to replace binding
-		static bool submitMouseButtonError = false;                        // Error flag for submitting mouse button binding
-
-		// Mouse button bindings
-        ImGui::SeparatorText("Mouse Button Bindings");
-        if(ImGui::BeginListBox("##Mouse Button Bindings"))
-        {
-            for(auto& [button, action] : m_MouseButtonBindings)
-            {   
-                std::string buttonName = InputCompUtil::MouseButtonToString(button);
-                ImGui::PushID(buttonName.c_str());
-				const bool is_selected = currentMouseButton == button;
-                if(ImGui::Selectable(buttonName.c_str(), is_selected))
-                {
-                    currentMouseButton = button;
-                }
-                if(is_selected)
-                    ImGui::SetItemDefaultFocus();
-                ImGui::PopID();
-            }
-            ImGui::EndListBox();
-        }
-		ImGui::SameLine(); HelpMarker("Map a mouse button to a registered event.");
-
-		// add/edit mouse button bindings
-        ImGui::SeparatorText("Mouse Button Action Mapping");
-        if(currentMouseButton.has_value() && m_MouseButtonBindings.count(currentMouseButton.value()))
-        {
-            const char* editMouseWindow = "Edit Mouse Binding";
-            std::string buttonName = InputCompUtil::MouseButtonToString(currentMouseButton.value());
-            ImGui::Text("Mouse Button: %s", buttonName.c_str());
-            ImGui::Text("Action: %s", ActionRegistry::Get().GetName(m_MouseButtonBindings[currentMouseButton.value()]).c_str());
-            
-            if (ImGui::Button("Edit Mouse Binding"))
-            {
-				editMouseButton = currentMouseButton;
-				editMouseAction = m_MouseButtonBindings[currentMouseButton.value()].m_ID;
-                ImGui::OpenPopup(editMouseWindow);
-            } ImGui::SameLine();
-            if (ImGui::Button("Remove Mouse Binding"))
-            {
-                m_MouseButtonBindings.erase(currentMouseButton.value());
-                currentMouseButton.reset();
-			}
-
-            if(ImGui::BeginPopup(editMouseWindow))
-            {   
-                ImGui::BeginChild("Available Mouse Buttons", ImVec2(200, 300), true);
-                if (ImGui::BeginListBox("##mousebuttonlist", ImVec2(-FLT_MIN, -FLT_MIN)))
-                {
-                    for (int b = static_cast<int>(sf::Mouse::Button::Left); b <= static_cast<int>(sf::Mouse::Button::Extra2); b++)
-                    {
-                        sf::Mouse::Button button = static_cast<sf::Mouse::Button>(b);
-                        if (m_MouseButtonBindings.find(button) != m_MouseButtonBindings.end() && button != editMouseButton)
-                            continue;
-                        std::string buttonName = InputCompUtil::MouseButtonToString(button);
-                        ImGui::PushID(buttonName.c_str());
-                        const bool is_selected = (editMouseButton == button);
-                        if (ImGui::Selectable(buttonName.c_str(), is_selected))
+                        for (int key = static_cast<int>(sf::Keyboard::Key::A);
+                            key < static_cast<int>(sf::Keyboard::KeyCount); ++key)
                         {
-                            editMouseButton = button;
+                            const auto keyboardKey = static_cast<sf::Keyboard::Key>(key);
+                            const std::string name = sf::Keyboard::getDescription(
+                                sf::Keyboard::delocalize(keyboardKey)).toAnsiString();
+                            if (ImGui::Selectable(name.c_str(), currentKey == keyboardKey)
+                                && currentKey != keyboardKey)
+                            {
+                                binding.source = keyboardKey;
+                                bindingChanged = true;
+                            }
                         }
-                        if (is_selected)
-                            ImGui::SetItemDefaultFocus();
-                        ImGui::PopID();
+                        ImGui::EndCombo();
                     }
-                    ImGui::EndListBox();
                 }
-                ImGui::EndChild();
-                
-                ImGui::SameLine();
-                
-				// display available actions
-				AvailableActionsList(editMouseAction, "##mouseactionlist");
 
-                if (submitMouseButtonError)
+                const auto& actionNames = ActionRegistry::Get().m_IDToName;
+                const auto currentAction = actionNames.find(binding.action.m_ID);
+                const char* actionName = currentAction == actionNames.end()
+                    ? "Select action"
+                    : currentAction->second.c_str();
+                if (ImGui::BeginCombo("Action", actionName))
                 {
-                    ErrorMessage("Please select a valid mouse button before submitting.");
-				}
-                
-                if(ImGui::Button("Submit"))
-                {
-                    if (editMouseButton.has_value())
+                    for (const auto& [id, name] : actionNames)
                     {
-						submitMouseButtonError = false;
-                        m_MouseButtonBindings.erase(currentMouseButton.value());
-                        m_MouseButtonBindings[editMouseButton.value()] = ActionType{ editMouseAction };
-                        currentMouseButton.reset();
-                        editMouseButton.reset();
-                        editMouseAction = 0;
-                        ImGui::CloseCurrentPopup();
+                        if (ImGui::Selectable(name.c_str(), binding.action.m_ID == id)
+                            && binding.action.m_ID != id)
+                        {
+                            binding.action = ActionType{ id };
+                            bindingChanged = true;
+                        }
                     }
-                    else
-                    {
-                        submitMouseButtonError = true;
-					}
+                    ImGui::EndCombo();
                 }
-                ImGui::SameLine();
-                if(ImGui::Button("Cancel"))
+
+                const int trigger = static_cast<int>(binding.trigger);
+                const char* triggerName = trigger >= 0 && trigger < triggerCount
+                    ? triggerNames[trigger]
+                    : "Unknown";
+                if (ImGui::BeginCombo("Trigger", triggerName))
                 {
-                    editMouseAction = 0;
-                    editMouseButton.reset();
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-        }
-        else
-        {
-            ImGui::TextDisabled("No mapping available");
-        }
-        const char* newMouseBindWindow = "New Mouse Binding";
-        if (ImGui::Button("Add New Mouse Binding"))
-            ImGui::OpenPopup(newMouseBindWindow);
-        if (ImGui::BeginPopup(newMouseBindWindow))
-        {
-            ImGui::BeginChild("Available Mouse Buttons", ImVec2(200, 300), true);
-            if (ImGui::BeginListBox("##mousebuttonlist", ImVec2(-FLT_MIN, -FLT_MIN)))
-            {
-                for (int b = static_cast<int>(sf::Mouse::Button::Left); b <= static_cast<int>(sf::Mouse::Button::Extra2); b++)
-                {
-                    sf::Mouse::Button button = static_cast<sf::Mouse::Button>(b);
-                    if (m_MouseButtonBindings.find(button) != m_MouseButtonBindings.end() && button != editMouseButton)
-                        continue;
-                    std::string buttonName = InputCompUtil::MouseButtonToString(button);
-                    ImGui::PushID(buttonName.c_str());
-                    const bool is_selected = (editMouseButton == button);
-                    if (ImGui::Selectable(buttonName.c_str(), is_selected))
+                    for (int option = 0; option < triggerCount; ++option)
                     {
-                        editMouseButton = button;
+                        if (ImGui::Selectable(triggerNames[option], trigger == option) && trigger != option)
+                        {
+                            binding.trigger = static_cast<InputTrigger>(option);
+                            bindingChanged = true;
+                        }
                     }
-                    if (is_selected)
-                        ImGui::SetItemDefaultFocus();
+                    ImGui::EndCombo();
+                }
+                if (trigger >= 0 && trigger < triggerCount)
+                    ImGui::TextDisabled("%s", triggerDescriptions[trigger]);
+
+                if (binding.trigger == InputTrigger::Repeat)
+                {
+                    float repeatInterval = binding.repeatIntervalSeconds;
+                    if (ImGui::InputFloat("Repeat Interval (seconds)", &repeatInterval, 0.01f, 0.1f)
+                        && std::isfinite(repeatInterval) && repeatInterval > 0.0f)
+                    {
+                        binding.repeatIntervalSeconds = repeatInterval;
+                        bindingChanged = true;
+                    }
+                    else if (!std::isfinite(repeatInterval) || repeatInterval <= 0.0f)
+                    {
+                        ImGui::TextDisabled("Repeat interval must be greater than zero.");
+                    }
+                }
+                if (ImGui::Button("Remove Binding"))
+                {
+                    m_Bindings.erase(m_Bindings.begin() + static_cast<std::ptrdiff_t>(i));
                     ImGui::PopID();
-                }
-                ImGui::EndListBox();
-            }
-            ImGui::EndChild();
-
-            ImGui::SameLine();
-
-            // display available actions
-            AvailableActionsList(editMouseAction, "##mouseactionlist");
-
-            if (submitMouseButtonError)
-            {
-                ErrorMessage("Please select a valid mouse button before submitting.");
-            }
-
-            if (ImGui::Button("Submit"))
-            {
-				if (editMouseButton.has_value())
-                { 
-					submitMouseButtonError = false;
-                    m_MouseButtonBindings[editMouseButton.value()] = ActionType{ editMouseAction };
-                    editMouseAction = 0;
-                    editMouseButton.reset();
-                    ImGui::CloseCurrentPopup();
-                }
-                else {
-                    submitMouseButtonError = true;
+                    break;
                 }
             }
-            ImGui::EndPopup();
+            if (bindingChanged)
+                binding.ResetRuntimeState();
+            ImGui::PopID();
         }
     }
 }

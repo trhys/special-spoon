@@ -20,6 +20,7 @@ namespace Spoon
         void PushMouseButtonPress(const sf::Event::MouseButtonPressed& mousePress);
         void PushMouseButtonRelease(const sf::Event::MouseButtonReleased& mouseRelease);
         void ClearEvents();
+        void ResetRuntimeState(EntityManager& manager);
         void Update(sf::Time tick, EntityManager& manager) override;
 
         // viewport methods

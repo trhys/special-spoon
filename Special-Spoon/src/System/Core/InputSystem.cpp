@@ -2,115 +2,127 @@
 #include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace Spoon
 {
     void InputSystem::Update(sf::Time tick, EntityManager& manager)
     {
-        (void)tick; // unused
-
-        // set mouse data
         ResolveMouse(Application::Get().GetWindow());
 
-        // prefetch action queue and arrays
+        // fetch queue and arrays
         auto& queue = Application::Get().GetActionQueue();
         auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
+        
+        // build delta time
+        const float elapsed = tick.asSeconds();
+        const float delta = std::isfinite(elapsed) && elapsed > 0.0f ? elapsed : 0.0f;
 
-        for(size_t in = 0; in < inputArray.m_Components.size(); in++)
+        for (std::size_t in = 0; in < inputArray.m_Components.size(); ++in)
         {
             InputComp& inputComp = inputArray.m_Components[in];
-            UUID ID = inputArray.m_IndexToId[in];
+            const UUID id = inputArray.m_IndexToId[in];
 
-			// process key events
-            for(const auto& keyEvent : m_KeyPressEvents)
+            // iterate this comp's bindings
+            for (InputBinding& binding : inputComp.m_Bindings)
             {
-                sf::Keyboard::Key key = keyEvent.code;
-                auto found = inputComp.m_KeyBindings.find(key);
-                if(found != inputComp.m_KeyBindings.end())
+                if (!binding.IsValid())
                 {
-                    inputComp.m_KeyStates[found->first] = true;
-                }
-            }
-            for (const auto& keyEvent : m_KeyReleaseEvents)
-            {
-                sf::Keyboard::Key key = keyEvent.code;
-                auto found = inputComp.m_KeyBindings.find(key);
-                if (found != inputComp.m_KeyBindings.end())
-                {
-                    inputComp.m_KeyStates[found->first] = false;
-                }
-            }
-
-			// process held keys and queue actions
-            for (const auto& [key, isHeld] : inputComp.m_KeyStates)
-            {
-                if (!isHeld)
-                {
+                    binding.ResetRuntimeState();
                     continue;
                 }
 
-                auto binding = inputComp.m_KeyBindings.find(key);
-                if (binding != inputComp.m_KeyBindings.end())
+                // helper to emit an action for this binding
+                const auto emitAction = [&queue, id, &binding]
                 {
-                    queue.CreateAndPush(ID, binding->second, 0);
-                }
-            }
+                    if (binding.action)
+                        queue.CreateAndPush(id, binding.action, 0);
+                };
 
-            // process mouse button events
-            for (const auto& mouseEvent : m_MouseButtonPressEvents)
-            {
-                auto found = inputComp.m_MouseButtonBindings.find(mouseEvent.button);
-                if (found != inputComp.m_MouseButtonBindings.end())
+                // press events
+                bool pressedThisUpdate = false;
+                const auto* key = std::get_if<sf::Keyboard::Key>(&binding.source);
+                const auto* button = std::get_if<sf::Mouse::Button>(&binding.source);
+                const bool keyPressed = key
+                    && std::any_of(m_KeyPressEvents.begin(), m_KeyPressEvents.end(),
+                        [key](const auto& event) { return event.code == *key; });
+                const bool mousePressed = button
+                    && std::any_of(m_MouseButtonPressEvents.begin(), m_MouseButtonPressEvents.end(),
+                        [button](const auto& event) { return event.button == *button; });
+                if ((keyPressed || mousePressed) && !binding.isPressed)
                 {
-                    inputComp.m_MouseButtonStates[found->first] = true;
+                    binding.isPressed = true;
+                    binding.timer = 0.0f;
+                    pressedThisUpdate = true;
+                    if (binding.trigger == InputTrigger::Pressed || binding.trigger == InputTrigger::Repeat)
+                        emitAction();
                 }
-            }
-            for (const auto& mouseEvent : m_MouseButtonReleaseEvents)
-            {
-                auto found = inputComp.m_MouseButtonBindings.find(mouseEvent.button);
-                if (found != inputComp.m_MouseButtonBindings.end())
-                {
-                    inputComp.m_MouseButtonStates[found->first] = false;
-                }
-            }
 
-			// process held mouse buttons and queue actions
-            for (const auto& [button, isHeld] : inputComp.m_MouseButtonStates)
-            {
-                if (!isHeld)
+                // release events
+                const bool keyReleased = key
+                    && std::any_of(m_KeyReleaseEvents.begin(), m_KeyReleaseEvents.end(),
+                        [key](const auto& event) { return event.code == *key; });
+                const bool mouseReleased = button
+                    && std::any_of(m_MouseButtonReleaseEvents.begin(), m_MouseButtonReleaseEvents.end(),
+                        [button](const auto& event) { return event.button == *button; });
+                if ((keyReleased || mouseReleased) && binding.isPressed)
                 {
+                    binding.isPressed = false;
+                    binding.timer = 0.0f;
+                    if (binding.trigger == InputTrigger::Released)
+                        emitAction();
+                }
+
+                // only continue processing if the binding repeats while held
+                if (!binding.isPressed)
                     continue;
-                }
-                auto binding = inputComp.m_MouseButtonBindings.find(button);
-                if (binding != inputComp.m_MouseButtonBindings.end())
+
+                if (binding.trigger == InputTrigger::Held)
+                    emitAction();
+                else if (binding.trigger == InputTrigger::Repeat && !pressedThisUpdate)
                 {
-                    queue.CreateAndPush(ID, binding->second, 0);
+                    binding.timer += delta;
+                    if (binding.timer >= binding.repeatIntervalSeconds)
+                    {
+                        emitAction();
+                        binding.timer = std::fmod(binding.timer, binding.repeatIntervalSeconds);
+                    }
                 }
-			}
+            }
         }
 
         ClearEvents();
     }
 
-	// Clear all input events after processing
     void InputSystem::ClearEvents()
     {
         m_KeyPressEvents.clear();
         m_KeyReleaseEvents.clear();
         m_MouseButtonPressEvents.clear();
         m_MouseButtonReleaseEvents.clear();
-	}
+    }
 
-	// mouse + keyboard input event pushing
+    void InputSystem::ResetRuntimeState(EntityManager& manager)
+    {
+        ClearEvents();
+        auto& inputArray = manager.GetArray<InputComp>(InputComp::Name);
+        for (InputComp& inputComp : inputArray.m_Components)
+        {
+            for (InputBinding& binding : inputComp.m_Bindings)
+                binding.ResetRuntimeState();
+        }
+    }
 
     void InputSystem::PushMouseButtonPress(const sf::Event::MouseButtonPressed& mousePress)
     {
         m_MouseButtonPressEvents.push_back(mousePress);
-	}
+    }
 
     void InputSystem::PushMouseButtonRelease(const sf::Event::MouseButtonReleased& mouseRelease)
     {
         m_MouseButtonReleaseEvents.push_back(mouseRelease);
-	}
+    }
 
     void InputSystem::PushKeyPress(const sf::Event::KeyPressed& keyPress)
     {
@@ -120,7 +132,7 @@ namespace Spoon
     void InputSystem::PushKeyRelease(const sf::Event::KeyReleased& keyRelease)
     {
         m_KeyReleaseEvents.push_back(keyRelease);
-	}
+    }
 
     void InputSystem::SetViewport(sf::RenderTarget* target, sf::FloatRect screenRect, bool hovered)
     {
@@ -131,27 +143,22 @@ namespace Spoon
 
     void InputSystem::ResolveMouse(const sf::RenderWindow& window)
     {
-        // get pointer coordinates
         const sf::Vector2i pixel = sf::Mouse::getPosition(window);
 
-        // editor viewport branch
-        if (m_ActiveViewport) 
+        if (m_ActiveViewport)
         {
-            // mouse out of viewport
             if (!m_ViewportHovered)
             {
                 m_MousePos.reset();
                 return;
             }
 
-            // get relative position for editor viewport
-            sf::Vector2i pos(
+            const sf::Vector2i pos(
                 static_cast<int>(pixel.x - m_ViewportRect.position.x),
-                static_cast<int>(pixel.y - m_ViewportRect.position.y)    
-            );
+                static_cast<int>(pixel.y - m_ViewportRect.position.y));
             m_MousePos = m_ActiveViewport->mapPixelToCoords(pos);
         }
-        else // non editor viewport 
+        else
         {
             m_MousePos = window.mapPixelToCoords(pixel);
         }
@@ -160,5 +167,5 @@ namespace Spoon
     std::optional<sf::Vector2f> const InputSystem::GetMousePosition()
     {
         return m_MousePos;
-    }       
+    }
 }

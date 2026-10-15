@@ -187,6 +187,10 @@ namespace Spoon
                 m_InputSystem.PushKeyRelease(event);
                 if (m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event);
             },
+            [&](const sf::Event::FocusLost&)
+            {
+                m_InputSystem.ResetRuntimeState(m_EntityManager);
+            },
             [&](const sf::Event::Closed& event) { closePrompt = true; }
         );
     }
@@ -230,7 +234,7 @@ namespace Spoon
             }
 
             if (play) Application::Update(tick);
-            else m_InputSystem.ClearEvents();
+            else m_InputSystem.ResetRuntimeState(m_EntityManager);
 
             // Rendering
             m_Window.clear();
