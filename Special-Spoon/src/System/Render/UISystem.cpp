@@ -18,6 +18,11 @@ namespace Spoon
     {
         // get mouse from input system
         auto mousePosition = Application::Get().GetInputSystem().GetMousePosition();
+        if (!mousePosition.has_value())
+        {
+            m_Cursor.hoveredComp.reset();
+            return;
+        }
 
         // reset hovered component each frame
         m_Cursor.hoveredComp.reset(); 
@@ -42,12 +47,16 @@ namespace Spoon
             if (spriteArray.m_IdToIndex.find(ID) != spriteArray.m_IdToIndex.end())
             {
                 auto& spriteComp = spriteArray.m_Components[spriteArray.m_IdToIndex[ID]];
+                if (!spriteComp.active)
+                    continue;
                 spriteBounds = spriteComp.GetBoundingBox();
                 //spriteActive = &spriteComp.active;
             }
             if (textArray.m_IdToIndex.find(ID) != textArray.m_IdToIndex.end())
             {
                 auto& textComp = textArray.m_Components[textArray.m_IdToIndex[ID]];
+                if (!textComp.active)
+                    continue;
                 textBounds = textComp.GetBoundingBox();
                 //textActive = &textComp.active;
             }
@@ -93,10 +102,15 @@ namespace Spoon
                 else
                     return std::nullopt;
 
-            // move to the next component in the array, wrapping around if necessary
+            // step through the array to find the next active component
+            // wrapping around the array if necessary
             auto i = (index->second + 1) % uiArray.m_Components.size();
-            if (uiArray.m_Components[i].active)
-                return uiArray.m_IndexToId[i];
+            for (size_t count = 0; count < uiArray.m_Components.size(); ++count)
+            {
+                if (uiArray.m_Components[i].active)
+                    return uiArray.m_IndexToId[i];
+                i = (i + 1) % uiArray.m_Components.size();
+            }
 
             return std::nullopt; // no active component found
         };
@@ -143,9 +157,15 @@ namespace Spoon
             {
                 auto& comp = uiArray.m_Components[uiArray.m_IdToIndex[focusedCompId.value()]];
                 queue.CreateAndPush(focusedCompId.value(), comp.emittedAction, 0);
-            } else if (uiNavigate && focusedCompId)
+            } else if (uiNavigate)
             {
-                m_Cursor.focusedComp = nextActiveUI(focusedCompId.value());
+                if (!focusedCompId)
+                {
+                    if (!uiArray.m_Components.empty())
+                        m_Cursor.focusedComp = uiArray.m_IndexToId[0];
+                } else {
+                    m_Cursor.focusedComp = nextActiveUI(focusedCompId.value());
+                }
             }
         }
 
