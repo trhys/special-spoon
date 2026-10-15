@@ -24,6 +24,8 @@ namespace Spoon
         }
 
         void SetCursor(EntityManager& manager);
+        std::vector<UUID> SortCandidates(std::vector<UUID> candidates, EntityManager& manager);
+        UUID PickBestHit(const std::vector<UUID>& candidates);
         void Update(sf::Time tick, EntityManager& manager) override;
         void OnReflect() override;
     private:

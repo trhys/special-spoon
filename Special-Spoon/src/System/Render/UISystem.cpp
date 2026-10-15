@@ -31,6 +31,8 @@ namespace Spoon
         auto& uiComps = manager.GetArray<UIComp>(UIComp::Name);
         auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
         auto& textArray = manager.GetArray<TextComp>(TextComp::Name);
+
+        std::vector<UUID> candidates;
         for(size_t in = 0; in < uiComps.m_Components.size(); in++)
         {
             UIComp& uiComp = uiComps.m_Components[in];
@@ -61,17 +63,47 @@ namespace Spoon
                 //textActive = &textComp.active;
             }
 
-            bool hit = uiComp.HitTest(
+            if (uiComp.HitTest(
                 mousePosition.value_or(sf::Vector2f{}), 
                 spriteBounds ? &(*spriteBounds) : nullptr, 
                 textBounds ? &(*textBounds) : nullptr
-            );
-
-            if (hit) {
-                m_Cursor.hoveredComp = ID;
-                return;
+            ))
+            {
+                candidates.push_back(ID);
             }
         }
+        // sort candidates and pick the best hit
+        if (!candidates.empty())
+            m_Cursor.hoveredComp = PickBestHit(SortCandidates(candidates, manager));
+    }
+
+    std::vector<UUID> UISystem::SortCandidates(std::vector<UUID> candidates, EntityManager& manager)
+    {
+        // get ui array and layers
+        auto& uiArray = manager.GetArray<UIComp>(UIComp::Name);
+        auto& layerArray = manager.GetArray<RenderLayer>(RenderLayer::Name);
+        if (candidates.empty())
+            return candidates;
+
+        // replicate the render order to determine what gets drawn on top
+        std::sort(candidates.begin(), candidates.end(), [&](const UUID& a, const UUID& b) {
+            // get comps for both IDs
+            auto& uiA = uiArray.m_Components[uiArray.m_IdToIndex[a]];
+            auto& uiB = uiArray.m_Components[uiArray.m_IdToIndex[b]];
+            auto& layerA = layerArray.m_Components[layerArray.m_IdToIndex[a]];
+            auto& layerB = layerArray.m_Components[layerArray.m_IdToIndex[b]];
+
+            // sort based on UISpace (Screen space on top of World space)
+            // render layer tiebreaker, and finally by id
+            return std::tie(uiA.space, layerA.m_Layer, a) < std::tie(uiB.space, layerB.m_Layer, b);
+        });
+        return candidates;
+    }
+
+    UUID UISystem::PickBestHit(const std::vector<UUID>& candidates)
+    {
+        // pick the best hit based on the sorted order
+        return candidates.empty() ? UUID{} : candidates.back();
     }
 
     void UISystem::Update(sf::Time tick, EntityManager& manager)
