@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ECS/Components/ColliderComp.h"
+#include "ECS/Components/Physics/ColliderComp.h"
 #include "SFML/Graphics.hpp"
 #include <set>
 #include <unordered_map>

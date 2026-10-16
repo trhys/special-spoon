@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ECS/Components/ColliderComp.h"
+#include "ECS/Components/Physics/ColliderComp.h"
 #include "SFML/Graphics.hpp"
 
 #include "System/System.h"

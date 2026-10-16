@@ -40,6 +40,11 @@ namespace Spoon
         return std::make_unique<ParticleSystem>();
     }
 
+    std::unique_ptr<ISystem> LoadUISystem(const json* systemData)
+    {
+        return std::make_unique<UISystem>();
+    }
+
     void RegisterDefaultSystems()
     {
         SS_DEBUG_LOG("[SYSTEM] Registering default systems...")
@@ -50,5 +55,6 @@ namespace Spoon
         SystemRegistry::Get().RegisterLoader("TileMapCollision", &LoadTileMapCollisionSystem);
         SystemRegistry::Get().RegisterLoader("Audio", &LoadAudioSystem);
         SystemRegistry::Get().RegisterLoader("Particles", &LoadParticleSystem);
+        SystemRegistry::Get().RegisterLoader("UI", &LoadUISystem);
     }
 }

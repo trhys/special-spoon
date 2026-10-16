@@ -152,6 +152,49 @@ namespace Spoon
         if (m_Window.isOpen()) m_Window.close();
     }
 
+    void Application::HandleInput(bool& rayPickFlag)
+    {
+        // Event polling -
+        // Dispatches event to both the core input system and the editor (if enabled)
+        m_Window.handleEvents
+        (
+            [&](const sf::Event::MouseButtonPressed& event) 
+            { 
+                if(m_Specs.editorEnabled) {
+                    ImGui::SFML::ProcessEvent(m_Window, event); 
+                }
+                m_InputSystem.PushMouseButtonPress(event);
+            },
+            [&](const sf::Event::MouseButtonReleased& event) 
+            { 
+                if(m_Specs.editorEnabled) 
+                {
+                    ImGui::SFML::ProcessEvent(m_Window, event);
+                    rayPickFlag = false;
+                }
+                m_InputSystem.PushMouseButtonRelease(event);
+            },
+            [&](const sf::Event::MouseMoved& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+            [&](const sf::Event::MouseWheelScrolled& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+            [&](const sf::Event::TextEntered& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
+            [&](const sf::Event::KeyPressed& event) 
+            { 
+                m_InputSystem.PushKeyPress(event);
+                if (m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event);
+            },
+            [&](const sf::Event::KeyReleased& event) 
+            { 
+                m_InputSystem.PushKeyRelease(event);
+                if (m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event);
+            },
+            [&](const sf::Event::FocusLost&)
+            {
+                m_InputSystem.ResetRuntimeState(m_EntityManager);
+            },
+            [&](const sf::Event::Closed& event) { closePrompt = true; }
+        );
+    }
+
     void Application::Run()
     {
         sf::RenderStates states;
@@ -175,35 +218,8 @@ namespace Spoon
             // reap component cache
             m_EntityManager.ProcessReaper();
             
-            // Event polling
-            m_Window.handleEvents
-            (
-                [&](const sf::Event::MouseButtonPressed& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
-                [&](const sf::Event::MouseButtonReleased& event) 
-                { 
-                    if(m_Specs.editorEnabled) 
-                    {
-                        ImGui::SFML::ProcessEvent(m_Window, event);
-                        rayPickFlag = false;
-                    }
-                },
-                [&](const sf::Event::MouseMoved& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
-                [&](const sf::Event::MouseWheelScrolled& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
-                [&](const sf::Event::TextEntered& event) { if(m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event); },
-
-                [&](const sf::Event::KeyPressed& event) 
-                { 
-                    m_InputSystem.PushKeyPress(event);
-                    if (m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event);
-                },
-                [&](const sf::Event::KeyReleased& event) 
-                { 
-                    m_InputSystem.PushKeyRelease(event);
-                    if (m_Specs.editorEnabled) ImGui::SFML::ProcessEvent(m_Window, event);
-                },
-
-                [&](const sf::Event::Closed& event) { closePrompt = true; }
-            );
+            // poll events and dispatch
+            HandleInput(rayPickFlag);
 
             // Update systems
             sf::Time tick = clock.restart();
@@ -218,11 +234,12 @@ namespace Spoon
             }
 
             if (play) Application::Update(tick);
-            else m_InputSystem.ClearEvents();
+            else m_InputSystem.ResetRuntimeState(m_EntityManager);
 
             // Rendering
             m_Window.clear();
 
+            // todo: see #85
             if (m_Specs.editorEnabled)
             {
                 ImGui::Begin("Viewport");
@@ -254,6 +271,17 @@ namespace Spoon
                 const bool viewportHovered = ImGui::IsItemHovered();
                 const ImVec2 viewportImageMin = ImGui::GetItemRectMin();
                 const ImVec2 viewportImageMax = ImGui::GetItemRectMax();
+                
+                // set input systems viewport
+                m_InputSystem.SetViewport(
+                    &m_Viewport.target,
+                    sf::FloatRect(
+                        {viewportImageMin.x, viewportImageMin.y},
+                        {viewportImageMax.x, viewportImageMax.y}
+                    ),
+                    viewportHovered
+                );
+                
                 const bool viewportConsumed = m_Editor.HandleViewportTools(
                     m_Viewport,
                     viewportHovered,

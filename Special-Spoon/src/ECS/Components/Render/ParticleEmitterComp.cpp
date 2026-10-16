@@ -195,35 +195,40 @@ namespace Spoon
         // sync emitters position with transform from entity
         auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
         position = transform.GetPosition();
-        const auto& projection = Application::Get().GetRenderer().GetProjection();
+    }
 
-        if (vertices.size() != particlePool.size() * 6)
-            return;
+    void ParticleEmitterComp::SetProjection(const WorldProjection& projection)
+    {
+        if (projection.IsActive())
+        {        
+            if (vertices.size() != particlePool.size() * 6)
+                return;
 
-        for (size_t i = 0; i < particlePool.size(); ++i)
-        {
-            const Particle& particle = particlePool[i];
-            const sf::Vector2f halfSize{
-                static_cast<float>(textureRect.size.x) * 0.5f * particle.size,
-                static_cast<float>(textureRect.size.y) * 0.5f * particle.size
-            };
-            const sf::Vector2f center = projection.LogicalToScreen(particle.position);
+            for (size_t i = 0; i < particlePool.size(); ++i)
+            {
+                const Particle& particle = particlePool[i];
+                const sf::Vector2f halfSize{
+                    static_cast<float>(textureRect.size.x) * 0.5f * particle.size,
+                    static_cast<float>(textureRect.size.y) * 0.5f * particle.size
+                };
+                const sf::Vector2f center = projection.LogicalToScreen(particle.position);
 
-            // Calculate the positions of the particle's vertices based on its center and half size.
-            const sf::Vector2f topLeft = center - halfSize;
-            const sf::Vector2f topRight =
-                center + sf::Vector2f{halfSize.x, -halfSize.y};
-            const sf::Vector2f bottomRight = center + halfSize;
-            const sf::Vector2f bottomLeft =
-                center + sf::Vector2f{-halfSize.x, halfSize.y};
+                // Calculate the positions of the particle's vertices based on its center and half size.
+                const sf::Vector2f topLeft = center - halfSize;
+                const sf::Vector2f topRight =
+                    center + sf::Vector2f{halfSize.x, -halfSize.y};
+                const sf::Vector2f bottomRight = center + halfSize;
+                const sf::Vector2f bottomLeft =
+                    center + sf::Vector2f{-halfSize.x, halfSize.y};
 
-            const size_t base = i * 6;
-            vertices[base + 0].position = topLeft;
-            vertices[base + 1].position = topRight;
-            vertices[base + 2].position = bottomRight;
-            vertices[base + 3].position = topLeft;
-            vertices[base + 4].position = bottomRight;
-            vertices[base + 5].position = bottomLeft;
+                const size_t base = i * 6;
+                vertices[base + 0].position = topLeft;
+                vertices[base + 1].position = topRight;
+                vertices[base + 2].position = bottomRight;
+                vertices[base + 3].position = topLeft;
+                vertices[base + 4].position = bottomRight;
+                vertices[base + 5].position = bottomLeft;
+            }
         }
     }
 

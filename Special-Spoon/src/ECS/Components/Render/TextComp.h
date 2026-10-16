@@ -21,6 +21,8 @@ namespace Spoon
         }
 
         static constexpr const char* Name = "Text";
+
+        bool active = true;
         sf::Text m_Text;
         bool isCentered;
         std::string iFontID;
@@ -29,8 +31,10 @@ namespace Spoon
         unsigned int iolThickness;
         sf::Color iColor;
         sf::Color iOutColor;
+		sf::Vector2f m_LogicalPosition = { 0.0f, 0.0f };
 
         sf::Text& GetText() { return m_Text; }
+        sf::FloatRect GetBoundingBox() { return m_Text.getGlobalBounds(); }
 
         void SetText(std::string text) { m_Text.setString(text); }
         void SetFont(sf::Font& font) { m_Text.setFont(font); }
@@ -46,7 +50,8 @@ namespace Spoon
 		// renderable interface
 		void PreRender(EntityManager& manager, UUID id) override;
 		void Render(sf::RenderTarget& target, sf::RenderStates states) override;
-		sf::Vector2f GetPosition() override { return m_Text.getPosition(); }
+		sf::Vector2f GetPosition() override { return m_LogicalPosition; }
+        void SetProjection(const WorldProjection& projection) override;
     };
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextComp, iFontID, isCentered, iCharSize, iColor, iText, iolThickness, iOutColor)

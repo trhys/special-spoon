@@ -16,6 +16,7 @@ namespace Spoon
     public:
         void Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager);
         void DepthSort();
+        void BuildRenderables(EntityManager& manager);
 
         // Update render config
         void UpdateRenderConfig();
@@ -35,7 +36,9 @@ namespace Spoon
 
     private:
         // iterable renderables for the current frame
-        std::vector<Renderable> m_Renderables;
+        std::vector<Renderable> m_WorldRenderables;
+        std::vector<Renderable> m_ScreenRenderables;
+        // editor overlays
         std::vector<OverlayCmd> m_OverlayCommands;
 
         // helper struct for managing projection state

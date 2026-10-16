@@ -1,7 +1,7 @@
 #include "ParticleSystem.h"
 #include "ECS/Components/Render/ParticleEmitterComp.h"
 #include "ECS/Components/Render/SpriteComp.h"
-#include "ECS/Components/TransformComp.h"
+#include "ECS/Components/Core/TransformComp.h"
 #include "Core/ResourceManager/ResourceManager.h"
 
 #include <random>

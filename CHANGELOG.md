@@ -116,3 +116,24 @@ note: Previous changes will not be in this log. This record will keep all change
 - Updated system registration and build configuration for the movement pipeline changes.
 
 ---
+
+## 10/16/26:
+
+### UI / Input
+- Added a new UI component and UI system for screen-space and world-space hit testing, focus tracking, navigation, and action emission.
+- Reworked input handling into a more flexible binding system with keyboard and mouse sources, pressed/released/held/repeat triggers, and viewport-aware routing.
+- Added UI actions and updated action registry support for select, cancel, and navigate flow.
+
+### Rendering
+- Split rendering into world-space and screen-space buckets and added projection-aware rendering hooks for sprites, text, and particles.
+- Updated UI, text, and particle rendering to preserve logical positions while applying presentation-time projection.
+
+### Editor / Serialization
+- Added editor tools for editing UI components and input bindings.
+- Updated component and system loading/registration to support the new UI and reorganized core component/system layout.
+
+### Refactor
+- Reorganized core, physics, render, and component files into clearer subdirectories.
+- Removed legacy input binding code and old asset/license files.
+
+---

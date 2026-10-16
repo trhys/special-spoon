@@ -18,6 +18,18 @@ namespace Spoon
     }
 
     template<typename COMP>
+    bool EntityManager::HasComponent(UUID id, const std::string& displayName)
+    {
+        auto found = m_Arrays.find(displayName);
+        if (found == m_Arrays.end())
+        {
+            throw std::runtime_error("Component array does not exist for type: " + displayName);
+        }
+        ComponentArray<COMP>* array = static_cast<ComponentArray<COMP>*>(found->second.get());
+        return array->m_IdToIndex.find(id) != array->m_IdToIndex.end();
+    }
+
+    template<typename COMP>
     void EntityManager::KillComponent(UUID id)
     {
         std::string type = typeid(COMP).name();

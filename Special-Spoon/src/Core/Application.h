@@ -7,7 +7,7 @@
 #include "EntityManager/EntityManager.h"
 #include "Renderer/Renderer.h"
 
-#include "System/InputSystem.h"
+#include "System/Core/InputSystem.h"
 #include "System/SystemManager.h"
 
 #include "Editor/Editor.h"
@@ -33,9 +33,11 @@ namespace Spoon
 		void Run();
 		void Update(sf::Time tick);
 		void Shutdown();
+		void HandleInput(bool& rayPickFlag);
 		
 		static Application& Get() { return *s_Instance; }
 
+		InputSystem& GetInputSystem()		{ return m_InputSystem; }
 		ProjectManager& GetProjectManager() { return m_ProjectManager; }
 		EntityManager& GetEntityManager() 	{ return m_EntityManager; }
 		SceneManager& GetSceneManager()  	{ return m_SceneManager; }
