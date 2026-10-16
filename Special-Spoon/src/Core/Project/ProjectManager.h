@@ -11,8 +11,6 @@
 
 namespace Spoon
 {
-    class Editor;
-
     struct Project
     {
         std::string ID;                                     // Unique identifier for the project
@@ -28,18 +26,10 @@ namespace Spoon
     
     class SPOON_API ProjectManager
     {
-    public:
-        ProjectManager() {}
-        ~ProjectManager() {}
+    public:    
+        Project* CreateNew(std::string newProjectBuf);
 
-        // editor menus
-        void CreateNew(Editor* editor);
-        void LoadProject(Editor* editor);
-        void SaveProject(Editor* editor);
-        void ConfigProject(Editor* editor);
-
-        // data ops
-        void OpenFromFile(const std::filesystem::path& filepath);
+        Project* OpenFromFile(const std::filesystem::path& filepath);
 
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
 

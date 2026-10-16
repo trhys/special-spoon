@@ -15,102 +15,52 @@ using json = nlohmann::json;
 
 namespace Spoon
 {
-    void ProjectManager::CreateNew(Editor* editor)
+    Project* ProjectManager::CreateNew(std::string newProjectBuf)
     {
-        // Always center this window when appearing
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        if (ImGui::Begin("Create New Project", &editor->NewProject, ImGuiWindowFlags_AlwaysAutoResize))
+        // create new project structure
+        Project newProject;
+        newProject.ID = newProjectBuf;
+        newProject.blueprints = GetDefaultBlueprints();
+
+        // Create dirs
+        std::filesystem::create_directories("projects/");
+        newProject.filePath = std::filesystem::path("projects/") / (newProject.ID + ".json");
+
+        // Open the project file for writing
+        std::ofstream newProj(newProject.filePath);
+        if (!newProj.is_open())
         {
-            static char newProjectBuf[64] = "";
-            if (ImGui::InputText("Project Name", newProjectBuf, IM_ARRAYSIZE(newProjectBuf))) {}
-            if (ImGui::Button("Confirm"))
-            {
-                if (strlen(newProjectBuf) == 0)
-                {
-                    ImGui::End();
-                    return;
-                }
-                    
-                Project newProject;
-                newProject.ID = std::string(newProjectBuf);
-                newProject.blueprints = GetDefaultBlueprints();
-
-                // Create dirs
-				std::filesystem::create_directories("projects/");
-                newProject.filePath = std::filesystem::path("projects/") / (newProject.ID + ".json");
-                std::ofstream newProj(newProject.filePath);
-                if (!newProj.is_open())
-                {
-                    // Handle error: unable to create project file
-					if (!ImGui::IsPopupOpen("Error Creating Project File"))
-                        ImGui::OpenPopup("Error Creating Project File");
-                    if (ImGui::BeginPopupModal("Error Creating Project File", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-                    {
-                        ImGui::Text("Failed to create project file at path: %s", newProject.filePath.string().c_str());
-                        if (ImGui::Button("OK"))
-                        {
-                            ImGui::CloseCurrentPopup();
-                        }
-                        ImGui::EndPopup();
-                    }
-                    ImGui::End();
-                    return;
-                }
-                newProject.dataPath = std::filesystem::path("projects/") / newProject.ID / "data/";
-                std::filesystem::create_directories(newProject.dataPath);
-                newProject.assetsPath = std::filesystem::path("projects/") / newProject.ID / "assets/";
-                std::filesystem::create_directories(newProject.assetsPath);
-                newProject.presetsPath = newProject.assetsPath / "presets/";
-                std::filesystem::create_directories(newProject.presetsPath);
-                newProject.version = "1.0";
-
-                // Dump data to JSON
-                json projectJson;
-                projectJson["ID"] = newProject.ID;
-                projectJson["DataPath"] = newProject.dataPath;
-                projectJson["AssetsPath"] = newProject.assetsPath;
-                projectJson["PresetsPath"] = newProject.presetsPath;
-                projectJson["Version"] = newProject.version;
-                projectJson["RecentFiles"] = newProject.recentFiles;
-				projectJson["Config"] = ProjectConfig{};
-                projectJson["Blueprints"] = newProject.blueprints; 
-                newProj << projectJson.dump(4);
-                newProj.close();
-
-                editor->SetActiveScene(nullptr);
-                ResourceManager::Get().ScanAssets(newProject.assetsPath);
-                Application::Get().GetSceneManager().LoadManifest(newProject.dataPath);
-                m_CurrentProject = std::make_unique<Project>(newProject);
-                editor->SetCurrentProject(m_CurrentProject.get());
-				Application::Get().GetRenderer().UpdateRenderConfig();
-                editor->NewProject = false;
-            }
+            return nullptr;
         }
-        ImGui::End();
+
+        newProject.dataPath = std::filesystem::path("projects/") / newProject.ID / "data/";
+        std::filesystem::create_directories(newProject.dataPath);
+        newProject.assetsPath = std::filesystem::path("projects/") / newProject.ID / "assets/";
+        std::filesystem::create_directories(newProject.assetsPath);
+        newProject.presetsPath = newProject.assetsPath / "presets/";
+        std::filesystem::create_directories(newProject.presetsPath);
+        newProject.version = "1.0";
+
+        // Dump data to JSON
+        json projectJson;
+        projectJson["ID"] = newProject.ID;
+        projectJson["DataPath"] = newProject.dataPath;
+        projectJson["AssetsPath"] = newProject.assetsPath;
+        projectJson["PresetsPath"] = newProject.presetsPath;
+        projectJson["Version"] = newProject.version;
+        projectJson["RecentFiles"] = newProject.recentFiles;
+        projectJson["Config"] = ProjectConfig{};
+        projectJson["Blueprints"] = newProject.blueprints; 
+        newProj << projectJson.dump(4);
+        newProj.close();
+
+        return &newProject;
     }
 
     void ProjectManager::LoadProject(Editor* editor)
     {
-        // Open file dialog to select a project file
-        ImGuiFileDialog::Instance()->OpenDialog("LoadProject", "Choose Project File", ".json");        
-        if (ImGuiFileDialog::Instance()->Display("LoadProject"))
-        {
-            if (ImGuiFileDialog::Instance()->IsOk())
-            {
-                std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-                std::filesystem::path pathObj(filePathName);
-
-                // Load the project using the selected file path
-                editor->SetActiveScene(nullptr);
-                OpenFromFile(pathObj);
-				Application::Get().GetRenderer().UpdateRenderConfig();
-            }
             
-            // Close the dialog
-            ImGuiFileDialog::Instance()->Close();
-        }
-        
+
         if (m_CurrentProject)
         {
             editor->SetCurrentProject(m_CurrentProject.get());
@@ -194,23 +144,13 @@ namespace Spoon
         ImGui::End();
     }
 
-    void ProjectManager::OpenFromFile(const std::filesystem::path& filepath)
+    Project* ProjectManager::OpenFromFile(const std::filesystem::path& filepath)
     {
         std::ifstream fileStream(filepath);
         if (!fileStream.is_open())
         {
-            // Handle error: unable to open file
-            ImGui::OpenPopup("Error Opening Project File");
-            if (ImGui::BeginPopupModal("Error Opening Project File", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-            {
-                ImGui::Text("Failed to open project file at path: %s", filepath.string().c_str());
-                if (ImGui::Button("OK"))
-                {
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-            return;
+
+            return nullptr;
         }
 
         try {
@@ -238,8 +178,9 @@ namespace Spoon
         {
             // Handle JSON parsing error
             fileStream.close();
-            return;
+            return nullptr;
         }
+        return m_CurrentProject.get();
     }
 
     void ProjectManager::SaveProject(Editor* editor)

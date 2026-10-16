@@ -2,6 +2,7 @@ target_sources(Special-Spoon
     PRIVATE
         Editor.h
         Editor.cpp
+        EditorAction.h
         Overlay.h
         Overlay.cpp
 
