@@ -20,7 +20,7 @@ namespace Spoon
         }
         std::vector<std::string> RunBefore() const override
         {
-            return { "Movement", "Animation" };
+            return { "Movement", "Animation", "Audio" };
         }
 
         void SetCursor(EntityManager& manager);

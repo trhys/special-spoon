@@ -158,10 +158,14 @@ namespace Spoon
 
         // reset cursor if the associated UI component is no longer active
         if (!isActiveUI(m_Cursor.focusedComp))
+        {
             m_Cursor.focusedComp.reset();
+            if (m_Cursor.mode == CursorMode::Keyboard)
+                m_Cursor.mode = CursorMode::Pointer;
+        }
 
-        // set focused component to hovered component if it is active
-        if (isActiveUI(m_Cursor.hoveredComp))
+		// hovered component becomes focused if it is active and cursor is in pointer mode
+        if (isActiveUI(m_Cursor.hoveredComp) && m_Cursor.mode == CursorMode::Pointer)
             m_Cursor.focusedComp = m_Cursor.hoveredComp;
 
         // build frame intent for ui commands
@@ -180,17 +184,20 @@ namespace Spoon
         {
             // reset cursor
             if (m_Cursor.focusedComp)
-                m_Cursor.focusedComp.reset();
+				m_Cursor.Reset();
         } 
         else
         {
             auto focusedCompId = m_Cursor.focusedComp;
             if (uiSelect && focusedCompId)
             {
+				// if a component is focused, emit its action
                 auto& comp = uiArray.m_Components[uiArray.m_IdToIndex[focusedCompId.value()]];
                 queue.CreateAndPush(focusedCompId.value(), comp.emittedAction, 0);
             } else if (uiNavigate)
             {
+                // set cursor mode
+				m_Cursor.mode = CursorMode::Keyboard;
                 if (!focusedCompId)
                 {
                     if (!uiArray.m_Components.empty())
@@ -198,7 +205,12 @@ namespace Spoon
                 } else {
                     m_Cursor.focusedComp = nextActiveUI(focusedCompId.value());
                 }
-            }
+            } else if (m_Cursor.mode != CursorMode::Keyboard)
+            {
+				// if not navigating with keyboard, reset focused component when no longer hovered
+                if (!m_Cursor.hoveredComp || !isActiveUI(m_Cursor.hoveredComp))
+					m_Cursor.focusedComp.reset();
+			}
         }
 
         // Mirror cursor state onto components for debug/render/editor
