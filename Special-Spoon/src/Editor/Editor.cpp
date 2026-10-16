@@ -1,5 +1,6 @@
 #include "Editor.h"
-
+#include "Core/Renderer/Renderer.h"
+#include "System/Core/InputSystem.h"
 #include "ECS/Components/World/TileMapComp.h"
 
 #include "Menus/SceneMenus.h"
@@ -19,12 +20,135 @@
 
 namespace Spoon
 {
-
-    Editor::Editor()
+    void Editor::HandleViewport(
+        Viewport& viewport, 
+        sf::RenderStates& states, 
+        Renderer& renderer, 
+        EntityManager& manager,
+        InputSystem& input
+    )
     {
-        m_SelectionRect.setFillColor(sf::Color::Transparent);
-        m_SelectionRect.setOutlineColor(sf::Color::Green);
-        m_SelectionRect.setOutlineThickness(2.0f);
+        ImGui::Begin("Viewport");
+
+        RenderViewport(viewport);
+        viewport.target.clear();
+
+        // build overlay
+        renderer.ClearOverlay();
+        BuildOverlay();
+
+        if (GetActiveScene() && !manager.GetAllEntities().empty())
+            renderer.Render(viewport.target, states, manager);
+        else // Draw logo if no scene is loaded or scene is empty
+        {
+            const auto& logoTex = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-logo");
+            sf::Sprite logoSprite(logoTex);
+            sf::Vector2f logoCenter(logoTex.getSize().x / 2.0f, logoTex.getSize().y / 2.0f);
+            sf::Vector2f viewportCenter(viewport.target.getSize().x / 2.0f, viewport.target.getSize().y / 2.0f);
+            logoSprite.setOrigin(logoCenter);
+            logoSprite.setPosition(viewportCenter);
+            viewport.target.draw(logoSprite);
+        }
+        viewport.target.display();
+
+        ImGui::Image(viewport.target);
+        const bool viewportHovered = ImGui::IsItemHovered();
+        const ImVec2 viewportImageMin = ImGui::GetItemRectMin();
+        const ImVec2 viewportImageMax = ImGui::GetItemRectMax();
+
+        // set input systems viewport so input knows 
+        // if we are clicking in the viewport or not
+        input.SetViewport(
+            &viewport.target,
+            sf::FloatRect(
+                {viewportImageMin.x, viewportImageMin.y},
+                {viewportImageMax.x, viewportImageMax.y}
+            ),
+            viewportHovered
+        );
+
+        const bool viewportConsumed = HandleViewportTools(
+            viewport,
+            viewportHovered,
+            viewportImageMin,
+            viewportImageMax
+        );
+
+        // Raycast to grab entities on the viewport
+        static bool rayPickFlag = false;
+        static bool draggingEntity = false;
+        static UUID dragEntity;
+        static sf::Vector2f lastDragMouse;
+        static UUID selectedID;
+
+        if (!viewportConsumed &&
+            viewportHovered &&
+            sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
+            !rayPickFlag)
+        {
+            rayPickFlag = true;
+            ImVec2 mousePos = ImGui::GetIO().MousePos;
+            sf::Vector2i relativeMouse(
+                static_cast<int>(mousePos.x - viewportImageMin.x),
+                static_cast<int>(mousePos.y - viewportImageMin.y)
+            );
+            sf::Vector2f worldMouse = viewport.target.mapPixelToCoords(relativeMouse);
+            std::vector<UUID> entities = manager.RayPick(worldMouse);
+            if (!entities.empty())
+            {
+                // pick from entities starting at the top
+                auto it = std::find(entities.begin(), entities.end(), selectedID);
+                if (it != entities.end() && std::next(it) != entities.end())
+                    selectedID = *(std::next(it));
+                else
+                    selectedID = entities.front();
+            }
+            PickEntity(selectedID, manager);
+
+            // begin dragging the picked entity while not simulating
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            draggingEntity = !m_Play && !entities.empty() && transformArray.HasEntity(selectedID);
+            if (draggingEntity)
+            {
+                dragEntity = selectedID;
+                lastDragMouse = worldMouse;
+                manager.GetComponent<TransformComp>(dragEntity, TransformComp::Name)
+                    .MoveTransform(worldMouse, true);
+            }
+        }
+        else if (draggingEntity &&
+            !viewportConsumed &&
+            !m_Play &&
+            sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+        {
+            // mouse is presentation space - MoveTransform inverse
+            // projects it so the stored transform stays logical
+            ImVec2 mousePos = ImGui::GetIO().MousePos;
+            sf::Vector2i relativeMouse(
+                static_cast<int>(mousePos.x - viewportImageMin.x),
+                static_cast<int>(mousePos.y - viewportImageMin.y)
+            );
+            sf::Vector2f worldMouse = viewport.target.mapPixelToCoords(relativeMouse);
+            auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+            if (!transformArray.HasEntity(dragEntity))
+                draggingEntity = false;
+            else if (worldMouse != lastDragMouse)
+            {
+                lastDragMouse = worldMouse;
+                manager.GetComponent<TransformComp>(dragEntity, TransformComp::Name)
+                    .MoveTransform(worldMouse, false);
+                PickEntity(dragEntity, manager);
+            }
+        }
+        else {
+            // Reset dragging and ray picking state when 
+            // no entity is being interacted with
+            draggingEntity = false;
+            rayPickFlag = false;
+        }
+            
+
+        ImGui::End();
     }
 
     void Editor::Stop() 

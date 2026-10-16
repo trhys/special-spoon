@@ -6,16 +6,17 @@
 #include "Tools/TileMapTool.h"
 #include "Tools/TextureRectTool.h"
 
-#include "SFML/System/Time.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics.hpp"
 
 namespace Spoon
 {
     struct Project;
     struct TileMapComp;
     struct Viewport;
+    class Renderer;
     class EntityManager;
     class SystemManager;
+    class InputSystem;
     class SceneManager;
     struct AssetNode;
     struct SceneData;
@@ -23,8 +24,15 @@ namespace Spoon
     class Editor
     {
     public:
-
-        Editor();
+        // call this from the main loop when editor is enabled
+        // it will handle all viewport-related input and rendering
+        void HandleViewport(
+            Viewport& viewport, 
+            sf::RenderStates& states, 
+            Renderer& renderer, 
+            EntityManager& manager,
+            InputSystem& input
+        );
 
         // Scene controls
         void Stop();
