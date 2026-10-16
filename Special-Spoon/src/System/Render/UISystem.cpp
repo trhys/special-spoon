@@ -41,6 +41,10 @@ namespace Spoon
 
             UUID ID = uiComps.m_IndexToId[in];
 
+            // exclude entities that dont render
+            if (!manager.HasComponent<RenderLayer>(ID, RenderLayer::Name))
+				continue;
+
             std::optional<sf::FloatRect> spriteBounds;
             //bool* spriteActive = nullptr;
             std::optional<sf::FloatRect> textBounds;
@@ -49,17 +53,15 @@ namespace Spoon
             if (spriteArray.m_IdToIndex.find(ID) != spriteArray.m_IdToIndex.end())
             {
                 auto& spriteComp = spriteArray.m_Components[spriteArray.m_IdToIndex[ID]];
-                if (!spriteComp.active)
-                    continue;
-                spriteBounds = spriteComp.GetBoundingBox();
+                if (spriteComp.active)
+                    spriteBounds = spriteComp.GetBoundingBox();
                 //spriteActive = &spriteComp.active;
             }
             if (textArray.m_IdToIndex.find(ID) != textArray.m_IdToIndex.end())
             {
                 auto& textComp = textArray.m_Components[textArray.m_IdToIndex[ID]];
-                if (!textComp.active)
-                    continue;
-                textBounds = textComp.GetBoundingBox();
+                if (textComp.active)
+                    textBounds = textComp.GetBoundingBox();
                 //textActive = &textComp.active;
             }
 

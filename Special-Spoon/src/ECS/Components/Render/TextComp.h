@@ -31,6 +31,7 @@ namespace Spoon
         unsigned int iolThickness;
         sf::Color iColor;
         sf::Color iOutColor;
+		sf::Vector2f m_LogicalPosition = { 0.0f, 0.0f };
 
         sf::Text& GetText() { return m_Text; }
         sf::FloatRect GetBoundingBox() { return m_Text.getGlobalBounds(); }
@@ -49,7 +50,7 @@ namespace Spoon
 		// renderable interface
 		void PreRender(EntityManager& manager, UUID id) override;
 		void Render(sf::RenderTarget& target, sf::RenderStates states) override;
-		sf::Vector2f GetPosition() override { return m_Text.getPosition(); }
+		sf::Vector2f GetPosition() override { return m_LogicalPosition; }
         void SetProjection(const WorldProjection& projection) override;
     };
 

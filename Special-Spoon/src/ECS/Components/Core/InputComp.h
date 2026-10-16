@@ -97,6 +97,9 @@ namespace Spoon
             if (key >= 0 && key < static_cast<int>(sf::Keyboard::KeyCount))
                 binding.source = static_cast<sf::Keyboard::Key>(key);
         }
+        else {
+			binding.source = sf::Keyboard::Key::Unknown;
+        }
         if (j.contains("Button"))
         {
             int button = j.at("Button").get<int>();

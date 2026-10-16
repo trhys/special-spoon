@@ -142,6 +142,7 @@ namespace Spoon {
       if(transformArray.m_IdToIndex.count(id))
       {
           TransformComp& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+          m_LogicalPosition = transform.GetPosition();
           m_Text.setPosition(transform.GetPosition());
           m_Text.setRotation(transform.m_Transform.getRotation());
       }

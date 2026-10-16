@@ -47,9 +47,13 @@ namespace Spoon
                 const bool keyPressed = key
                     && std::any_of(m_KeyPressEvents.begin(), m_KeyPressEvents.end(),
                         [key](const auto& event) { return event.code == *key; });
-                const bool mousePressed = button
-                    && std::any_of(m_MouseButtonPressEvents.begin(), m_MouseButtonPressEvents.end(),
+
+				// gate mouse press events by whether the mouse is over the active viewport
+                bool mousePressed = false;
+                if (m_ViewportHovered)
+                    mousePressed = std::any_of(m_MouseButtonPressEvents.begin(), m_MouseButtonPressEvents.end(),
                         [button](const auto& event) { return event.button == *button; });
+
                 if ((keyPressed || mousePressed) && !binding.isPressed)
                 {
                     binding.isPressed = true;
