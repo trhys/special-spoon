@@ -1,11 +1,12 @@
 target_sources(Special-Spoon
     PRIVATE
-    EntityMenus.h
-    EntityMenus.cpp
-    ResourceMenus.h
-    ResourceMenus.cpp
-    SceneMenus.h
-    SceneMenus.cpp
-    SystemsMenu.h
-    SystemsMenu.cpp
+        Project/ProjectMenus.cpp
+        EntityMenus.h
+        EntityMenus.cpp
+        ResourceMenus.h
+        ResourceMenus.cpp
+        SceneMenus.h
+        SceneMenus.cpp
+        SystemsMenu.h
+        SystemsMenu.cpp
 )

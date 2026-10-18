@@ -19,6 +19,8 @@ target_sources(Special-Spoon
         Utils/Tooltips.cpp
         Utils/Viewport.h
         Utils/Viewport.cpp
+        Utils/Windows.h
+        Utils/Windows.cpp
 )
 
 add_subdirectory(Menus)

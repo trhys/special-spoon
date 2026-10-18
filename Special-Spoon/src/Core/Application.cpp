@@ -21,7 +21,10 @@ namespace Spoon
     void RegisterDefaultSystems();
 
     Application::Application(const AppSpecifications& specs)
-        : m_Specs(specs)
+        : m_Specs(specs), 
+        m_Editor(
+            Services{ &m_Renderer, &m_EntityManager, &m_SystemManager, &m_SceneManager, &m_ProjectManager, &m_InputSystem }
+        )
     {
         // Make sure only one instance of Application exists
         SS_INSTANCE_ASSERT(s_Instance)
@@ -235,19 +238,10 @@ namespace Spoon
             if (m_Specs.editorEnabled) // draw to viewport
             {
                 // display and interaction with the viewport
-                m_Editor.HandleViewport(m_Viewport,
-                    states,
-                    m_Renderer,
-                    m_EntityManager,
-                    m_InputSystem
-                );
+                m_Editor.HandleViewport(m_Viewport, states);
 
                 // run the editor logic
-                m_Editor.Run(tick, 
-                    m_EntityManager, 
-                    m_SceneManager, 
-                    m_SystemManager
-                );
+                m_Editor.Run(tick);
 
                 // draw
                 ImGui::SFML::Render(m_Window);

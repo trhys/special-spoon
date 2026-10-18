@@ -13,7 +13,7 @@ namespace Spoon
 {
     struct Project
     {
-        std::string ID;                                     // Unique identifier for the project
+        std::string name;                                   // Unique identifier for the project
         std::filesystem::path filePath;                     // Path to the project file
         std::filesystem::path dataPath;                     // Path to the project data directory
         std::filesystem::path assetsPath;                   // Path to the project assets directory
@@ -28,16 +28,13 @@ namespace Spoon
     {
     public:    
         Project* CreateNew(std::string newProjectBuf);
-
         Project* OpenFromFile(const std::filesystem::path& filepath);
-
+		Project* SaveProject(Project* project);
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
-
         std::vector<Blueprint>& GetBlueprints();
         std::vector<std::string> GetAvailablePresets(const std::string& category);
 
     private:
         std::unique_ptr<Project> m_CurrentProject = nullptr;
-        bool m_Saving = false;
     };
 }

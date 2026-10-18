@@ -58,7 +58,7 @@ namespace Spoon
 
         // set input systems viewport so input knows 
         // if we are clicking in the viewport or not
-        input.SetViewport(
+        m_Services.inputSystem->SetViewport(
             &viewport.target,
             sf::FloatRect(
                 {viewportImageMin.x, viewportImageMin.y},
@@ -178,9 +178,17 @@ namespace Spoon
         if (!m_CurrentProject && m_ShowNoProjectLoaded)
             NoProjectLoaded();
                 
+		// draw main menu bar
         DrawMainMenuBar();
-        if (m_ShowCreateProjectPrompt)
-            DrawCreateProjectPrompt();
+
+        //  draw project menus
+        DrawCreateProjectPrompt();
+        DrawCreateProjectError();
+        DrawLoadProject();
+        DrawLoadProjectError();
+        DrawConfigProject();
+		DrawOverwriteProjectPrompt();
+        DrawSaveProjectError();
 
         ImGui::Begin("Special-Spoon Editor");
         if (m_ActiveScene)
@@ -370,5 +378,18 @@ namespace Spoon
 
             ImGui::EndMainMenuBar();
         }
+    }
+
+    bool Editor::SetCurrentProject(Project* project)
+    {
+        if (!project)
+            return false;
+        SetActiveScene(nullptr);
+        ResourceManager::Get().ScanAssets(project->assetsPath);
+        m_Services.sceneManager->LoadManifest(project->dataPath);
+        m_Services.renderer->UpdateRenderConfig();
+        m_CurrentProject = project;
+        m_ShowCreateProjectPrompt = false;
+        return true;
     }
 }
