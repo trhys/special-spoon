@@ -72,6 +72,12 @@ namespace Spoon
         void DrawDeleteComponent();
         void DrawBlueprintsMenu();
 
+        // scene menus
+        void DrawNewScene();
+        void DrawSaveScene();
+        void DrawLoadScene();
+        void DrawDeleteScenes();
+
         // Scene controls
         void Stop();
         bool Play();
@@ -90,11 +96,6 @@ namespace Spoon
         AssetNode* GetWorkingDir() { return workingDir; }
 
         void Shutdown();
-
-        bool NewScene = false;
-        bool LoadScene = false;
-        bool SaveScene = false;
-        bool ViewSceneManifest = false;
 
         bool ViewResources = false;
         bool LoadResources = false;
@@ -139,6 +140,12 @@ namespace Spoon
         bool m_ShowAddComponent = false;
         bool m_ShowDeleteComponent = false;
         bool m_ShowBlueprintsMenu = false;
+
+        // scene menu flags
+        bool m_ShowNewScene = false;
+        bool m_ShowLoadScene = false;
+        bool m_ShowSaveScene = false;
+        bool m_ShowDeleteScene = false;
 
         // utility widget flags
         bool m_ShowMetrics = false;

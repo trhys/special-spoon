@@ -2,7 +2,6 @@
 
 #include "ECS/Components/World/TileMapComp.h"
 
-#include "Menus/SceneMenus.h"
 #include "Menus/SystemsMenu.h"
 #include "Menus/ResourceMenus.h"
 
@@ -189,13 +188,11 @@ namespace Spoon
 		DrawOverwriteProjectPrompt();
         DrawSaveProjectError();
 
-        
-
-        // Scene menus
-        if (NewScene)           { NewSceneMenu(*m_Services.sceneManager, this); }
-        if (LoadScene)          { LoadSceneMenu(*m_Services.entityManager, *m_Services.sceneManager, *m_Services.systemManager, this); }
-        if (SaveScene)          { SaveSceneMenu(*m_Services.entityManager, *m_Services.systemManager, this); }
-        if (ViewSceneManifest)  { SceneManifestMenu(*m_Services.sceneManager, this); }
+        // scene menus
+        DrawNewScene();
+        DrawSaveScene();
+        DrawLoadScene();
+        DrawDeleteScenes();
 
         // System menu
         if (ViewSystemsMenu)    { SystemsMenu(*m_Services.systemManager, this); }

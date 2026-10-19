@@ -13,18 +13,17 @@ namespace Spoon
                 if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) m_ShowSaveProject = !m_ShowSaveProject;
                 ImGui::Separator();
                 if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) m_ShowConfigProject = !m_ShowConfigProject;
-                if (ImGui::MenuItem("Exit")) //Application::Get().Close();
+                if (ImGui::MenuItem("Exit")) {}//Application::Get().Close();
                 ImGui::EndMenu();
             }
 
             ImGui::BeginDisabled(m_CurrentProject == nullptr);
             if (ImGui::BeginMenu("Scene Manager"))
             {
-                if (ImGui::MenuItem("New Scene")) NewScene = true;
-                if (ImGui::MenuItem("Open Scene")) LoadScene = true;
-                if (ImGui::MenuItem("Save Scene", nullptr, false, m_ActiveScene != nullptr)) SaveScene = true;
-                ImGui::Separator();
-                if (ImGui::MenuItem("Scene Manifest")) ViewSceneManifest = !ViewSceneManifest;
+                if (ImGui::MenuItem("New Scene")) m_ShowNewScene = !m_ShowNewScene;
+                if (ImGui::MenuItem("Open Scene")) m_ShowLoadScene = !m_ShowLoadScene;
+                if (ImGui::MenuItem("Save Scene", nullptr, false, m_ActiveScene != nullptr)) m_ShowSaveScene = !m_ShowSaveScene;
+                if (ImGui::MenuItem("Delete Scenes")) m_ShowDeleteScene = !m_ShowDeleteScene;
                 ImGui::EndMenu();
             }
 
