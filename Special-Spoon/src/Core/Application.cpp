@@ -2,8 +2,6 @@
 #include "ResourceManager/ResourceManager.h"
 #include "Serialization/Serializer.h"
 
-#include "Editor/Utils/Viewport.h"
-
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
 #include "Utils/UserConfig.h"
@@ -56,64 +54,9 @@ namespace Spoon
         RegisterDefaultSystems();
     }
 
-    void Application::Close()
-    {
-        if(m_Specs.editorEnabled)
-        {
-            const char* popup = "Close";
-            if (!ImGui::IsPopupOpen(popup))
-                ImGui::OpenPopup(popup);
-
-            // Always center this window when appearing
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-            if(ImGui::BeginPopupModal(popup, &closePrompt, ImGuiWindowFlags_AlwaysAutoResize))
-            {
-                ImGui::Text("Are you sure you want to exit?");
-                ImGui::Separator();
-
-                if (ImGui::Button("Save and Exit"))
-                {
-                    if (m_Editor.GetActiveScene())
-                    {
-                        SerializeScene(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
-                        SerializeManifest(m_SceneManager);
-                        SaveUserConfig(config);
-                        m_IsRunning = false;
-                        closePrompt = false;
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Cancel"))
-                {
-                    closePrompt = false;
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
-                if (ImGui::Button("Exit Without Saving")) 
-                { 
-                    m_IsRunning = false;
-                    closePrompt = false;
-                    SaveUserConfig(config);
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::PopStyleColor();
-                if (ImGui::IsItemHovered())
-                    ImGui::SetTooltip("All unsaved changes will be lost!");
-                
-                ImGui::EndPopup();
-            }
-        }
-        else m_IsRunning = false;
-    }
-
     void Application::Update(sf::Time tick)
     {
         m_InputSystem.Update(tick, m_EntityManager);
-                
         m_SystemManager.UpdateSystems(tick, m_EntityManager);
         m_SystemManager.UpdateState(tick, m_EntityManager);
 
@@ -123,14 +66,6 @@ namespace Spoon
         {
             throw std::runtime_error("Failed to get state system from system manager.");
         }
-
-        // Handle quit request
-        if (stateSystem->IsQuitRequested())
-        {
-            stateSystem->ConsumeQuitFlag();
-            if (m_Specs.editorEnabled) m_Editor.Stop();
-            else closePrompt = true;
-        }
         
         // Handle scene change request
         if (stateSystem->IsSceneChangeRequested())
@@ -138,21 +73,6 @@ namespace Spoon
             std::string newState = stateSystem->ConsumeChangeRequest();
             m_SceneManager.Transition(newState, m_EntityManager, m_SystemManager);
         }
-    }
-
-    void Application::Shutdown()
-    {
-        m_Editor.Shutdown();
-        m_EntityManager.Shutdown();
-
-        if (m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
-
-        m_Viewport.target = sf::RenderTexture();
-
-        ResourceManager::Get().ClearAllResources(true);
-
-        (void)m_Window.setActive(false);
-        if (m_Window.isOpen()) m_Window.close();
     }
 
     void Application::HandleInput()
@@ -193,7 +113,7 @@ namespace Spoon
             {
                 m_InputSystem.ResetRuntimeState(m_EntityManager);
             },
-            [&](const sf::Event::Closed& event) { closePrompt = true; }
+            [&](const sf::Event::Closed& event) { HandleQuit(); }
         );
     }
 
@@ -223,8 +143,6 @@ namespace Spoon
             if (m_Specs.editorEnabled)
             {
                 ImGui::SFML::Update(m_Window, tick);
-                if (closePrompt)
-                    Close();
                 ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
                 play = m_Editor.Play();
             }
@@ -252,5 +170,37 @@ namespace Spoon
             m_Window.display();
         }
         Shutdown();
+    }
+
+    void Application::HandleQuit()
+    {
+        if (m_Specs.editorEnabled)
+        {
+            if (m_Editor.Play())
+                m_Editor.Stop();
+            else
+                m_Editor.RequestQuit();
+        }
+        else Shutdown();
+    }
+
+    void Application::FinalizeQuit()
+    {
+        m_IsRunning = false;
+    }
+
+    void Application::Shutdown()
+    {
+        m_Editor.Shutdown();
+        m_EntityManager.Shutdown();
+
+        if (m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
+
+        m_Viewport.target = sf::RenderTexture();
+
+        ResourceManager::Get().ClearAllResources(true);
+
+        (void)m_Window.setActive(false);
+        if (m_Window.isOpen()) m_Window.close();
     }
 }

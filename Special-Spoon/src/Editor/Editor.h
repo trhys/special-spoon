@@ -84,12 +84,9 @@ namespace Spoon
         // resource menus
         void DrawResourcesMenu();
 
-        // Scene controls
-        void Stop();
-        bool Play();
-        void ResetScene();
+        void DrawShutdownPrompt();
 
-        void Run(sf::Time tick);
+        // tools
         void EditTextureRect(bool& editing, sf::Texture& texture, sf::IntRect& rect);
         void EditTileMap(TileMapComp* comp);
 
@@ -101,10 +98,15 @@ namespace Spoon
         SceneData* GetActiveScene() { return m_ActiveScene; }
         AssetNode* GetWorkingDir() { return workingDir; }
 
-        void Shutdown();
+        // Scene controls
+        void Stop();
+        bool Play();
+        void ResetScene();
 
-        bool ViewResources = false;
-        bool LoadResources = false;
+        // lifecycle
+        void Run(sf::Time tick);
+        void RequestQuit();
+        void Shutdown();
         
         sf::RectangleShape m_SelectionRect;
 
@@ -126,6 +128,8 @@ namespace Spoon
     private:
         bool m_ResetScene = false;          // flag for resetting the scene
         
+        bool m_ShowQuitPrompt = false;                  // flag for showing the quit prompt
+
         // project menu flags
         bool m_ShowNoProjectLoaded = true;          // flag for showing the no project loaded message
         bool m_ShowCreateProjectPrompt = false;     // flag for showing the create project prompt

@@ -13,7 +13,7 @@ namespace Spoon
                 if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) m_ShowSaveProject = !m_ShowSaveProject;
                 ImGui::Separator();
                 if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) m_ShowConfigProject = !m_ShowConfigProject;
-                if (ImGui::MenuItem("Exit")) {}//Application::Get().Close();
+                if (ImGui::MenuItem("Exit")) RequestQuit();
                 ImGui::EndMenu();
             }
 
@@ -36,8 +36,8 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Resource Manager"))
             {
-                if (ImGui::MenuItem("Resource Tree")) ViewResources = !ViewResources;
-                if (ImGui::MenuItem("Load Resources")) LoadResources = !LoadResources;
+                if (ImGui::MenuItem("Resource Tree")) m_ShowResourcesMenu = !m_ShowResourcesMenu;
+                //if (ImGui::MenuItem("Load Resources")) LoadResources = !LoadResources;
                 ImGui::EndMenu();
             }
 

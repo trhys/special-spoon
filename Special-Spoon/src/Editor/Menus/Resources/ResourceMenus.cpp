@@ -117,6 +117,9 @@ namespace Spoon
 
     void Editor::DrawResourcesMenu()
     {
+        if (!m_ShowResourcesMenu)
+            return;
+        
         ImGui::Begin("Resources", &m_ShowResourcesMenu);
         static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg 
             | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable 

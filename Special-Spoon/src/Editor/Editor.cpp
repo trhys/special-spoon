@@ -4,6 +4,7 @@
 
 #include "Utils/EditorSettings.h"
 #include "Utils/Helpmarker.h"
+#include "Utils/Windows.h"
 
 #include "Core/Application.h"
 #include "Core/ResourceManager/ResourceManager.h"
@@ -269,5 +270,60 @@ namespace Spoon
         m_CurrentProject = project;
         m_ShowCreateProjectPrompt = false;
         return true;
+    }
+
+    void Editor::RequestQuit()
+    {
+        m_ShowQuitPrompt = true;
+    }
+
+    void Editor::DrawShutdownPrompt()
+    {
+        if (!m_ShowQuitPrompt)
+            return;
+
+        const char* popup = "Close";
+        if (!ImGui::IsPopupOpen(popup))
+            ImGui::OpenPopup(popup);
+
+        CenterNext();
+        if(ImGui::BeginPopupModal(popup, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Are you sure you want to exit?");
+            ImGui::Separator();
+
+            if (ImGui::Button("Save and Exit"))
+            {
+                if (GetActiveScene())
+                {
+                    SerializeScene(*GetActiveScene(), *m_Services.entityManager, *m_Services.systemManager);
+                    SerializeManifest(*m_Services.sceneManager);
+                    //SaveUserConfig(config);
+                    m_ShowQuitPrompt = false;
+                    Application::Get().FinalizeQuit();
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                m_ShowQuitPrompt = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+            if (ImGui::Button("Exit Without Saving")) 
+            { 
+                m_ShowQuitPrompt = false;
+                //SaveUserConfig(config);
+                Application::Get().FinalizeQuit();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("All unsaved changes will be lost!");
+            
+            ImGui::EndPopup();
+        }
     }
 }
