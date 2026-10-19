@@ -33,7 +33,6 @@ namespace Spoon
             {
                 OpenFileDialog();
                 m_ShowNoProjectLoaded = false;
-                m_ShowLoadProject = true;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
@@ -113,28 +112,26 @@ namespace Spoon
             return;
 
         auto* dialog = ImGuiFileDialog::Instance();
-        if (dialog->Display("LoadProject"))
-        {
-            if (dialog->IsOk())
-            {
-                std::string filePathName = dialog->GetFilePathName();
-                std::filesystem::path pathObj(filePathName);
+        if (!dialog->Display("LoadProject"))
+            return;
 
-                // Load the project using the selected file path
-                Project* project = m_Services.projectManager->OpenFromFile(pathObj);
-                if (!project)
-                {
-                    m_ShowLoadProjectError = true; // set error flag
-                }
-                else {
-                    SetCurrentProject(project);
-                }
-            }            
+        if (dialog->IsOk())
+        {
+            std::string filePathName = dialog->GetFilePathName();
+            std::filesystem::path pathObj(filePathName);
+
+            // Load the project using the selected file path
+            Project* project = m_Services.projectManager->OpenFromFile(pathObj);
+            if (!project)
+            {
+                m_ShowLoadProjectError = true; // set error flag
+            }
+            else {
+                SetCurrentProject(project);
+            }
         }
         dialog->Close();
-        
-        if (m_CurrentProject)
-			m_ShowLoadProject = false; // close the load project dialog if a project is loaded
+        m_ShowLoadProject = false;
     }
 
     void Editor::DrawLoadProjectError()
@@ -240,7 +237,7 @@ namespace Spoon
         if (!m_ShowOverwriteProjectPrompt)
 			return;
 
-        if (!EditorSettings::Get().skipProjectSavePrompt)
+        if (!m_SkipOverwriteSavePrompt)
         {
             if (!ImGui::IsPopupOpen("Prompt Save Project"))
                 ImGui::OpenPopup("Prompt Save Project");
@@ -268,7 +265,7 @@ namespace Spoon
                     ImGui::CloseCurrentPopup();
                     return;
                 }
-                ImGui::Checkbox("Don't ask me again", &EditorSettings::Get().skipProjectSavePrompt);
+                ImGui::Checkbox("Don't ask me again", &m_SkipOverwriteSavePrompt);
                 ImGui::EndPopup();
             }
         }

@@ -1,10 +1,8 @@
 #include "Editor.h"
-#include "Core/Renderer/Renderer.h"
-#include "System/Core/InputSystem.h"
+
 #include "ECS/Components/World/TileMapComp.h"
 
 #include "Menus/SceneMenus.h"
-#include "Menus/EntityMenus.h"
 #include "Menus/SystemsMenu.h"
 #include "Menus/ResourceMenus.h"
 
@@ -178,10 +176,11 @@ namespace Spoon
         if (!m_CurrentProject && m_ShowNoProjectLoaded)
             NoProjectLoaded();
                 
-		// draw main menu bar
+		// draw main dashboard
         DrawMainMenuBar();
+        DrawInspector(tick);
 
-        //  draw project menus
+        // draw project menus
         DrawCreateProjectPrompt();
         DrawCreateProjectError();
         DrawLoadProject();
@@ -190,35 +189,7 @@ namespace Spoon
 		DrawOverwriteProjectPrompt();
         DrawSaveProjectError();
 
-        ImGui::Begin("Special-Spoon Editor");
-        if (m_ActiveScene)
-        {
-            ImGui::Text("Active Scene ID: %s", m_ActiveScene->ID.c_str());
-            if (ViewEntities) ViewEntitiesMenu(*m_Services.entityManager);
-        }
-        else
-        {
-            ImGui::Text("Load/Create a scene to view and create entities!");
-        }
-
-        // Displays metrics and debug info
-        if (EditorSettings::Get().displayEditorMetrics)
-        {
-            ImGui::SeparatorText("Performance Metrics");
-            ImGui::Text("AVG FPS: %.1f", ImGui::GetIO().Framerate);
-            ImGui::Text("Current FPS: %.1f", 1.f / tick.asSeconds());
-            ImGui::Text("Draw Calls: %d", Application::Get().GetRenderer().GetDrawCalls());
-            ImGui::SameLine(); HelpMarker("Number of draw calls submitted to the GPU per frame.\n This only counts draws called from the Renderer.\n"
-                                          "External draws (e.g. ImGui) are not counted.");
-            ImGui::Text("Draw Time: %.2f ms", Application::Get().GetRenderer().GetDrawTime());
-            ImGui::SameLine(); HelpMarker("Time spent in the Renderer drawing all renderables this frame.");
-        }
-        else ImGui::Separator();
-        ImGui::SeparatorText("ImGui Metrics");
-        if (EditorSettings::Get().displayImGuiMetrics)
-            ImGui::ShowMetricsWindow(&EditorSettings::Get().displayImGuiMetrics);
-
-        ImGui::End();
+        
 
         // Scene menus
         if (NewScene)           { NewSceneMenu(*m_Services.sceneManager, this); }
@@ -236,9 +207,6 @@ namespace Spoon
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);
         if (m_TileMapTool.IsOpen()) m_TileMapTool.Update(tick);
-
-        //Blueprints
-        if (OpenBlueprintsMenu)     { BlueprintsMenu(*m_Services.entityManager); }
     }
 
     void Editor::EditTextureRect(bool& editing, sf::Texture& texture, sf::IntRect& rect)
@@ -261,7 +229,7 @@ namespace Spoon
 
     void Editor::PickEntity(UUID id)
     {
-        SelectEntity(id, this, *m_Services.entityManager);
+        //SelectEntity(id, this, *m_Services.entityManager);
     }
 
     bool Editor::HandleViewportTools(
@@ -295,89 +263,6 @@ namespace Spoon
             return;
 
         m_Overlay.PushOverlay();
-    }
-
-    void Editor::DrawMainMenuBar()
-    {
-        if (ImGui::BeginMainMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                if (ImGui::MenuItem("New Project")) m_ShowCreateProjectPrompt = !m_ShowCreateProjectPrompt;
-                if (ImGui::MenuItem("Open Project")) OpenFileDialog();
-                if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) m_ShowSaveProject = !m_ShowSaveProject;
-                ImGui::Separator();
-                if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) m_ShowConfigProject = !m_ShowConfigProject;
-                if (ImGui::MenuItem("Exit")) Application::Get().Close();
-                ImGui::EndMenu();
-            }
-
-            ImGui::BeginDisabled(m_CurrentProject == nullptr);
-            if (ImGui::BeginMenu("Scene Manager"))
-            {
-                if (ImGui::MenuItem("New Scene")) NewScene = true;
-                if (ImGui::MenuItem("Open Scene")) LoadScene = true;
-                if (ImGui::MenuItem("Save Scene", nullptr, false, m_ActiveScene != nullptr)) SaveScene = true;
-                ImGui::Separator();
-                if (ImGui::MenuItem("Scene Manifest")) ViewSceneManifest = !ViewSceneManifest;
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Entity Manager"))
-            {
-                if (ImGui::MenuItem("Entity View")) ViewEntities = !ViewEntities;
-                if (ImGui::MenuItem("Entity Blueprints")) OpenBlueprintsMenu = !OpenBlueprintsMenu;
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Resource Manager"))
-            {
-                if (ImGui::MenuItem("Resource Tree")) ViewResources = !ViewResources;
-                if (ImGui::MenuItem("Load Resources")) LoadResources = !LoadResources;
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Animation Tool"))
-            {
-                if (ImGui::MenuItem("Open Animation Tool")) { m_AnimationTool.Open(nullptr); } 
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("System Manager"))
-            {
-                if (ImGui::MenuItem("Open System Manager", nullptr, false, m_ActiveScene != nullptr)) ViewSystemsMenu = !ViewSystemsMenu;
-                ImGui::EndMenu();
-            }
-            ImGui::EndDisabled();
-
-            if (ImGui::BeginMenu("Settings"))
-            {
-                ImGui::SeparatorText("Editor Settings");
-                ImGui::Checkbox("Display performance metrics", &EditorSettings::Get().displayEditorMetrics);
-                ImGui::Checkbox("Display ImGui metrics", &EditorSettings::Get().displayImGuiMetrics);
-
-                ImGui::SeparatorText("Global Prompt Settings");
-                ImGui::Checkbox("Confirm component delete", &EditorSettings::Get().skipAskBeforeDeleteComp);
-                ImGui::Checkbox("Confirm project save", &EditorSettings::Get().skipProjectSavePrompt);
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Overlay"))
-            {
-                ImGui::Checkbox("Show Entity Selector", &m_Overlay.selectedEntityOverlay);
-                ImGui::Checkbox("Show Colliders", &m_Overlay.colliderOverlay);
-                ImGui::EndMenu();
-            }
-
-            // play-bar controls
-            if (ImGui::Button("Play")) m_Play = true;
-            if (ImGui::Button("Stop")) Stop();
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor(255, 0, 0, 255));
-            if (ImGui::Button("Reset")) m_ResetScene = true;
-            ImGui::PopStyleColor();
-
-            ImGui::EndMainMenuBar();
-        }
     }
 
     bool Editor::SetCurrentProject(Project* project)

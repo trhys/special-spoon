@@ -2,9 +2,9 @@ target_sources(Special-Spoon
     PRIVATE
         Editor.h
         Editor.cpp
-        EditorAction.h
         Overlay.h
         Overlay.cpp
+        Services.h
 
         Blueprints/Blueprint.h
 
@@ -21,6 +21,10 @@ target_sources(Special-Spoon
         Utils/Viewport.cpp
         Utils/Windows.h
         Utils/Windows.cpp
+
+        Widgets/Inspector.cpp
+        Widgets/MenuBar.cpp
+        Widgets/Metrics.cpp
 )
 
 add_subdirectory(Menus)

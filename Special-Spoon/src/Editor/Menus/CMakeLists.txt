@@ -1,8 +1,7 @@
 target_sources(Special-Spoon
     PRIVATE
         Project/ProjectMenus.cpp
-        EntityMenus.h
-        EntityMenus.cpp
+        Entity/EntityMenus.cpp
         ResourceMenus.h
         ResourceMenus.cpp
         SceneMenus.h

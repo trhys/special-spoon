@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Overlay.h"
-#include "EditorAction.h"
+#include "Services.h"
 
 #include "Tools/AnimationTool.h"
 #include "Tools/TileMapTool.h"
@@ -13,26 +13,9 @@ namespace Spoon
 {
     struct Project;
     struct TileMapComp;
-    struct Viewport;
-    class Renderer;
-    class EntityManager;
-    class SystemManager;
-    class InputSystem;
-    class ProjectManager;
-    class SceneManager;
     struct AssetNode;
     struct SceneData;
-
-    // holds pointers to core services injected at construction
-    struct Services
-    {
-        Renderer* renderer = nullptr;
-        EntityManager* entityManager = nullptr;
-        SystemManager* systemManager = nullptr;
-        SceneManager* sceneManager = nullptr;
-        ProjectManager* projectManager = nullptr;
-        InputSystem* inputSystem = nullptr;
-    };
+    struct Viewport;
     
     class Editor
     {
@@ -63,8 +46,12 @@ namespace Spoon
         // todo: maybe this should be somewhere else
         void PickEntity(UUID id);
 
-        // Editor main loop and update functions
+        // main ui dashboard
         void DrawMainMenuBar();
+        void DrawInspector(sf::Time& tick);
+        
+        // util
+        void DrawMetrics(sf::Time& tick); // called from inspector
 
         // Project menus
         void NoProjectLoaded();
@@ -77,8 +64,13 @@ namespace Spoon
 		void DrawOverwriteProjectPrompt();
         void DrawSaveProjectError();
 
-        // draw menus from flags
-        void HandleUIState();
+        // entity menus/widgets
+        void DrawEntityList(); // called from inspector
+        void DrawCreateEntity();
+        void DrawComponentList(); // called from inspector
+        void DrawAddComponent();
+        void DrawDeleteComponent();
+        void DrawBlueprintsMenu();
 
         // Scene controls
         void Stop();
@@ -104,9 +96,6 @@ namespace Spoon
         bool SaveScene = false;
         bool ViewSceneManifest = false;
 
-        bool ViewEntities = true;
-        bool OpenBlueprintsMenu = false;
-
         bool ViewResources = false;
         bool LoadResources = false;
         
@@ -121,11 +110,13 @@ namespace Spoon
         SceneData* m_ActiveScene = nullptr;
         bool m_Play = false;
 
-        EditorActionGroup   m_Actions;
         Overlay             m_Overlay;
         TextureRectTool     m_TextureRectTool;
         AnimationTool       m_AnimationTool;
         TileMapTool         m_TileMapTool;
+
+        UUID m_SelectedEntity = 0;
+        Component* m_SelectedComponent = nullptr;
     
     private:
         bool m_ResetScene = false;          // flag for resetting the scene
@@ -140,5 +131,21 @@ namespace Spoon
         bool m_ShowConfigProject = false;           // flag for configuring a project
 		bool m_ShowOverwriteProjectPrompt = false;  // flag for showing the overwrite project prompt
 		bool m_ShowSaveProjectError = false;        // flag for showing the save project error
+
+        // entity menu flags
+        bool m_ShowEntityList = false;
+        bool m_ShowCreateEntity = false;
+        bool m_ShowComponentList = false;
+        bool m_ShowAddComponent = false;
+        bool m_ShowDeleteComponent = false;
+        bool m_ShowBlueprintsMenu = false;
+
+        // utility widget flags
+        bool m_ShowMetrics = false;
+
+    private:
+        // config flags
+        bool m_SkipOverwriteSavePrompt = false;
+        bool m_SkipDeleteComponentPrompt = false;
     };
 }
