@@ -137,3 +137,26 @@ note: Previous changes will not be in this log. This record will keep all change
 - Removed legacy input binding code and old asset/license files.
 
 ---
+
+## 10/19/26:
+
+### Editor / Refactor
+- Moved viewport rendering and entity interaction logic from `Application` into the editor.
+- Added a shared `Services` structure to pass renderer, manager, and input dependencies into the editor.
+- Split the editor dashboard into separate menu bar, inspector, and performance metrics widgets.
+- Reorganized project, entity, blueprint, scene, resource, and system menus into dedicated directories and editor methods.
+- Moved menu visibility, selection, and confirmation state into the editor.
+- Added a shared window-centering helper and updated editor build configuration.
+
+### Project Management
+- Separated project creation, loading, and saving operations from editor dialogs and prompts.
+- Updated project operations to return project pointers, with editor-side handling for failures.
+- Renamed the project identifier field and JSON key from `ID` to `name`.
+- Centralized editor project activation, including asset scanning and scene manifest loading.
+
+### Application / Shutdown
+- Routed window-close events and Quit actions through `Application::HandleQuit()`.
+- Moved the save-and-exit confirmation dialog into the editor.
+- Allowed Save and Exit to close the application when no scene is active.
+
+---

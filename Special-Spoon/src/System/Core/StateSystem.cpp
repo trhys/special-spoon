@@ -26,7 +26,7 @@ namespace Spoon
                 // return early on quit request
                 if (found->m_ActionType == ActionRegistry::Get().GetAction("Quit"))
                 {
-                    quitFlag = true;
+                    Application::Get().HandleQuit();
                     return;
                 }
 
@@ -73,6 +73,4 @@ namespace Spoon
     }
 
     bool StateSystem::IsSceneChangeRequested() { return sceneChangeFlag; }
-    bool StateSystem::IsQuitRequested() { return quitFlag; }
-    void StateSystem::ConsumeQuitFlag() { quitFlag = false; }
 }

@@ -1,12 +1,10 @@
-#include "ResourceMenus.h"
 #include "Editor/Editor.h"
 #include "Core/ResourceManager/ResourceManager.h"
 
-#include "Imgui/imgui.h"
-#include "Imgui-sfml/imgui-SFML.h"
-
 namespace Spoon
 {
+    // populates the asset tree in the 
+    // resources menu with context menus
     void ViewAssets(AssetNode* node)
     {
         ImGui::TableNextRow();
@@ -77,6 +75,8 @@ namespace Spoon
         ImGui::PopID();
     }
 
+    // shows the asset tree recursively in the 
+    // resources menu with drop targets
     void ShowTree(AssetNode* node)
     {
         ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -115,9 +115,12 @@ namespace Spoon
         ImGui::PopID();
     }
 
-    void ViewResourcesMenu(Editor* editor)
+    void Editor::DrawResourcesMenu()
     {
-        ImGui::Begin("Resources", &editor->ViewResources);
+        if (!m_ShowResourcesMenu)
+            return;
+        
+        ImGui::Begin("Resources", &m_ShowResourcesMenu);
         static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg 
             | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable 
             | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
@@ -135,19 +138,22 @@ namespace Spoon
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
 
-            ViewAssets(editor->GetWorkingDir());
+            ViewAssets(GetWorkingDir());
             ImGui::EndTable();
         }
 
         if(ImGui::Button("Refresh"))
-            editor->SetWorkingDir(ResourceManager::Get().GetAssetsDir());
+            SetWorkingDir(ResourceManager::Get().GetAssetsDir());
         if(ImGui::Button("Close"))
-            editor->ViewResources = false;
+            m_ShowResourcesMenu = false;
 
         ImGui::End();
     }
 
-    void LoadResourcesMenu(Editor* editor)
+    // todo: this is honestly quite redundant and we'll 
+    // be better off combining these together
+    
+    /*void LoadResourcesMenu(Editor* editor)
     {
         // Always center this window when appearing
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -254,5 +260,5 @@ namespace Spoon
             ImGui::EndTable();
         }
         ImGui::End();
-    }
+    }*/
 }

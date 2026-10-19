@@ -18,9 +18,8 @@ namespace Spoon
     class SPOON_API SystemManager
     {
     public:
-        SystemManager() {}
-        ~SystemManager() {}
-
+        SystemManager() = default;
+        ~SystemManager() = default;
         SystemManager(const SystemManager&) = delete;
         SystemManager& operator=(const SystemManager&) = delete;
 

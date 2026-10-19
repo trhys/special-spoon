@@ -2,8 +2,6 @@
 #include "ResourceManager/ResourceManager.h"
 #include "Serialization/Serializer.h"
 
-#include "Editor/Utils/Viewport.h"
-
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
 #include "Utils/UserConfig.h"
@@ -21,7 +19,10 @@ namespace Spoon
     void RegisterDefaultSystems();
 
     Application::Application(const AppSpecifications& specs)
-        : m_Specs(specs)
+        : m_Specs(specs), 
+        m_Editor(
+            Services{ &m_Renderer, &m_EntityManager, &m_SystemManager, &m_SceneManager, &m_ProjectManager, &m_InputSystem }
+        )
     {
         // Make sure only one instance of Application exists
         SS_INSTANCE_ASSERT(s_Instance)
@@ -53,64 +54,9 @@ namespace Spoon
         RegisterDefaultSystems();
     }
 
-    void Application::Close()
-    {
-        if(m_Specs.editorEnabled)
-        {
-            const char* popup = "Close";
-            if (!ImGui::IsPopupOpen(popup))
-                ImGui::OpenPopup(popup);
-
-            // Always center this window when appearing
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-            if(ImGui::BeginPopupModal(popup, &closePrompt, ImGuiWindowFlags_AlwaysAutoResize))
-            {
-                ImGui::Text("Are you sure you want to exit?");
-                ImGui::Separator();
-
-                if (ImGui::Button("Save and Exit"))
-                {
-                    if (m_Editor.GetActiveScene())
-                    {
-                        SerializeScene(*m_Editor.GetActiveScene(), m_EntityManager, m_SystemManager);
-                        SerializeManifest(m_SceneManager);
-                        SaveUserConfig(config);
-                        m_IsRunning = false;
-                        closePrompt = false;
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Cancel"))
-                {
-                    closePrompt = false;
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
-                if (ImGui::Button("Exit Without Saving")) 
-                { 
-                    m_IsRunning = false;
-                    closePrompt = false;
-                    SaveUserConfig(config);
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::PopStyleColor();
-                if (ImGui::IsItemHovered())
-                    ImGui::SetTooltip("All unsaved changes will be lost!");
-                
-                ImGui::EndPopup();
-            }
-        }
-        else m_IsRunning = false;
-    }
-
     void Application::Update(sf::Time tick)
     {
         m_InputSystem.Update(tick, m_EntityManager);
-                
         m_SystemManager.UpdateSystems(tick, m_EntityManager);
         m_SystemManager.UpdateState(tick, m_EntityManager);
 
@@ -119,14 +65,6 @@ namespace Spoon
         if (!stateSystem)
         {
             throw std::runtime_error("Failed to get state system from system manager.");
-        }
-
-        // Handle quit request
-        if (stateSystem->IsQuitRequested())
-        {
-            stateSystem->ConsumeQuitFlag();
-            if (m_Specs.editorEnabled) m_Editor.Stop();
-            else closePrompt = true;
         }
         
         // Handle scene change request
@@ -137,22 +75,7 @@ namespace Spoon
         }
     }
 
-    void Application::Shutdown()
-    {
-        m_Editor.Shutdown();
-        m_EntityManager.Shutdown();
-
-        if (m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
-
-        m_Viewport.target = sf::RenderTexture();
-
-        ResourceManager::Get().ClearAllResources(true);
-
-        (void)m_Window.setActive(false);
-        if (m_Window.isOpen()) m_Window.close();
-    }
-
-    void Application::HandleInput(bool& rayPickFlag)
+    void Application::HandleInput()
     {
         // Event polling -
         // Dispatches event to both the core input system and the editor (if enabled)
@@ -170,7 +93,6 @@ namespace Spoon
                 if(m_Specs.editorEnabled) 
                 {
                     ImGui::SFML::ProcessEvent(m_Window, event);
-                    rayPickFlag = false;
                 }
                 m_InputSystem.PushMouseButtonRelease(event);
             },
@@ -191,7 +113,7 @@ namespace Spoon
             {
                 m_InputSystem.ResetRuntimeState(m_EntityManager);
             },
-            [&](const sf::Event::Closed& event) { closePrompt = true; }
+            [&](const sf::Event::Closed& event) { HandleQuit(); }
         );
     }
 
@@ -200,13 +122,7 @@ namespace Spoon
         sf::RenderStates states;
         sf::Clock clock;
 
-        bool play = true;
-        bool rayPickFlag = false;
-
-        // editor entity placement (viewport drag)
-        bool draggingEntity = false;
-        UUID dragEntity;
-        sf::Vector2f lastDragMouse;
+        bool play = true;      
         
         m_SystemManager.InitializeStateSystem();
         
@@ -219,7 +135,7 @@ namespace Spoon
             m_EntityManager.ProcessReaper();
             
             // poll events and dispatch
-            HandleInput(rayPickFlag);
+            HandleInput();
 
             // Update systems
             sf::Time tick = clock.restart();
@@ -227,8 +143,6 @@ namespace Spoon
             if (m_Specs.editorEnabled)
             {
                 ImGui::SFML::Update(m_Window, tick);
-                if (closePrompt)
-                    Close();
                 ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
                 play = m_Editor.Play();
             }
@@ -239,131 +153,54 @@ namespace Spoon
             // Rendering
             m_Window.clear();
 
-            // todo: see #85
-            if (m_Specs.editorEnabled)
+            if (m_Specs.editorEnabled) // draw to viewport
             {
-                ImGui::Begin("Viewport");
+                // display and interaction with the viewport
+                m_Editor.HandleViewport(m_Viewport, states);
 
-                RenderViewport(m_Viewport);
+                // run the editor logic
+                m_Editor.Run(tick);
 
-                // Draw to viewport
-                m_Viewport.target.clear();
-
-                // build overlay
-                m_Renderer.ClearOverlay();
-                m_Editor.BuildOverlay();
-
-                if (m_Editor.GetActiveScene() && !m_EntityManager.GetAllEntities().empty())
-                    m_Renderer.Render(m_Viewport.target, states, m_EntityManager);
-                else // Draw logo if no scene is loaded or scene is empty
-                {
-                    const auto& logoTex = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-logo");
-                    sf::Sprite logoSprite(logoTex);
-                    sf::Vector2f logoCenter(logoTex.getSize().x / 2.0f, logoTex.getSize().y / 2.0f);
-                    sf::Vector2f viewportCenter(m_Viewport.target.getSize().x / 2.0f, m_Viewport.target.getSize().y / 2.0f);
-                    logoSprite.setOrigin(logoCenter);
-                    logoSprite.setPosition(viewportCenter);
-                    m_Viewport.target.draw(logoSprite);
-                }
-                m_Viewport.target.display();
-
-                ImGui::Image(m_Viewport.target);
-                const bool viewportHovered = ImGui::IsItemHovered();
-                const ImVec2 viewportImageMin = ImGui::GetItemRectMin();
-                const ImVec2 viewportImageMax = ImGui::GetItemRectMax();
-                
-                // set input systems viewport
-                m_InputSystem.SetViewport(
-                    &m_Viewport.target,
-                    sf::FloatRect(
-                        {viewportImageMin.x, viewportImageMin.y},
-                        {viewportImageMax.x, viewportImageMax.y}
-                    ),
-                    viewportHovered
-                );
-                
-                const bool viewportConsumed = m_Editor.HandleViewportTools(
-                    m_Viewport,
-                    viewportHovered,
-                    viewportImageMin,
-                    viewportImageMax
-                );
-
-                // Raycast to grab entities on the viewport
-                if (!viewportConsumed &&
-                    viewportHovered &&
-                    sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
-                    !rayPickFlag)
-                {
-                    rayPickFlag = true;
-                    static UUID selectedID;
-                    ImVec2 mousePos = ImGui::GetIO().MousePos;
-                    sf::Vector2i relativeMouse(
-                        static_cast<int>(mousePos.x - viewportImageMin.x),
-                        static_cast<int>(mousePos.y - viewportImageMin.y)
-                    );
-                    sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
-                    std::vector<UUID> entities = m_EntityManager.RayPick(worldMouse);
-                    if (!entities.empty())
-                    {
-                        auto it = std::find(entities.begin(), entities.end(), selectedID);
-                        if (it != entities.end() && std::next(it) != entities.end())
-                            selectedID = *(std::next(it));
-                        else
-                            selectedID = entities.front();
-                    }
-                    m_Editor.PickEntity(selectedID, m_EntityManager);
-
-                    // begin dragging the picked entity while not simulating
-                    auto& transformArray = m_EntityManager.GetArray<TransformComp>(TransformComp::Name);
-                    draggingEntity = !play && !entities.empty() && transformArray.HasEntity(selectedID);
-                    if (draggingEntity)
-                    {
-                        dragEntity = selectedID;
-                        lastDragMouse = worldMouse;
-                        m_EntityManager.GetComponent<TransformComp>(dragEntity, TransformComp::Name)
-                            .MoveTransform(worldMouse, true);
-                    }
-                }
-                else if (draggingEntity &&
-                    !viewportConsumed &&
-                    !play &&
-                    sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-                {
-                    // mouse is presentation space - MoveTransform inverse
-                    // projects it so the stored transform stays logical
-                    ImVec2 mousePos = ImGui::GetIO().MousePos;
-                    sf::Vector2i relativeMouse(
-                        static_cast<int>(mousePos.x - viewportImageMin.x),
-                        static_cast<int>(mousePos.y - viewportImageMin.y)
-                    );
-                    sf::Vector2f worldMouse = m_Viewport.target.mapPixelToCoords(relativeMouse);
-                    auto& transformArray = m_EntityManager.GetArray<TransformComp>(TransformComp::Name);
-                    if (!transformArray.HasEntity(dragEntity))
-                        draggingEntity = false;
-                    else if (worldMouse != lastDragMouse)
-                    {
-                        lastDragMouse = worldMouse;
-                        m_EntityManager.GetComponent<TransformComp>(dragEntity, TransformComp::Name)
-                            .MoveTransform(worldMouse, false);
-                        m_Editor.PickEntity(dragEntity, m_EntityManager);
-                    }
-                }
-                else
-                    draggingEntity = false;
-
-                ImGui::End();
-                
-                m_Editor.Run(tick, m_EntityManager, m_SceneManager, m_SystemManager);
+                // draw
                 ImGui::SFML::Render(m_Window);
             }
-            else if (!m_Specs.editorEnabled)
-            {
+            else // draw straight to window
                 m_Renderer.Render(m_Window, states, m_EntityManager);
-            }
 
             m_Window.display();
         }
         Shutdown();
+    }
+
+    void Application::HandleQuit()
+    {
+        if (m_Specs.editorEnabled)
+        {
+            if (m_Editor.Play())
+                m_Editor.Stop();
+            else
+                m_Editor.RequestQuit();
+        }
+        else m_IsRunning = false;
+    }
+
+    void Application::FinalizeQuit()
+    {
+        m_IsRunning = false;
+    }
+
+    void Application::Shutdown()
+    {
+        m_Editor.Shutdown();
+        m_EntityManager.Shutdown();
+
+        if (m_Specs.editorEnabled) ImGui::SFML::Shutdown(m_Window);
+
+        m_Viewport.target = sf::RenderTexture();
+
+        ResourceManager::Get().ClearAllResources(true);
+
+        (void)m_Window.setActive(false);
+        if (m_Window.isOpen()) m_Window.close();
     }
 }

@@ -29,11 +29,14 @@ namespace Spoon
 		Application(const AppSpecifications& specs);
 		virtual ~Application() {}
 
-		void Close();
 		void Run();
 		void Update(sf::Time tick);
+		void HandleInput();
+		
+		// lifecycle handlers
+		void HandleQuit();
+		void FinalizeQuit();
 		void Shutdown();
-		void HandleInput(bool& rayPickFlag);
 		
 		static Application& Get() { return *s_Instance; }
 
@@ -51,7 +54,6 @@ namespace Spoon
 	private:
 		static Application* s_Instance;
 		bool m_IsRunning = true;
-		bool closePrompt = false;
 
 		sf::RenderWindow  m_Window;
 		Viewport		  m_Viewport;	
