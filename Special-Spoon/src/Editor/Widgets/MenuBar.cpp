@@ -10,7 +10,7 @@ namespace Spoon
             {
                 if (ImGui::MenuItem("New Project")) m_ShowCreateProjectPrompt = !m_ShowCreateProjectPrompt;
                 if (ImGui::MenuItem("Open Project")) OpenFileDialog();
-                if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) m_ShowSaveProject = !m_ShowSaveProject;
+                if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) m_ShowOverwriteProjectPrompt = true;
                 ImGui::Separator();
                 if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) m_ShowConfigProject = !m_ShowConfigProject;
                 if (ImGui::MenuItem("Exit")) RequestQuit();

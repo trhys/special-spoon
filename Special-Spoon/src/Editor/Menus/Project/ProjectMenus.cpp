@@ -263,7 +263,6 @@ namespace Spoon
                 {
 					m_ShowOverwriteProjectPrompt = false;
                     ImGui::CloseCurrentPopup();
-                    return;
                 }
                 ImGui::Checkbox("Don't ask me again", &m_SkipOverwriteSavePrompt);
                 ImGui::EndPopup();

@@ -83,6 +83,8 @@ namespace Spoon
             if (ImGui::Button("Cancel"))
             {
                 m_ShowSaveScene = false;
+                m_ShowNewScene = false;
+                ImGui::CloseCurrentPopup();
             }
 
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));

@@ -136,7 +136,6 @@ namespace Spoon
         bool m_ShowCreateProjectError = false;      // flag for showing the create project error
 		bool m_ShowLoadProject = false;             // flag for loading a project
         bool m_ShowLoadProjectError = false;        // flag for showing the load project error
-        bool m_ShowSaveProject = false;             // flag for saving a project
         bool m_ShowConfigProject = false;           // flag for configuring a project
 		bool m_ShowOverwriteProjectPrompt = false;  // flag for showing the overwrite project prompt
 		bool m_ShowSaveProjectError = false;        // flag for showing the save project error

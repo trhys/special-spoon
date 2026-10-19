@@ -241,7 +241,7 @@ namespace Spoon
         if (!m_SkipDeleteComponentPrompt) 
         {
             if (!ImGui::IsPopupOpen("Delete Component"))
-                ImGui::OpenPopup("DeleteComponent");
+                ImGui::OpenPopup("Delete Component");
 
             auto finish = [this](){
                 m_SelectedComponent = nullptr;
