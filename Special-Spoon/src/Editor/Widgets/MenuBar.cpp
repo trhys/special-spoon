@@ -76,7 +76,7 @@ namespace Spoon
             if (ImGui::Button("Play")) m_Play = true;
             if (ImGui::Button("Stop")) Stop();
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor(255, 0, 0, 255));
-            if (ImGui::Button("Reset")) m_ResetScene = true;
+            if (ImGui::Button("Reset")) ResetScene();
             ImGui::PopStyleColor();
 
             ImGui::EndMainMenuBar();

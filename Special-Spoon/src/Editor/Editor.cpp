@@ -311,6 +311,10 @@ namespace Spoon
                     m_ShowQuitPrompt = false;
                     Application::Get().FinalizeQuit();
                     ImGui::CloseCurrentPopup();
+                } else {
+                    m_ShowQuitPrompt = false;
+                    Application::Get().FinalizeQuit();
+                    ImGui::CloseCurrentPopup();
                 }
             }
             ImGui::SameLine();
