@@ -1,5 +1,3 @@
-#include "SystemsMenu.h"
-#include "System/SystemManager.h"
 #include "Editor/Editor.h"
 
 namespace Spoon
@@ -8,8 +6,11 @@ namespace Spoon
 
     void ReloadSystems() { init = true; }
 
-    void SystemsMenu(SystemManager& manager, Editor* editor)
+    void Editor::DrawSystemsMenu()
     {
+        if (!m_ShowSystemsMenu)
+            return;
+
         static std::unordered_map<std::string, bool> addedSystems;
         static bool editedSystems = false;
         static std::vector<std::string> existing;
@@ -19,7 +20,7 @@ namespace Spoon
         {
             addedSystems.clear();
             existing.clear();
-            for (auto& system : manager.GetSystems())
+            for (auto& system : m_Services.systemManager->GetSystems())
             {
                 std::string id = system->GetDisplayName();
                 addedSystems[id] = true;
@@ -33,7 +34,7 @@ namespace Spoon
             init = false;
         }
 
-        ImGui::Begin("System Manager", &editor->ViewSystemsMenu, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("System Manager", &m_ShowSystemsMenu, ImGuiWindowFlags_MenuBar);
         if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("Options"))
@@ -67,7 +68,7 @@ namespace Spoon
         if (editedSystems)
         {
             // Remove systems that are unchecked
-            auto& systems = manager.GetSystems();
+            auto& systems = m_Services.systemManager->GetSystems();
             systems.erase(std::remove_if(systems.begin(), systems.end(),
                 [&](const std::unique_ptr<ISystem>& sys)
                 {
@@ -83,7 +84,7 @@ namespace Spoon
                     [&](auto& sys){ return sys->GetDisplayName() == id; });
                 if (!exists)
                 {
-                    manager.AddSystem(id);
+                    m_Services.systemManager->AddSystem(id);
                 }
             }
 
@@ -147,7 +148,7 @@ namespace Spoon
         }
 
         ISystem* selectedSystem = nullptr;
-        auto& systems = manager.GetSystems();
+        auto& systems = m_Services.systemManager->GetSystems();
         if (!selectedSystemID.empty())
         {
             for (auto& system : systems)

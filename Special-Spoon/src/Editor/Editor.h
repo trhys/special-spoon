@@ -78,6 +78,12 @@ namespace Spoon
         void DrawLoadScene();
         void DrawDeleteScenes();
 
+        // system menus
+        void DrawSystemsMenu();
+
+        // resource menus
+        void DrawResourcesMenu();
+
         // Scene controls
         void Stop();
         bool Play();
@@ -100,8 +106,6 @@ namespace Spoon
         bool ViewResources = false;
         bool LoadResources = false;
         
-        bool ViewSystemsMenu = false;
-
         sf::RectangleShape m_SelectionRect;
 
     private:
@@ -146,6 +150,12 @@ namespace Spoon
         bool m_ShowLoadScene = false;
         bool m_ShowSaveScene = false;
         bool m_ShowDeleteScene = false;
+
+        // system menu flags
+        bool m_ShowSystemsMenu = false;
+
+        // resource menu flags
+        bool m_ShowResourcesMenu = false;
 
         // utility widget flags
         bool m_ShowMetrics = false;

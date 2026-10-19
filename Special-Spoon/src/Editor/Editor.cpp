@@ -2,9 +2,6 @@
 
 #include "ECS/Components/World/TileMapComp.h"
 
-#include "Menus/SystemsMenu.h"
-#include "Menus/ResourceMenus.h"
-
 #include "Utils/EditorSettings.h"
 #include "Utils/Helpmarker.h"
 
@@ -193,13 +190,12 @@ namespace Spoon
         DrawSaveScene();
         DrawLoadScene();
         DrawDeleteScenes();
-
-        // System menu
-        if (ViewSystemsMenu)    { SystemsMenu(*m_Services.systemManager, this); }
+        
+        // system menus
+        DrawSystemsMenu();
 
         // Resource menus
-        if (ViewResources)      { ViewResourcesMenu(this); }
-        if (LoadResources)      { LoadResourcesMenu(this); }
+        DrawResourcesMenu();
 
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);

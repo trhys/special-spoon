@@ -3,8 +3,6 @@ target_sources(Special-Spoon
         Project/ProjectMenus.cpp
         Entity/EntityMenus.cpp
         Scene/SceneMenus.cpp
-        ResourceMenus.h
-        ResourceMenus.cpp
-        SystemsMenu.h
-        SystemsMenu.cpp
+        System/SystemsMenu.cpp
+        Resources/ResourceMenus.cpp
 )

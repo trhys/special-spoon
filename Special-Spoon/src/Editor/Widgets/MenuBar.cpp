@@ -49,7 +49,7 @@ namespace Spoon
 
             if (ImGui::BeginMenu("System Manager"))
             {
-                if (ImGui::MenuItem("Open System Manager", nullptr, false, m_ActiveScene != nullptr)) ViewSystemsMenu = !ViewSystemsMenu;
+                if (ImGui::MenuItem("Open System Manager", nullptr, false, m_ActiveScene != nullptr)) m_ShowSystemsMenu = !m_ShowSystemsMenu;
                 ImGui::EndMenu();
             }
             ImGui::EndDisabled();
