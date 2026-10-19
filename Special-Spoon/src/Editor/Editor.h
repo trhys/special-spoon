@@ -122,7 +122,7 @@ namespace Spoon
         AnimationTool       m_AnimationTool;
         TileMapTool         m_TileMapTool;
 
-        UUID m_SelectedEntity = 0;
+        UUID m_SelectedEntity = -1;
         Component* m_SelectedComponent = nullptr;
     
     private:
@@ -142,9 +142,9 @@ namespace Spoon
 		bool m_ShowSaveProjectError = false;        // flag for showing the save project error
 
         // entity menu flags
-        bool m_ShowEntityList = false;
+        bool m_ShowEntityList = true;
         bool m_ShowCreateEntity = false;
-        bool m_ShowComponentList = false;
+        bool m_ShowComponentList = true;
         bool m_ShowAddComponent = false;
         bool m_ShowDeleteComponent = false;
         bool m_ShowBlueprintsMenu = false;

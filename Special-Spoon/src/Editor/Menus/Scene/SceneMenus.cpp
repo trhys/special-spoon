@@ -71,7 +71,10 @@ namespace Spoon
                 {
                     SerializeScene(*GetActiveScene(), *m_Services.entityManager, *m_Services.systemManager);
                     if (m_ShowNewScene)
+                    {
+                        m_Services.sceneManager->UnloadScene(*m_Services.entityManager, *m_Services.systemManager);
                         SetActiveScene(nullptr);
+                    }
                 }
                 m_ShowSaveScene = false;
                 ImGui::CloseCurrentPopup();
@@ -86,6 +89,7 @@ namespace Spoon
             if (ImGui::Button("Exit Scene w/o Saving"))
             {
                 m_ShowSaveScene = false;
+                m_Services.sceneManager->UnloadScene(*m_Services.entityManager, *m_Services.systemManager);
                 SetActiveScene(nullptr);
                 ImGui::CloseCurrentPopup();
             }

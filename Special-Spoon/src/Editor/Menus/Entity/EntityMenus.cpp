@@ -55,10 +55,11 @@ namespace Spoon
             ImGui::CloseCurrentPopup();
         };
 
+        const char* popupName = "New Entity";
         CenterNext();
-        if (!ImGui::IsPopupOpen("NewEntity"))
-            ImGui::OpenPopup("NewEntity");
-        if (ImGui::BeginPopupModal("New Entity"))
+        if (!ImGui::IsPopupOpen(popupName))
+            ImGui::OpenPopup(popupName);
+        if (ImGui::BeginPopupModal(popupName))
         {
             ImGui::InputText("Entity Name", newEntityBuf, IM_ARRAYSIZE(newEntityBuf));
             ImGui::SameLine(); HelpMarker("It's recommended to give your entity some kind of name here. It's not required but"
@@ -86,8 +87,8 @@ namespace Spoon
                 ImGui::SameLine(); HelpMarker("Optionally, select a blueprint to use for this entity. The selected blueprint will"
                                               "create the components automatically for that blueprint. See the tooltip for default"
                                               "blueprints for more info.");
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
             ImGui::Separator();
             if (ImGui::Button("Submit"))
             {
@@ -107,7 +108,7 @@ namespace Spoon
 
     void Editor::DrawComponentList()
     {
-        if (!m_ShowComponentList)
+        if (!m_ShowComponentList || !m_SelectedEntity.ID < 0)
             return;
 
         ImGui::SeparatorText("Component Inspector");
@@ -136,7 +137,7 @@ namespace Spoon
                     m_ShowAddComponent = true;
             }
             ImGui::SameLine();
-            if(ImGui::Button("Delete")) 
+            if(ImGui::Button("Delete") && m_SelectedComponent) 
                 m_ShowDeleteComponent = true;
         }
 
