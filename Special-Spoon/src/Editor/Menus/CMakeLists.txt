@@ -2,6 +2,7 @@ target_sources(Special-Spoon
     PRIVATE
         Project/ProjectMenus.cpp
         Entity/EntityMenus.cpp
+        Entity/BlueprintMenus.cpp
         Scene/SceneMenus.cpp
         System/SystemsMenu.cpp
         Resources/ResourceMenus.cpp

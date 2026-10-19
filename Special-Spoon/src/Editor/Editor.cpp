@@ -186,6 +186,12 @@ namespace Spoon
 		DrawOverwriteProjectPrompt();
         DrawSaveProjectError();
 
+        // entity menus (some called in inspector)
+        DrawCreateEntity();
+        DrawAddComponent();
+        DrawDeleteComponent();
+        DrawBlueprintsMenu();
+
         // scene menus
         DrawNewScene();
         DrawSaveScene();
@@ -197,6 +203,9 @@ namespace Spoon
 
         // Resource menus
         DrawResourcesMenu();
+
+        // shutdown prompt
+        DrawShutdownPrompt();
 
         // Tools
         if (m_AnimationTool.IsOpen()) m_AnimationTool.Update(tick);

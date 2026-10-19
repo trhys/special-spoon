@@ -90,7 +90,7 @@ namespace Spoon
 
             if (ImGui::BeginChild("##BlueprintComponents", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 2.0f), ImGuiChildFlags_Borders))
             {
-                for (const auto& [type, array] : manager.GetAllArrays())
+                for (const auto& [type, array] : m_Services.entityManager->GetAllArrays())
                 {
                     if (!componentFilter.PassFilter(type.c_str()))
                         continue;

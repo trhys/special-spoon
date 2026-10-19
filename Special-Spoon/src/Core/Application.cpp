@@ -181,7 +181,7 @@ namespace Spoon
             else
                 m_Editor.RequestQuit();
         }
-        else Shutdown();
+        else m_IsRunning = false;
     }
 
     void Application::FinalizeQuit()
