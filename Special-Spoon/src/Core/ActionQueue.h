@@ -51,5 +51,16 @@ namespace Spoon
             }
             return actionsByEntity;
 		}
+
+        // check if entity has a specific action on the queue
+        bool HasAction(ActionType actionType, UUID id) const
+        {
+            for (const auto& action : m_Queue)
+            {
+                if (action.m_EntityID == id && action.m_ActionType == actionType)
+                    return true;
+            }
+            return false;
+        }
     };
 }

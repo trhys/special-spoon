@@ -2,25 +2,57 @@
 
 #include "Spoon.h"
 
-struct Hitbox
-{
-    Hitbox(sf::FloatRect box = sf::FloatRect(), float damage = 0.0f, float knockback = 0.0f, float lifetime = 0.0f)
-        : box(box), damage(damage), knockback(knockback), lifetime(lifetime) {}
+// runtime attack hitbox checked by combat system
+// for overlap and resolves damage dealt
+// constructed from the authored AttackDef struct
+struct Hitbox {
+    std::uint64_t attackInstanceId = 0; // unique per execution/swing
+    Spoon::UUID owner = 0;              // source entity
 
-    // Core properties
-    sf::FloatRect box;
-    float damage;
-    float knockback;
-    float lifetime;
+    sf::FloatRect box{};                // world-space AABB
+    float lifetimeSec = 0.f;                
+    float damage = 0.f;
+    float knockback = 0.f;
 
-    // Runtime properties
-    Spoon::UUID owner;
-    std::vector<Spoon::UUID> hitEntities;
+    int hitsPerTarget = 1;
+    bool friendlyFire = false;
+    bool canHitSelf = false;
+    bool followOwner = true;
+
+    // deduplicated set of entities that have been hit by this hitbox
+    std::unordered_set<Spoon::UUID> hitEntities;
 };
 
-struct Hurtbox
-{
-    std::vector<sf::FloatRect> boxes;
-    Spoon::UUID owner;
-    bool isInvincible;
+// defines area that can be hit by attacks
+// checked for overlap in combat system and resolve damage taken
+struct Hurtbox {
+    Spoon::UUID owner = 0;                 // entity taking damage
+    sf::FloatRect box{};                   // world-space AABB
+    bool enabled = true;                   // active hurtbox toggle
+    bool isInvincible = false;             // temp immunity gate
+};
+
+// authored attack definition
+struct AttackDef {
+    std::string id;                        // unique key, e.g. "light_slash"
+    std::string name;                      // display name
+
+    // hitbox dims
+    sf::Vector2f halfExtents{ 16.f, 8.f }; // half-size of hitbox (box shape)
+    sf::Vector2f offset{ 24.f, 0.f };      // local offset from attacker origin/facing
+
+    // timing for the attack phases
+    // sets up combo implementation
+    float windupSec = 0.05f;
+    float activeSec = 0.10f;
+    float recoverySec = 0.20f;
+    float cooldownSec = 0.20f;
+
+    float damage = 0.f;
+    float knockback = 0.f;
+
+    int hitsPerTarget = 1;                  // usually 1 for melee
+    bool friendlyFire = false;
+    bool canHitSelf = false;
+    bool followOwner = true;                // if true, hitbox tracks owner while active
 };

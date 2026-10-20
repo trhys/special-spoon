@@ -8,16 +8,13 @@ struct AttackComp : public Spoon::ComponentBase<AttackComp>
 
     static constexpr const char* Name = "Attack";
 
-    // Core members
-    float m_ReloadTime = 0.0f;
-    std::vector<Hitbox> m_Hitboxes;
-
-    // Controls
-    float reloadTimer = 0.0f;
+    std::string selectedAttack;  // the name of the currently selected attack
     bool isAttacking = false;
 
     void OnReflect() override
     {
-        if (ImGui::SliderFloat("Reload Time", &m_ReloadTime, 0.f, 10.f)) {}
+
     }
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AttackComp, selectedAttack)

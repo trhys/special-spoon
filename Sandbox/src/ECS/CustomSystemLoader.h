@@ -1,13 +1,13 @@
 #include "Spoon.h"
 
-/*#include "System/PatrolSystem.h"*/
+#include "System/CombatSystem.h"
 
-/*std::unique_ptr<Spoon::ISystem> LoadPatrolSystem(const nlohmann::json* systemData)*/
-/*{*/
-/*    return std::make_unique<PatrolSystem>();*/
-/*}*/
+std::unique_ptr<Spoon::ISystem> LoadCombatSystem(const json* systemData)
+{
+    return std::make_unique<CombatSystem>();
+}
 
 void RegisterCustomSystems()
 {
-    /*Spoon::SystemRegistry::Get().RegisterLoader("Patrol", &LoadPatrolSystem);*/
+    Spoon::SystemRegistry::Get().RegisterLoader("Combat", &LoadCombatSystem);
 }

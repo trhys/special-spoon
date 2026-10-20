@@ -11,11 +11,28 @@ public:
 	~Sandbox() {}
 };
 
+// load the engine's entity manager with custom
+// component arrays
 void LoadCustomArrays(Spoon::EntityManager& manager)
 {
-	/*manager.LoadArray<PatrolComp>(PatrolComp::Name);*/
+	manager.LoadArray<AttackComp>(AttackComp::Name);
 }
 
+// register custom actions
+void LoadCustomActions()
+{
+	Spoon::ActionRegistry::Get().RegisterCustom("Attack");
+}
+
+// register custom states
+void LoadCustomStates()
+{
+	Spoon::StateRegistry::Get().RegisterCustom("Attack");
+}
+
+// Sandbox application constructor and initialization
+// Initializes the Sandbox application app specifications
+// and sets up the custom components and systems
 Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	: Spoon::Application(specs)
 {
@@ -24,12 +41,19 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	SS_DEBUG_LOG("Loading custom arrays")
 	LoadCustomArrays(GetEntityManager());
 	SS_DEBUG_LOG("Custom loaders initialized")
-
+	SS_DEBUG_LOG("Loading custom actions")
+	LoadCustomActions();
+	SS_DEBUG_LOG("Custom actions loaded")
+	SS_DEBUG_LOG("Loading custom states")
+	LoadCustomStates();
+	SS_DEBUG_LOG("Custom states loaded")
 	SS_DEBUG_LOG("Loading custom systems")
 	RegisterCustomSystems();
 	SS_DEBUG_LOG("Custom systems loaded")
 }
 
+// extern function to create the application instance
+// see Application.h
 Spoon::Application* Spoon::CreateApp()
 {
 	AppSpecifications spec;
