@@ -10,7 +10,9 @@ target_sources(Sandbox
         FILE_SET HEADERS
         FILES
             src/ECS/Component/Combat/AttackComp.h
+            src/ECS/Component/Combat/HealthComp.h
             src/ECS/Component/Combat/Hit-Hurt.h
+            src/ECS/Component/Combat/AttackRegistery.h
         
             src/ECS/System/CombatSystem.h
 

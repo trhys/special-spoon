@@ -16,6 +16,7 @@ public:
 void LoadCustomArrays(Spoon::EntityManager& manager)
 {
 	manager.LoadArray<AttackComp>(AttackComp::Name);
+	//manager.LoadArray<HealthComp>(HealthComp::Name);
 }
 
 // register custom actions

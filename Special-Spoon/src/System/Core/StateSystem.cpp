@@ -13,6 +13,7 @@ namespace Spoon
         // get arrays
 		auto& statusArray = manager.GetArray<StatusComp>(StatusComp::Name);
 		auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
+        auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
 
         for(size_t in = 0; in < statusArray.m_Components.size(); in++)
         {
@@ -33,11 +34,11 @@ namespace Spoon
 				// special handling of movement actions - these are not mapped to a single state, but rather a direction-based state
                 if (MovementSystemUtil::IsMovementAction(found->m_ActionType))
                 {
-                    if (movementArray.m_IdToIndex.count(ID))
+                    if (transformArray.m_IdToIndex.count(ID))
                     {
-                        MovementComp& moveComp = movementArray.m_Components[movementArray.m_IdToIndex[ID]];
+                        TransformComp& transComp = transformArray.m_Components[transformArray.m_IdToIndex[ID]];
                         stateComp.m_CurrentState = StateType{
-                            MovementSystemUtil::IsMoving(moveComp) ? MovementSystemUtil::DirectionToStateID(moveComp.m_Facing.m_Direction) : BuiltInStates::Idle
+                            MovementSystemUtil::DirectionToStateID(transComp.m_Facing.m_Direction)
                         };
                     }
                     

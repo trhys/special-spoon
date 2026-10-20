@@ -4,8 +4,6 @@
 #include <cmath>
 #include <Core/ActionQueue.h>
 
-
-
 namespace Spoon
 {
 	namespace MovementSystemUtil
@@ -190,9 +188,9 @@ namespace Spoon
                     const float angle =
                         std::atan2(facingVector.y, facingVector.x) *
                         180.f / 3.14159265f;
-                    moveComp.m_Facing.m_Angle =
+                    transComp.m_Facing.m_Angle =
                         std::fmod(angle + 360.f, 360.f);
-                    moveComp.m_Facing.UpdateDirection();
+                    transComp.m_Facing.UpdateDirection();
                 }
             }
             else
