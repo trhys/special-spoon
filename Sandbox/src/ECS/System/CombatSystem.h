@@ -210,7 +210,7 @@ public:
             {
                 if (hitbox->owner == id && !hitbox->canHitSelf)
                     continue;
-                if (hitbox->box.findIntersection(hurtbox.box)) {
+                if (hitbox->box.findIntersection(hurtbox.box) && !hitbox->timesToHit.count(id)) {
                     hitbox->AddHit(id);
                 }
             }
@@ -223,6 +223,7 @@ public:
             return;
 
         auto& healthArray = manager.GetArray<HealthComp>(HealthComp::Name);
+        auto& hurtboxArray = manager.GetArray<HurtboxComp>(HurtboxComp::Name);
 
         for (auto& hitbox : m_ActiveHitboxes)
         {
@@ -231,9 +232,16 @@ public:
                 if (!healthArray.m_IdToIndex.count(hitId))
                     continue;
 
+                if (!hurtboxArray.m_IdToIndex.count(hitId))
+                    continue;
+
                 int& hits = hitbox->timesToHit[hitId];
                 if (hits > 0)
                 {
+                    auto& hurtbox = hurtboxArray.m_Components[hurtboxArray.m_IdToIndex[hitId]];
+                    if (hurtbox.isInvincible)
+                        continue;
+                    
                     auto& health = healthArray.m_Components[healthArray.m_IdToIndex[hitId]];
                     health.m_CurrentHealth -= hitbox->damage;
                     hits--;
