@@ -11,45 +11,32 @@ namespace Spoon
 
         static constexpr const char* Name = "Status";
 
-		// data members
-		std::unordered_map<ActionType, StateType> m_Actions;    // [key, value] = [action, state]
-
-
         bool is_Active;
-        StateType m_CurrentState; // Idle, Moving, Attacking, etc. This maps to AnimationMap
+        bool resolvedThisFrame = false; // did an upstream system set this
+        StateType m_CurrentState; // Idle, Moving, Attacking, etc.
         
         void OnReflect() override;
+        void ApplyState(StateType newState);
     };
 
     inline void to_json(json& j, const StatusComp& comp)
     {
-        j["m_Actions"] = json::array();
-        for (const auto& [action, state] : comp.m_Actions)
-        {
-            j["m_Actions"].push_back(
-                {
-                    {"Action", action},
-                    {"State", state}
-                });
-        }
         j["is_Active"] = comp.is_Active;
+        j["m_CurrentState"] = comp.m_CurrentState;
     }
 
     inline void from_json(const json& j, StatusComp& comp)
-    {
-        comp.m_Actions.clear();
-        
+    {        
 
-        if (j.contains("m_Actions") && j["m_Actions"].is_array())
-        {
-            for (const auto& item : j["m_Actions"])
-            {
-                ActionType action = item.at("Action").get<ActionType>();
-                StateType state = item.at("State").get<StateType>();
-                comp.m_Actions[action] = state;
-            }
-        }
+        // No actions to load anymore, only is_Active and m_CurrentState
         comp.is_Active = j.at("is_Active").get<bool>();
-		comp.m_CurrentState = StateType{ BuiltInStates::Idle }; // Default to Idle on load
+        if (j.contains("m_CurrentState"))
+        {
+            comp.m_CurrentState = j.at("m_CurrentState").get<StateType>();
+        }
+        else
+        {
+            comp.m_CurrentState = StateType{ BuiltInStates::Idle }; // Default to Idle on load
+        }
     }
 }

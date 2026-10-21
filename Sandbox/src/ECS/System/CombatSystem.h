@@ -10,7 +10,7 @@ public:
 
     // scheduler methods
     std::vector<std::string> RunBefore() const override { 
-        return { "Animation" }; 
+        return { "Health","Animation" }; 
     }
 
     std::vector<std::string> RunAfter() const override {
@@ -99,7 +99,7 @@ public:
             if (statusArray.m_IdToIndex.count(id) && attackComp.isAttacking)
             {
                 auto& statusComp = statusArray.m_Components[statusArray.m_IdToIndex[id]];
-                statusComp.m_CurrentState = Spoon::StateRegistry::Get().GetState("Attack");
+                statusComp.ApplyState(Spoon::StateRegistry::Get().GetState("Attacking"));
             }
         }
 

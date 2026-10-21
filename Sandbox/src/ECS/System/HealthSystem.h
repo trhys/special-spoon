@@ -10,15 +10,16 @@ public:
     HealthSystem() : Spoon::ISystem::ISystem("Health") {}
 
     std::vector<std::string> RunBefore() const override {
-        return { "Animation" };
+        return { "Animation", "Respawn" };
     }
 
     std::vector<std::string> RunAfter() const override {
-        return { "Combat"};
+        return { "Combat" };
     }
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
+        auto& actionQueue = Spoon::Application::Get().GetActionQueue();
         auto& healthArray = manager.GetArray<HealthComp>(HealthComp::Name);
         auto& statusArray = manager.GetArray<Spoon::StatusComp>(Spoon::StatusComp::Name);
 
@@ -62,13 +63,20 @@ public:
             }
 
             // life check
-            if (health.m_CurrentHealth <= 0)
+            if (health.m_CurrentHealth <= 0 && health.isAlive)
+            {
                 health.isAlive = false;
+                actionQueue.CreateAndPush(
+                    id, 
+                    Spoon::ActionRegistry::Get().GetAction("Die"),
+                    1
+                );
+            }
 
             if (statusArray.m_IdToIndex.find(id) != statusArray.m_IdToIndex.end() && !health.isAlive)
             {
                 Spoon::StatusComp& status = statusArray.m_Components[statusArray.m_IdToIndex[id]];
-                status.m_CurrentState = Spoon::StateRegistry::Get().GetState("Dead");
+                status.ApplyState(Spoon::StateRegistry::Get().GetState("Dead"));
             }
         }
     }

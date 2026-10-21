@@ -18,19 +18,23 @@ void LoadCustomArrays(Spoon::EntityManager& manager)
 	manager.LoadArray<AttackComp>(AttackComp::Name);
 	manager.LoadArray<HealthComp>(HealthComp::Name);
 	manager.LoadArray<HurtboxComp>(HurtboxComp::Name);
+	manager.LoadArray<RespawnComp>(RespawnComp::Name);
 }
 
 // register custom actions
 void LoadCustomActions()
 {
 	Spoon::ActionRegistry::Get().RegisterCustom("Attack");
+	Spoon::ActionRegistry::Get().RegisterCustom("Die");
+	Spoon::ActionRegistry::Get().RegisterCustom("Respawn");
 }
 
 // register custom states
 void LoadCustomStates()
 {
-	Spoon::StateRegistry::Get().RegisterCustom("Attack");
+	Spoon::StateRegistry::Get().RegisterCustom("Attacking");
 	Spoon::StateRegistry::Get().RegisterCustom("Dead");
+	Spoon::StateRegistry::Get().RegisterCustom("Respawning");
 }
 
 // Sandbox application constructor and initialization

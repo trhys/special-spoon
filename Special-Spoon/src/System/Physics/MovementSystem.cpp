@@ -95,6 +95,7 @@ namespace Spoon
         auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
         auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
         auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
+        auto& statusArray = manager.GetArray<StatusComp>(StatusComp::Name);
         std::unordered_map<UUID, std::vector<const Action*>> movementActions;
 
         for (const auto& action : queue.m_Queue)
@@ -169,6 +170,7 @@ namespace Spoon
             if (transformArray.m_IdToIndex.count(ID))
             {
                 TransformComp& transComp = manager.GetComponent<TransformComp>(ID, TransformComp::Name);
+                auto& statusComp = manager.GetComponent<StatusComp>(ID, StatusComp::Name);
                 moveComp.m_ProposedDelta = moveComp.m_Velocity * tick.asSeconds();
                 if (!hasPhysics)
                 {
@@ -191,13 +193,18 @@ namespace Spoon
                     transComp.m_Facing.m_Angle =
                         std::fmod(angle + 360.f, 360.f);
                     transComp.m_Facing.UpdateDirection();
+
+                    // set status from orientation
+                    statusComp.ApplyState(StateType{
+                        MovementSystemUtil::DirectionToStateID(transComp.m_Facing.m_Direction)
+                    });
+                    
                 }
             }
             else
             {
                 SS_DEBUG_LOG("[MOVEMENT SYSTEM] Entity has no transform!")
             }
-
         }
     }
 }
