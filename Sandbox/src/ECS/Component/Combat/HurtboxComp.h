@@ -11,12 +11,11 @@ struct HurtboxComp : public Spoon::ComponentBase<HurtboxComp> {
 
     sf::FloatRect box{};                   // world-space AABB
     bool enabled = true;                   // active hurtbox toggle
-    bool isInvincible = false;             // temp immunity gate
 
     void OnReflect() override
     {
-
+        ImGui::SliderFloat2("Hurtbox Size", &box.size.x, 0.0f, 1000.0f);
     }
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HurtboxComp, box, enabled, isInvincible)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HurtboxComp, box, enabled)

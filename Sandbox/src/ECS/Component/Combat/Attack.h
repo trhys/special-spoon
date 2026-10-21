@@ -21,7 +21,6 @@ struct AttackDef {
     float damage = 0.f;
     float knockback = 0.f;
     float lifetimeSec = 0.f;
-    int hitsPerTarget = 1;                  // usually 1 for melee
     bool friendlyFire = false;
     bool canHitSelf = false;
     bool followOwner = true;                // if true, hitbox tracks owner while active
@@ -39,7 +38,6 @@ struct Hitbox {
     float damage = 0.f;
     float knockback = 0.f;
 
-    int hitsPerTarget = 1;              // how many hits can be applied per hurtbox
     bool friendlyFire = false;
     bool canHitSelf = false;
     bool followOwner = true;
@@ -47,15 +45,11 @@ struct Hitbox {
     // deduplicated set of entities that have been hit by this hitbox
     std::unordered_set<Spoon::UUID> hitEntities;
 
-    // map of hitEntities to how many more hits the attack can make on them
-    std::unordered_map<Spoon::UUID, int> timesToHit;
-
     // constructor (from AttackDef)
     Hitbox(const AttackDef& attack)
         : damage(attack.damage),
           knockback(attack.knockback),
           lifetimeSec(attack.lifetimeSec),
-          hitsPerTarget(attack.hitsPerTarget),
           friendlyFire(attack.friendlyFire),
           canHitSelf(attack.canHitSelf),
           followOwner(attack.followOwner)
@@ -64,7 +58,6 @@ struct Hitbox {
 
     void AddHit(Spoon::UUID id) {
         hitEntities.insert(id);
-        timesToHit[id] = hitsPerTarget;
     }
 };
 

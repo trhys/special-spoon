@@ -8,6 +8,15 @@ class CombatSystem : public Spoon::ISystem
 public:
     CombatSystem() : Spoon::ISystem::ISystem("Combat") {}
 
+    // scheduler methods
+    std::vector<std::string> RunBefore() const override { 
+        return { "Animation" }; 
+    }
+
+    std::vector<std::string> RunAfter() const override {
+        return { "Movement" };
+    }
+
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
         UpdateActiveHitboxes(tick);
@@ -93,7 +102,6 @@ public:
             }
         }
 
-        
         // resolve hitboxes vs hurtboxes and apply damage
         FindHits(manager);
         ResolveHits(manager);
@@ -202,7 +210,7 @@ public:
             auto& transComp = transformArray.m_Components[transformArray.m_IdToIndex[id]];
             hurtbox.box.position = transComp.GetPosition();
 
-            if (!hurtbox.enabled || hurtbox.isInvincible)
+            if (!hurtbox.enabled)
                 continue;
 
             // check overlap to active hitboxes
@@ -210,7 +218,7 @@ public:
             {
                 if (hitbox->owner == id && !hitbox->canHitSelf)
                     continue;
-                if (hitbox->box.findIntersection(hurtbox.box) && !hitbox->timesToHit.count(id)) {
+                if (hitbox->box.findIntersection(hurtbox.box)) {
                     hitbox->AddHit(id);
                 }
             }
@@ -223,7 +231,6 @@ public:
             return;
 
         auto& healthArray = manager.GetArray<HealthComp>(HealthComp::Name);
-        auto& hurtboxArray = manager.GetArray<HurtboxComp>(HurtboxComp::Name);
 
         for (auto& hitbox : m_ActiveHitboxes)
         {
@@ -231,21 +238,9 @@ public:
             {
                 if (!healthArray.m_IdToIndex.count(hitId))
                     continue;
-
-                if (!hurtboxArray.m_IdToIndex.count(hitId))
-                    continue;
-
-                int& hits = hitbox->timesToHit[hitId];
-                if (hits > 0)
-                {
-                    auto& hurtbox = hurtboxArray.m_Components[hurtboxArray.m_IdToIndex[hitId]];
-                    if (hurtbox.isInvincible)
-                        continue;
                     
-                    auto& health = healthArray.m_Components[healthArray.m_IdToIndex[hitId]];
-                    health.m_CurrentHealth -= hitbox->damage;
-                    hits--;
-                }
+                auto& health = healthArray.m_Components[healthArray.m_IdToIndex[hitId]];
+                health.QueueDamage(hitbox->damage);
             } 
         }
     }
