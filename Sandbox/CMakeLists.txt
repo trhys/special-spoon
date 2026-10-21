@@ -16,6 +16,7 @@ target_sources(Sandbox
             src/ECS/Component/Combat/AttackRegistery.h
         
             src/ECS/System/CombatSystem.h
+            src/ECS/System/HealthSystem.h
 
             src/ECS/CustomCompLoader.h
             src/ECS/CustomSystemLoader.h

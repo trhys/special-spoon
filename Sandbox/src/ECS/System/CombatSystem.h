@@ -245,6 +245,10 @@ public:
         }
     }
 
+    void OnReflect() override
+    {
+    }
+    
 private:
     std::vector<std::unique_ptr<Hitbox>> m_ActiveHitboxes;
     std::uint64_t m_NextAttackInstanceId = 1;

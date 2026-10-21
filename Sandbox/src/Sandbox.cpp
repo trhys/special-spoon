@@ -30,6 +30,7 @@ void LoadCustomActions()
 void LoadCustomStates()
 {
 	Spoon::StateRegistry::Get().RegisterCustom("Attack");
+	Spoon::StateRegistry::Get().RegisterCustom("Dead");
 }
 
 // Sandbox application constructor and initialization
