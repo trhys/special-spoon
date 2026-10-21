@@ -51,5 +51,5 @@ struct HealthComp : public Spoon::ComponentBase<HealthComp> {
     }
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HealthComp, m_MaxHealth, iFramesDuration, isInvincible)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HealthComp, m_MaxHealth, iFramesDuration)
 

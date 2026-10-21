@@ -19,6 +19,7 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
+        
         UpdateActiveHitboxes(tick);
 
         // fetch action queue and arrays
@@ -50,7 +51,7 @@ public:
             // check for attack action and set the attack state
             if (actions.HasAction(attack, id) 
                 && !attackComp.isAttacking
-                && !attackComp.cooldownTimer > 0.0f
+                && attackComp.cooldownTimer <= 0.0f
             ) 
             {
                 attackComp.isAttacking = true;
@@ -115,6 +116,7 @@ public:
             it != m_ActiveHitboxes.end();)
         {
             auto& hitbox = *it;
+            hitbox->hitEntities.clear();
             hitbox->lifetimeSec -= dt;
 
             if (hitbox->lifetimeSec <= 0.0f)
@@ -248,7 +250,7 @@ public:
     void OnReflect() override
     {
     }
-    
+
 private:
     std::vector<std::unique_ptr<Hitbox>> m_ActiveHitboxes;
     std::uint64_t m_NextAttackInstanceId = 1;
