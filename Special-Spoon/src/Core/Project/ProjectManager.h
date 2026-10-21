@@ -30,6 +30,7 @@ namespace Spoon
         Project* CreateNew(std::string newProjectBuf);
         Project* OpenFromFile(const std::filesystem::path& filepath);
 		Project* SaveProject(Project* project);
+        void DeleteProject(const std::filesystem::path& filepath);
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
         std::vector<Blueprint>& GetBlueprints();
         std::vector<std::string> GetAvailablePresets(const std::string& category);

@@ -9,6 +9,21 @@ using json = nlohmann::json;
 
 namespace Spoon
 {
+    namespace
+    {
+        bool IsWithin(const std::filesystem::path& path, const std::filesystem::path& directory)
+        {
+            auto entry = path.begin();
+            for (const auto& part : directory)
+            {
+                if (entry == path.end() || *entry != part)
+                    return false;
+                ++entry;
+            }
+            return true;
+        }
+    }
+
     Project* ProjectManager::CreateNew(std::string newProjectBuf)
     {
         // create new project structure
@@ -113,6 +128,50 @@ namespace Spoon
         fileStream << serializedProject;
         fileStream.close();
         return project;
+    }
+
+    void ProjectManager::DeleteProject(const std::filesystem::path& filepath)
+    {
+        namespace fs = std::filesystem;
+        if (filepath.extension() != ".json" || fs::is_symlink(filepath) || !fs::is_regular_file(filepath))
+            throw std::runtime_error("Select a regular project JSON file, not a symbolic link.");
+
+        const auto projectFile = fs::canonical(filepath);
+        const auto directory = projectFile.parent_path() / projectFile.stem();
+        if (fs::is_symlink(directory) || (fs::exists(directory) && !fs::is_directory(directory)))
+            throw std::runtime_error("The project directory must be a directory, not a symbolic link.");
+        if (IsWithin(fs::current_path(), directory))
+            throw std::runtime_error("Cannot delete the application's working directory or its parent.");
+
+        if (m_CurrentProject &&
+            (fs::weakly_canonical(m_CurrentProject->filePath) == projectFile ||
+             IsWithin(fs::weakly_canonical(m_CurrentProject->filePath), directory) ||
+             IsWithin(fs::weakly_canonical(m_CurrentProject->dataPath), directory) ||
+             IsWithin(fs::weakly_canonical(m_CurrentProject->assetsPath), directory) ||
+             IsWithin(fs::weakly_canonical(m_CurrentProject->presetsPath), directory)))
+            throw std::runtime_error("Cannot delete the open project or its files. Open a different project first.");
+
+        std::ifstream fileStream(projectFile);
+        if (!fileStream.is_open())
+            throw std::runtime_error("Cannot read the selected project file.");
+        const auto projectJson = json::parse(fileStream);
+        fileStream.close();
+
+        // Only delete the conventional sibling directory, never paths supplied by arbitrary JSON.
+        for (const char* key : {"DataPath", "AssetsPath"})
+        {
+            const auto storedPath = projectJson.at(key).get<std::string>();
+            if (storedPath.empty() || !IsWithin(fs::weakly_canonical(storedPath), directory))
+                throw std::runtime_error("Project data and assets must be inside " + directory.string() +
+                                         ". No files were deleted.");
+        }
+        if (!projectJson.at("name").is_string())
+            throw std::runtime_error("The selected JSON file is not a valid project.");
+
+        fs::remove_all(directory);
+        // Keep the descriptor until directory removal succeeds so a failed deletion can be retried.
+        if (!fs::remove(projectFile))
+            throw std::runtime_error("The project directory was removed, but the project JSON file was not found.");
     }
 
     std::vector<Blueprint>& ProjectManager::GetBlueprints()

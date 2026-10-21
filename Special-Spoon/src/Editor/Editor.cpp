@@ -183,6 +183,7 @@ namespace Spoon
         DrawCreateProjectError();
         DrawLoadProject();
         DrawLoadProjectError();
+        DrawDeleteProject();
         DrawConfigProject();
 		DrawOverwriteProjectPrompt();
         DrawSaveProjectError();

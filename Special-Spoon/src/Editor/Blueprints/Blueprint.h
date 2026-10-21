@@ -39,15 +39,22 @@ namespace Spoon
     }
 
     static inline Blueprint None("None", {});
-    static inline Blueprint SpriteBlueprint("Sprite", std::vector<std::string>{"Transform", "Sprite", "RenderLayer"});
-    static inline Blueprint TextBlueprint("Text", std::vector<std::string>{"Transform", "Text", "RenderLayer"});
+    static inline Blueprint SpriteBlueprint("Sprite", std::vector<std::string>{"Transform", "Sprite", "RenderLayer", "Status"});
+    static inline Blueprint TextBlueprint("Text", std::vector<std::string>{"Transform", "Text", "RenderLayer", "Status"});
+    static inline Blueprint Player(
+        "Player",
+        std::vector<std::string>{
+            "Transform", "Status", "Input", "Sprite", "RenderLayer", "Movement", "Collider"
+        }
+    );
 
     static inline std::vector<Blueprint> GetDefaultBlueprints()
     {
         return {
             None,
             SpriteBlueprint,
-            TextBlueprint
+            TextBlueprint,
+            Player
         };
     }
 
