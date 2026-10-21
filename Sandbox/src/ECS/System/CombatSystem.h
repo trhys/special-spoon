@@ -39,7 +39,11 @@ public:
             }
 
             // check for attack action and set the attack state
-            if (actions.HasAction(attack, id) && !attackComp.isAttacking) {
+            if (actions.HasAction(attack, id) 
+                && !attackComp.isAttacking
+                && !attackComp.cooldownTimer > 0.0f
+            ) 
+            {
                 attackComp.isAttacking = true;
                 attackComp.currentPhase = AttackPhase::WindUp;
                 attackComp.phaseTimer = 0.0f;
@@ -198,7 +202,7 @@ public:
             auto& transComp = transformArray.m_Components[transformArray.m_IdToIndex[id]];
             hurtbox.box.position = transComp.GetPosition();
 
-            if (!hurtbox.enabled)
+            if (!hurtbox.enabled || hurtbox.isInvincible)
                 continue;
 
             // check overlap to active hitboxes
@@ -224,8 +228,16 @@ public:
         {
             for (Spoon::UUID hitId : hitbox->hitEntities)
             {
-                auto& health = healthArray.m_Components[healthArray.m_IdToIndex[hitId]];
-                health.m_CurrentHealth -= hitbox->damage;
+                if (!healthArray.m_IdToIndex.count(hitId))
+                    continue;
+
+                int& hits = hitbox->timesToHit[hitId];
+                if (hits > 0)
+                {
+                    auto& health = healthArray.m_Components[healthArray.m_IdToIndex[hitId]];
+                    health.m_CurrentHealth -= hitbox->damage;
+                    hits--;
+                }
             } 
         }
     }
