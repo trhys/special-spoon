@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Overlay.h"
 #include "Services.h"
 
 #include "Tools/AnimationTool.h"
@@ -37,10 +36,6 @@ namespace Spoon
             const ImVec2& imageMin,
             const ImVec2& imageMax
         );
-
-        // pushes overlay tools to the renderer pipeline
-        // see Overlay.h for more details.
-        void BuildOverlay();
 
         // helper for ray picked entities in viewport
         // todo: maybe this should be somewhere else
@@ -117,7 +112,6 @@ namespace Spoon
         SceneData* m_ActiveScene = nullptr;
         bool m_Play = false;
 
-        Overlay             m_Overlay;
         TextureRectTool     m_TextureRectTool;
         AnimationTool       m_AnimationTool;
         TileMapTool         m_TileMapTool;

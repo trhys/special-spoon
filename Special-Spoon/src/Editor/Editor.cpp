@@ -28,12 +28,13 @@ namespace Spoon
         RenderViewport(viewport);
         viewport.target.clear();
 
-        // build overlay
-        m_Services.renderer->ClearOverlay();
-        BuildOverlay();
-
         if (GetActiveScene() && !m_Services.entityManager->GetAllEntities().empty())
-            m_Services.renderer->Render(viewport.target, states, *m_Services.entityManager);
+            m_Services.renderer->Render(
+                viewport.target,
+                states, 
+                *m_Services.entityManager, 
+                *m_Services.systemManager
+            );
         else // Draw logo if no scene is loaded or scene is empty
         {
             const auto& logoTex = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-logo");
@@ -258,14 +259,6 @@ namespace Spoon
         m_AnimationTool.Shutdown();
         m_TextureRectTool.Shutdown();
         m_TileMapTool.Close();
-    }
-
-    void Editor::BuildOverlay()
-    {
-        if (!m_ActiveScene)
-            return;
-
-        m_Overlay.PushOverlay();
     }
 
     bool Editor::SetCurrentProject(Project* project)

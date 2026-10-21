@@ -247,11 +247,45 @@ public:
         }
     }
 
+    int PushOverlay(
+        sf::RenderTarget& target, 
+        sf::RenderStates states,
+        const Spoon::WorldProjection& projection
+    ) override
+    {
+        if (!m_ShowOverlay)
+            return 0;
+
+        int drawCalls = 0;
+        for (auto& hitbox : m_ActiveHitboxes)
+        {
+            const auto& bounds = hitbox->box;
+            const sf::Vector2f corners[4] = {
+                bounds.position,
+                { bounds.position.x + bounds.size.x, bounds.position.y },
+                bounds.position + bounds.size,
+                { bounds.position.x, bounds.position.y + bounds.size.y }
+            };
+
+            sf::ConvexShape shape(4);
+            for (std::size_t i = 0; i < 4; ++i)
+                shape.setPoint(i, projection.LogicalToScreen(corners[i]));
+
+            shape.setFillColor(sf::Color(255, 0, 0, 100));
+            target.draw(shape, states);
+            ++drawCalls;
+        }
+        return drawCalls;
+    }
+
     void OnReflect() override
     {
+        ImGui::Checkbox("Show Overlay", &m_ShowOverlay);
     }
 
 private:
     std::vector<std::unique_ptr<Hitbox>> m_ActiveHitboxes;
     std::uint64_t m_NextAttackInstanceId = 1;
+
+    bool m_ShowOverlay = false;
 };

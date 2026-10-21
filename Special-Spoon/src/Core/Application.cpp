@@ -165,7 +165,7 @@ namespace Spoon
                 ImGui::SFML::Render(m_Window);
             }
             else // draw straight to window
-                m_Renderer.Render(m_Window, states, m_EntityManager);
+                m_Renderer.Render(m_Window, states, m_EntityManager, m_SystemManager);
 
             m_Window.display();
         }

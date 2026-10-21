@@ -65,13 +65,6 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Overlay"))
-            {
-                ImGui::Checkbox("Show Entity Selector", &m_Overlay.selectedEntityOverlay);
-                ImGui::Checkbox("Show Colliders", &m_Overlay.colliderOverlay);
-                ImGui::EndMenu();
-            }
-
             // play-bar controls
             if (ImGui::Button("Play")) m_Play = true;
             if (ImGui::Button("Stop")) Stop();
