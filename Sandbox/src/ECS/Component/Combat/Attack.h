@@ -58,13 +58,10 @@ struct Hitbox {
           followOwner(attack.followOwner)
     {
     }
+
+    void AddHit(Spoon::UUID id) {
+        hitEntities.insert(id);
+    }
 };
 
-// defines area that can be hit by attacks
-// checked for overlap in combat system and resolve damage taken
-struct Hurtbox {
-    Spoon::UUID owner = 0;                 // entity taking damage
-    sf::FloatRect box{};                   // world-space AABB
-    bool enabled = true;                   // active hurtbox toggle
-    bool isInvincible = false;             // temp immunity gate
-};
+

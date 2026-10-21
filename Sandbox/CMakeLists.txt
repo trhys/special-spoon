@@ -11,7 +11,8 @@ target_sources(Sandbox
         FILES
             src/ECS/Component/Combat/AttackComp.h
             src/ECS/Component/Combat/HealthComp.h
-            src/ECS/Component/Combat/Hit-Hurt.h
+            src/ECS/Component/Combat/Attack.h
+            src/ECS/Component/Combat/HurtboxComp.h
             src/ECS/Component/Combat/AttackRegistery.h
         
             src/ECS/System/CombatSystem.h

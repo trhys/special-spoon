@@ -2,9 +2,7 @@
 
 #include "Spoon.h"
 
-class HealthComp : public Spoon::IComponent
-{
-public:
+struct HealthComp : public Spoon::ComponentBase<HealthComp> {
     HealthComp() : Spoon::ComponentBase<HealthComp>(Name) {}
 
     static constexpr const char* Name = "Health";
@@ -28,3 +26,4 @@ public:
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HealthComp, m_MaxHealth)
+

@@ -10,6 +10,8 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
+        UpdateActiveHitboxes(tick);
+
         // fetch action queue and arrays
         auto& actions = Spoon::Application::Get().GetActionQueue();
         auto& attackArray = manager.GetArray<AttackComp>(AttackComp::Name);
@@ -87,9 +89,27 @@ public:
             }
         }
 
-        // todo
+        
         // resolve hitboxes vs hurtboxes and apply damage
-        //ResolveHitboxes(manager);
+        FindHits(manager);
+        ResolveHits(manager);
+    }
+
+    void UpdateActiveHitboxes(const sf::Time& tick)
+    {
+        const float dt = tick.asSeconds();
+
+        for (auto it = m_ActiveHitboxes.begin();
+            it != m_ActiveHitboxes.end();)
+        {
+            auto& hitbox = *it;
+            hitbox->lifetimeSec -= dt;
+
+            if (hitbox->lifetimeSec <= 0.0f)
+                it = m_ActiveHitboxes.erase(it);
+            else
+                ++it;
+        }
     }
 
     void SpawnHitbox(const AttackDef* attack, const Spoon::UUID owner, Spoon::EntityManager& manager)
@@ -162,6 +182,52 @@ public:
         bounds.position = { center.x - boxW * 0.5f, center.y - boxH * 0.5f };
         bounds.size     = { boxW, boxH };
         return bounds;
+    }
+
+    void FindHits(Spoon::EntityManager& manager)
+    {
+        auto& hurtboxArray = manager.GetArray<HurtboxComp>(HurtboxComp::Name);
+        auto& transformArray = manager.GetArray<Spoon::TransformComp>(Spoon::TransformComp::Name);
+
+        for (size_t i = 0; i < hurtboxArray.m_Components.size(); i++)
+        {
+            auto& hurtbox = hurtboxArray.m_Components[i];
+            auto id = hurtboxArray.m_IndexToId[i];
+
+            // sync hurtbox to entity transform
+            auto& transComp = transformArray.m_Components[transformArray.m_IdToIndex[id]];
+            hurtbox.box.position = transComp.GetPosition();
+
+            if (!hurtbox.enabled)
+                continue;
+
+            // check overlap to active hitboxes
+            for (auto& hitbox : m_ActiveHitboxes)
+            {
+                if (hitbox->owner == id && !hitbox->canHitSelf)
+                    continue;
+                if (hitbox->box.findIntersection(hurtbox.box)) {
+                    hitbox->AddHit(id);
+                }
+            }
+        }
+    }
+
+    void ResolveHits(Spoon::EntityManager& manager)
+    {
+        if (m_ActiveHitboxes.empty())
+            return;
+
+        auto& healthArray = manager.GetArray<HealthComp>(HealthComp::Name);
+
+        for (auto& hitbox : m_ActiveHitboxes)
+        {
+            for (Spoon::UUID hitId : hitbox->hitEntities)
+            {
+                auto& health = healthArray.m_Components[healthArray.m_IdToIndex[hitId]];
+                health.m_CurrentHealth -= hitbox->damage;
+            } 
+        }
     }
 
 private:

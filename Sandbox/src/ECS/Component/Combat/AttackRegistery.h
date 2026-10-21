@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hit-Hurt.h"
+#include "Attack.h"
 
 class AttackRegistry
 {
