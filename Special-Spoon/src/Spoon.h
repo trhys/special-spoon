@@ -1,7 +1,6 @@
 #pragma once
 
-// Includes for client application only
-#include "Core/EntryPoint.h"
+#include "Core/Application.h"
 
 // Registration includes
 #include "Core/Registers/ActionRegistry.h"

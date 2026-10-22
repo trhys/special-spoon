@@ -1,11 +1,6 @@
 #pragma once
 
-#include "ECS/Entity.h"
-#include "SFML/Graphics.hpp"
-
-#include <cstdint>
-#include <string>
-#include <unordered_set>
+#include "Spoon.h"
 
 // authored attack definition
 struct AttackDef {
@@ -30,6 +25,8 @@ struct AttackDef {
     bool canHitSelf = false;
     bool followOwner = true;                // if true, hitbox tracks owner while active
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AttackDef, id, name, halfExtents, offset, windupSec, activeSec, recoverySec, cooldownSec, damage, knockback, lifetimeSec, friendlyFire, canHitSelf, followOwner)
 
 // runtime attack hitbox checked by combat system
 // for overlap and resolves damage dealt

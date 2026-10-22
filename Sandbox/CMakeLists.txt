@@ -5,7 +5,7 @@ target_link_libraries(Sandbox PRIVATE Special-Spoon)
 target_sources(Sandbox
     PRIVATE
         src/Sandbox.cpp
-        src/Tools/AttackEditor.cpp
+        src/ECS/Component/Combat/AttackComp.cpp
 
     PUBLIC
         FILE_SET HEADERS

@@ -1,3 +1,4 @@
+#include "Core/EntryPoint.h"
 #include "Spoon.h"
 
 #include "ECS/CustomCompLoader.h"

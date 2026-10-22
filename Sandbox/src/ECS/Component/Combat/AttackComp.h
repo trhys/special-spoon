@@ -1,8 +1,6 @@
 #pragma once 
 
-#include "ECS/Components/Component.h"
-
-#include <cstdint>
+#include "Spoon.h"
 
 // attack phase enum
 enum class AttackPhase
@@ -29,6 +27,8 @@ struct AttackComp : public Spoon::ComponentBase<AttackComp>
 
     // editor interface
     bool showAttackEditor = false;
+    bool showErrorMessage = false;
+    std::string editorErrorMessage;
     void OnReflect() override;
     void DrawAttackEditor();
 };
