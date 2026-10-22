@@ -1,6 +1,11 @@
 #pragma once
 
-#include "Spoon.h"
+#include "ECS/Entity.h"
+#include "SFML/Graphics.hpp"
+
+#include <cstdint>
+#include <string>
+#include <unordered_set>
 
 // authored attack definition
 struct AttackDef {
@@ -60,5 +65,4 @@ struct Hitbox {
         hitEntities.insert(id);
     }
 };
-
 

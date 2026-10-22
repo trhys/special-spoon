@@ -1,6 +1,8 @@
 #pragma once 
 
-#include "Spoon.h"
+#include "ECS/Components/Component.h"
+
+#include <cstdint>
 
 // attack phase enum
 enum class AttackPhase
@@ -25,10 +27,10 @@ struct AttackComp : public Spoon::ComponentBase<AttackComp>
     float cooldownTimer = 0.0f; // time remaining until the next attack can be initiated
     bool isAttacking = false;
 
-    void OnReflect() override
-    {
-
-    }
+    // editor interface
+    bool showAttackEditor = false;
+    void OnReflect() override;
+    void DrawAttackEditor();
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AttackComp, selectedAttack)
