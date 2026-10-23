@@ -14,7 +14,7 @@ namespace Spoon
 {
     class EntityManager;
     
-    class Component
+    class SPOON_API Component
     {
     public:
         Component() {}
@@ -32,7 +32,7 @@ namespace Spoon
     };
 
     template<typename COMP>
-    struct ComponentBase : public Component
+    struct SPOON_API ComponentBase : public Component
     {
         ComponentBase(std::string id) : m_Name(id) {}
         virtual ~ComponentBase() {}

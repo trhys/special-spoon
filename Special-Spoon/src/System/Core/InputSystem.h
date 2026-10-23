@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Core.h"
 #include "System/System.h"
 
 #include "SFML/Window/Event.hpp"
@@ -8,7 +9,7 @@ namespace Spoon
 {
     class EntityManager;
 
-    class InputSystem : public ISystem
+    class SPOON_API InputSystem : public ISystem
     {
     public:
         InputSystem() : ISystem::ISystem(Name) {}

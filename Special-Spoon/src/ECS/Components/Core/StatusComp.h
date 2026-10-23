@@ -4,7 +4,7 @@
 
 namespace Spoon
 {
-    struct StatusComp : public ComponentBase<StatusComp>
+    struct SPOON_API StatusComp : public ComponentBase<StatusComp>
     {
         StatusComp(bool isActive = true, StateType currentState = StateType{BuiltInStates::Idle})
             : ComponentBase::ComponentBase(Name), is_Active(isActive), m_CurrentState(currentState) {}

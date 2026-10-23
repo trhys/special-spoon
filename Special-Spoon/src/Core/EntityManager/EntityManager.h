@@ -13,7 +13,7 @@
 
 namespace Spoon
 {
-    class EntityManager
+    class SPOON_API EntityManager
     {
     public:
         EntityManager() { LoadDefaultArrays(); }

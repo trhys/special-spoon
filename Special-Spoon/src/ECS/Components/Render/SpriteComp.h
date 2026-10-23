@@ -7,7 +7,7 @@
 
 namespace Spoon
 {
-    struct SpriteComp : public ComponentBase<SpriteComp>, public IRenderable
+    struct SPOON_API SpriteComp : public ComponentBase<SpriteComp>, public IRenderable
     {
         SpriteComp(sf::Texture& asset = ResourceManager::Get().GetResource<sf::Texture>("empty"), const sf::IntRect& rect = sf::IntRect(),
             bool centered = false, const std::string& textureID = "empty")
