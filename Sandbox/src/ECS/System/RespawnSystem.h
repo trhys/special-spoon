@@ -82,6 +82,12 @@ public:
             HealthComp& health = healthArray.m_Components[healthArray.m_IdToIndex[id]];
             health.m_CurrentHealth = health.m_MaxHealth;
             health.isAlive = true;
+            // set temp invincibility frames on respawn
+            health.iFrameTimer = 3.0f;
+            health.isInvincible = true;
+            // clear requests
+            health.damageQueue = {};
+            health.healQueue = {};
         }
 
         if (transformArray.m_IdToIndex.count(id))

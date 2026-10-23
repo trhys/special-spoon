@@ -170,7 +170,6 @@ namespace Spoon
             if (transformArray.m_IdToIndex.count(ID))
             {
                 TransformComp& transComp = manager.GetComponent<TransformComp>(ID, TransformComp::Name);
-                auto& statusComp = manager.GetComponent<StatusComp>(ID, StatusComp::Name);
                 moveComp.m_ProposedDelta = moveComp.m_Velocity * tick.asSeconds();
                 if (!hasPhysics)
                 {
@@ -194,16 +193,21 @@ namespace Spoon
                         std::fmod(angle + 360.f, 360.f);
                     transComp.m_Facing.UpdateDirection();
 
-                    // set status from orientation
-                    statusComp.ApplyState(StateType{
-                        MovementSystemUtil::DirectionToStateID(transComp.m_Facing.m_Direction)
-                    });
-                    
+                    if (!statusArray.m_IdToIndex.count(ID))
+                    {
+                        SS_DEBUG_LOG("[MOVEMENT SYSTEM] Entity has no status component!");
+                    } else {
+                        auto& statusComp = manager.GetComponent<StatusComp>(ID, StatusComp::Name);
+                        // set status from orientation
+                        statusComp.ApplyState(StateType{
+                            MovementSystemUtil::DirectionToStateID(transComp.m_Facing.m_Direction)
+                        });
+                    }
                 }
             }
             else
             {
-                SS_DEBUG_LOG("[MOVEMENT SYSTEM] Entity has no transform!")
+                SS_DEBUG_LOG("[MOVEMENT SYSTEM] Entity has no transform!");
             }
         }
     }

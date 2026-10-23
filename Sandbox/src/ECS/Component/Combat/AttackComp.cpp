@@ -112,7 +112,7 @@ void AttackComp::DrawAttackEditor()
                 auto attacksDir = Attack::GetAttacksDirectory();
                 if (!attacksDir.empty())
                 {
-                    std::filesystem::remove(attacksDir / (selectedId + ".json"));
+                    Attack::DeleteAttack(selectedId);
                     selectedId.clear();
                     ImGui::CloseCurrentPopup();
                 }
@@ -132,13 +132,15 @@ void AttackComp::DrawAttackEditor()
 void AttackComp::OnReflect()
 {
     ImGui::Text("Attack id: %s", selectedAttack.c_str());
-    ImGui::BeginListBox("Selected Attack");
-    for (const auto& id : Attack::GetAttackIds())
+    if (ImGui::BeginListBox("Selected Attack"))
     {
-        if (ImGui::Selectable(id.c_str()))
-            selectedAttack = id;
+        for (const auto& id : Attack::GetAttackIds())
+        {
+            if (ImGui::Selectable(id.c_str()))
+                selectedAttack = id;
+        }
+        ImGui::EndListBox();
     }
-    ImGui::EndListBox();
 
     if (ImGui::Button("Open Editor"))
         showAttackEditor = true;

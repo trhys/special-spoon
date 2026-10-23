@@ -10,7 +10,11 @@ class Sandbox : public Spoon::Application
 public:
 
 	Sandbox(const Spoon::AppSpecifications& specs);
-	~Sandbox() {}
+
+	void OnProjectLoad() override {
+		init::InitializeAttackRegistry();
+	}
+	void OnSceneLoad() override {}
 };
 
 // load the engine's entity manager with custom
@@ -61,7 +65,6 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	SS_DEBUG_LOG("Loading custom systems")
 	RegisterCustomSystems();
 	SS_DEBUG_LOG("Custom systems loaded")
-	init::InitializeAttackRegistry();
 }
 
 // extern function to create the application instance

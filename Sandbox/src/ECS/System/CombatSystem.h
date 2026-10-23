@@ -19,7 +19,6 @@ public:
 
     void Update(sf::Time tick, Spoon::EntityManager& manager) override
     {
-        
         UpdateActiveHitboxes(tick);
 
         // fetch action queue and arrays
@@ -54,14 +53,13 @@ public:
                 && attackComp.cooldownTimer <= 0.0f
             ) 
             {
-                attackComp.isAttacking = true;
-                attackComp.currentPhase = AttackPhase::WindUp;
-                attackComp.phaseTimer = 0.0f;
-
                 const AttackDef* attackDef = AttackRegistry::Get().GetAttack(attackComp.selectedAttack);
                 if (attackDef) {
+                    attackComp.isAttacking = true;
+                    attackComp.currentPhase = AttackPhase::WindUp;
+                    attackComp.phaseTimer = 0.0f;
                     attackComp.cooldownTimer = attackDef->cooldownSec;
-                }                
+                }            
             }
 
             // apply phase changes
@@ -209,6 +207,8 @@ public:
             auto id = hurtboxArray.m_IndexToId[i];
 
             // sync hurtbox to entity transform
+            if (!transformArray.m_IdToIndex.count(id))
+                continue;
             auto& transComp = transformArray.m_Components[transformArray.m_IdToIndex[id]];
             hurtbox.box.position = transComp.GetPosition();
 

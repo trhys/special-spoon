@@ -37,6 +37,10 @@ namespace Spoon
 		void HandleQuit();
 		void FinalizeQuit();
 		void Shutdown();
+
+		// client side hooks
+		virtual void OnProjectLoad() {}
+		virtual void OnSceneLoad() {}
 		
 		static Application& Get() { return *s_Instance; }
 

@@ -64,6 +64,7 @@ namespace Spoon
         newProj.close();
 
         m_CurrentProject = std::make_unique<Project>(newProject);
+        Application::Get().OnProjectLoad();
         return m_CurrentProject.get();
     }
 
@@ -103,6 +104,7 @@ namespace Spoon
             fileStream.close();
             return nullptr;
         }
+        Application::Get().OnProjectLoad();
         return m_CurrentProject.get();
     }
 

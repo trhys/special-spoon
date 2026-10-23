@@ -118,6 +118,7 @@ namespace Attack {
         file << j.dump(4);
         comp.showErrorMessage = false;
         comp.editorErrorMessage.clear();
+        init::InitializeAttackRegistry(); // refreshes
     }
 
     void LoadAttack(const std::string& attackId, AttackComp& comp, AttackDef& attack)
@@ -148,11 +149,22 @@ namespace Attack {
         comp.showErrorMessage = false;
         comp.editorErrorMessage.clear();
     }
+
+    void DeleteAttack(const std::string& attackId)
+    {
+        auto attacksDir = GetAttacksDirectory();
+        if (attacksDir.empty())
+            return;
+        
+        std::filesystem::remove(attacksDir / (attackId + ".json"));
+        init::InitializeAttackRegistry(); // refreshes
+    }
 }
 
 namespace init {
     void InitializeAttackRegistry()
     {
+        AttackRegistry::Get().ClearRegister();
         SS_DEBUG_LOG("[INIT] Initializing Attack Registry");
         // register each attack from the project->presets/attacks
         // directory into the static attack registry

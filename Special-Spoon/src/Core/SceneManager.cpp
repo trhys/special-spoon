@@ -220,6 +220,7 @@ namespace Spoon
         }
         SS_DEBUG_LOG("Successfully loaded scene: " + id)
 
+        Application::Get().OnSceneLoad();
         return &m_SceneManifest[id];
     }
 
@@ -300,6 +301,7 @@ namespace Spoon
 
         SS_DEBUG_LOG("Registered new scene --- ID: " + id)
 
+        Application::Get().OnSceneLoad();
         return &m_SceneManifest[newID];
     }
 

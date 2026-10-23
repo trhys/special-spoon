@@ -15,6 +15,7 @@ namespace Attack {
     bool ValidateAttack(const AttackDef& attack, AttackComp& comp);
     void SaveAttack(const AttackDef& attack, AttackComp& comp);
     void LoadAttack(const std::string& id, AttackComp& comp, AttackDef& attack);
+    void DeleteAttack(const std::string& id);
 }
 
 // run at app construction to initialize 

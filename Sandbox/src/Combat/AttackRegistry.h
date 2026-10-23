@@ -13,6 +13,8 @@ public:
 
     void RegisterAttack(const AttackDef& attack)
     {
+        if (GetAttack(attack.id))
+            return;
         m_Attacks.push_back(attack);
     }
 
@@ -21,14 +23,19 @@ public:
         return m_Attacks;
     }
 
-    const AttackDef* GetAttack(const std::string& name) const
+    const AttackDef* GetAttack(const std::string& id) const
     {
         for (const auto& attack : m_Attacks)
         {
-            if (attack.name == name)
+            if (attack.id == id)
                 return &attack;
         }
         return nullptr;
+    }
+
+    void ClearRegister()
+    {
+        m_Attacks.clear();
     }
 
 private:
