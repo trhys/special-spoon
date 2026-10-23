@@ -5,24 +5,16 @@ target_link_libraries(Sandbox PRIVATE Special-Spoon)
 target_sources(Sandbox
     PRIVATE
         src/Sandbox.cpp
-        src/ECS/Component/Combat/AttackComp.cpp
+        src/Combat/AttackSerialization.cpp
 
     PUBLIC
         FILE_SET HEADERS
         FILES
-            src/ECS/Component/Combat/AttackComp.h
-            src/ECS/Component/Combat/HealthComp.h
-            src/ECS/Component/Combat/Attack.h
-            src/ECS/Component/Combat/HurtboxComp.h
-            src/ECS/Component/Combat/AttackRegistery.h
-            src/ECS/Component/Combat/RespawnComp.h
-        
-            src/ECS/System/CombatSystem.h
-            src/ECS/System/HealthSystem.h
-
-            src/ECS/CustomCompLoader.h
-            src/ECS/CustomSystemLoader.h
+            src/Combat/AttackRegistry.h
+            src/Combat/AttackSerialization.h
 )
+
+add_subdirectory(src/ECS)
 
 target_include_directories(Sandbox PRIVATE 
 ${CMAKE_CURRENT_SOURCE_DIR}/src

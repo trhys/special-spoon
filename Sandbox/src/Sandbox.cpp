@@ -3,6 +3,7 @@
 
 #include "ECS/CustomCompLoader.h"
 #include "ECS/CustomSystemLoader.h"
+#include "Combat/AttackSerialization.h"
 
 class Sandbox : public Spoon::Application
 {
@@ -25,17 +26,19 @@ void LoadCustomArrays(Spoon::EntityManager& manager)
 // register custom actions
 void LoadCustomActions()
 {
-	Spoon::ActionRegistry::Get().RegisterCustom("Attack");
-	Spoon::ActionRegistry::Get().RegisterCustom("Die");
-	Spoon::ActionRegistry::Get().RegisterCustom("Respawn");
+	auto& actionRegistry = Spoon::ActionRegistry::Get();
+	actionRegistry.RegisterCustom("Attack");
+	actionRegistry.RegisterCustom("Die");
+	actionRegistry.RegisterCustom("Respawn");
 }
 
 // register custom states
 void LoadCustomStates()
 {
-	Spoon::StateRegistry::Get().RegisterCustom("Attacking");
-	Spoon::StateRegistry::Get().RegisterCustom("Dead");
-	Spoon::StateRegistry::Get().RegisterCustom("Respawning");
+	auto& stateRegistry = Spoon::StateRegistry::Get();
+	stateRegistry.RegisterCustom("Attacking");
+	stateRegistry.RegisterCustom("Dead");
+	stateRegistry.RegisterCustom("Respawning");
 }
 
 // Sandbox application constructor and initialization
@@ -58,6 +61,7 @@ Sandbox::Sandbox(const Spoon::AppSpecifications& specs)
 	SS_DEBUG_LOG("Loading custom systems")
 	RegisterCustomSystems();
 	SS_DEBUG_LOG("Custom systems loaded")
+	init::InitializeAttackRegistry();
 }
 
 // extern function to create the application instance

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Attack.h"
+#include "ECS/Component/Combat/Attack.h"
 
 class AttackRegistry
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Spoon.h"
-#include "ECS/Component/Combat/AttackRegistery.h"
+#include "Combat/AttackRegistry.h"
 
 class CombatSystem : public Spoon::ISystem
 {
