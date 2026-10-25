@@ -32,7 +32,7 @@ namespace Spoon
     };
 
     template<typename COMP>
-    struct SPOON_API ComponentBase : public Component
+    struct ComponentBase : public Component
     {
         ComponentBase(std::string id) : m_Name(id) {}
         virtual ~ComponentBase() {}

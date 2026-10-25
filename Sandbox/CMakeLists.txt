@@ -41,6 +41,15 @@ add_custom_target(copy_data ALL
 
 add_dependencies(Sandbox copy_assets)
 
+# Copy all runtime DLL dependencies (SFML, Special-Spoon, etc.) next to Sandbox.exe
+add_custom_command(TARGET Sandbox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_RUNTIME_DLLS:Sandbox>
+        $<TARGET_FILE_DIR:Sandbox>
+    COMMAND_EXPAND_LISTS
+    COMMENT "Copying runtime DLL dependencies to $<TARGET_FILE_DIR:Sandbox>"
+)
+
 include(GNUInstallDirs)
 
 install(

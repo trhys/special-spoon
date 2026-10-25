@@ -27,6 +27,7 @@ ${CMAKE_CURRENT_BINARY_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
 # SFML
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Build SFML as shared libraries" FORCE)
 add_subdirectory(vendor/SFML)
 
 target_link_libraries(Special-Spoon PUBLIC

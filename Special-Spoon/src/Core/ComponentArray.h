@@ -7,7 +7,7 @@
 namespace Spoon
 {
     struct UUID;
-    class IComponentArray 
+    class SPOON_API IComponentArray 
     {
     public:
         IComponentArray(std::string id) : m_DisplayName(id) {}

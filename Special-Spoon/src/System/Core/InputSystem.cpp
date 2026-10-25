@@ -50,7 +50,7 @@ namespace Spoon
 
 				// gate mouse press events by whether the mouse is over the active viewport
                 bool mousePressed = false;
-                if (m_ViewportHovered)
+                if (button && m_ViewportHovered)
                     mousePressed = std::any_of(m_MouseButtonPressEvents.begin(), m_MouseButtonPressEvents.end(),
                         [button](const auto& event) { return event.button == *button; });
 
