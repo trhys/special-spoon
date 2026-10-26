@@ -97,6 +97,11 @@ namespace Spoon
           return m_Systems; 
         }
 
+        const std::vector<std::unique_ptr<ISystem>>& GetSystems() const
+        {
+            return m_Systems;
+        }
+
     private:
         // does topological sorting of systems based on their dependencies
         void ScheduleSystems()

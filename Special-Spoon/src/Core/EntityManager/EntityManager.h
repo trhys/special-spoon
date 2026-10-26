@@ -13,10 +13,16 @@
 
 namespace Spoon
 {
-    class EntityManager
+    class SPOON_API EntityManager
     {
     public:
         EntityManager() { LoadDefaultArrays(); }
+
+        // EntityManager owns unique_ptr<IComponentArray> entries, so it cannot be copied.
+        EntityManager(const EntityManager&) = delete;
+        EntityManager& operator=(const EntityManager&) = delete;
+        EntityManager(EntityManager&&) noexcept = default;
+        EntityManager& operator=(EntityManager&&) noexcept = default;
 
     public:
         // ===========================================

@@ -122,7 +122,9 @@ namespace Spoon
         j = json{
             {"ID", v.ID},
             {"TextureID", v.textureID},
-            {"SpriteCords", v.spriteCords}
+            {"SpriteCords", v.spriteCords},
+            {"Framerate", v.frameRate},
+            {"Looping", v.isLooping}
         };
     }
 
@@ -131,6 +133,8 @@ namespace Spoon
         v.ID = j.at("ID").get<std::string>();
         v.textureID = j.at("TextureID").get<std::string>();
         v.spriteCords = j.at("SpriteCords").get<std::vector<SpriteCords>>();
+        v.frameRate = j.value("Framerate", 0.1f);
+        v.isLooping = j.value("Looping", true);
     }
 
 	// Registry types

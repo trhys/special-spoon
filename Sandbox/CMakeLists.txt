@@ -3,24 +3,11 @@ add_executable(Sandbox)
 target_link_libraries(Sandbox PRIVATE Special-Spoon)
 
 target_sources(Sandbox
-    PRIVATE
-        src/Sandbox.cpp
-
-
     PUBLIC
-        FILE_SET HEADERS
-        FILES
-            # src/ECS/Component/PatrolComp.h
-
-            # src/ECS/Component/Combat/AttackComp.h
-            # src/ECS/Component/Combat/Hit-Hurt.h
-            #
-            # src/ECS/System/PatrolSystem.h
-            # src/ECS/System/AttackSystem.h
-
-            src/ECS/CustomCompLoader.h
-            src/ECS/CustomSystemLoader.h
+        src/Sandbox.h
 )
+
+add_subdirectory(src/client)
 
 target_include_directories(Sandbox PRIVATE 
 ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -46,6 +33,17 @@ add_custom_target(copy_data ALL
     COMMENT "Copying data files to ${DATA_DESTINATION_DIR}")
 
 add_dependencies(Sandbox copy_assets)
+
+# Copy all runtime DLL dependencies (SFML, Special-Spoon, etc.) next to Sandbox.exe
+if(WIN32)
+    add_custom_command(TARGET Sandbox POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:Sandbox>
+            $<TARGET_FILE_DIR:Sandbox>
+        COMMAND_EXPAND_LISTS
+        COMMENT "Copying runtime DLL dependencies to $<TARGET_FILE_DIR:Sandbox>"
+    )
+endif()
 
 include(GNUInstallDirs)
 

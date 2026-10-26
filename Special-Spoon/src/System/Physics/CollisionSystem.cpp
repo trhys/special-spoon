@@ -1,10 +1,55 @@
 #include "CollisionSystem.h"
 
-// copilot has super janked my system so im doing a big refactor by hand here
-// i will be commenting a lot to keep track of where exactly i am in this
-// enormous bowl of spaghetti
-
 namespace Spoon {
+
+	int CollisionSystem::PushOverlay(
+		sf::RenderTarget& target, 
+		sf::RenderStates states, 
+		const WorldProjection& projection
+	)
+	{
+		if (!m_ShowOverlay)
+			return 0;
+
+		int drawCalls = 0;
+		
+		auto& manager = Application::Get().GetEntityManager();
+		auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
+		// const WorldProjection& projection = Application::Get().GetRenderer().GetProjection();
+		for (auto& id : manager.GetAllEntitiesWithComponent<ColliderComp>(ColliderComp::Name))
+		{
+			if (!transformArray.m_IdToIndex.count(id))
+				continue;
+
+			auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+			auto& collider = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
+			const sf::FloatRect bounds = collider.GetWorldBounds(transform.GetPosition());
+
+			// bounds are logical collider data. they are only projected
+			// for display - an AABB becomes a diamond/parallelogram on a
+			// projected map, but the solver still tests the logical AABB.
+			if (collider.GetType() == ColliderType::AABB)
+			{
+				const sf::Vector2f corners[4] = {
+					bounds.position,
+					{ bounds.position.x + bounds.size.x, bounds.position.y },
+					bounds.position + bounds.size,
+					{ bounds.position.x, bounds.position.y + bounds.size.y }
+				};
+
+				sf::ConvexShape shape(4);
+				for (std::size_t i = 0; i < 4; ++i)
+					shape.setPoint(i, projection.LogicalToScreen(corners[i]));
+				shape.setFillColor(sf::Color::Transparent);
+				shape.setOutlineColor(sf::Color::Yellow);
+				shape.setOutlineThickness(projection.IsActive() ? 2.0f : 10.0f);
+				target.draw(shape, states);
+				++drawCalls;
+			}
+		} 
+		return drawCalls;
+	}
+
 	void CollisionSystem::Update(sf::Time tick, EntityManager& manager)
 	{
 		// get delta time for the frame

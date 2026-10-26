@@ -68,11 +68,18 @@ namespace Spoon
 
         void Update(sf::Time tick, EntityManager& manager) override;
 
+        int PushOverlay(
+            sf::RenderTarget& target, 
+            sf::RenderStates states, 
+            const WorldProjection& projection
+        ) override;
+
         void OnReflect() override
         {
             ImGui::SeparatorText("Collision Bounds");
             ImGui::SliderFloat("Bounds X:", &m_Config.bounds.x, 0.0f, 4000.0f);
             ImGui::SliderFloat("Bounds Y:", &m_Config.bounds.y, 0.0f, 4000.0f);
+            ImGui::Checkbox("Show Overlay", &m_ShowOverlay);
         }        
 
     private:
@@ -83,6 +90,8 @@ namespace Spoon
         static constexpr int k_MaxDiscreteIterations = 4;
 
     private:
+        bool m_ShowOverlay = false;
+
         bool IsZeroVector(const sf::Vector2f& value);
         sf::FloatRect ComputeBoundsAt(const BodyRuntime& body, const sf::Vector2f& position);
         sf::FloatRect ComputeSweptBounds(const sf::FloatRect& start, const sf::Vector2f& delta);

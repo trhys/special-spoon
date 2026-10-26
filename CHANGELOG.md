@@ -160,3 +160,48 @@ note: Previous changes will not be in this log. This record will keep all change
 - Allowed Save and Exit to close the application when no scene is active.
 
 ---
+
+## 10/26/26:
+
+### Build / Project Structure
+- Refactored Sandbox into a client-driven structure by moving customization points into `Sandbox/src/client` and introducing `Sandbox.h` hooks for `OnProjectLoad()` and `OnSceneLoad()`.
+- Removed legacy Sandbox ECS sample components/systems/loaders that were no longer part of the main engine scope.
+- Updated Sandbox build configuration to include the new client module and copy runtime DLL dependencies on Windows after build.
+
+### Engine / Rendering / Systems
+- Refactored overlay rendering from editor-managed overlay commands to system-managed overlays via `ISystem::PushOverlay(...)`.
+- Added collision-system overlay rendering and runtime toggle support for collider debug visualization.
+- Updated renderer signatures and call sites to pass `SystemManager` so systems can contribute overlay draws.
+- Added `SystemManager::GetSystems() const` accessor to support read-only system iteration in rendering paths.
+
+### State / Movement / Input
+- Simplified status-state flow by removing action-to-state mappings from `StatusComp` and introducing per-frame resolution (`resolvedThisFrame`) with `ApplyState(...)`.
+- Updated `MovementSystem` to set facing/state from transform-facing direction and apply movement-driven state updates through `StatusComp`.
+- Updated `StateSystem` to handle quit actions directly from the queue and reset unresolved states to idle each frame.
+- Added `ActionQueue::HasAction(...)` utility for direct queue queries by entity/action.
+- Fixed mouse press gating in `InputSystem` to require both viewport hover and a valid button event before treating a mouse input as pressed.
+
+### Editor / Project Management
+- Added project deletion workflow in editor UI (menu action, file dialog selection, confirmation modal, and surfaced error messaging).
+- Added `ProjectManager::DeleteProject(...)` with safety checks against symlinks, invalid project targets, open-project deletion, and out-of-scope path deletion.
+- Added application-level callbacks on project/scene lifecycle transitions (`OnProjectLoad()`, `OnSceneLoad()`), invoked from project and scene management paths.
+- Removed legacy editor overlay menu/hooks now superseded by system-based overlays.
+
+### Serialization / Data / Components
+- Updated animation resource loading in scene import to deserialize `AnimationData` directly.
+- Extended animation JSON support to include frame rate and looping defaults in `JsonTypeDefs`.
+- Updated status serialization to persist `m_CurrentState` and load it with idle fallback when missing.
+- Simplified animation component loading to construct then assign deserialized data.
+- Added/updated default blueprints to include status-aware presets and introduced a `Player` default blueprint.
+
+### Build / Linkage / Exports
+- Hardened shared-library symbol visibility by enabling hidden visibility defaults and expanding `SPOON_API` coverage across exported engine types.
+- Consolidated ImGui/Imgui-SFML/ImGuiFileDialog compilation into the engine target to reduce symbol/link conflicts.
+- Updated vendor submodule reference for `Imgui-sfml`.
+
+### Misc
+- Added transform-facing debug display in inspector-facing reflection output.
+- Normalized include/use patterns and removed obsolete files tied to deprecated overlay and sandbox legacy paths.
+
+---
+

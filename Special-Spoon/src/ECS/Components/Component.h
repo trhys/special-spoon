@@ -14,7 +14,7 @@ namespace Spoon
 {
     class EntityManager;
     
-    class Component
+    class SPOON_API Component
     {
     public:
         Component() {}

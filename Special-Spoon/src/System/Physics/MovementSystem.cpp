@@ -4,8 +4,6 @@
 #include <cmath>
 #include <Core/ActionQueue.h>
 
-
-
 namespace Spoon
 {
 	namespace MovementSystemUtil
@@ -97,6 +95,7 @@ namespace Spoon
         auto& movementArray = manager.GetArray<MovementComp>(MovementComp::Name);
         auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
         auto& physicsArray = manager.GetArray<PhysicsComp>(PhysicsComp::Name);
+        auto& statusArray = manager.GetArray<StatusComp>(StatusComp::Name);
         std::unordered_map<UUID, std::vector<const Action*>> movementActions;
 
         for (const auto& action : queue.m_Queue)
@@ -190,16 +189,26 @@ namespace Spoon
                     const float angle =
                         std::atan2(facingVector.y, facingVector.x) *
                         180.f / 3.14159265f;
-                    moveComp.m_Facing.m_Angle =
+                    transComp.m_Facing.m_Angle =
                         std::fmod(angle + 360.f, 360.f);
-                    moveComp.m_Facing.UpdateDirection();
+                    transComp.m_Facing.UpdateDirection();
+
+                    if (!statusArray.m_IdToIndex.count(ID))
+                    {
+                        SS_DEBUG_LOG("[MOVEMENT SYSTEM] Entity has no status component!");
+                    } else {
+                        auto& statusComp = manager.GetComponent<StatusComp>(ID, StatusComp::Name);
+                        // set status from orientation
+                        statusComp.ApplyState(StateType{
+                            MovementSystemUtil::DirectionToStateID(transComp.m_Facing.m_Direction)
+                        });
+                    }
                 }
             }
             else
             {
-                SS_DEBUG_LOG("[MOVEMENT SYSTEM] Entity has no transform!")
+                SS_DEBUG_LOG("[MOVEMENT SYSTEM] Entity has no transform!");
             }
-
         }
     }
 }

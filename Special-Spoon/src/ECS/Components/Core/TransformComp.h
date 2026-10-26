@@ -6,6 +6,38 @@
 
 namespace Spoon
 {
+    // orientation of the entity, represented by an 
+    // angle and a cardinal/diagonal direction
+    struct FacingDirection
+    {
+      float m_Angle = 0.0f; // In degrees
+      const char* m_Direction = "Down";
+
+      void UpdateDirection()
+      {
+          // Normalize angle to [0, 360)
+          float normalizedAngle = std::fmod(m_Angle + 360.f, 360.f);
+
+          // Map to 8 directions: each occupies 45 degrees, centered on cardinal/diagonal
+          if (normalizedAngle >= 337.5f || normalizedAngle < 22.5f)
+              m_Direction = "Right";
+          else if (normalizedAngle < 67.5f)
+              m_Direction = "DownRight";
+          else if (normalizedAngle < 112.5f)
+              m_Direction = "Down";
+          else if (normalizedAngle < 157.5f)
+              m_Direction = "DownLeft";
+          else if (normalizedAngle < 202.5f)
+              m_Direction = "Left";
+          else if (normalizedAngle < 247.5f)
+              m_Direction = "UpLeft";
+          else if (normalizedAngle < 292.5f)
+              m_Direction = "Up";
+          else
+              m_Direction = "UpRight";
+        }
+    };
+
     struct TransformComp : public ComponentBase<TransformComp>
     {
         TransformComp(sf::Vector2f pos = sf::Vector2f(0.f, 0.f), sf::Vector2f scale = sf::Vector2f(1.f, 1.f), float rotation = 0.f) : ComponentBase::ComponentBase(Name), iPos(pos), iScale(scale), iRot(rotation)
@@ -18,6 +50,8 @@ namespace Spoon
 
         // Core members
         static constexpr const char* Name = "Transform";
+
+        FacingDirection m_Facing;
         sf::Transformable m_Transform;
         sf::Vector2f m_CurrentPosition;
 
@@ -35,7 +69,8 @@ namespace Spoon
         const sf::Transform& GetTransform() { return m_Transform.getTransform(); }
         sf::Vector2f GetPosition() { return m_Transform.getPosition(); }
         sf::Vector2f GetScale() { return m_Transform.getScale(); }
-
+        const char* GetFacingDirection() { return m_Facing.m_Direction; }
+        
         // Core setters
         void SetPosition(sf::Vector2f pos) { m_Transform.setPosition(pos); }
         void SetScale(sf::Vector2f scale) { m_Transform.setScale(scale); }

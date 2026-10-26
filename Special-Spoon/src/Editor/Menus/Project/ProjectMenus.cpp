@@ -31,7 +31,7 @@ namespace Spoon
             ImGui::SameLine();
             if (ImGui::Button("Open"))
             {
-                OpenFileDialog();
+                OpenFileDialog(DialogOption::Open);
                 m_ShowNoProjectLoaded = false;
                 ImGui::CloseCurrentPopup();
             }
@@ -99,11 +99,22 @@ namespace Spoon
         }
     }
 
-    void Editor::OpenFileDialog()
+    void Editor::OpenFileDialog(DialogOption option)
     {
-        ImGuiFileDialog::Instance()->OpenDialog(
-            "LoadProject", "Choose Project File", ".json");
-		m_ShowLoadProject = true;
+        switch (option) {
+            case DialogOption::Open :
+                ImGuiFileDialog::Instance()->OpenDialog(
+                    "LoadProject", "Choose Project File", ".json");
+                m_ShowLoadProject = true;
+                break;
+            case DialogOption::Delete :
+                ImGuiFileDialog::Instance()->OpenDialog(
+                    "DeleteProject", "Choose Project to Delete", ".json");
+                m_ProjectToDelete.clear();
+                m_DeleteProjectError.clear();
+                m_ShowDeleteProject = true;
+                break;
+        }
     }
 
     void Editor::DrawLoadProject()
@@ -132,6 +143,69 @@ namespace Spoon
         }
         dialog->Close();
         m_ShowLoadProject = false;
+    }
+
+    void Editor::DrawDeleteProject()
+    {
+        if (m_ShowDeleteProject)
+        {
+            auto* dialog = ImGuiFileDialog::Instance();
+            if (!dialog->Display("DeleteProject"))
+                return;
+
+            if (dialog->IsOk())
+                m_ProjectToDelete = dialog->GetFilePathName();
+            dialog->Close();
+            m_ShowDeleteProject = false;
+        }
+
+        if (m_ProjectToDelete.empty())
+            return;
+
+        if (!ImGui::IsPopupOpen("Delete Project Permanently"))
+            ImGui::OpenPopup("Delete Project Permanently");
+
+        CenterNext();
+        if (ImGui::BeginPopupModal("Delete Project Permanently", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            const auto directory = m_ProjectToDelete.parent_path() / m_ProjectToDelete.stem();
+            ImGui::TextUnformatted("Permanently delete this project and all files in its directory?");
+            ImGui::TextWrapped("Project file: %s", m_ProjectToDelete.string().c_str());
+            ImGui::TextWrapped("Directory: %s", directory.string().c_str());
+            ImGui::TextUnformatted("This cannot be undone.");
+            if (!m_DeleteProjectError.empty())
+                ErrorMessage(m_DeleteProjectError);
+            ImGui::Separator();
+
+            if (ImGui::Button("Delete Permanently"))
+            {
+                try
+                {
+                    m_Services.projectManager->DeleteProject(m_ProjectToDelete);
+                    m_ProjectToDelete.clear();
+                    m_DeleteProjectError.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+                catch (const nlohmann::json::exception& error)
+                {
+                    m_DeleteProjectError = std::string("Invalid project JSON: ") + error.what();
+                    SS_DEBUG_LOG(m_DeleteProjectError)
+                }
+                catch (const std::runtime_error& error)
+                {
+                    m_DeleteProjectError = error.what();
+                    SS_DEBUG_LOG(m_DeleteProjectError)
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                m_ProjectToDelete.clear();
+                m_DeleteProjectError.clear();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
     }
 
     void Editor::DrawLoadProjectError()

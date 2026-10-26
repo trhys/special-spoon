@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Overlay.h"
 #include "Services.h"
 
 #include "Tools/AnimationTool.h"
@@ -8,6 +7,9 @@
 #include "Tools/TextureRectTool.h"
 
 #include "SFML/Graphics.hpp"
+
+#include <filesystem>
+#include <string>
 
 namespace Spoon
 {
@@ -17,6 +19,11 @@ namespace Spoon
     struct SceneData;
     struct Viewport;
     
+    // file dialog options
+    enum class DialogOption {
+        Open, Delete
+    };
+
     class Editor
     {
     public:
@@ -38,10 +45,6 @@ namespace Spoon
             const ImVec2& imageMax
         );
 
-        // pushes overlay tools to the renderer pipeline
-        // see Overlay.h for more details.
-        void BuildOverlay();
-
         // helper for ray picked entities in viewport
         // todo: maybe this should be somewhere else
         void PickEntity(UUID id);
@@ -57,9 +60,10 @@ namespace Spoon
         void NoProjectLoaded();
         void DrawCreateProjectPrompt();
         void DrawCreateProjectError();
-        void OpenFileDialog();
+        void OpenFileDialog(DialogOption option);
         void DrawLoadProject();
         void DrawLoadProjectError();
+        void DrawDeleteProject();
 		void DrawConfigProject();
 		void DrawOverwriteProjectPrompt();
         void DrawSaveProjectError();
@@ -117,7 +121,6 @@ namespace Spoon
         SceneData* m_ActiveScene = nullptr;
         bool m_Play = false;
 
-        Overlay             m_Overlay;
         TextureRectTool     m_TextureRectTool;
         AnimationTool       m_AnimationTool;
         TileMapTool         m_TileMapTool;
@@ -136,6 +139,9 @@ namespace Spoon
         bool m_ShowCreateProjectError = false;      // flag for showing the create project error
 		bool m_ShowLoadProject = false;             // flag for loading a project
         bool m_ShowLoadProjectError = false;        // flag for showing the load project error
+        bool m_ShowDeleteProject = false;             // flag for deleting a project
+        std::filesystem::path m_ProjectToDelete;
+        std::string m_DeleteProjectError;
         bool m_ShowConfigProject = false;           // flag for configuring a project
 		bool m_ShowOverwriteProjectPrompt = false;  // flag for showing the overwrite project prompt
 		bool m_ShowSaveProjectError = false;        // flag for showing the save project error

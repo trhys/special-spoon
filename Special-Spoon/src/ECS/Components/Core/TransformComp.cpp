@@ -35,6 +35,10 @@ namespace Spoon
             iRot = degrees;
             m_Transform.setRotation(sf::degrees(degrees));
         }
+
+        ImGui::SeparatorText("Facing Direction");
+        ImGui::Text("Angle: %.2f", m_Facing.m_Angle);
+        ImGui::Text("Direction: %s", m_Facing.m_Direction);
     }
 
     void TransformComp::MoveTransform(const sf::Vector2f& worldMouse, bool beginDrag)

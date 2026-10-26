@@ -2,7 +2,10 @@
 #include "Core/Application.h"
 
 namespace Spoon {
-    void Renderer::Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager)
+    void Renderer::Render(sf::RenderTarget& target,
+		 sf::RenderStates states, 
+		 EntityManager& manager,
+		 const SystemManager& systemManager)
     {
         // Renderer metrics
         m_DrawCalls = 0;
@@ -33,14 +36,15 @@ namespace Spoon {
         }
 
         // Editor overlay
-        for (auto& cmd : m_OverlayCommands)
+		int overlayDrawCalls = 0;
+        for (const auto& system : systemManager.GetSystems())
         {
-            cmd.draw(target, states);
-            m_DrawCalls++;
+            overlayDrawCalls += 
+			system->PushOverlay(target, states, m_Projection);
         }
-        ClearOverlay();
 
         // Return metrics
+		m_DrawCalls += overlayDrawCalls;
         m_DrawTime = static_cast<float>(drawClock.getElapsedTime().asMilliseconds());
     }
 

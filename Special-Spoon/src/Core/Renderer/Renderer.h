@@ -2,19 +2,24 @@
 
 #include "Renderable.h"
 #include "WorldProjection.h"
-#include "Core/EntityManager/EntityManager.h"
 #include "Core/Project/Policies.h"
 #include "ECS/ECS.h"
-#include "Editor/Overlay.h"
 
 #include "SFML/Graphics.hpp"
 
 namespace Spoon
 {
+    class EntityManager;
+    class SystemManager;
+
     class Renderer
     {
     public:
-        void Render(sf::RenderTarget& target, sf::RenderStates states, EntityManager& manager);
+        void Render(sf::RenderTarget& target, 
+            sf::RenderStates states, 
+            EntityManager& manager,
+            const SystemManager& systemManager
+        );
         void DepthSort();
         void BuildRenderables(EntityManager& manager);
 
@@ -30,16 +35,10 @@ namespace Spoon
         int GetDrawCalls() const { return m_DrawCalls; }
         float GetDrawTime() const { return m_DrawTime; }
 
-        // Editor overlay
-        void PushOverlay(OverlayCmd cmd) { m_OverlayCommands.push_back(std::move(cmd)); }
-        void ClearOverlay() { m_OverlayCommands.clear(); }
-
     private:
         // iterable renderables for the current frame
         std::vector<Renderable> m_WorldRenderables;
         std::vector<Renderable> m_ScreenRenderables;
-        // editor overlays
-        std::vector<OverlayCmd> m_OverlayCommands;
 
         // helper struct for managing projection state
         WorldProjection m_Projection;

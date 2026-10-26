@@ -32,7 +32,9 @@ namespace Spoon
     void LoadAnimationComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto acomp = comp.get<AnimationComp>();
-        manager.MakeComponent<AnimationComp>(id, AnimationComp::Name, acomp.iAnimationID, acomp.m_AnimationMap);
+        manager.MakeComponent<AnimationComp>(id, AnimationComp::Name);
+        auto& loaded = manager.GetComponent<AnimationComp>(id, AnimationComp::Name);
+        loaded = acomp;
     }
 
     void LoadStatusComponent(EntityManager& manager, UUID id, const json& comp)

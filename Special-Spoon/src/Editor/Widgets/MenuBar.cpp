@@ -9,8 +9,9 @@ namespace Spoon
             if (ImGui::BeginMenu("File"))
             {
                 if (ImGui::MenuItem("New Project")) m_ShowCreateProjectPrompt = !m_ShowCreateProjectPrompt;
-                if (ImGui::MenuItem("Open Project")) OpenFileDialog();
+                if (ImGui::MenuItem("Open Project")) OpenFileDialog(DialogOption::Open);
                 if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) m_ShowOverwriteProjectPrompt = true;
+                if (ImGui::MenuItem("Delete Project")) OpenFileDialog(DialogOption::Delete);
                 ImGui::Separator();
                 if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) m_ShowConfigProject = !m_ShowConfigProject;
                 if (ImGui::MenuItem("Exit")) RequestQuit();
@@ -62,13 +63,6 @@ namespace Spoon
                 ImGui::SeparatorText("Global Prompt Settings");
                 ImGui::Checkbox("Confirm component delete", &m_SkipDeleteComponentPrompt);
                 ImGui::Checkbox("Confirm project save", &m_SkipOverwriteSavePrompt);
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Overlay"))
-            {
-                ImGui::Checkbox("Show Entity Selector", &m_Overlay.selectedEntityOverlay);
-                ImGui::Checkbox("Show Colliders", &m_Overlay.colliderOverlay);
                 ImGui::EndMenu();
             }
 

@@ -1,11 +1,12 @@
 #pragma once
 
+#include "Core/Core.h"
 #include <cstdint>
 #include <string>
 
 namespace Spoon
 {
-    struct UUID
+    struct SPOON_API UUID
     {
         UUID() :ID(0) {}
         UUID(std::uint64_t id) : ID(id) {}
