@@ -16,8 +16,6 @@ namespace Spoon
         int width;
         int height;
     };
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteCords, x, y, width, height)
     
     struct AnimationData
     {
@@ -27,6 +25,4 @@ namespace Spoon
         float frameRate = 0.1f;
         bool isLooping = true;
     };
-
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AnimationData, ID, textureID, spriteCords)
 }

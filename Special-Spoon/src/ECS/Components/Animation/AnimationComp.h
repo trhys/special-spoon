@@ -9,11 +9,6 @@ namespace Spoon
     struct AnimationComp : public ComponentBase<AnimationComp>
     {
         AnimationComp() : ComponentBase::ComponentBase(Name) {}
-        AnimationComp(std::string animationID, std::unordered_map<std::string, std::string> animationMap = {}) 
-            : ComponentBase::ComponentBase(Name), iAnimationID(animationID), m_AnimationMap(animationMap)
-        {
-            m_AnimationData = ResourceManager::Get().GetAnimationData(animationID);
-        }
 
         static constexpr const char* Name = "Animation";
 

@@ -123,20 +123,7 @@ namespace Spoon
             // Load animation data
             for(auto& resource : resourceData["Animations"])
             {
-                AnimationData animData;
-                animData.ID = resource["ID"].get<std::string>();
-                animData.textureID = resource["TextureID"].get<std::string>();
-                for(auto& cord : resource["SpriteCords"])
-                {
-                    SpriteCords sc;
-                    sc.x = cord["x"].get<int>();
-                    sc.y = cord["y"].get<int>();
-                    sc.width = cord["width"].get<int>();
-                    sc.height = cord["height"].get<int>();
-                    animData.spriteCords.push_back(sc);
-                }
-                if(resource.contains("FrameRate")) { animData.frameRate = resource["FrameRate"].get<float>(); }
-                if(resource.contains("Looping")) { animData.isLooping = resource["Looping"].get<bool>(); }
+                AnimationData animData = resource.get<AnimationData>();
                 ResourceManager::Get().LoadAnimationData(animData.ID, animData);
                 SS_DEBUG_LOG("Loaded animation data resource with ID: " +  animData.ID)
             }
