@@ -56,7 +56,7 @@ namespace Spoon
         bool m_HasPendingBuild = false;
 
         int m_ActiveLayerIndex = 0;
-        int m_SelectedTileId = 1;
+        int m_SelectedTileId = -1;
         bool m_EraseMode = false;
 
         float m_PaletteScale = 1.0f;

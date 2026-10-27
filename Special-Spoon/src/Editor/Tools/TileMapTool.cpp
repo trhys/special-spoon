@@ -94,7 +94,7 @@ namespace Spoon
                 const std::size_t expectedCount =
                     static_cast<std::size_t>(tileMap.m_MapSize.x) *
                     static_cast<std::size_t>(tileMap.m_MapSize.y);
-                layer.tiles.resize(expectedCount, Tile{0});
+                layer.tiles.resize(expectedCount, Tile{-1});
             }
 
             tileMap.m_Layers.push_back(std::move(layer));
@@ -110,7 +110,7 @@ namespace Spoon
                 static_cast<int>(tileMap.m_Layers.size()) - 1
             );
 
-        const int tileCount = tileMap.m_Atlas.columns * tileMap.m_Atlas.rows;
+        const int tileCount = tileMap.m_Atlas.grid.Count();
         if (tileCount <= 0)
             m_SelectedTileId = 0;
         else if (m_SelectedTileId != 0)
@@ -133,7 +133,7 @@ namespace Spoon
 
         tileMap.m_Layers[static_cast<std::size_t>(layerIndex)].tiles.resize(
             expectedCount,
-            Tile{0}
+            Tile{-1}
         );
         tileMap.BuildMap();
         tileMap.m_RebuildCollision = true;
@@ -173,7 +173,7 @@ namespace Spoon
                 TileLayer layer;
                 layer.name = m_NewLayerName;
                 if (validMapSize)
-                    layer.tiles.resize(expectedCount, Tile{0});
+                    layer.tiles.resize(expectedCount, Tile{-1});
 
                 tileMap.m_Layers.push_back(std::move(layer));
                 m_ActiveLayerIndex =
@@ -339,7 +339,7 @@ namespace Spoon
 
         if (ImGui::Button("Select Empty"))
         {
-            m_SelectedTileId = 0;
+            m_SelectedTileId = -1;
             m_EraseMode = true;
         }
 
@@ -348,10 +348,7 @@ namespace Spoon
         ImGui::SliderFloat("Palette Scale", &m_PaletteScale, 0.25f, 8.0f, "%.2fx");
 
         if (tileMap.m_Atlas.texture == nullptr ||
-            tileMap.m_Atlas.tileWidth <= 0 ||
-            tileMap.m_Atlas.tileHeight <= 0 ||
-            tileMap.m_Atlas.columns <= 0 ||
-            tileMap.m_Atlas.rows <= 0)
+            !tileMap.m_Atlas.grid.IsValid())
         {
             ImGui::BeginDisabled();
             ImGui::TextWrapped("Configure a valid tile atlas to use the palette.");
@@ -393,19 +390,22 @@ namespace Spoon
             const bool projected = ToolProjection(tileMap).IsActive();
             const sf::Vector2f cell = tileMap.GetCellSize();
 
-            const int tileCount = tileMap.m_Atlas.columns * tileMap.m_Atlas.rows;
-            for (int tileIndex = 1; tileIndex <= tileCount; ++tileIndex)
+            const int tileCount = tileMap.m_Atlas.grid.Count();
+            for (int tileIndex = 0; tileIndex < tileCount; ++tileIndex)
             {
-                const sf::IntRect atlasRect =
-                    tileMap.GetAtlasRect(static_cast<uint16_t>(tileIndex));
+                const std::optional<sf::IntRect> atlasRect =
+                    tileMap.m_Atlas.grid.RectForIndex(tileIndex);
+
+                if (!atlasRect.has_value())
+                    continue;
 
                 const ImVec2 rectMin(
-                    imageMin.x + atlasRect.position.x * m_PaletteScale,
-                    imageMin.y + atlasRect.position.y * m_PaletteScale
+                    imageMin.x + atlasRect->position.x * m_PaletteScale,
+                    imageMin.y + atlasRect->position.y * m_PaletteScale
                 );
                 const ImVec2 rectMax(
-                    rectMin.x + atlasRect.size.x * m_PaletteScale,
-                    rectMin.y + atlasRect.size.y * m_PaletteScale
+                    rectMin.x + atlasRect->size.x * m_PaletteScale,
+                    rectMin.y + atlasRect->size.y * m_PaletteScale
                 );
 
                 const bool isSelected =
@@ -415,8 +415,8 @@ namespace Spoon
                     : IM_COL32(255, 255, 255, 100);
                 const float outlineThickness = isSelected ? 2.0f : 1.0f;
 
-                const float localX = localClick.x - static_cast<float>(atlasRect.position.x);
-                const float localY = localClick.y - static_cast<float>(atlasRect.position.y);
+                const float localX = localClick.x - static_cast<float>(atlasRect->position.x);
+                const float localY = localClick.y - static_cast<float>(atlasRect->position.y);
                 bool insideSlot = false;
 
                 if (projected)
@@ -443,7 +443,7 @@ namespace Spoon
                     // Diamond hit test in normalized local slot space.
                     const float halfW = cell.x * 0.5f;
                     const float halfH = cell.y * 0.5f;
-                    const float centerX = static_cast<float>(atlasRect.size.x) * 0.5f;
+                    const float centerX = static_cast<float>(atlasRect->size.x) * 0.5f;
                     insideSlot =
                         halfW > 0.0f &&
                         halfH > 0.0f &&
@@ -462,9 +462,9 @@ namespace Spoon
 
                     insideSlot =
                         localX >= 0.0f &&
-                        localX < static_cast<float>(atlasRect.size.x) &&
+                        localX < static_cast<float>(atlasRect->size.x) &&
                         localY >= 0.0f &&
-                        localY < static_cast<float>(atlasRect.size.y);
+                        localY < static_cast<float>(atlasRect->size.y);
                 }
 
                 if (clicked && insideSlot)
@@ -475,7 +475,7 @@ namespace Spoon
 
             drawList->PopClipRect();
 
-            if (selectedFromClick > 0)
+            if (selectedFromClick >= 0)
             {
                 m_SelectedTileId = selectedFromClick;
                 m_EraseMode = false;
@@ -492,8 +492,7 @@ namespace Spoon
     ) const
     {
         if (!m_TileMap ||
-            m_TileMap->m_Atlas.tileWidth <= 0 ||
-            m_TileMap->m_Atlas.tileHeight <= 0 ||
+            !m_TileMap->m_Atlas.grid.IsValid() ||
             m_TileMap->m_MapSize.x <= 0 ||
             m_TileMap->m_MapSize.y <= 0)
         {
@@ -547,7 +546,7 @@ namespace Spoon
         };
 
         const bool erasePreview =
-            m_EraseMode || m_SelectedTileId == 0 ||
+            m_EraseMode || m_SelectedTileId == -1 ||
             ImGui::IsMouseDown(ImGuiMouseButton_Right);
         const ImU32 fillColor = erasePreview
             ? IM_COL32(220, 80, 80, 80)
