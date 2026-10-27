@@ -112,9 +112,9 @@ namespace Spoon
 
         const int tileCount = tileMap.m_Atlas.grid.Count();
         if (tileCount <= 0)
-            m_SelectedTileId = 0;
-        else if (m_SelectedTileId != 0)
-            m_SelectedTileId = std::clamp(m_SelectedTileId, 1, tileCount);
+            m_SelectedTileId = -1;
+        else if (m_SelectedTileId != -1)
+            m_SelectedTileId = std::clamp(m_SelectedTileId, 0, tileCount - 1);
     }
 
     void TileMapTool::ResizeLayerData(TileMapComp& tileMap, int layerIndex)

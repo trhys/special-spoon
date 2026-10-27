@@ -320,7 +320,7 @@ namespace Spoon {
 
 	bool TileMapComp::SetTile(int id, int x, int y, int layerIndex)
 	{
-		if (id == -1 || !m_Atlas.grid.IsValid() || id < 0 ||  id >= m_Atlas.grid.Count())
+		if (!m_Atlas.grid.IsValid() || id >= m_Atlas.grid.Count())
 		    return false;
 		
 	    if (m_MapSize.x <= 0 || m_MapSize.y <= 0)
@@ -355,7 +355,7 @@ namespace Spoon {
 
 	bool TileMapComp::FillLayer(int layerIndex, int tileId)
 	{
-		if (tileId == -1 || !m_Atlas.grid.IsValid() || tileId < 0 || tileId >= m_Atlas.grid.Count())
+		if (!m_Atlas.grid.IsValid() || tileId >= m_Atlas.grid.Count())
 		    return false;
 		
 		if (layerIndex < 0 || static_cast<std::size_t>(layerIndex) >= m_Layers.size())
