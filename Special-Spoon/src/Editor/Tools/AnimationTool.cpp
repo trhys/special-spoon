@@ -154,9 +154,7 @@ namespace Spoon
                     ImGui::EndDisabled();
 
                     ImGui::SameLine();
-                    ImGui::BeginDisabled(currentData->spriteCords.empty());
-
-                    ImGui::BeginDisabled(!selectionValid);
+                    ImGui::BeginDisabled(currentData->spriteCords.empty() || !selectionValid);
                     if (ImGui::Button("Update Frame"))
                     {
                         SpriteCords cords(
@@ -186,6 +184,7 @@ namespace Spoon
                     }
 
                     ImGui::SameLine();
+                    ImGui::BeginDisabled(currentData->spriteCords.empty());
                     if (ImGui::Button("Delete Frame"))
                     {
                         auto& cords = currentData->spriteCords;
