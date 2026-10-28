@@ -126,13 +126,14 @@ namespace Spoon
 
                         ImGui::Image(m_EditorVP.target);
                         ImVec2 viewportPos = ImGui::GetItemRectMin();
+                        bool viewportHovered = ImGui::IsItemHovered();
                         
                         // grid slicer controls
                         DrawGridSlicerTools();
                         DrawGridOverlay(viewportPos);
 
                         // handle viewport interactions
-                        HandleViewport(viewportPos);
+                        HandleViewport(viewportPos, viewportHovered);
                     }
                     ImGui::EndChild();
 
@@ -381,9 +382,9 @@ namespace Spoon
         m_EditorVP.target = sf::RenderTexture();
     }
 
-    void AnimationTool::HandleViewport(const ImVec2& viewportPos)
+    void AnimationTool::HandleViewport(const ImVec2& viewportPos, bool hovered)
     {
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && hovered)
         {
             ImVec2 mousePos = ImGui::GetIO().MousePos;
             sf::Vector2i relativeMouse(

@@ -70,7 +70,7 @@ namespace Spoon
     private:
         void DrawGridSlicerTools();
         void DrawGridOverlay(const ImVec2& viewportPos);
-        void HandleViewport(const ImVec2& viewportPos);
+        void HandleViewport(const ImVec2& viewportPos, bool hovered);
         bool CanUseGrid() const;
         void ApplyGridSelectionToRect();
         void AddGridRangeFrames();
