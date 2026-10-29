@@ -40,6 +40,7 @@ namespace Spoon
         std::string m_Ext;
         bool isDir;
         std::string m_Size;
+        AssetNode* m_Parent = nullptr;
         std::vector<std::unique_ptr<AssetNode>> m_Children;
     };
 
@@ -55,6 +56,7 @@ namespace Spoon
         std::string CheckExtension(std::filesystem::path p);
         ResourceType GetType(const std::string& ext);
         void ScanAssets(const std::filesystem::path& rootDir);
+        void RefreshAssets();
 
         template<typename RESOURCE>
         void LoadResource(const std::string id, const std::filesystem::path file_path);

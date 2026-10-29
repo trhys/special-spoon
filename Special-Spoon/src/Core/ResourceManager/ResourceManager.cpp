@@ -78,6 +78,8 @@ namespace Spoon
                 entry.is_directory()
             );
 
+            newNode->m_Parent = parentNode;
+
             AssetNode* newNodePtr = newNode.get();
 
             parentNode->m_Children.push_back(std::move(newNode));
@@ -86,6 +88,14 @@ namespace Spoon
             {
                 dirMap[entryP] = newNodePtr;
             }
+        }
+    }
+
+    void ResourceManager::RefreshAssets()
+    {
+        if (fileRoot)
+        {
+            ScanAssets(fileRoot->m_Path);
         }
     }
 
