@@ -55,6 +55,7 @@ namespace Spoon
         
         // util
         void DrawMetrics(sf::Time& tick); // called from inspector
+        void DrawLogger();
 
         // Project menus
         void NoProjectLoaded();
@@ -168,6 +169,7 @@ namespace Spoon
 
         // utility widget flags
         bool m_ShowMetrics = false;
+        bool m_ShowLogger = false;
 
     private:
         // config flags

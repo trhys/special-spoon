@@ -51,6 +51,12 @@ namespace Spoon
             {
                 m_EarlyMessageBuffer.push_back(message);
             }
+            m_EditorMessageBuffer.push_back(message);
+        }
+
+        std::vector<std::string> GetEditorMessages() const
+        {
+            return m_EditorMessageBuffer;
         }
 
     private:
@@ -60,5 +66,8 @@ namespace Spoon
 
         std::ofstream m_LogFile;
         std::vector<std::string> m_EarlyMessageBuffer;
+
+        // editor messages
+        std::vector<std::string> m_EditorMessageBuffer;
     };
 }
