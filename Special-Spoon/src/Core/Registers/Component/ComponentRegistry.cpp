@@ -86,8 +86,14 @@ namespace Spoon
     {
         auto collider = comp.get<ColliderComp>();
         auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
+        auto& spriteArray = manager.GetArray<SpriteComp>(SpriteComp::Name);
         if (!colliderArray.m_IdToIndex.count(id))
             manager.MakeComponent<ColliderComp>(id, ColliderComp::Name);
+        if (spriteArray.m_IdToIndex.count(id))
+        {
+            auto& sprite = spriteArray.m_Components[spriteArray.m_IdToIndex.at(id)];
+            collider.SetAABBSize(sprite.GetBoundingBox().size);
+        }
 
         auto& loaded = manager.GetComponent<ColliderComp>(id, ColliderComp::Name);
         loaded = collider;
