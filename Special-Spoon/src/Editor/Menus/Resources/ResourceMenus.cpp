@@ -42,17 +42,16 @@ namespace Spoon
 
         // draw table of current dir
         ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedSame;
-        if (ImGui::BeginTable("ResourceTable", 12, flags))
+        if (ImGui::BeginTable("ResourceTable", 6, flags))
         {   
             // iterate node children
             int column = 0;
             for (auto& child : workingDir->m_Children)
             {
-                // keep to a maximum of 6 columns per row
                 // todo: make a config
                 ImGui::TableNextColumn();
                 column++;
-                if (column >= 12)
+                if (column >= 6)
                 {
                     ImGui::TableNextRow();
                     column = 0;
@@ -63,7 +62,7 @@ namespace Spoon
                 if (child->isDir)
                 {
                     sf::Texture& folder = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-folder-icon");
-                    ImGui::ImageButton(name, folder.getNativeHandle(), ImVec2(64, 64));
+                    ImGui::ImageButton(name, folder.getNativeHandle(), ImVec2(128, 128));
                     if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                     {
                         workingDir = child.get();
@@ -79,7 +78,7 @@ namespace Spoon
                         case ResourceType::Texture:
                         {
                             sf::Texture& texture = ResourceManager::Get().GetThumbnail(child.get());
-                            if (ImGui::ImageButton(name, texture.getNativeHandle(), ImVec2(64, 64)))
+                            if (ImGui::ImageButton(name, texture.getNativeHandle(), ImVec2(128, 128)))
                             {
                                 // handle texture click
                             }
@@ -95,7 +94,7 @@ namespace Spoon
                         }
                         case ResourceType::Sound:
                             // todo: replace nullptr with actual sound icon
-                            if (ImGui::ImageButton(name, nullptr, ImVec2(64, 64)))
+                            if (ImGui::ImageButton(name, nullptr, ImVec2(128, 128)))
                             {
                                 // handle sound click
                             }
@@ -111,13 +110,14 @@ namespace Spoon
                             break;
                         default:
                             // todo: replace nullptr with actual default icon
-                            if (ImGui::ImageButton(name, nullptr, ImVec2(64, 64)))
+                            if (ImGui::ImageButton(name, nullptr, ImVec2(128, 128)))
                             {
                                 // handle default click
                             }
                             break;
                     }
                 }
+                ImGui::TextWrapped(child->m_Name.c_str());
             }
             ImGui::EndTable();
         }
