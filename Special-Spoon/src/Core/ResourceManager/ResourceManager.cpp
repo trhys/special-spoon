@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include "Utils/Macros.h"
 #include "SystemFont/Jersey_10/SystemFont.h"
 
 namespace Spoon
@@ -79,6 +80,11 @@ namespace Spoon
             );
 
             newNode->m_Parent = parentNode;
+            // generate font preview if it's a font file
+            if (newNode->m_Ext == "Font file")
+                GenerateFontPreview(newNode.get());
+
+            // move into parent
             parentNode->m_Children.push_back(std::move(newNode));
             
             if (entry.is_directory())
@@ -141,12 +147,26 @@ namespace Spoon
         {
             throw std::runtime_error("Failed to load system font!");
         }
-        GenerateFontPreview("Default", font);
+        sf::Text text(font, "Default", 24);
+        std::string name = "Default";
+        SetFontPreview(text, name);
     }
 
-    void ResourceManager::GenerateFontPreview(const std::string& id, sf::Font& font)
+    void ResourceManager::GenerateFontPreview(AssetNode* node)
     {
-        sf::Text text(font, id, 24);
+        sf::Font font;
+        if (!font.openFromFile(node->m_Path))
+        {
+            SS_DEBUG_LOG("[FONT] Failed to open font from path: " + node->m_Path.string());
+            return;
+        }
+        sf::Text text(font, node->m_Name, 24);
+        std::string name = node->m_Name;
+        SetFontPreview(text, name);
+    }
+
+    void ResourceManager::SetFontPreview(sf::Text& text, std::string& name)
+    {
         sf::FloatRect bounds = text.getLocalBounds();
         float padding = 10.0f;
         sf::Vector2u size = {
@@ -168,11 +188,11 @@ namespace Spoon
         fontViewer.clear(sf::Color::Transparent);
         fontViewer.draw(text);
         fontViewer.display();
-        m_FontPreviews[id] = fontViewer.getTexture();
-        m_FontPreviews[id].setSmooth(true);
+        m_FontPreviews[name] = fontViewer.getTexture();
+        m_FontPreviews[name].setSmooth(true);
     }
 
-    sf::Texture& ResourceManager::GetFontPreview(const std::string& id)
+    sf::Texture& ResourceManager::GetFontPreview(std::string id)
     {
         auto found = m_FontPreviews.find(id);
         if (found != m_FontPreviews.end())

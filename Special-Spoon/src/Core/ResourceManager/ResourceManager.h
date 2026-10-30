@@ -84,8 +84,9 @@ namespace Spoon
         void InitDefaultAssets();
         void ClearAllResources(bool clearDefaults = false);
 
-        void GenerateFontPreview(const std::string& id, sf::Font& font);
-        sf::Texture& GetFontPreview(const std::string& id);
+        void GenerateFontPreview(AssetNode* node);
+        void SetFontPreview(sf::Text& text, std::string& name);
+        sf::Texture& GetFontPreview(std::string id);
         
         AssetNode* GetAssetsDir() { return fileRoot.get(); }
 

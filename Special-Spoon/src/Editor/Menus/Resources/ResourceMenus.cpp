@@ -108,6 +108,23 @@ namespace Spoon
                                 ImGui::EndPopup();
                             }
                             break;
+                        case ResourceType::Font:
+                        {
+                            sf::Texture& preview = ResourceManager::Get().GetFontPreview(child->m_Name);
+                            if (ImGui::ImageButton(name, preview.getNativeHandle(), ImVec2(128, 128)))
+                            {
+                                // handle font click
+                            }
+                            if (ImGui::BeginPopupContextItem(child->m_Name.c_str()))
+                            {
+                                if (ImGui::MenuItem("Add to Scene"))
+                                    ResourceManager::Get().LoadResource<sf::Font>(child->m_Name, child->m_Path);
+                                if (ImGui::MenuItem("Remove from Scene"))
+                                    ResourceManager::Get().RemoveResource<sf::Font>(child->m_Name);
+                                ImGui::EndPopup();
+                            }
+                            break;
+                        }
                         default:
                             // todo: replace nullptr with actual default icon
                             if (ImGui::ImageButton(name, nullptr, ImVec2(128, 128)))
