@@ -102,6 +102,7 @@ namespace Spoon
         m_FontPreviews.clear();
         m_Thumbnails.clear();
         ScanAssets(rootDir);
+        InitDefaultFontPreview();
     }
 
     void ResourceManager::LoadAnimationData(const std::string& id, const AnimationData& animationData)
@@ -150,7 +151,12 @@ namespace Spoon
         {
             throw std::runtime_error("Failed to load system font!");
         }
-        sf::Text text(font, "Default", 24);
+        InitDefaultFontPreview();
+    }
+
+    void ResourceManager::InitDefaultFontPreview()
+    {
+        sf::Text text(m_Fonts.at("Default"), "Default", 24);
         std::string name = "Default";
         SetFontPreview(text, name);
     }

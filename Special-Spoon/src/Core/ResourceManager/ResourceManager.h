@@ -82,6 +82,7 @@ namespace Spoon
         const std::unordered_map<std::string, AnimationData>& GetAnimations() { return m_Animations; }
 
         void InitDefaultAssets();
+        void InitDefaultFontPreview();
         void ClearAllResources(bool clearDefaults = false);
 
         void GenerateFontPreview(AssetNode* node);
