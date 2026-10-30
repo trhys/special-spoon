@@ -1,4 +1,6 @@
 #include "AnimationTool.h"
+#include "ECS/Components/Animation/AnimationData.h"
+#include "Editor/Utils/Windows.h"
 
 #include <algorithm>
 #include <cmath>
@@ -9,9 +11,7 @@ namespace Spoon
     {
         static bool OpenAnimation = false;
 
-        // Always center this window when appearing
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        CenterNext();
         if (ImGui::Begin("Animation Tool", &m_isOpen, ImGuiWindowFlags_MenuBar))
         {
             if (ImGui::BeginMenuBar())
@@ -63,9 +63,7 @@ namespace Spoon
             }
             if (createModal) CreateNew();
 
-            // Always center this window when appearing
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            CenterNext();
             if (ImGui::BeginPopupModal("Open Animation Data"))
             {
                 for (auto& [id, animation] : ResourceManager::Get().GetAnimations())
@@ -128,33 +126,14 @@ namespace Spoon
 
                         ImGui::Image(m_EditorVP.target);
                         ImVec2 viewportPos = ImGui::GetItemRectMin();
+                        bool viewportHovered = ImGui::IsItemHovered();
                         
-                        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && ImGui::IsItemHovered())
-                        {
-                            ImVec2 mousePos = ImGui::GetIO().MousePos;
-                            sf::Vector2i relativeMouse(
-                                static_cast<int>(mousePos.x - viewportPos.x),
-                                static_cast<int>(mousePos.y - viewportPos.y)
-                            );
-                            sf::Vector2f worldMouse = m_EditorVP.target.mapPixelToCoords(relativeMouse);
-                            sf::Vector2f localMouse = editorSprite.m_Sprite.getInverseTransform().transformPoint(worldMouse);
-                            const sf::Vector2i sheetSize = editorSprite.m_Sprite.getTextureRect().size;
-                            sf::Vector2i textureMouse(
-                                static_cast<int>(std::floor(std::clamp(localMouse.x, 0.0f, static_cast<float>(sheetSize.x)))),
-                                static_cast<int>(std::floor(std::clamp(localMouse.y, 0.0f, static_cast<float>(sheetSize.y))))
-                            );
-                            if (!m_Dragging)
-                            {
-                                m_DragStart = textureMouse;
-                                m_Dragging = true;
-                            }
-                            rect.position.x = std::min(m_DragStart.x, textureMouse.x);
-                            rect.position.y = std::min(m_DragStart.y, textureMouse.y);
-                            rect.size.x = std::abs(textureMouse.x - m_DragStart.x);
-                            rect.size.y = std::abs(textureMouse.y - m_DragStart.y);
-                        }
-                        else m_Dragging = false;
+                        // grid slicer controls
+                        DrawGridSlicerTools();
+                        DrawGridOverlay(viewportPos);
 
+                        // handle viewport interactions
+                        HandleViewport(viewportPos, viewportHovered);
                     }
                     ImGui::EndChild();
 
@@ -176,9 +155,7 @@ namespace Spoon
                     ImGui::EndDisabled();
 
                     ImGui::SameLine();
-                    ImGui::BeginDisabled(currentData->spriteCords.empty());
-
-                    ImGui::BeginDisabled(!selectionValid);
+                    ImGui::BeginDisabled(currentData->spriteCords.empty() || !selectionValid);
                     if (ImGui::Button("Update Frame"))
                     {
                         SpriteCords cords(
@@ -193,7 +170,22 @@ namespace Spoon
                         ImGui::SetTooltip("Updates current selected frame index");
                     ImGui::EndDisabled();
 
+                    // grid range addition
+                    if (toolMode == ToolMode::Grid)
+                    {
+                        ImGui::SameLine();
+                        ImGui::BeginDisabled(!CanUseGrid());
+                        if (ImGui::Button("Add Grid Range"))
+                        {
+                            AddGridRangeFrames();
+                        }
+                        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled) && showToolTips)
+                            ImGui::SetTooltip("Adds multiple frames starting from Grid Start for Grid Count.");
+                        ImGui::EndDisabled();
+                    }
+
                     ImGui::SameLine();
+                    ImGui::BeginDisabled(currentData->spriteCords.empty());
                     if (ImGui::Button("Delete Frame"))
                     {
                         auto& cords = currentData->spriteCords;
@@ -300,9 +292,7 @@ namespace Spoon
 
         static char newAnimDatabuf[64];
 
-        // Always center this window when appearing
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        CenterNext();
         if (ImGui::BeginPopupModal(selectorPopup))
         {
             ImGui::Text("Select a texture");
@@ -390,5 +380,206 @@ namespace Spoon
         currentData = nullptr;
         m_MainVP.target = sf::RenderTexture();
         m_EditorVP.target = sf::RenderTexture();
+    }
+
+    void AnimationTool::HandleViewport(const ImVec2& viewportPos, bool hovered)
+    {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && hovered)
+        {
+            ImVec2 mousePos = ImGui::GetIO().MousePos;
+            sf::Vector2i relativeMouse(
+                static_cast<int>(mousePos.x - viewportPos.x),
+                static_cast<int>(mousePos.y - viewportPos.y)
+            );
+            sf::Vector2f worldMouse = m_EditorVP.target.mapPixelToCoords(relativeMouse);
+            sf::Vector2f localMouse = editorSprite.m_Sprite.getInverseTransform().transformPoint(worldMouse);
+            if (toolMode == ToolMode::Grid)
+            {      
+                sf::Vector2i texMouse(
+                    static_cast<int>(std::floor(localMouse.x)),
+                    static_cast<int>(std::floor(localMouse.y))
+                );
+
+                const std::optional<int> idx = m_Grid.IndexAtPixel(texMouse);
+                if (idx.has_value())
+                {
+                    m_SelectedGridIndex = *idx;
+                    ApplyGridSelectionToRect();
+                }
+            }
+            else
+            {
+                const sf::Vector2i sheetSize = editorSprite.m_Sprite.getTextureRect().size;
+                sf::Vector2i textureMouse(
+                    static_cast<int>(std::floor(std::clamp(localMouse.x, 0.0f, static_cast<float>(sheetSize.x)))),
+                    static_cast<int>(std::floor(std::clamp(localMouse.y, 0.0f, static_cast<float>(sheetSize.y))))
+                );
+                if (!m_Dragging)
+                {
+                    m_DragStart = textureMouse;
+                    m_Dragging = true;
+                }
+                rect.position.x = std::min(m_DragStart.x, textureMouse.x);
+                rect.position.y = std::min(m_DragStart.y, textureMouse.y);
+                rect.size.x = std::abs(textureMouse.x - m_DragStart.x);
+                rect.size.y = std::abs(textureMouse.y - m_DragStart.y);
+            }
+        }
+        else m_Dragging = false;
+    }
+
+    // grid slicer tools
+    void AnimationTool::DrawGridSlicerTools()
+    {
+        if (!currentData) return;
+
+        ImGui::SeparatorText("Frame Selection");
+        int mode = static_cast<int>(toolMode);
+        ImGui::RadioButton("Manual Rect", &mode, static_cast<int>(ToolMode::Manual)); ImGui::SameLine();
+        ImGui::RadioButton("Grid Slice", &mode, static_cast<int>(ToolMode::Grid));
+        toolMode = static_cast<ToolMode>(mode);
+
+        if (toolMode != ToolMode::Grid) return;
+
+        ImGui::SeparatorText("Grid Slice Settings");
+        ImGui::InputInt("Cell W", &m_Grid.cell.x);
+        ImGui::InputInt("Cell H", &m_Grid.cell.y);
+        ImGui::InputInt("Columns", &m_Grid.size.x);
+        ImGui::InputInt("Rows", &m_Grid.size.y);
+        ImGui::InputInt("Margin", &m_Grid.margin);
+        ImGui::InputInt("Spacing", &m_Grid.spacing);
+        ImGui::Checkbox("Show Grid Overlay", &m_ShowGridOverlay);
+        ImGui::Checkbox("Clamp Rects To Texture", &m_GridClampToTexture);
+        ImGui::Checkbox("Append Row-Major", &m_GridAppendRowMajor);
+
+        if (m_Grid.cell.x < 0) m_Grid.cell.x = 0;
+        if (m_Grid.cell.y < 0) m_Grid.cell.y = 0;
+        if (m_Grid.size.x < 0) m_Grid.size.x = 0;
+        if (m_Grid.size.y < 0) m_Grid.size.y = 0;
+        if (m_Grid.margin < 0) m_Grid.margin = 0;
+        if (m_Grid.spacing < 0) m_Grid.spacing = 0;
+
+        const int count = m_Grid.Count();
+        if (count <= 0)
+        {
+            m_SelectedGridIndex = -1;
+            m_GridRangeStart = 0;
+            m_GridRangeCount = 1;
+        }
+        else
+        {
+            if (m_SelectedGridIndex >= count) m_SelectedGridIndex = count - 1;
+            if (m_SelectedGridIndex < -1) m_SelectedGridIndex = -1;
+            m_GridRangeStart = std::clamp(m_GridRangeStart, 0, count - 1);
+            m_GridRangeCount = std::clamp(m_GridRangeCount, 1, count);
+        }
+
+        ImGui::InputInt("Grid Start", &m_GridRangeStart);
+        ImGui::InputInt("Grid Count", &m_GridRangeCount);
+        if (count > 0)
+        {
+            m_GridRangeStart = std::clamp(m_GridRangeStart, 0, count - 1);
+            m_GridRangeCount = std::clamp(m_GridRangeCount, 1, count - m_GridRangeStart);
+        }
+    }
+
+    void AnimationTool::DrawGridOverlay(const ImVec2& viewportPos)
+    {
+        if (toolMode != ToolMode::Grid) return;
+        if (!CanUseGrid()) return;
+
+        const sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(currentData->textureID);
+        const sf::Vector2u texSize = texture.getSize();
+
+        if (!m_ShowGridOverlay) return;
+
+        // Draw overlay in texture-local space onto the editor target.
+        sf::RectangleShape outline;
+        outline.setFillColor(sf::Color::Transparent);
+        outline.setOutlineThickness(1.0f);
+
+        for (int i = 0; i < m_Grid.Count(); ++i)
+        {
+            const std::optional<sf::IntRect> r = m_Grid.RectForIndex(i);
+            if (!r.has_value()) continue;
+
+            sf::IntRect rectPx = *r;
+            if (m_GridClampToTexture)
+            {
+                const int maxW = static_cast<int>(texSize.x);
+                const int maxH = static_cast<int>(texSize.y);
+                if (rectPx.position.x >= maxW || rectPx.position.y >= maxH) continue;
+                rectPx.size.x = std::max(0, std::min(rectPx.size.x, maxW - rectPx.position.x));
+                rectPx.size.y = std::max(0, std::min(rectPx.size.y, maxH - rectPx.position.y));
+                if (rectPx.size.x <= 0 || rectPx.size.y <= 0) continue;
+            }
+
+            outline.setPosition({ static_cast<float>(rectPx.position.x), static_cast<float>(rectPx.position.y) });
+            outline.setSize({ static_cast<float>(rectPx.size.x), static_cast<float>(rectPx.size.y) });
+            outline.setOutlineColor(i == m_SelectedGridIndex ? sf::Color::Yellow : sf::Color(255, 255, 255, 90));
+            sf::RenderStates states;
+            states.transform = editorSprite.m_Sprite.getTransform();
+            m_EditorVP.target.draw(outline, states);
+        }
+    }
+
+    bool AnimationTool::CanUseGrid() const
+    {
+        if (!currentData) return false;
+        if (!m_Grid.IsValid()) return false;
+        if (!ResourceManager::Get().GetTextures().count(currentData->textureID)) return false;
+        return true;
+    }
+
+    void AnimationTool::ApplyGridSelectionToRect()
+    {
+        if (!CanUseGrid()) return;
+        if (m_SelectedGridIndex < 0) return;
+
+        const std::optional<sf::IntRect> r = m_Grid.RectForIndex(m_SelectedGridIndex);
+        if (!r.has_value()) return;
+
+        rect = *r;
+        if (m_GridClampToTexture && currentData)
+        {
+            const sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(currentData->textureID);
+            const sf::Vector2u texSize = texture.getSize();
+            rect.size.x = std::max(0, std::min(rect.size.x, static_cast<int>(texSize.x) - rect.position.x));
+            rect.size.y = std::max(0, std::min(rect.size.y, static_cast<int>(texSize.y) - rect.position.y));
+        }
+    }
+
+
+    void AnimationTool::AddGridRangeFrames()
+    {
+        if (!CanUseGrid()) return;
+        if (!currentData) return;
+
+        const sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(currentData->textureID);
+        const sf::Vector2u texSize = texture.getSize();
+        const int count = m_Grid.Count();
+        if (count <= 0) return;
+
+        const int start = std::clamp(m_GridRangeStart, 0, count - 1);
+        const int len = std::clamp(m_GridRangeCount, 1, count - start);
+
+        for (int i = 0; i < len; ++i)
+        {
+            const int idx = m_GridAppendRowMajor ? (start + i) : (start + i); // reserved hook if custom order added later
+            const std::optional<sf::IntRect> maybe = m_Grid.RectForIndex(idx);
+            if (!maybe.has_value()) continue;
+            sf::IntRect r = *maybe;
+
+            if (m_GridClampToTexture)
+            {
+                if (r.position.x >= static_cast<int>(texSize.x) || r.position.y >= static_cast<int>(texSize.y))
+                    continue;
+                r.size.x = std::max(0, std::min(r.size.x, static_cast<int>(texSize.x) - r.position.x));
+                r.size.y = std::max(0, std::min(r.size.y, static_cast<int>(texSize.y) - r.position.y));
+            }
+            if (r.size.x <= 0 || r.size.y <= 0) continue;
+
+            currentData->spriteCords.emplace_back(r.position.x, r.position.y, r.size.x, r.size.y);
+        }
     }
 }
