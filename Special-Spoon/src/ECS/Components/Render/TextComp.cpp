@@ -67,7 +67,7 @@ namespace Spoon {
           {
               const auto key = id == "Default"
                 ? std::string("Default")
-                : manager.GetFontPaths().at(id).string();
+                : manager.Normalize(manager.GetFontPaths().at(id)).string();
               ImGui::PushID(id.c_str());
               ImGui::Image(manager.GetFontPreview(key));
               ImGui::SameLine();
