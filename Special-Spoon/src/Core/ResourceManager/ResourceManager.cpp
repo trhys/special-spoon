@@ -170,7 +170,7 @@ namespace Spoon
             return;
         }
         sf::Text text(font, node->m_Name, 24);
-        std::string name = node->m_Name;
+        std::string name = node->m_Path.string();
         SetFontPreview(text, name);
     }
 

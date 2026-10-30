@@ -110,7 +110,7 @@ namespace Spoon
                             break;
                         case ResourceType::Font:
                         {
-                            sf::Texture& preview = ResourceManager::Get().GetFontPreview(child->m_Name);
+                            sf::Texture& preview = ResourceManager::Get().GetFontPreview(child->m_Path.string());
                             if (ImGui::ImageButton(name, preview.getNativeHandle(), ImVec2(128, 128)))
                             {
                                 // handle font click
