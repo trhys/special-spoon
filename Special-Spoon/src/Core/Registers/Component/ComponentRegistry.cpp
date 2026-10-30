@@ -85,6 +85,7 @@ namespace Spoon
     void LoadColliderComponent(EntityManager& manager, UUID id, const json& comp)
     {
         auto collider = comp.get<ColliderComp>();
+        
         auto& colliderArray = manager.GetArray<ColliderComp>(ColliderComp::Name);
         if (!colliderArray.m_IdToIndex.count(id))
             manager.MakeComponent<ColliderComp>(id, ColliderComp::Name);

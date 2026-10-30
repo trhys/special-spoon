@@ -201,27 +201,15 @@ namespace Spoon
                     ImGui::EndDisabled();
                     ImGui::PopID();
                 }
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
             
             if (ImGui::Button("Submit", ImVec2(120, 0)))
             {
                 for (const auto& [type, array] : arrays)
                 {
                     if (compSelections[type] && !array->HasEntity(m_SelectedEntity))
-                    {
                         m_Services.entityManager->GetCreators().at(type)(m_SelectedEntity);
-
-                        // todo: get this terrible block out of here
-                        // got to think of a better way
-                        auto& spriteArray = m_Services.entityManager->GetArray<SpriteComp>(SpriteComp::Name);
-                        if (type == ColliderComp::Name && spriteArray.m_IdToIndex.count(m_SelectedEntity))
-                        {
-                            ColliderComp& collider = m_Services.entityManager->GetComponent<ColliderComp>(m_SelectedEntity, ColliderComp::Name);
-                            SpriteComp& sprite = m_Services.entityManager->GetComponent<SpriteComp>(m_SelectedEntity, SpriteComp::Name);
-                            collider.SetAABBSize(sprite.GetBoundingBox().size);
-                        }
-                    }
                 }
                 
                 finish();

@@ -132,14 +132,9 @@ namespace Spoon
             std::filesystem::path pathObj(filePathName);
 
             // Load the project using the selected file path
-            Project* project = m_Services.projectManager->OpenFromFile(pathObj);
-            if (!project)
-            {
+            bool loaded = SetCurrentProject(m_Services.projectManager->OpenFromFile(pathObj));
+            if (!loaded)
                 m_ShowLoadProjectError = true; // set error flag
-            }
-            else {
-                SetCurrentProject(project);
-            }
         }
         dialog->Close();
         m_ShowLoadProject = false;

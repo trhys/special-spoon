@@ -18,7 +18,6 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
-            ImGui::BeginDisabled(m_CurrentProject == nullptr);
             if (ImGui::BeginMenu("Scene Manager"))
             {
                 if (ImGui::MenuItem("New Scene")) m_ShowNewScene = !m_ShowNewScene;
@@ -28,32 +27,24 @@ namespace Spoon
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Entity Manager"))
+            if (ImGui::BeginMenu("View"))
             {
-                if (ImGui::MenuItem("Entity View")) m_ShowEntityList = !m_ShowEntityList;
-                if (ImGui::MenuItem("Entity Blueprints")) m_ShowBlueprintsMenu = !m_ShowBlueprintsMenu;
+                if (ImGui::MenuItem("Entity List")) m_ShowEntityList = !m_ShowEntityList;
+                if (ImGui::MenuItem("Blueprints")) m_ShowBlueprintsMenu = !m_ShowBlueprintsMenu;
+                ImGui::SeparatorText("Resources");
+                if (ImGui::MenuItem("Resource Manager")) m_ShowResourcesMenu = !m_ShowResourcesMenu;
+                ImGui::SeparatorText("Systems");
+                if (ImGui::MenuItem("System Manager", nullptr, false, m_ActiveScene != nullptr)) m_ShowSystemsMenu = !m_ShowSystemsMenu;
+                ImGui::SeparatorText("Utilities");
+                if (ImGui::MenuItem("Log Console")) m_ShowLogger = !m_ShowLogger;
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Resource Manager"))
+            if (ImGui::BeginMenu("Tools"))
             {
-                if (ImGui::MenuItem("Resource Tree")) m_ShowResourcesMenu = !m_ShowResourcesMenu;
-                //if (ImGui::MenuItem("Load Resources")) LoadResources = !LoadResources;
+                if (ImGui::MenuItem("Animation Tool")) { m_AnimationTool.Open(nullptr); } 
                 ImGui::EndMenu();
             }
-
-            if (ImGui::BeginMenu("Animation Tool"))
-            {
-                if (ImGui::MenuItem("Open Animation Tool")) { m_AnimationTool.Open(nullptr); } 
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("System Manager"))
-            {
-                if (ImGui::MenuItem("Open System Manager", nullptr, false, m_ActiveScene != nullptr)) m_ShowSystemsMenu = !m_ShowSystemsMenu;
-                ImGui::EndMenu();
-            }
-            ImGui::EndDisabled();
 
             if (ImGui::BeginMenu("Settings"))
             {

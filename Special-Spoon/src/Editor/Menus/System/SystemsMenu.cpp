@@ -144,8 +144,8 @@ namespace Spoon
                 }
                 ImGui::EndListBox();
             }
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
 
         ISystem* selectedSystem = nullptr;
         auto& systems = m_Services.systemManager->GetSystems();

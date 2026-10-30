@@ -23,6 +23,7 @@ target_sources(Special-Spoon
         Widgets/Inspector.cpp
         Widgets/MenuBar.cpp
         Widgets/Metrics.cpp
+        Widgets/LogConsole.cpp
 )
 
 add_subdirectory(Menus)

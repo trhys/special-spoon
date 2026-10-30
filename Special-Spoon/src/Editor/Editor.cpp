@@ -177,6 +177,7 @@ namespace Spoon
 		// draw main dashboard
         DrawMainMenuBar();
         DrawInspector(tick);
+        DrawLogger();
 
         // draw project menus
         DrawCreateProjectPrompt();
@@ -268,6 +269,7 @@ namespace Spoon
             return false;
         SetActiveScene(nullptr);
         ResourceManager::Get().ScanAssets(project->assetsPath);
+        SetWorkingDir(ResourceManager::Get().GetAssetsDir());
         m_Services.sceneManager->LoadManifest(project->dataPath);
         m_Services.renderer->UpdateRenderConfig();
         m_CurrentProject = project;

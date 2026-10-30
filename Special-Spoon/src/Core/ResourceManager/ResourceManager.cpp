@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include "Utils/Macros.h"
 #include "SystemFont/Jersey_10/SystemFont.h"
 
 namespace Spoon
@@ -54,12 +55,12 @@ namespace Spoon
     void ResourceManager::ScanAssets(const std::filesystem::path& rootDir)
     {
         auto normalRoot = Normalize(rootDir);
-        fileRoot = std::make_unique<AssetNode>("Assets", normalRoot, "Root", true);
+        auto newRoot = std::make_unique<AssetNode>("Assets", normalRoot, "Root", true);
         
         std::map<std::filesystem::path, AssetNode*> dirMap;
-        dirMap[""] = fileRoot.get();
+        dirMap[""] = newRoot.get();
 
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(rootDir))
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(normalRoot))
         {
             auto entryP = std::filesystem::relative(entry.path(), normalRoot);
             auto parentP = entryP.parent_path();
@@ -78,15 +79,30 @@ namespace Spoon
                 entry.is_directory()
             );
 
-            AssetNode* newNodePtr = newNode.get();
+            newNode->m_Parent = parentNode;
+            // generate font preview if it's a font file
+            if (newNode->m_Ext == "Font file")
+                GenerateFontPreview(newNode.get());
 
+            // move into parent
             parentNode->m_Children.push_back(std::move(newNode));
             
             if (entry.is_directory())
             {
+                AssetNode* newNodePtr = parentNode->m_Children.back().get();
                 dirMap[entryP] = newNodePtr;
             }
         }
+        fileRoot = std::move(newRoot);
+    }
+
+    void ResourceManager::RefreshAssets(const std::filesystem::path& rootDir)
+    {
+        // clear thumbnails
+        m_FontPreviews.clear();
+        m_Thumbnails.clear();
+        ScanAssets(rootDir);
+        InitDefaultFontPreview();
     }
 
     void ResourceManager::LoadAnimationData(const std::string& id, const AnimationData& animationData)
@@ -122,17 +138,44 @@ namespace Spoon
         }
         m_Textures.emplace("special-spoon-logo", std::move(texture));
 
+        // load folder icon for editor
+        std::filesystem::path folderIconPath = std::filesystem::path("assets")  / "system" / "folder.png";
+        if (!texture.loadFromFile(folderIconPath))
+        {
+            throw std::runtime_error("Failed to load folder icon!");
+        }
+        m_Textures.emplace("special-spoon-folder-icon", std::move(texture));
+
         sf::Font& font = m_Fonts["Default"];
         if (!font.openFromMemory(Jersey10_Regular_ttf, Jersey10_Regular_ttf_len))
         {
             throw std::runtime_error("Failed to load system font!");
         }
-        GenerateFontPreview("Default", font);
+        InitDefaultFontPreview();
     }
 
-    void ResourceManager::GenerateFontPreview(const std::string& id, sf::Font& font)
+    void ResourceManager::InitDefaultFontPreview()
     {
-        sf::Text text(font, id, 24);
+        sf::Text text(m_Fonts.at("Default"), "Default", 24);
+        std::string name = "Default";
+        SetFontPreview(text, name);
+    }
+
+    void ResourceManager::GenerateFontPreview(AssetNode* node)
+    {
+        sf::Font font;
+        if (!font.openFromFile(node->m_Path))
+        {
+            SS_DEBUG_LOG("[FONT] Failed to open font from path: " + node->m_Path.string());
+            return;
+        }
+        sf::Text text(font, node->m_Name, 24);
+        std::string name = node->m_Path.string();
+        SetFontPreview(text, name);
+    }
+
+    void ResourceManager::SetFontPreview(sf::Text& text, std::string& name)
+    {
         sf::FloatRect bounds = text.getLocalBounds();
         float padding = 10.0f;
         sf::Vector2u size = {
@@ -154,11 +197,11 @@ namespace Spoon
         fontViewer.clear(sf::Color::Transparent);
         fontViewer.draw(text);
         fontViewer.display();
-        m_FontPreviews[id] = fontViewer.getTexture();
-        m_FontPreviews[id].setSmooth(true);
+        m_FontPreviews[name] = fontViewer.getTexture();
+        m_FontPreviews[name].setSmooth(true);
     }
 
-    sf::Texture& ResourceManager::GetFontPreview(const std::string& id)
+    sf::Texture& ResourceManager::GetFontPreview(std::string id)
     {
         auto found = m_FontPreviews.find(id);
         if (found != m_FontPreviews.end())

@@ -205,3 +205,16 @@ note: Previous changes will not be in this log. This record will keep all change
 
 ---
 
+## 10/30/26:
+
+### Editor / Resources
+- Reworked the resource manager into a navigable asset browser with folder icons, asset thumbnails, font previews, and context-menu actions for loading and removing resources.
+- Added asset refresh support and updated font preview generation to handle project fonts with matching paths.
+- Added an editor log console and reorganized editor tools under the View and Tools menus.
+
+### Components / Serialization
+- Preserved serialized collider shape and size when loading components.
+- Updated collider and sprite component handling in the editor.
+
+---
+

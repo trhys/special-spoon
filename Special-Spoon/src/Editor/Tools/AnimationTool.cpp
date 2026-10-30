@@ -307,15 +307,26 @@ namespace Spoon
         {
             ImGui::Text("Select a texture");
             ImGui::Separator();
-            static AssetNode* selectedNode = nullptr;
+            static std::filesystem::path selectedPath;
+            const auto library = ResourceManager::Get().GetAssetLibrary("Image file");
+            AssetNode* selectedNode = nullptr;
+            for (auto* node : library)
+            {
+                if (node->m_Path == selectedPath)
+                {
+                    selectedNode = node;
+                    break;
+                }
+            }
             if (ImGui::BeginChild("Texture Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                for (const auto& node : ResourceManager::Get().GetAssetLibrary("Image file"))
+                for (const auto& node : library)
                 {
                     ImGui::PushID(node->m_Name.c_str());
                     if (ImGui::ImageButton(node->m_Name.c_str(), ResourceManager::Get().GetThumbnail(node), ImVec2(128, 128)))
                     {
                         selectedNode = node;
+                        selectedPath = node->m_Path;
                     }
                     ImGui::SameLine();
                     ImGui::PopID();
@@ -356,7 +367,7 @@ namespace Spoon
                 Open(ResourceManager::Get().GetAnimationData(data.ID));
 
                 newAnimDatabuf[0] = '\0';
-                selectedNode = nullptr;
+                selectedPath.clear();
                 createModal = false;
                 editTool = true;
                 ImGui::CloseCurrentPopup();
@@ -366,7 +377,7 @@ namespace Spoon
             if (ImGui::Button("Cancel"))
             {
                 newAnimDatabuf[0] = '\0';
-                selectedNode = nullptr;
+                selectedPath.clear();
                 createModal = false;
                 ImGui::CloseCurrentPopup();
             }

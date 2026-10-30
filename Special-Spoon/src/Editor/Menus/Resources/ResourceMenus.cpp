@@ -3,262 +3,142 @@
 
 namespace Spoon
 {
-    // populates the asset tree in the 
-    // resources menu with context menus
-    void ViewAssets(AssetNode* node)
-    {
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        ImGui::PushID(node->m_Path.string().c_str());
-
-        ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-        ImGuiTreeNodeFlags leaf_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-
-        if(node->isDir)
-        {
-            bool isOpen = ImGui::TreeNodeEx(node->m_Name.c_str(), base_flags);
-
-            ImGui::TableNextColumn();
-            ImGui::TextDisabled("--");
-            ImGui::TableNextColumn();
-            ImGui::TextDisabled("--");
-
-            if(isOpen)
-            {
-                for (const auto& child : node->m_Children)
-                {
-                    ViewAssets(child.get());
-                }
-                ImGui::TreePop();
-            }
-        }
-        else
-        {
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
-            if (ImGui::BeginPopupContextItem())
-            {
-                ResourceType type = ResourceManager::Get().GetType(node->m_Ext);
-                bool supported = (type != ResourceType::Unknown);
-
-                if (ImGui::Selectable("Add to Scene", false, supported ? 0 : ImGuiSelectableFlags_Disabled))
-                {
-                    switch (type)
-                    {
-                        case ResourceType::Texture: ResourceManager::Get().LoadResource<sf::Texture>(node->m_Name, node->m_Path); break;
-                        case ResourceType::Font: ResourceManager::Get().LoadResource<sf::Font>(node->m_Name, node->m_Path); break;
-                        case ResourceType::Sound: ResourceManager::Get().LoadResource<sf::SoundBuffer>(node->m_Name, node->m_Path); break;
-                        default: break;
-                    }
-                    ImGui::CloseCurrentPopup();
-                }
-                if (ImGui::Selectable("Remove from Scene", false, supported ? 0 : ImGuiSelectableFlags_Disabled))
-                {
-                    switch (type)
-                    {
-                        case ResourceType::Texture: ResourceManager::Get().RemoveResource<sf::Texture>(node->m_Name); break;
-                        case ResourceType::Font: ResourceManager::Get().RemoveResource<sf::Font>(node->m_Name); break;
-                        case ResourceType::Sound: ResourceManager::Get().RemoveResource<sf::SoundBuffer>(node->m_Name); break;
-                        default: break;
-                    }
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(node->m_Size.c_str());
-
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(node->m_Ext.c_str()); 
-        }          
-        ImGui::PopID();
-    }
-
-    // shows the asset tree recursively in the 
-    // resources menu with drop targets
-    void ShowTree(AssetNode* node)
-    {
-        ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-        ImGuiTreeNodeFlags leaf_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-
-        ImGui::PushID(node->m_Path.string().c_str());
-        if(node->isDir)
-        {
-            bool isOpen = ImGui::TreeNodeEx(node->m_Name.c_str(), base_flags);
-            if(isOpen)
-            {
-                for (const auto& child : node->m_Children)
-                {
-                    ShowTree(child.get());
-                }
-                ImGui::TreePop();
-            }
-        }
-        else
-        {
-            ResourceType type = ResourceManager::Get().GetType(node->m_Ext);
-            bool supported = (type != ResourceType::Unknown);
-            ImGui::TreeNodeEx(node->m_Name.c_str(), leaf_flags);
-            if (supported && ImGui::BeginDragDropSource())
-            {
-                switch (type)
-                    {
-                        case ResourceType::Texture: ImGui::SetDragDropPayload("LOAD_TEXTURE", &node, sizeof(AssetNode*)); break;
-                        case ResourceType::Font: ImGui::SetDragDropPayload("LOAD_FONT", &node, sizeof(AssetNode*)); break;
-                        case ResourceType::Sound: ImGui::SetDragDropPayload("LOAD_SOUND", &node, sizeof(AssetNode*)); break;
-                        default: break;
-                    }
-                ImGui::EndDragDropSource();
-            }
-        }
-        ImGui::PopID();
-    }
-
     void Editor::DrawResourcesMenu()
     {
         if (!m_ShowResourcesMenu)
             return;
-        
-        ImGui::Begin("Resources", &m_ShowResourcesMenu);
-        static ImGuiTableFlags flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg 
-            | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable 
-            | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
-        if(ImGui::BeginTable("Resource Manager", 3), flags)
+
+        ImGui::Begin("Resource Menu", &m_ShowResourcesMenu, ImGuiWindowFlags_MenuBar);
+        if (!workingDir)
         {
-            static ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth;
-
-            // Setup table
-            ImGui::TableSetupColumn("Name");
-            ImGui::TableSetupColumn("Size");
-            ImGui::TableSetupColumn("Type");
-            ImGui::TableHeadersRow();
-
-            // Populate
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-
-            ViewAssets(GetWorkingDir());
-            ImGui::EndTable();
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+            ImGui::Text("ERROR: No working directory selected.");
+            ImGui::PopStyleColor();
+            ImGui::End();
+            return;
         }
 
-        if(ImGui::Button("Refresh"))
-            SetWorkingDir(ResourceManager::Get().GetAssetsDir());
-        if(ImGui::Button("Close"))
-            m_ShowResourcesMenu = false;
+        // begin menu bar
+        if (ImGui::BeginMenuBar())
+        {
+            // back navigation
+            if (ImGui::Button("<-"))
+            {
+                if (workingDir && workingDir->m_Parent)
+                    workingDir = workingDir->m_Parent;
+            }
+
+            // refresh
+            ImGui::BeginDisabled(!m_CurrentProject);
+            if (ImGui::Button("Refresh"))
+            {
+                ResourceManager::Get().RefreshAssets(m_CurrentProject->assetsPath);
+                workingDir = ResourceManager::Get().GetAssetsDir();
+            }
+            ImGui::EndDisabled();
+
+            ImGui::EndMenuBar();
+        }
+
+        // draw table of current dir
+        ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedSame;
+        if (ImGui::BeginTable("ResourceTable", 6, flags))
+        {   
+            // iterate node children
+            int column = 0;
+            for (auto& child : workingDir->m_Children)
+            {
+                // todo: make a config
+                ImGui::TableNextColumn();
+                column++;
+                if (column >= 6)
+                {
+                    ImGui::TableNextRow();
+                    column = 0;
+                }
+
+                const char* name = child->m_Name.c_str();
+
+                if (child->isDir)
+                {
+                    sf::Texture& folder = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-folder-icon");
+                    ImGui::ImageButton(name, folder.getNativeHandle(), ImVec2(128, 128));
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+                    {
+                        workingDir = child.get();
+                    }
+                }
+                else
+                {
+                    // branch on resource/file type
+                    // use context menus to provide additional actions for each resource type
+                    ResourceType type = ResourceManager::Get().GetType(child->m_Ext);
+                    switch (type)
+                    {
+                        case ResourceType::Texture:
+                        {
+                            sf::Texture& texture = ResourceManager::Get().GetThumbnail(child.get());
+                            if (ImGui::ImageButton(name, texture.getNativeHandle(), ImVec2(128, 128)))
+                            {
+                                // handle texture click
+                            }
+                            if (ImGui::BeginPopupContextItem(child->m_Name.c_str()))
+                            {
+                                if (ImGui::MenuItem("Add to Scene"))
+                                    ResourceManager::Get().LoadResource<sf::Texture>(child->m_Name, child->m_Path);
+                                if (ImGui::MenuItem("Remove from Scene"))
+                                    ResourceManager::Get().RemoveResource<sf::Texture>(child->m_Name);
+                                ImGui::EndPopup();
+                            }
+                            break;
+                        }
+                        case ResourceType::Sound:
+                            // todo: replace nullptr with actual sound icon
+                            if (ImGui::ImageButton(name, nullptr, ImVec2(128, 128)))
+                            {
+                                // handle sound click
+                            }
+
+                            if (ImGui::BeginPopupContextItem(child->m_Name.c_str()))
+                            {
+                                if (ImGui::MenuItem("Add to Scene"))
+                                    ResourceManager::Get().LoadResource<sf::SoundBuffer>(child->m_Name, child->m_Path);
+                                if (ImGui::MenuItem("Remove from Scene"))
+                                    ResourceManager::Get().RemoveResource<sf::SoundBuffer>(child->m_Name);
+                                ImGui::EndPopup();
+                            }
+                            break;
+                        case ResourceType::Font:
+                        {
+                            sf::Texture& preview = ResourceManager::Get().GetFontPreview(child->m_Path.string());
+                            if (ImGui::ImageButton(name, preview.getNativeHandle(), ImVec2(128, 128)))
+                            {
+                                // handle font click
+                            }
+                            if (ImGui::BeginPopupContextItem(child->m_Name.c_str()))
+                            {
+                                if (ImGui::MenuItem("Add to Scene"))
+                                    ResourceManager::Get().LoadResource<sf::Font>(child->m_Name, child->m_Path);
+                                if (ImGui::MenuItem("Remove from Scene"))
+                                    ResourceManager::Get().RemoveResource<sf::Font>(child->m_Name);
+                                ImGui::EndPopup();
+                            }
+                            break;
+                        }
+                        default:
+                            // todo: replace nullptr with actual default icon
+                            if (ImGui::ImageButton(name, nullptr, ImVec2(128, 128)))
+                            {
+                                // handle default click
+                            }
+                            break;
+                    }
+                }
+                ImGui::TextWrapped(child->m_Name.c_str());
+            }
+            ImGui::EndTable();
+        }
 
         ImGui::End();
     }
-
-    // todo: this is honestly quite redundant and we'll 
-    // be better off combining these together
-    
-    /*void LoadResourcesMenu(Editor* editor)
-    {
-        // Always center this window when appearing
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        ImGui::Begin("Resource Loading Menu", &editor->LoadResources);
-
-        static std::string selTexture = "empty";
-        static std::string selFont = "Default";
-        static std::string selSound = "none";
-
-        float windowWidth = ImGui::GetContentRegionAvail().x;
-        float listWidth = 150.0f;
-
-        if (ImGui::BeginTable("Resources Menu", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV))
-        {
-            ImGui::TableNextColumn();
-            ShowTree(editor->GetWorkingDir());
-
-            ImGui::TableNextColumn();
-            if (ImGui::BeginChild("Textures", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
-            {
-                if (ImGui::BeginListBox("##Loaded Textures", ImVec2(listWidth, -1)))
-                {
-                    for (const auto& [id, texture] : ResourceManager::Get().GetTextures())
-                    {
-                        if (ImGui::Selectable(id.c_str(), selTexture == id))
-                        {
-                            selTexture = id;
-                        }
-                    }
-                    ImGui::EndListBox();
-                    if (ImGui::BeginDragDropTarget())
-                    {
-                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_TEXTURE"))
-                        {
-                            AssetNode* assetPtr = *(AssetNode**)payload->Data;
-                            ResourceManager::Get().LoadResource<sf::Texture>(assetPtr->m_Name, assetPtr->m_Path);
-                        }
-                        ImGui::EndDragDropTarget();
-                    }
-                }
-                ImGui::SameLine();
-
-                // Get aspect ratio for texture preview
-                sf::Texture& texture = ResourceManager::Get().GetResource<sf::Texture>(selTexture);
-                ImGui::Image(texture, GetAspectRatio(texture));
-            }
-            ImGui::EndChild();
-
-            if (ImGui::BeginChild("Fonts", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
-            {
-                if (ImGui::BeginListBox("##Loaded Fonts", ImVec2(listWidth, -1)))
-                {
-                    for (const auto& [id, font] : ResourceManager::Get().GetFonts())
-                    {
-                        if (ImGui::Selectable(id.c_str(), selFont == id))
-                        {
-                            selFont = id;
-                        }
-                    }
-                    ImGui::EndListBox();
-                    if (ImGui::BeginDragDropTarget())
-                    {
-                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_FONT"))
-                        {
-                            AssetNode* assetPtr = *(AssetNode**)payload->Data;
-                            ResourceManager::Get().LoadResource<sf::Font>(assetPtr->m_Name, assetPtr->m_Path);
-                        }
-                        ImGui::EndDragDropTarget();
-                    }
-                }
-                ImGui::SameLine(); 
-
-                // Get aspect ratio for font preview
-                sf::Texture& texture = ResourceManager::Get().GetFontPreview(selFont);
-                ImGui::Image(texture, GetAspectRatio(texture));
-            }
-            ImGui::EndChild();
-
-            if (ImGui::BeginChild("Sounds", ImVec2(0, 250), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
-            {
-                if (ImGui::BeginListBox("Loaded Sounds", ImVec2(listWidth, -1)))
-                {
-                    for (const auto& [id, sound] : ResourceManager::Get().GetSounds())
-                    {
-                        if (ImGui::Selectable(id.c_str(), selSound == id))
-                        {
-                           selSound = id;
-                        }
-                    }
-                    ImGui::EndListBox();
-                    if (ImGui::BeginDragDropTarget())
-                    {
-                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("LOAD_SOUND"))
-                        {
-                            AssetNode* assetPtr = *(AssetNode**)payload->Data;
-                            ResourceManager::Get().LoadResource<sf::SoundBuffer>(assetPtr->m_Name, assetPtr->m_Path);
-                        }
-                        ImGui::EndDragDropTarget();
-                    }
-                }
-            }
-            ImGui::EndChild();
-            ImGui::EndTable();
-        }
-        ImGui::End();
-    }*/
 }

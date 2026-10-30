@@ -15,7 +15,6 @@ namespace Spoon {
 		
 		auto& manager = Application::Get().GetEntityManager();
 		auto& transformArray = manager.GetArray<TransformComp>(TransformComp::Name);
-		// const WorldProjection& projection = Application::Get().GetRenderer().GetProjection();
 		for (auto& id : manager.GetAllEntitiesWithComponent<ColliderComp>(ColliderComp::Name))
 		{
 			if (!transformArray.m_IdToIndex.count(id))

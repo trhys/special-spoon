@@ -62,10 +62,14 @@ namespace Spoon {
 
       if (ImGui::BeginChild("Font Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
       {   
-          for (const auto& [id, font] : ResourceManager::Get().GetFonts())
+          auto& manager = ResourceManager::Get();
+          for (const auto& [id, font] : manager.GetFonts())
           {
+              const auto key = id == "Default"
+                ? std::string("Default")
+                : manager.Normalize(manager.GetFontPaths().at(id)).string();
               ImGui::PushID(id.c_str());
-              ImGui::Image(ResourceManager::Get().GetFontPreview(id));
+              ImGui::Image(manager.GetFontPreview(key));
               ImGui::SameLine();
               if (ImGui::Selectable(id.c_str()))
               {
