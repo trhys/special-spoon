@@ -9,8 +9,6 @@ namespace Spoon
             return;
 
         ImGui::Begin("Resource Menu", &m_ShowResourcesMenu, ImGuiWindowFlags_MenuBar);
-        AssetNode* workingDir = GetWorkingDir();
-
         if (!workingDir)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
@@ -31,19 +29,21 @@ namespace Spoon
             }
 
             // refresh
+            ImGui::BeginDisabled(!m_CurrentProject);
             if (ImGui::Button("Refresh"))
-                ResourceManager::Get().RefreshAssets();
+            {
+                ResourceManager::Get().RefreshAssets(m_CurrentProject->assetsPath);
+                workingDir = ResourceManager::Get().GetAssetsDir();
+            }
+            ImGui::EndDisabled();
 
             ImGui::EndMenuBar();
         }
 
         // draw table of current dir
         ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedSame;
-        if (ImGui::BeginTable("ResourceTable", 2, flags))
-        {
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            
+        if (ImGui::BeginTable("ResourceTable", 12, flags))
+        {   
             // iterate node children
             int column = 0;
             for (auto& child : workingDir->m_Children)
@@ -52,7 +52,7 @@ namespace Spoon
                 // todo: make a config
                 ImGui::TableNextColumn();
                 column++;
-                if (column >= 6)
+                if (column >= 12)
                 {
                     ImGui::TableNextRow();
                     column = 0;
@@ -62,13 +62,11 @@ namespace Spoon
 
                 if (child->isDir)
                 {
-                    // todo: replace nullptr with actual directory icon texture ID
-                    if (ImGui::ImageButton(name, nullptr, ImVec2(64, 64)))
+                    sf::Texture& folder = ResourceManager::Get().GetResource<sf::Texture>("special-spoon-folder-icon");
+                    ImGui::ImageButton(name, folder.getNativeHandle(), ImVec2(64, 64));
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                     {
-                        if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-                        {
-                            workingDir = child.get();
-                        }
+                        workingDir = child.get();
                     }
                 }
                 else
@@ -81,7 +79,7 @@ namespace Spoon
                         case ResourceType::Texture:
                         {
                             sf::Texture& texture = ResourceManager::Get().GetThumbnail(child.get());
-                            if (ImGui::ImageButton(name, texture, ImVec2(64, 64)))
+                            if (ImGui::ImageButton(name, texture.getNativeHandle(), ImVec2(64, 64)))
                             {
                                 // handle texture click
                             }
@@ -91,6 +89,7 @@ namespace Spoon
                                     ResourceManager::Get().LoadResource<sf::Texture>(child->m_Name, child->m_Path);
                                 if (ImGui::MenuItem("Remove from Scene"))
                                     ResourceManager::Get().RemoveResource<sf::Texture>(child->m_Name);
+                                ImGui::EndPopup();
                             }
                             break;
                         }
@@ -107,6 +106,7 @@ namespace Spoon
                                     ResourceManager::Get().LoadResource<sf::SoundBuffer>(child->m_Name, child->m_Path);
                                 if (ImGui::MenuItem("Remove from Scene"))
                                     ResourceManager::Get().RemoveResource<sf::SoundBuffer>(child->m_Name);
+                                ImGui::EndPopup();
                             }
                             break;
                         default:

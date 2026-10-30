@@ -56,7 +56,7 @@ namespace Spoon
         std::string CheckExtension(std::filesystem::path p);
         ResourceType GetType(const std::string& ext);
         void ScanAssets(const std::filesystem::path& rootDir);
-        void RefreshAssets();
+        void RefreshAssets(const std::filesystem::path& rootDir);
 
         template<typename RESOURCE>
         void LoadResource(const std::string id, const std::filesystem::path file_path);
