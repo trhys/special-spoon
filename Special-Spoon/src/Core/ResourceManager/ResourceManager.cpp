@@ -98,6 +98,9 @@ namespace Spoon
 
     void ResourceManager::RefreshAssets(const std::filesystem::path& rootDir)
     {
+        // clear thumbnails
+        m_FontPreviews.clear();
+        m_Thumbnails.clear();
         ScanAssets(rootDir);
     }
 

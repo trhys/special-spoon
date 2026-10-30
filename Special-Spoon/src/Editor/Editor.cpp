@@ -177,6 +177,7 @@ namespace Spoon
 		// draw main dashboard
         DrawMainMenuBar();
         DrawInspector(tick);
+        DrawLogger();
 
         // draw project menus
         DrawCreateProjectPrompt();
