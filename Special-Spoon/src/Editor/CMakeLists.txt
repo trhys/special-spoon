@@ -6,8 +6,9 @@ target_sources(Special-Spoon
 
         Blueprints/Blueprint.h
 
-        Tools/AnimationTool.h
-        Tools/AnimationTool.cpp
+        Tools/Animation/AnimationTool.h
+        Tools/Animation/AnimationTool.cpp
+        Tools/Animation/File.cpp
         Tools/TileMapTool.h
         Tools/TileMapTool.cpp
         Tools/TextureRectTool.h

@@ -14,6 +14,9 @@ namespace Spoon
     class AnimationTool
     {
     public:
+        AnimationTool(const std::filesystem::path& animationsDir)
+            : m_AnimationsDir(animationsDir)
+        {}
         void Update(sf::Time tick);
         void Open(AnimationData* data);
         void Animate(sf::Time tick);
@@ -21,9 +24,18 @@ namespace Spoon
 
         void Shutdown();
 
-        void CreateNew();
+        void ImportJSON(
+            AssetNode* selectedNode, 
+            const std::filesystem::path& filePath
+        );
+        void SaveAnimationData(const AnimationData& data, const std::filesystem::path& animationsDir);
+
+        void DrawCreateNew();
+        void DrawLoadModal();
+        void DrawImportModal();
 
     private:
+        std::filesystem::path m_AnimationsDir;
         AnimationData* currentData = nullptr;
         bool m_isOpen = false;
 
@@ -50,8 +62,10 @@ namespace Spoon
         bool isFinished = false;
 
         // Menu flags
-        bool createModal = false;
+        bool showCreate = false;
         bool editTool = false;
+        bool showLoad = false;
+        bool showImport = false;
 
         // Settings
         bool autoPlayEnabled = true;

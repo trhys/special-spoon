@@ -4,13 +4,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 
 namespace Spoon
 {
     void AnimationTool::Update(sf::Time tick)
     {
-        static bool OpenAnimation = false;
-
         CenterNext();
         if (ImGui::Begin("Animation Tool", &m_isOpen, ImGuiWindowFlags_MenuBar))
         {
@@ -18,8 +17,9 @@ namespace Spoon
             {
                 if (ImGui::BeginMenu("Open"))
                 {
-                    if (ImGui::MenuItem("Load Animation")) OpenAnimation = true;
-                    if (ImGui::MenuItem("New Animation")) createModal = true;
+                    if (ImGui::MenuItem("Load Animation")) showLoad = !showLoad;
+                    if (ImGui::MenuItem("New Animation")) showCreate = !showCreate;
+                    if (ImGui::MenuItem("Import Animation")) showImport = !showImport;
                     ImGui::EndMenu();
                 }
 
@@ -56,27 +56,11 @@ namespace Spoon
                 }
                 ImGui::EndMenuBar();
             }
-            if (OpenAnimation)
-            {
-                ImGui::OpenPopup("Open Animation Data");
-                OpenAnimation = false;
-            }
-            if (createModal) CreateNew();
 
-            CenterNext();
-            if (ImGui::BeginPopupModal("Open Animation Data"))
-            {
-                for (auto& [id, animation] : ResourceManager::Get().GetAnimations())
-                {
-                    if (ImGui::Selectable(id.c_str()))
-                    {
-                        Open(ResourceManager::Get().GetAnimationData(id));
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
-                ImGui::EndPopup();
-            }
+            DrawCreateNew();
+            DrawLoadModal();
+            DrawImportModal();
+
             if (ImGui::BeginTable("##animtool", 2, ImGuiTableFlags_BordersV))
             {
                 ImGui::TableNextColumn();
@@ -284,97 +268,6 @@ namespace Spoon
         else {}
     }
 
-    void AnimationTool::CreateNew()
-    {
-        const char* selectorPopup = "Texture Selector";
-        if (!ImGui::IsPopupOpen(selectorPopup))
-            ImGui::OpenPopup(selectorPopup);
-
-        static char newAnimDatabuf[64];
-
-        CenterNext();
-        if (ImGui::BeginPopupModal(selectorPopup))
-        {
-            ImGui::Text("Select a texture");
-            ImGui::Separator();
-            static std::filesystem::path selectedPath;
-            const auto library = ResourceManager::Get().GetAssetLibrary("Image file");
-            AssetNode* selectedNode = nullptr;
-            for (auto* node : library)
-            {
-                if (node->m_Path == selectedPath)
-                {
-                    selectedNode = node;
-                    break;
-                }
-            }
-            if (ImGui::BeginChild("Texture Explorer", ImVec2(0, 200), ImGuiChildFlags_Borders))
-            {
-                for (const auto& node : library)
-                {
-                    ImGui::PushID(node->m_Name.c_str());
-                    if (ImGui::ImageButton(node->m_Name.c_str(), ResourceManager::Get().GetThumbnail(node), ImVec2(128, 128)))
-                    {
-                        selectedNode = node;
-                        selectedPath = node->m_Path;
-                    }
-                    ImGui::SameLine();
-                    ImGui::PopID();
-                }
-            }
-            ImGui::EndChild();
-
-            if (ImGui::BeginChild("Preview", ImVec2(0, 600), ImGuiChildFlags_Borders))
-            {
-                if (selectedNode)
-                {
-                    ImGui::Text("Selected texture id: %s", selectedNode->m_Name.c_str());
-
-                    // Get aspect ratio for texture preview
-                    sf::Texture& texture = ResourceManager::Get().GetThumbnail(selectedNode);
-                    ImGui::Image(texture, GetAspectRatio(texture));
-                }
-                else
-                {
-                    ImGui::Text("No texture selected");
-                }
-            }
-            ImGui::EndChild();
-            if (ImGui::InputText("Animation ID", newAnimDatabuf, IM_ARRAYSIZE(newAnimDatabuf), ImGuiInputTextFlags_CharsNoBlank)) {}
-            bool bufferValid = newAnimDatabuf[0] != '\0';
-            ImGui::BeginDisabled(!bufferValid || !selectedNode);
-            if (ImGui::Button("Confirm"))
-            {
-                std::string selectedID = selectedNode->m_Name;
-                if (!ResourceManager::Get().GetTextures().count(selectedID))
-                {
-                    ResourceManager::Get().LoadResource<sf::Texture>(selectedNode->m_Name, selectedNode->m_Path);
-                }
-                AnimationData data;
-                data.ID = newAnimDatabuf;
-                data.textureID = selectedID;
-                ResourceManager::Get().LoadAnimationData(data.ID, data);
-                Open(ResourceManager::Get().GetAnimationData(data.ID));
-
-                newAnimDatabuf[0] = '\0';
-                selectedPath.clear();
-                createModal = false;
-                editTool = true;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndDisabled();
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
-                newAnimDatabuf[0] = '\0';
-                selectedPath.clear();
-                createModal = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-    }
-
     void AnimationTool::Shutdown()
     {
         currentData = nullptr;
@@ -580,6 +473,38 @@ namespace Spoon
             if (r.size.x <= 0 || r.size.y <= 0) continue;
 
             currentData->spriteCords.emplace_back(r.position.x, r.position.y, r.size.x, r.size.y);
+        }
+    }
+
+    void AnimationTool::ImportJSON(
+        AssetNode* selectedNode, 
+        const std::filesystem::path& jsonPath
+    )
+    {
+        if (!selectedNode || jsonPath.empty()) return;
+
+        // load texture into the resource manager if not already loaded
+        if (!ResourceManager::Get().GetTextures().count(selectedNode->m_Name))
+            ResourceManager::Get().LoadResource<sf::Texture>(selectedNode->m_Name, selectedNode->m_Path);
+
+        // load file path into json
+        std::ifstream file(jsonPath, std::ios::in);
+        if (!file.is_open()) return;
+
+        nlohmann::json j;
+        file >> j;
+        file.close();
+
+        // populate animation data from json
+        for (auto& [key, animation] : j.items())
+        {
+            AnimationData animData;
+            animData.ID = key;
+            animData.textureID = selectedNode->m_Name;
+            animData.spriteCords = animation.at("spriteCords").get<std::vector<SpriteCords>>();
+            animData.frameRate = animation.value("frameRate", 0.1f);
+            animData.isLooping = animation.value("isLooping", true);
+            SaveAnimationData(animData, m_AnimationsDir);
         }
     }
 }

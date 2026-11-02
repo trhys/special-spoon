@@ -48,6 +48,8 @@ namespace Spoon
         std::filesystem::create_directories(newProject.assetsPath);
         newProject.presetsPath = newProject.assetsPath / "presets/";
         std::filesystem::create_directories(newProject.presetsPath);
+        newProject.animationsPath = newProject.assetsPath / "animations/";
+        std::filesystem::create_directories(newProject.animationsPath);
         newProject.version = "1.0";
 
         // Dump data to JSON
@@ -56,6 +58,7 @@ namespace Spoon
         projectJson["DataPath"] = newProject.dataPath;
         projectJson["AssetsPath"] = newProject.assetsPath;
         projectJson["PresetsPath"] = newProject.presetsPath;
+        projectJson["AnimationsPath"] = newProject.animationsPath;
         projectJson["Version"] = newProject.version;
         projectJson["RecentFiles"] = newProject.recentFiles;
         projectJson["Config"] = ProjectConfig{};
@@ -89,6 +92,7 @@ namespace Spoon
             newProject.dataPath = projectJson.value("DataPath", "");
             newProject.assetsPath = projectJson.value("AssetsPath", "");
             newProject.presetsPath = projectJson.value("PresetsPath", newProject.assetsPath / "presets/");
+            newProject.animationsPath = projectJson.value("AnimationsPath", newProject.assetsPath / "animations/");
             newProject.version = projectJson.value("Version", "1.0");
             newProject.recentFiles = projectJson.value("RecentFiles", std::vector<std::filesystem::path>{});
 			newProject.config = projectJson.value("Config", ProjectConfig{});
@@ -118,6 +122,7 @@ namespace Spoon
         projectJson["DataPath"] = project->dataPath.string();
         projectJson["AssetsPath"] = project->assetsPath.string();
         projectJson["PresetsPath"] = project->presetsPath.string();
+        projectJson["AnimationsPath"] = project->animationsPath.string();
         projectJson["Version"] = project->version;
 		projectJson["Config"] = project->config;
         projectJson["Blueprints"] = project->blueprints;

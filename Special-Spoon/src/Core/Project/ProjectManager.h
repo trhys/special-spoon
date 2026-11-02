@@ -18,6 +18,7 @@ namespace Spoon
         std::filesystem::path dataPath;                     // Path to the project data directory
         std::filesystem::path assetsPath;                   // Path to the project assets directory
         std::filesystem::path presetsPath;                  // Path to the project presets directory
+        std::filesystem::path animationsPath;               // Path to the project animations directory
         std::string version = "1.0";                        // Project version
         std::vector<std::filesystem::path> recentFiles;     // List of recently opened files
         ProjectConfig config;                               // Config settings for project
@@ -34,6 +35,7 @@ namespace Spoon
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
         std::vector<Blueprint>& GetBlueprints();
         std::vector<std::string> GetAvailablePresets(const std::string& category);
+        std::filesystem::path GetAnimationsPath() { return m_CurrentProject ? m_CurrentProject->animationsPath : std::filesystem::path(); }
 
     private:
         std::unique_ptr<Project> m_CurrentProject = nullptr;

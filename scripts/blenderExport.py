@@ -237,8 +237,6 @@ def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, spri
 
                 # store animation data for this action/angle - see AnimationData struct in the C++ reference above
                 animation_data[animation_id] = {
-                    "ID": animation_id,
-                    "textureID": sheet_filename,
                     "spriteCords": sprite_cords_list,
                     "frameRate": 0.1,
                     "isLooping": True
