@@ -165,9 +165,14 @@ namespace Spoon
                 {
                     ImportJSON(selectedNode, selectedJsonPath);
                 }
+                showImport = false;
                 ImGui::CloseCurrentPopup();
             }
-            if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+            if (ImGui::Button("Cancel")) 
+            {
+                showImport = false;
+                ImGui::CloseCurrentPopup();
+            }
             ImGui::EndPopup();
         }
     }

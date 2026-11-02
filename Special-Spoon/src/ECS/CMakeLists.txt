@@ -10,6 +10,7 @@ target_sources(Special-Spoon
         Components/Core/TransformComp.cpp
 
         Components/Animation/AnimationComp.h
+        Components/Animation/AnimationComp.cpp
         Components/Animation/AnimationData.h
         Components/Animation/BlinkComp.h
         Components/Animation/FadeComp.h

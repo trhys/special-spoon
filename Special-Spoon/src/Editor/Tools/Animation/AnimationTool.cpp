@@ -483,10 +483,6 @@ namespace Spoon
     {
         if (!selectedNode || jsonPath.empty()) return;
 
-        // load texture into the resource manager if not already loaded
-        if (!ResourceManager::Get().GetTextures().count(selectedNode->m_Name))
-            ResourceManager::Get().LoadResource<sf::Texture>(selectedNode->m_Name, selectedNode->m_Path);
-
         // load file path into json
         std::ifstream file(jsonPath, std::ios::in);
         if (!file.is_open()) return;

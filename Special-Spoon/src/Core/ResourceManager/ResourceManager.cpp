@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
-#include "Utils/Macros.h"
 #include "SystemFont/Jersey_10/SystemFont.h"
+
+using json = nlohmann::json;
 
 namespace Spoon
 {
@@ -105,13 +106,71 @@ namespace Spoon
         InitDefaultFontPreview();
     }
 
-    void ResourceManager::LoadAnimationData(const std::string& id, const AnimationData& animationData)
+    // loads animation into scene from animation data
+    bool ResourceManager::LoadAnimationData(const std::string& id, const AnimationData& animationData)
     {
+        // make sure the animation's texture resource is loaded
+        if (!m_Textures.count(animationData.textureID))
+        {
+            SS_DEBUG_LOG("[RESOURCE MANAGER] Texture for animation not loaded: " + animationData.textureID)
+            SS_DEBUG_LOG("[RESOURCE MANAGER] Attempting to load texture ->")
+            AssetNode* textureNode = nullptr;
+            for (auto* node : GetAssetLibrary("Image file"))
+            {
+                if (node->m_Name != animationData.textureID)
+                    continue;
+                if (textureNode)
+                    SS_DEBUG_LOG("[RESOURCE MANAGER] Multiple textures found for animation: " + animationData.textureID + " -- Using final match.")
+                textureNode = node;
+                break;
+            }
+
+            if (!textureNode)
+            {
+                SS_DEBUG_LOG("[RESOURCE MANAGER] Failed to find texture for animation: " + animationData.textureID)
+                return false;
+            }
+
+            // texture file found, attempt to load it
+            LoadResource<sf::Texture>(animationData.textureID, textureNode->m_Path);
+            if (!m_Textures.count(animationData.textureID))
+                return false;
+        }
+
         auto found = m_Animations.find(id);
         if(found == m_Animations.end())
         {
             m_Animations.emplace(id, animationData);
         }
+        return true;
+    }
+
+    // loads animation from file - file is a json containing animation data
+    bool ResourceManager::LoadAnimationFromPath(const std::filesystem::path& file_path)
+    {
+        std::ifstream file(file_path);
+        if (!file.is_open())
+        {
+            SS_DEBUG_LOG("[RESOURCE MANAGER] Failed to open animation file: " + file_path.string())
+            return false;
+        }
+        try 
+        {
+            json j;
+            file >> j;
+            file.close();
+            AnimationData animationData;
+            from_json(j, animationData);
+            std::string id = file_path.stem().string();
+            if (!LoadAnimationData(id, animationData))
+                return false;
+        }
+        catch (const std::exception& e)
+        {
+            SS_DEBUG_LOG("[RESOURCE MANAGER] Failed to load animation from file: " + file_path.string() + " Error: " + e.what());
+            return false;
+        }
+        return true;
     }
 
     AnimationData* ResourceManager::GetAnimationData(const std::string& id)
