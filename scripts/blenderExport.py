@@ -46,19 +46,27 @@ import json
 import math
 import argparse
 from PIL import Image
+from mathutils import Vector
 
 # yaw (degrees around world Z) applied to the camera pivot for each named direction.
-# the pivot orbits the rig while keeping the camera's original pitch/distance intact,
-# so only "top-down"/"isometric" camera rigs with a fixed downward tilt are supported.
+# the pivot orbits the rig while keeping the camera's pitch/distance fixed, so only
+# "top-down"/"isometric" camera rigs with a fixed downward tilt are supported.
+#
+# NOTE: these angles are deliberately mirrored left<->right relative to a naive
+# "camera orbit yaw" mapping. Viewing a character face-on inherently mirrors
+# left/right (the subject's own right hand appears on the *viewer's* left),
+# but these labels are meant to describe on-screen/movement direction as seen
+# by the player, not the character's own anatomical side. "up" and "down" are
+# unaffected since mirroring is only across the vertical (screen-horizontal) axis.
 DIRECTION_YAWS = {
-    "right": 0,
-    "up-right": 45,
+    "right": 180,
+    "up-right": 135,
     "up": 90,
-    "up-left": 135,
-    "left": 180,
-    "down-left": 225,
+    "up-left": 45,
+    "left": 0,
+    "down-left": 315,
     "down": 270,
-    "down-right": 315,
+    "down-right": 225,
 }
 
 DEFAULT_OUTPUT_PATH = "//export"
@@ -68,30 +76,151 @@ DEFAULT_SPRITE_HEIGHT = 128
 DEFAULT_COLUMNS = 16
 DEFAULT_ORTHO_PADDING = 1.1  # 10% extra headroom to avoid clipping on angles that expose more silhouette
 
+# Camera pitch (degrees above the horizontal plane) used per mode when the
+# user doesn't explicitly override it with --camera-pitch. 35.264 is the
+# classic "true isometric" angle (arctan(1/sqrt(2))); top-down looks straight
+# down the rig's local Z axis.
+DEFAULT_MODE_PITCH_DEGREES = {
+    "isometric": 35.264,
+    "top-down": 90.0,
+}
 
-def _create_camera_pivot(rig, camera):
-    # create an empty at the rig's location and parent the camera to it,
-    # preserving the camera's current world transform (keep transform parenting)
-    pivot = bpy.data.objects.new(f"{rig.name}_CameraPivot", None)
+# How far back to place the camera, expressed as a multiple of the rig's
+# bounding radius. Since we render orthographically, this mostly just needs
+# to be far enough to avoid near-clipping and comfortably inside far-clipping.
+DEFAULT_CAMERA_DISTANCE_MULTIPLIER = 4.0
+
+
+def _find_deformed_meshes(rig):
+    # Character meshes are frequently NOT parented to the armature - they're
+    # linked purely via an Armature modifier pointing back at the rig. Using
+    # rig.children_recursive alone misses these entirely, silently falling
+    # back to default bounds and producing incorrect framing with no
+    # indication anything went wrong.
+    meshes = []
+    for obj in bpy.data.objects:
+        if obj.type != 'MESH':
+            continue
+        if obj in rig.children_recursive:
+            meshes.append(obj)
+            continue
+        for modifier in obj.modifiers:
+            if modifier.type == 'ARMATURE' and modifier.object == rig:
+                meshes.append(obj)
+                break
+    return meshes
+
+
+def _compute_rig_bounds(rig):
+    # Compute separate horizontal (XY) and vertical (Z) half-extents around
+    # the rig's location, in world space, covering every mesh deformed by
+    # this rig (whether parented or linked via an Armature modifier). Uses
+    # the depsgraph-evaluated mesh so the bounds reflect the character's
+    # current pose/deformation rather than its rest-pose local bounding box.
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    center = rig.matrix_world.translation
+    horizontal_radius = 0.0
+    vertical_half_height = 0.0
+
+    meshes = _find_deformed_meshes(rig)
+    for obj in meshes:
+        evaluated_obj = obj.evaluated_get(depsgraph)
+        evaluated_mesh = evaluated_obj.to_mesh()
+        try:
+            for vertex in evaluated_mesh.vertices:
+                world_vertex = evaluated_obj.matrix_world @ vertex.co
+                offset = world_vertex - center
+                horizontal_radius = max(horizontal_radius, math.hypot(offset.x, offset.y))
+                vertical_half_height = max(vertical_half_height, abs(offset.z))
+        finally:
+            evaluated_obj.to_mesh_clear()
+
+    if not meshes:
+        print(f"[blenderExport] WARNING: no mesh found parented to or deformed by "
+              f"'{rig.name}' - falling back to default camera framing bounds. "
+              f"Framing will likely be incorrect.")
+
+    # fall back to sane defaults only if we genuinely found no geometry
+    if horizontal_radius <= 0.0:
+        horizontal_radius = 1.0
+    if vertical_half_height <= 0.0:
+        vertical_half_height = 1.0
+
+    return horizontal_radius, vertical_half_height
+
+
+def _compute_ortho_scale(horizontal_radius, vertical_half_height, pitch_degrees, sprite_width, sprite_height):
+    # Derive the tightest orthographic scale that keeps the rig fully in
+    # frame for every yaw angle at the given pitch, accounting for
+    # non-square sprites via Blender's sensor_fit='AUTO' behavior (which
+    # fits ortho_scale to the larger pixel dimension and derives the other
+    # axis from the resolution aspect ratio).
+    pitch_radians = math.radians(pitch_degrees)
+
+    # the image's horizontal axis always sees the full horizontal sweep,
+    # since the pivot orbits through every yaw angle
+    frame_half_width = horizontal_radius
+
+    # the image's vertical axis sees a blend of the rig's height and its
+    # horizontal extent, proportional to how steeply we're looking down
+    frame_half_height = (vertical_half_height * math.cos(pitch_radians)
+                         + horizontal_radius * math.sin(pitch_radians))
+
+    required_width = frame_half_width * 2.0
+    required_height = frame_half_height * 2.0
+
+    if sprite_width >= sprite_height:
+        return max(required_width, required_height * (sprite_width / sprite_height))
+    else:
+        return max(required_height, required_width * (sprite_height / sprite_width))
+
+
+def _create_export_camera(rig, pitch_degrees, ortho_padding, distance_multiplier, sprite_width, sprite_height):
+    # Build a fresh pivot + orthographic camera from scratch rather than
+    # trusting whatever camera/transform happens to already be in the scene.
+    # The pivot sits at the rig's location with no rotation, and the camera
+    # is placed at a known offset (yaw 0 = world +X, tilted up by pitch_degrees)
+    # so that DIRECTION_YAWS is always correct by construction.
+    horizontal_radius, vertical_half_height = _compute_rig_bounds(rig)
+    distance = max(horizontal_radius, vertical_half_height) * distance_multiplier
+
+    pivot = bpy.data.objects.new(f"{rig.name}_ExportCameraPivot", None)
     bpy.context.collection.objects.link(pivot)
     pivot.location = rig.matrix_world.translation.copy()
+    pivot.rotation_euler = (0.0, 0.0, 0.0)
 
-    original_parent = camera.parent
-    original_matrix_parent_inverse = camera.matrix_parent_inverse.copy()
-    original_matrix_world = camera.matrix_world.copy()
+    camera_data = bpy.data.cameras.new(f"{rig.name}_ExportCamera")
+    camera_data.type = 'ORTHO'
+    camera_data.sensor_fit = 'AUTO'
+    camera_data.ortho_scale = _compute_ortho_scale(
+        horizontal_radius, vertical_half_height, pitch_degrees, sprite_width, sprite_height
+    ) * ortho_padding
+    camera_data.clip_start = max(distance - (horizontal_radius + vertical_half_height) * 2.0, 0.01)
+    camera_data.clip_end = distance + (horizontal_radius + vertical_half_height) * 2.0
 
+    camera = bpy.data.objects.new(f"{rig.name}_ExportCamera", camera_data)
+    bpy.context.collection.objects.link(camera)
     camera.parent = pivot
-    camera.matrix_parent_inverse = pivot.matrix_world.inverted()
-    camera.matrix_world = original_matrix_world
 
-    return pivot, original_parent, original_matrix_parent_inverse, original_matrix_world
+    pitch_radians = math.radians(pitch_degrees)
+    local_offset = Vector((
+        distance * math.cos(pitch_radians),
+        0.0,
+        distance * math.sin(pitch_radians),
+    ))
+    camera.location = local_offset
+
+    # orient the camera to look back at the pivot's origin, keeping world +Z as "up"
+    camera.rotation_mode = 'QUATERNION'
+    look_direction = (-local_offset).normalized()
+    camera.rotation_quaternion = look_direction.to_track_quat('-Z', 'Y')
+
+    bpy.context.view_layer.update()
+    return pivot, camera
 
 
-def _destroy_camera_pivot(camera, pivot, original_parent, original_matrix_parent_inverse, original_matrix_world):
-    # restore the camera's original parenting/transform and remove the pivot
-    camera.parent = original_parent
-    camera.matrix_parent_inverse = original_matrix_parent_inverse
-    camera.matrix_world = original_matrix_world
+def _destroy_export_camera(pivot, camera):
+    bpy.data.objects.remove(camera, do_unlink=True)
     bpy.data.objects.remove(pivot, do_unlink=True)
 
 
@@ -101,37 +230,10 @@ def _set_pivot_angle(pivot, angle_name):
     bpy.context.view_layer.update()
 
 
-def _ensure_orthographic_camera(camera, ortho_padding):
-    # Perspective cameras foreshorten geometry based on distance, so an
-    # asymmetric character (e.g. forward-leaning head, hair, backpack) will
-    # clip differently depending on which side faces the camera as it orbits.
-    # Orthographic projection keeps apparent scale consistent across all angles.
-    original_type = camera.data.type
-    original_ortho_scale = camera.data.ortho_scale
-
-    if camera.data.type != 'ORTHO':
-        print(f"[blenderExport] Camera '{camera.name}' was '{camera.data.type}', "
-              f"switching to 'ORTHO' to avoid per-angle clipping.")
-        camera.data.type = 'ORTHO'
-        # perspective cameras don't have a meaningful ortho_scale set up, so
-        # derive a reasonable starting scale from the camera's current lens/distance
-        if original_ortho_scale <= 0:
-            camera.data.ortho_scale = 5.0
-
-    # add padding regardless, since even an already-orthographic camera can be
-    # framed too tightly for angles that expose more of the character's silhouette
-    camera.data.ortho_scale *= ortho_padding
-
-    return original_type, original_ortho_scale
-
-
-def _restore_camera_projection(camera, original_type, original_ortho_scale):
-    camera.data.type = original_type
-    camera.data.ortho_scale = original_ortho_scale
-
-
 def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, sprite_height=DEFAULT_SPRITE_HEIGHT,
-                       columns=DEFAULT_COLUMNS, ortho_padding=DEFAULT_ORTHO_PADDING): # mode: isometric, top-down, etc
+                       columns=DEFAULT_COLUMNS, ortho_padding=DEFAULT_ORTHO_PADDING,
+                       camera_pitch_degrees=None,
+                       camera_distance_multiplier=DEFAULT_CAMERA_DISTANCE_MULTIPLIER): # mode: isometric, top-down, etc
     # get all actions for the current blend file
     actions = bpy.data.actions
     if not actions:
@@ -142,11 +244,7 @@ def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, spri
     if rig is None or rig.type != 'ARMATURE':
         raise ValueError("No active rig selected.")
 
-    # get camera
     scene = bpy.context.scene
-    camera = scene.camera
-    if camera is None:
-        raise ValueError("No camera found in the scene.")
 
     # set up camera angles based on the mode
     if mode == "isometric":
@@ -155,6 +253,9 @@ def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, spri
         angles = ["up", "down", "left", "right"]
     else:
         raise ValueError(f"Unsupported mode: {mode}")
+
+    if camera_pitch_degrees is None:
+        camera_pitch_degrees = DEFAULT_MODE_PITCH_DEGREES[mode]
 
     # resolve blender-relative paths (e.g. "//export") against the current blend file
     output_path = bpy.path.abspath(output_path)
@@ -192,14 +293,14 @@ def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, spri
     animation_data = {}
     sheet_filename = "sprite_sheet.png"
 
-    # force an orthographic camera (with headroom padding) so apparent character
-    # scale/framing stays consistent across every orbit angle, rather than
-    # clipping only on angles that expose more of the silhouette to the camera
-    original_camera_type, original_ortho_scale = _ensure_orthographic_camera(camera, ortho_padding)
-
-    # set up a pivot so the camera can orbit the rig per-direction without
-    # disturbing its original pitch/distance
-    pivot, original_parent, original_matrix_parent_inverse, original_matrix_world = _create_camera_pivot(rig, camera)
+    # build a dedicated export camera/pivot from scratch rather than trusting
+    # whatever camera is already in the scene, so framing and direction yaws
+    # are always correct regardless of how the artist set up their scene
+    pivot, camera = _create_export_camera(
+        rig, camera_pitch_degrees, ortho_padding, camera_distance_multiplier, sprite_width, sprite_height
+    )
+    original_scene_camera = scene.camera
+    scene.camera = camera
 
     try:
         tile_index = 0
@@ -212,7 +313,7 @@ def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, spri
 
                 # Sanitize names for safe file exporting
                 action_name = action.name.replace(" ", "_").replace("/", "-")
-                animation_id = f"{action_name}_{angle.replace('-', '_')}"
+                animation_id = f"{action_name}_{angle.replace("-", "_")}"
                 sprite_cords_list = []
 
                 for frame in range(int(action.frame_range[0]), int(action.frame_range[1]) + 1):
@@ -242,9 +343,10 @@ def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, spri
                     "isLooping": True
                 }
     finally:
-        # always restore the camera, even if rendering raised partway through
-        _destroy_camera_pivot(camera, pivot, original_parent, original_matrix_parent_inverse, original_matrix_world)
-        _restore_camera_projection(camera, original_camera_type, original_ortho_scale)
+        # always restore the scene's original camera and remove our temporary
+        # export camera/pivot, even if rendering raised partway through
+        scene.camera = original_scene_camera
+        _destroy_export_camera(pivot, camera)
 
     # save the final sprite sheet
     sprite_sheet.save(os.path.join(output_path, sheet_filename))
@@ -274,6 +376,14 @@ def _parse_args():
     parser.add_argument("--ortho-padding", dest="ortho_padding", type=float, default=DEFAULT_ORTHO_PADDING,
                          help="Multiplier applied to the camera's orthographic scale to add headroom margin "
                               "and avoid clipping on angles that expose more of the character's silhouette.")
+    parser.add_argument("--camera-pitch", dest="camera_pitch_degrees", type=float, default=None,
+                         help="Degrees above the horizontal plane to tilt the generated export camera. "
+                              "Defaults to 35.264 (true isometric) for --mode isometric, or 90 (straight down) "
+                              "for --mode top-down.")
+    parser.add_argument("--camera-distance-multiplier", dest="camera_distance_multiplier", type=float,
+                         default=DEFAULT_CAMERA_DISTANCE_MULTIPLIER,
+                         help="How far back to place the generated export camera, as a multiple of the rig's "
+                              "computed bounding radius.")
 
     return parser.parse_args(argv_after_dashdash)
 
@@ -287,5 +397,7 @@ if __name__ == "__main__":
         sprite_height=args.sprite_height,
         columns=args.columns,
         ortho_padding=args.ortho_padding,
+        camera_pitch_degrees=args.camera_pitch_degrees,
+        camera_distance_multiplier=args.camera_distance_multiplier,
     )
 

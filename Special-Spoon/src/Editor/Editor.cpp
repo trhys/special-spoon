@@ -272,6 +272,7 @@ namespace Spoon
         SetWorkingDir(ResourceManager::Get().GetAssetsDir());
         m_Services.sceneManager->LoadManifest(project->dataPath);
         m_Services.renderer->UpdateRenderConfig();
+        m_AnimationTool = AnimationTool(m_Services.projectManager->GetAnimationsPath());
         m_CurrentProject = project;
         m_ShowCreateProjectPrompt = false;
         return true;

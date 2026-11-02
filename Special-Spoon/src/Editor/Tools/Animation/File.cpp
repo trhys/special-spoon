@@ -1,4 +1,5 @@
 #include "AnimationTool.h"
+#include "Core/Application.h"
 #include "Editor/Utils/Windows.h"
 #include "Utils/Macros.h"
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
@@ -113,6 +114,19 @@ namespace Spoon
     {
         if (!showLoad)
             return;
+        if (m_AnimationsDir.empty())
+        {
+            SS_DEBUG_LOG("[ANIMATION TOOL] Attempting to load animation with no working directory")
+            SS_DEBUG_LOG("[ANIMATION TOOL] Fetching working dir...")
+
+            m_AnimationsDir = Application::Get().GetProjectManager().GetAnimationsPath();
+            if (m_AnimationsDir.empty())
+            {
+                SS_DEBUG_LOG("[ANIMATION TOOL] Failed to fetch working directory...")
+                showLoad = false;
+                return;
+            }
+        }
         if (!ImGui::IsPopupOpen("Open Animation Data"))
             ImGui::OpenPopup("Open Animation Data");
 
@@ -133,12 +147,17 @@ namespace Spoon
                         if (ResourceManager::Get().LoadAnimationData(data.ID, data))
                         {
                             Open(ResourceManager::Get().GetAnimationData(data.ID));
+                            showLoad = false;
                             ImGui::CloseCurrentPopup();
                         }
                     }
                 }
             }
-            if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+            if (ImGui::Button("Cancel"))
+            {
+                showLoad = false;
+                ImGui::CloseCurrentPopup();
+            }
             ImGui::EndPopup();
         }
     }
