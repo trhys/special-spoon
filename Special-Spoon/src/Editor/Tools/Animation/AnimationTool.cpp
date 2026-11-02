@@ -500,6 +500,11 @@ namespace Spoon
             animData.spriteCords = animation.at("spriteCords").get<std::vector<SpriteCords>>();
             animData.frameRate = animation.value("frameRate", 0.1f);
             animData.isLooping = animation.value("isLooping", true);
+
+            // validate frame rate
+            if (animData.frameRate <= 0.0f)
+                animData.frameRate = 0.1f;
+            
             SaveAnimationData(animData, m_AnimationsDir);
         }
     }

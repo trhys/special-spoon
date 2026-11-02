@@ -130,9 +130,11 @@ namespace Spoon
                         // load the selected animation data and open it in the editor
                         AnimationData data;
                         LoadAnimationData(entry.path(), data);
-                        ResourceManager::Get().LoadAnimationData(data.ID, data);
-                        Open(ResourceManager::Get().GetAnimationData(data.ID));
-                        ImGui::CloseCurrentPopup();
+                        if (ResourceManager::Get().LoadAnimationData(data.ID, data))
+                        {
+                            Open(ResourceManager::Get().GetAnimationData(data.ID));
+                            ImGui::CloseCurrentPopup();
+                        }
                     }
                 }
             }
