@@ -63,5 +63,9 @@ namespace Spoon
         v.spriteCords = j.at("spriteCords").get<std::vector<SpriteCords>>();
         v.frameRate = j.value("frameRate", 0.1f);
         v.isLooping = j.value("isLooping", true);
+
+        // validate framerate to prevent hanging the editor
+        if (v.frameRate <= 0.0f)
+            v.frameRate = 0.1f;
     }
 }

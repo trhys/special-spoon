@@ -481,31 +481,44 @@ namespace Spoon
         const std::filesystem::path& jsonPath
     )
     {
-        if (!selectedNode || jsonPath.empty()) return;
-
-        // load file path into json
-        std::ifstream file(jsonPath, std::ios::in);
-        if (!file.is_open()) return;
-
-        nlohmann::json j;
-        file >> j;
-        file.close();
-
-        // populate animation data from json
-        for (auto& [key, animation] : j.items())
+        if (!selectedNode || jsonPath.empty()) 
         {
-            AnimationData animData;
-            animData.ID = key;
-            animData.textureID = selectedNode->m_Name;
-            animData.spriteCords = animation.at("spriteCords").get<std::vector<SpriteCords>>();
-            animData.frameRate = animation.value("frameRate", 0.1f);
-            animData.isLooping = animation.value("isLooping", true);
+            SS_DEBUG_LOG("[ANIMATION TOOL] Invalid selected node or JSON path.")
+            return;
+        }
 
-            // validate frame rate
-            if (animData.frameRate <= 0.0f)
-                animData.frameRate = 0.1f;
-            
-            SaveAnimationData(animData, m_AnimationsDir);
+        try {
+            // load file path into json
+            std::ifstream file(jsonPath, std::ios::in);
+            if (!file.is_open()) 
+            {
+                SS_DEBUG_LOG("[ANIMATION TOOL] Failed to open JSON file: " + jsonPath.string())
+                return;
+            }
+
+            nlohmann::json j;
+            file >> j;
+            file.close();
+
+            // populate animation data from json
+            for (auto& [key, animation] : j.items())
+            {
+                AnimationData animData;
+                animData.ID = key;
+                animData.textureID = selectedNode->m_Name;
+                animData.spriteCords = animation.at("spriteCords").get<std::vector<SpriteCords>>();
+                animData.frameRate = animation.value("frameRate", 0.1f);
+                animData.isLooping = animation.value("isLooping", true);
+
+                // validate frame rate
+                if (animData.frameRate <= 0.0f)
+                    animData.frameRate = 0.1f;
+
+                SaveAnimationData(animData, m_AnimationsDir);
+            }
+        } catch (const std::exception& e) {
+            // handle any exceptions that occur during import
+            SS_DEBUG_LOG("[ANIMATION TOOL] Failed to import animation JSON: " + std::string(e.what()))
         }
     }
 }
