@@ -102,7 +102,6 @@ namespace Spoon
         if (ImGui::BeginPopupModal("Edit Animation Mapping"))
         {
             DrawStateSelector<64>(editStateIDbuf);
-            ImGui::SameLine();
             DrawAnimationSelector<64>(editAnimationIDbuf, editSelectedAnimationPath);
 
             if (ImGui::Button("Submit"))
@@ -161,7 +160,6 @@ namespace Spoon
             static std::filesystem::path selectedAnimationPath;
 
             DrawStateSelector<64>(newStateIDbuf);
-            ImGui::SameLine();
             DrawAnimationSelector<64>(newAnimationIDbuf, selectedAnimationPath);
 
             if (ImGui::Button("Submit"))
