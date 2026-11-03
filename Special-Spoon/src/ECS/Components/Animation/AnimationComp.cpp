@@ -5,6 +5,51 @@
 
 namespace Spoon
 {
+    template<std::size_t N>
+    void DrawStateSelector(char (&buffer)[N])
+    {
+        if (ImGui::BeginCombo("State ID", buffer[0] ? buffer : "Select State"))
+        {
+            for (const auto& [name, id] : StateRegistry::Get().m_NameToID)
+            {
+                if (ImGui::Selectable(name.c_str()))
+                {
+                    strncpy(buffer, name.c_str(), N - 1);
+                    buffer[N - 1] = '\0';
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+
+    template<std::size_t N>
+    void DrawAnimationSelector(char (&buffer)[N], std::filesystem::path& path)
+    {
+        if (ImGui::BeginCombo("Animation ID", buffer[0] ? buffer : "Select Animation"))
+        {
+            // here we'll iterate the project's assets/animations directory
+            // for available animation data, and lazy load it once confirmed
+            auto animationsPath = Application::Get().GetProjectManager().GetAnimationsPath();
+            if (std::filesystem::exists(animationsPath))
+            {
+                for (const auto& file : std::filesystem::directory_iterator(animationsPath))
+                {
+                    if (!file.is_regular_file() || file.path().extension() != ".json")
+                        continue;
+
+                    const auto& name = file.path().stem().string();
+                    if (ImGui::Selectable(name.c_str()))
+                    {
+                        path = file.path();
+                        strncpy(buffer, name.c_str(), N - 1);
+                        buffer[N - 1] = '\0';
+                    }
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+
     void AnimationComp::SetAnimationData(const std::string animationID)
     {
         m_AnimationData = ResourceManager::Get().GetAnimationData(animationID);
@@ -16,6 +61,10 @@ namespace Spoon
         static std::string editingState = "";
         static char editStateIDbuf[64];
         static char editAnimationIDbuf[64];
+        static std::filesystem::path editSelectedAnimationPath;
+
+        bool openEditPopup = false;
+        bool openDeletePopup = false;
 
         if (ImGui::BeginChild("Animation Map", ImVec2(0, 250), ImGuiChildFlags_Borders))
         {
@@ -30,38 +79,57 @@ namespace Spoon
                     editingState = state;
                     strncpy(editStateIDbuf, state.c_str(), sizeof(editStateIDbuf));
                     strncpy(editAnimationIDbuf, animation.c_str(), sizeof(editAnimationIDbuf));
-                    ImGui::OpenPopup("Edit Animation Mapping");
+                    editSelectedAnimationPath.clear();
+                    openEditPopup = true;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Delete"))
                 {
                     deletedState = state;
-                    ImGui::OpenPopup("Delete Animation Mapping");
+                    openDeletePopup = true;
                 }
                 ImGui::PopID();
             }
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
+
+        if (openEditPopup)
+            ImGui::OpenPopup("Edit Animation Mapping");
+        if (openDeletePopup)
+            ImGui::OpenPopup("Delete Animation Mapping");
 
         CenterNext();
         if (ImGui::BeginPopupModal("Edit Animation Mapping"))
         {
-            ImGui::InputText("State ID", editStateIDbuf, IM_ARRAYSIZE(editStateIDbuf));
-            ImGui::InputText("Animation ID", editAnimationIDbuf, IM_ARRAYSIZE(editAnimationIDbuf));
+            DrawStateSelector<64>(editStateIDbuf);
+            ImGui::SameLine();
+            DrawAnimationSelector<64>(editAnimationIDbuf, editSelectedAnimationPath);
+
             if (ImGui::Button("Submit"))
             {
-                if(editStateIDbuf[0] != '\0' && editAnimationIDbuf[0] != '\0')
-                m_AnimationMap.erase(editingState);
-                m_AnimationMap[editStateIDbuf] = editAnimationIDbuf;
-                editStateIDbuf[0] = '\0';
-                editAnimationIDbuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
+                if (editStateIDbuf[0] != '\0' && editAnimationIDbuf[0] != '\0')
+                {
+                    bool loaded = true;
+                    if (!editSelectedAnimationPath.empty())
+                        loaded = ResourceManager::Get().LoadAnimationFromPath(editSelectedAnimationPath);
+
+                    if (loaded)
+                    {
+                        m_AnimationMap.erase(editingState);
+                        m_AnimationMap[editStateIDbuf] = editAnimationIDbuf;
+                        editStateIDbuf[0] = '\0';
+                        editAnimationIDbuf[0] = '\0';
+                        editSelectedAnimationPath.clear();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel"))
             {
                 editStateIDbuf[0] = '\0';
                 editAnimationIDbuf[0] = '\0';
+                editSelectedAnimationPath.clear();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
@@ -92,40 +160,9 @@ namespace Spoon
             static char newAnimationIDbuf[64];
             static std::filesystem::path selectedAnimationPath;
 
-            if (ImGui::BeginCombo("State ID", newStateIDbuf[0] ? newStateIDbuf : "Select State"))
-            {
-                for (const auto& [name, id] : StateRegistry::Get().m_NameToID)
-                {
-                    if (ImGui::Selectable(name.c_str()))
-                    {
-                        strncpy(newStateIDbuf, name.c_str(), sizeof(newStateIDbuf));
-                    }
-                }
-                ImGui::EndCombo();
-            } ImGui::SameLine();
-
-            if (ImGui::BeginCombo("Animation ID", newAnimationIDbuf[0] ? newAnimationIDbuf : "Select Animation"))
-            {
-                // here we'll iterate the project's assets/animations directory
-                // for available animation data, and lazy load it once confirmed
-                auto animationsPath = Application::Get().GetProjectManager().GetAnimationsPath();
-                if (std::filesystem::exists(animationsPath))
-                {
-                    for (const auto& file : std::filesystem::directory_iterator(animationsPath))
-                    {
-                        if (!file.is_regular_file() || file.path().extension() != ".json")
-                            continue;
-                        
-                        const auto& name = file.path().stem().string();
-                        if (ImGui::Selectable(name.c_str()))
-                        {
-                            selectedAnimationPath = file.path();
-                            strncpy(newAnimationIDbuf, name.c_str(), sizeof(newAnimationIDbuf));
-                        }
-                    }
-                }
-                ImGui::EndCombo();
-            }
+            DrawStateSelector<64>(newStateIDbuf);
+            ImGui::SameLine();
+            DrawAnimationSelector<64>(newAnimationIDbuf, selectedAnimationPath);
 
             if (ImGui::Button("Submit"))
             {
@@ -147,6 +184,7 @@ namespace Spoon
             {
                 newStateIDbuf[0] = '\0';
                 newAnimationIDbuf[0] = '\0';
+                selectedAnimationPath.clear();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
