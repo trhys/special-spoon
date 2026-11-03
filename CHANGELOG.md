@@ -218,3 +218,20 @@ note: Previous changes will not be in this log. This record will keep all change
 
 ---
 
+## 11/3/26:
+
+### Animation Tooling
+- Rebuilt the animation editor with workflows to create, load, import, edit, preview, and save project animations.
+- Added manual sprite-frame editing and grid slicing, with controls for cell size, rows, columns, margins, and spacing. Grid selections can be previewed, added as frame ranges, and clamped to texture bounds.
+- Added animation playback controls and settings for autoplay, looping, frame rate, and tooltips.
+- Added animation component controls for assigning animations to states, editing or deleting mappings, and loading animation data from project assets.
+- Added project-scoped animation storage under `assets/animations/`, JSON serialization, and resource-manager support for loading animation files and refreshing cached data.
+- Added a Blender export script that renders animations to sprite sheets and writes companion JSON data, with isometric and top-down export modes.
+
+### Atlas / Tile Maps
+- Added a reusable `AtlasGrid` utility for calculating sprite-sheet regions and identifying tiles from pixel coordinates.
+- Updated tile-map atlas editing and rendering to use grid settings for cell size, rows, columns, margins, and spacing; added configurable tile footprints.
+- Improved the tile palette with atlas-based tile selection and handling for invalid or missing atlas textures. Empty tiles are treated as non-solid for tile-map collision.
+
+---
+
