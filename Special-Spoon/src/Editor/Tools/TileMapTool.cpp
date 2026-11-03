@@ -660,8 +660,8 @@ namespace Spoon
                 const std::size_t tileIndex =
                     static_cast<std::size_t>(cellY) * width +
                     static_cast<std::size_t>(cellX);
-                const std::uint16_t newTile = (m_EraseMode || m_SelectedTileId == 0)
-                    ? static_cast<std::uint16_t>(0)
+                const std::uint16_t newTile = (m_EraseMode || m_SelectedTileId == -1)
+                    ? static_cast<std::uint16_t>(-1)
                     : static_cast<std::uint16_t>(m_SelectedTileId);
                 if (activeLayer.tiles[tileIndex].id != newTile)
                 {
@@ -680,14 +680,14 @@ namespace Spoon
                 const std::size_t expectedCount =
                     width * static_cast<std::size_t>(m_TileMap->m_MapSize.y);
                 if (activeLayer.tiles.size() != expectedCount)
-                    activeLayer.tiles.resize(expectedCount, Tile{0});
-
+                    activeLayer.tiles.resize(expectedCount, Tile{-1});
+                                            
                 const std::size_t tileIndex =
                     static_cast<std::size_t>(cellY) * width +
                     static_cast<std::size_t>(cellX);
-                if (activeLayer.tiles[tileIndex].id != 0)
+                if (activeLayer.tiles[tileIndex].id != -1)
                 {
-                    activeLayer.tiles[tileIndex].id = 0;
+                    activeLayer.tiles[tileIndex].id = -1;
                     m_HasPendingBuild = true;
                 }
             }
