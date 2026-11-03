@@ -44,7 +44,8 @@ namespace Spoon
     // file dialog for selecting animation JSON files
     void DrawAnimationFileBrowser(std::filesystem::path& selectedJsonPath)
     {
-        ImGuiFileDialog::Instance()->OpenDialog("SelectAnimationFile", "Select Animation JSON", ".json");
+        if (ImGui::Button("Select Animation JSON"))
+             ImGuiFileDialog::Instance()->OpenDialog("SelectAnimationFile", "Select Animation JSON", ".json");
         if (ImGuiFileDialog::Instance()->Display("SelectAnimationFile"))
         {
             if (ImGuiFileDialog::Instance()->IsOk())
@@ -142,11 +143,9 @@ namespace Spoon
                     if (ImGui::Selectable(fileName.c_str()))
                     {
                         // load the selected animation data and open it in the editor
-                        AnimationData data;
-                        LoadAnimationData(entry.path(), data);
-                        if (ResourceManager::Get().LoadAnimationData(data.ID, data))
+                        if (ResourceManager::Get().LoadAnimationFromPath(entry.path()))
                         {
-                            Open(ResourceManager::Get().GetAnimationData(data.ID));
+                            Open(ResourceManager::Get().GetAnimationData(fileName));
                             showLoad = false;
                             ImGui::CloseCurrentPopup();
                         }
