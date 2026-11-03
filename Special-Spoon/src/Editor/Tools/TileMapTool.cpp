@@ -655,7 +655,7 @@ namespace Spoon
                 const std::size_t expectedCount =
                     width * static_cast<std::size_t>(m_TileMap->m_MapSize.y);
                 if (activeLayer.tiles.size() != expectedCount)
-                    activeLayer.tiles.resize(expectedCount, Tile{0});
+                    activeLayer.tiles.resize(expectedCount, Tile{-1});
 
                 const std::size_t tileIndex =
                     static_cast<std::size_t>(cellY) * width +
