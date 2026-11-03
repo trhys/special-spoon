@@ -660,9 +660,9 @@ namespace Spoon
                 const std::size_t tileIndex =
                     static_cast<std::size_t>(cellY) * width +
                     static_cast<std::size_t>(cellX);
-                const std::uint16_t newTile = (m_EraseMode || m_SelectedTileId == -1)
-                    ? static_cast<std::uint16_t>(-1)
-                    : static_cast<std::uint16_t>(m_SelectedTileId);
+                const int newTile = (m_EraseMode || m_SelectedTileId == -1)
+                    ? -1
+                    : m_SelectedTileId;
                 if (activeLayer.tiles[tileIndex].id != newTile)
                 {
                     activeLayer.tiles[tileIndex].id = newTile;
