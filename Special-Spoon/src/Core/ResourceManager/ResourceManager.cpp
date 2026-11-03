@@ -169,6 +169,7 @@ namespace Spoon
             AnimationData animationData;
             from_json(j, animationData);
             std::string id = file_path.stem().string();
+            animationData.ID = id;
             if (!LoadAnimationData(id, animationData))
                 return false;
         }

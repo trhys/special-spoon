@@ -20,6 +20,8 @@ namespace Spoon
                     if (ImGui::MenuItem("Load Animation")) showLoad = !showLoad;
                     if (ImGui::MenuItem("New Animation")) showCreate = !showCreate;
                     if (ImGui::MenuItem("Import Animation")) showImport = !showImport;
+                    if (ImGui::MenuItem("Save Animation", nullptr, false, currentData != nullptr))
+                        SaveAnimationData(*currentData, m_AnimationsDir);
                     ImGui::EndMenu();
                 }
 

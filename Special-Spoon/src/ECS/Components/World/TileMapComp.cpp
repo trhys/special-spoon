@@ -320,6 +320,8 @@ namespace Spoon {
 
 	bool TileMapComp::SetTile(int id, int x, int y, int layerIndex)
 	{
+		if (id < -1)
+			id = -1;
 		if (!m_Atlas.grid.IsValid() || id >= m_Atlas.grid.Count())
 		    return false;
 		
@@ -355,6 +357,8 @@ namespace Spoon {
 
 	bool TileMapComp::FillLayer(int layerIndex, int tileId)
 	{
+		if (tileId < -1)
+			tileId = -1;
 		if (!m_Atlas.grid.IsValid() || tileId >= m_Atlas.grid.Count())
 		    return false;
 		

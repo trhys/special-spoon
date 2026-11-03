@@ -312,7 +312,10 @@ def export_animations(output_path, mode, sprite_width=DEFAULT_SPRITE_WIDTH, spri
                 rig.animation_data.action = action
 
                 # Sanitize names for safe file exporting
-                action_name = action.name.replace(" ", "_").replace("/", "-")
+                action_name = "".join(
+                     "_" if char in ' <>:"/\\|?*' or ord(char) < 32 else char
+                     for char in action.name
+                 )
                 animation_id = f"{action_name}_{angle.replace("-", "_")}"
                 sprite_cords_list = []
 
