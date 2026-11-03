@@ -6,4 +6,7 @@ target_sources(Special-Spoon
         MemoryUtils.h
         UserConfig.h
         UserConfig.cpp
+
+        Graphics/GridSlicer.cpp
+        Graphics/GridSlicer.h
 )

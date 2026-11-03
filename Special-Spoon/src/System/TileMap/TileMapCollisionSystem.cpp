@@ -74,7 +74,7 @@ namespace Spoon
                             tileIndex < expectedTileCount)
                         {
                             const Tile& tile = layer.tiles[tileIndex];
-                            solid = tile.id != 0;
+                            solid = tile.id != -1;
                         }
                     }
 

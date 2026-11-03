@@ -2,7 +2,7 @@
 
 #include "Services.h"
 
-#include "Tools/AnimationTool.h"
+#include "Tools/Animation/AnimationTool.h"
 #include "Tools/TileMapTool.h"
 #include "Tools/TextureRectTool.h"
 
@@ -123,7 +123,7 @@ namespace Spoon
         bool m_Play = false;
 
         TextureRectTool     m_TextureRectTool;
-        AnimationTool       m_AnimationTool;
+        AnimationTool       m_AnimationTool = AnimationTool(m_Services.projectManager->GetAnimationsPath());
         TileMapTool         m_TileMapTool;
 
         UUID m_SelectedEntity = -1;

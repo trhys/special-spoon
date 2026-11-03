@@ -11,7 +11,8 @@ namespace Spoon
                 sf::Texture texture;
                 if (!texture.loadFromFile(file_path))
                 {
-                    throw std::runtime_error("Failed to load texture from file path: " + file_path.string());
+                    SS_DEBUG_LOG("[RESOURCE MANAGER] Failed to load texture from file path: " + file_path.string())
+                    return;
                 }
                 m_Textures.emplace(id, std::move(texture));
                 texturePaths[id] = file_path;
@@ -25,7 +26,8 @@ namespace Spoon
                 sf::Font font;
                 if (!font.openFromFile(file_path))
                 {
-                    throw std::runtime_error("Failed to load font from file path: " + file_path.string());
+                    SS_DEBUG_LOG("[RESOURCE MANAGER] Failed to load font from file path: " + file_path.string())
+                    return;
                 }
                 m_Fonts.emplace(id, std::move(font));
                 fontPaths[id] = file_path;
@@ -39,7 +41,8 @@ namespace Spoon
                 sf::SoundBuffer soundBuffer;
                 if (!soundBuffer.loadFromFile(file_path))
                 {
-                    throw std::runtime_error("Failed to load sound buffer from file path: " + file_path.string());
+                    SS_DEBUG_LOG("[RESOURCE MANAGER] Failed to load sound buffer from file path: " + file_path.string())
+                    return;
                 }
                 m_SoundBuffers.emplace(id, std::move(soundBuffer));
                 soundPaths[id] = file_path;

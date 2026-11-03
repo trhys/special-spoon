@@ -99,44 +99,6 @@ namespace Spoon
         v.ID = UUID::ToID(j.get<std::string>());
     }
 
-    inline void to_json(json& j, const SpriteCords& v)
-    {
-        j = json{
-            { "x", v.x },
-            { "y", v.y },
-            { "width", v.width },
-            { "height", v.height }
-        };
-    }
-
-    inline void from_json(const json& j, SpriteCords& v)
-    {
-        v.x = j["x"].get<int>();
-        v.y = j["y"].get<int>();
-        v.width = j["width"].get<int>();
-        v.height = j["height"].get<int>();
-    }
-
-    inline void to_json(json& j, const AnimationData& v)
-    {
-        j = json{
-            {"ID", v.ID},
-            {"TextureID", v.textureID},
-            {"SpriteCords", v.spriteCords},
-            {"Framerate", v.frameRate},
-            {"Looping", v.isLooping}
-        };
-    }
-
-    inline void from_json(const json& j, AnimationData& v)
-    {
-        v.ID = j.at("ID").get<std::string>();
-        v.textureID = j.at("TextureID").get<std::string>();
-        v.spriteCords = j.at("SpriteCords").get<std::vector<SpriteCords>>();
-        v.frameRate = j.value("Framerate", 0.1f);
-        v.isLooping = j.value("Looping", true);
-    }
-
 	// Registry types
     inline void to_json(json& j, const ActionType& v)
     {

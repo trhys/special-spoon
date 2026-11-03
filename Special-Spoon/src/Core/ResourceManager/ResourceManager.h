@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Core.h"
+#include "Utils/Macros.h"
 #include "ECS/Components/Animation/AnimationData.h"
 
 #include "SFML/Graphics.hpp"
@@ -67,7 +68,8 @@ namespace Spoon
         template<typename RESOURCE>
         RESOURCE& GetResource(std::string id);
 
-        void LoadAnimationData(const std::string& id, const AnimationData& animationData);
+        bool LoadAnimationData(const std::string& id, const AnimationData& animationData);
+        bool LoadAnimationFromPath(const std::filesystem::path& file_path);
         AnimationData* GetAnimationData(const std::string& id);
 
         const std::unordered_map<std::string, sf::Texture>& GetTextures() { return m_Textures; }

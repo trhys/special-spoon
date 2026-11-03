@@ -3,33 +3,29 @@
 #include "ECS/Components/Component.h"
 #include "Core/Renderer/Renderable.h"
 #include "Core/Renderer/WorldProjection.h"
-
-#include <optional>
+#include "Utils/Graphics/GridSlicer.h"
 
 namespace Spoon {
 
   // base tile
   struct Tile {
-    uint16_t id;                // index to rect in the atlas
+    int id;                     // index to rect in the atlas
     bool collidable = false;    // collision extraction flag
   };
   
   // atlas reference - we'll probably config this so change the defaults 
   // depending on the asset provided for the project
   struct TileAtlas {
-    std::string textureId;   						            // atlas texture id - fetch from resource manager on resolve()
-    sf::Texture* texture = nullptr;                 // runtime texture ptr - load on resolve()
-    int tileWidth = 16;                             // width of a single tile in the atlas - also the logical cell width
-    int tileHeight = 16;                            // height of a single tile - also the logical cell height
-    int tileFootprintX = 0;                         // projected (isometric diamond) width of a cell - 0 uses tileWidth
-    int tileFootprintY = 0;                         // projected (isometric diamond) height of a cell - 0 uses tileHeight
-    int columns = 1;                                // derived or serialized
-    int rows = 1;                                   // derived or serialized
-    int margin = 0;                                 // atlas spacing support
-    int spacing = 0;
-	  bool fetchBadTexture = false;  					        // editor flag
+    std::string textureId;   				// atlas texture id - fetch from resource manager on resolve()
+    sf::Texture* texture = nullptr; // runtime texture ptr - load on resolve()
+    
+    AtlasGrid grid;                                 
+    int tileFootprintX = 0;         // projected (isometric diamond) width of a cell - 0 uses tileWidth
+    int tileFootprintY = 0;         // projected (isometric diamond) height of a cell - 0 uses tileHeight
+    
+	  bool fetchBadTexture = false;  	// editor flag
 
-    void Resolve();                                 // get texture in memory from resource manager
+    void Resolve();                 // get texture in memory from resource manager
   };
     
   // abstraction for the tilemap comp to hold. we'll build the vertex array from this
@@ -54,12 +50,12 @@ namespace Spoon {
           bool ValidateBounds(int x, int y, int layerIndex) const;
 
           // tile/layer methods
-          bool SetTile(uint16_t id, int x, int y, int layerIndex);
+          bool SetTile(int id, int x, int y, int layerIndex);
           bool ClearTile(int x, int y, int layerIndex);
-          bool FillLayer(int layerIndex, uint16_t tileId);
+          bool FillLayer(int layerIndex, int tileId);
           bool ClearLayer(int layerIndex);
 
-		      std::optional<uint16_t> GetTile(int x, int y, int layerIndex) const;
+		      std::optional<int> GetTile(int x, int y, int layerIndex) const;
           std::vector<Tile> GetLayerTiles(int layerIndex) const;
 
           // helpers for deriving projection state
@@ -71,7 +67,6 @@ namespace Spoon {
 
           // build the map
           void BuildMap();
-          sf::IntRect GetAtlasRect(uint16_t id) const;
 		      sf::Color LayerColor(const TileLayer& layer) const;
 
           // members
@@ -93,7 +88,7 @@ namespace Spoon {
   };
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Tile, id, collidable)
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TileAtlas, textureId, tileWidth, tileHeight, tileFootprintX, tileFootprintY, columns, rows, margin, spacing)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(TileAtlas, textureId, grid, tileFootprintX, tileFootprintY)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileLayer, name, visible, collidable, opacity, tiles)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TileMapComp, m_MapSize, m_Atlas, m_Layers)
 }
