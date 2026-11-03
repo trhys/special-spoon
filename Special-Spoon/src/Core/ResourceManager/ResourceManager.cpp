@@ -137,10 +137,17 @@ namespace Spoon
                 return false;
         }
 
+        // always refresh the cached entry - animations can be re-exported/re-imported
+        // with updated spriteCords/frameRate/etc. after a scene has already loaded and
+        // cached the old data, so an id match here must overwrite rather than no-op.
         auto found = m_Animations.find(id);
-        if(found == m_Animations.end())
+        if (found == m_Animations.end())
         {
             m_Animations.emplace(id, animationData);
+        }
+        else
+        {
+            found->second = animationData;
         }
         return true;
     }
