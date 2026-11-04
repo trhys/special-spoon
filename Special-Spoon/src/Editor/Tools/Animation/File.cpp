@@ -120,7 +120,7 @@ namespace Spoon
             SS_DEBUG_LOG("[ANIMATION TOOL] Attempting to load animation with no working directory")
             SS_DEBUG_LOG("[ANIMATION TOOL] Fetching working dir...")
 
-            m_AnimationsDir = Application::Get().GetProjectManager().GetAnimationsPath();
+            m_AnimationsDir = Application::Get().GetProjectManager().GetCurrentProjectPaths().Animations();
             if (m_AnimationsDir.empty())
             {
                 SS_DEBUG_LOG("[ANIMATION TOOL] Failed to fetch working directory...")

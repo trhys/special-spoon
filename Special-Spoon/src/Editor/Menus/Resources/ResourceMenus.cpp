@@ -32,7 +32,7 @@ namespace Spoon
             ImGui::BeginDisabled(!m_CurrentProject);
             if (ImGui::Button("Refresh"))
             {
-                ResourceManager::Get().RefreshAssets(m_CurrentProject->assetsPath);
+                ResourceManager::Get().RefreshAssets(m_CurrentProject->paths.Assets());
                 workingDir = ResourceManager::Get().GetAssetsDir();
             }
             ImGui::EndDisabled();

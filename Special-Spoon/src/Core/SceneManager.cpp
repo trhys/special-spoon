@@ -96,7 +96,7 @@ namespace Spoon
             std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
             
             // Resolve path relative to project assets directory
-            auto fullPath = project ? project->assetsPath / filePath : filePath;
+            auto fullPath = project ? project->paths.Assets() / filePath : filePath;
             ResourceManager::Get().LoadResource<sf::Texture>(resID, fullPath);
             SS_DEBUG_LOG("Loaded texture resource with ID: " +  resID)
         }
@@ -109,7 +109,7 @@ namespace Spoon
                 std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
 
                 // Resolve path relative to project assets directory
-                auto fullPath = project ? project->assetsPath / filePath : filePath;
+                auto fullPath = project ? project->paths.Assets() / filePath : filePath;
                 ResourceManager::Get().LoadResource<sf::Font>(resID, fullPath);
                 SS_DEBUG_LOG("Loaded font resource with ID: " +  resID)
             }
@@ -141,7 +141,7 @@ namespace Spoon
                 std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
 
                 // Resolve path relative to project assets directory
-                auto fullPath = project ? project->assetsPath / filePath : filePath;
+                auto fullPath = project ? project->paths.Assets() / filePath : filePath;
                 ResourceManager::Get().LoadResource<sf::SoundBuffer>(resID, fullPath);
                 SS_DEBUG_LOG("Loaded sound resource with ID: " +  resID)
             }

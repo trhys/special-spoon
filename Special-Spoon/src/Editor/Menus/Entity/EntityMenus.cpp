@@ -45,12 +45,10 @@ namespace Spoon
         if (!m_ShowCreateEntity)
             return;
 
-        static Blueprint selectedBP = Blueprint{"None", {}};
         static char newEntityBuf[64];
         auto clear = [&]()
         {
             newEntityBuf[0] = '\0';
-            selectedBP = Blueprint{"None", {}};
             m_ShowCreateEntity = false;
             ImGui::CloseCurrentPopup();
         };
@@ -68,35 +66,15 @@ namespace Spoon
             
             if (ImGui::BeginChild("Blueprint Selector", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                if (ImGui::BeginCombo("##Blueprints", selectedBP.GetDisplayName().c_str()))
-                {
-                    const auto& blueprints = m_Services.projectManager->GetBlueprints();
-                    for (std::size_t index = 0; index < blueprints.size(); ++index)
-                    {
-                        const Blueprint& blueprint = blueprints[index];
-                        const std::string& name = blueprint.GetDisplayName();
-                        ImGui::PushID(static_cast<int>(index));
-                        if (ImGui::Selectable(name.empty() ? "<Unnamed Blueprint>" : name.c_str(), selectedBP == blueprint))
-                        {
-                            selectedBP = blueprint;
-                        }
-                        ImGui::PopID();
-                    }
-                    ImGui::EndCombo();
-                }
-                ImGui::SameLine(); HelpMarker("Optionally, select a blueprint to use for this entity. The selected blueprint will"
-                                              "create the components automatically for that blueprint. See the tooltip for default"
-                                              "blueprints for more info.");
+                // wip: the blueprint system is being refactored; the selector will
+                // return once the new EntityBlueprint format is in place.
+                ImGui::TextDisabled("Blueprints are being refactored and are temporarily unavailable.");
             }
             ImGui::EndChild();
             ImGui::Separator();
             if (ImGui::Button("Submit"))
             {
-                UUID id = m_Services.entityManager->CreateEntity(newEntityBuf);
-                for (const auto& compID : selectedBP.GetComps())
-                {
-                    m_Services.entityManager->GetCreators().at(compID)(id);
-                }
+                m_Services.entityManager->CreateEntity(newEntityBuf);
                 clear();
             }
             ImGui::SameLine();

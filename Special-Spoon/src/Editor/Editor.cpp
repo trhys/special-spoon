@@ -184,7 +184,6 @@ namespace Spoon
         DrawCreateProjectError();
         DrawLoadProject();
         DrawLoadProjectError();
-        DrawDeleteProject();
         DrawConfigProject();
 		DrawOverwriteProjectPrompt();
         DrawSaveProjectError();
@@ -268,11 +267,11 @@ namespace Spoon
         if (!project)
             return false;
         SetActiveScene(nullptr);
-        ResourceManager::Get().ScanAssets(project->assetsPath);
+        ResourceManager::Get().ScanAssets(project->paths.Assets());
         SetWorkingDir(ResourceManager::Get().GetAssetsDir());
-        m_Services.sceneManager->LoadManifest(project->dataPath);
+        m_Services.sceneManager->LoadManifest(project->paths.Data());
         m_Services.renderer->UpdateRenderConfig();
-        m_AnimationTool = AnimationTool(m_Services.projectManager->GetAnimationsPath());
+        m_AnimationTool = AnimationTool(m_Services.projectManager->GetCurrentProjectPaths().Animations());
         m_CurrentProject = project;
         m_ShowCreateProjectPrompt = false;
         return true;

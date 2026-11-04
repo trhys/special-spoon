@@ -5,7 +5,21 @@
 
 namespace Spoon
 {
-    class Blueprint
+    // wip: refactoring
+
+    struct ComponentBlueprint
+    {
+        std::string Name;
+        std::vector<std::string> Dependencies;
+    };
+
+    struct EntityBlueprint
+    {
+        std::string m_Name;
+        std::vector<ComponentBlueprint> m_Components;
+    };
+
+    /*class Blueprint
     {
     public:
         Blueprint() = default;
@@ -57,5 +71,5 @@ namespace Spoon
             Player
         };
     }
-
+    */
 }

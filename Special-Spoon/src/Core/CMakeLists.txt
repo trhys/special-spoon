@@ -14,6 +14,7 @@ target_sources(Special-Spoon
         EntityManager/EntityManager.cpp
 
         Project/Config.h
+        Project/Paths.h
         Project/Policies.h
         Project/Policies.cpp
         Project/ProjectManager.h

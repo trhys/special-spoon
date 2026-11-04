@@ -21,7 +21,7 @@ namespace Spoon
     
     // file dialog options
     enum class DialogOption {
-        Open, Delete
+        Open
     };
 
     class Editor
@@ -64,7 +64,6 @@ namespace Spoon
         void OpenFileDialog(DialogOption option);
         void DrawLoadProject();
         void DrawLoadProjectError();
-        void DrawDeleteProject();
 		void DrawConfigProject();
 		void DrawOverwriteProjectPrompt();
         void DrawSaveProjectError();
@@ -123,7 +122,7 @@ namespace Spoon
         bool m_Play = false;
 
         TextureRectTool     m_TextureRectTool;
-        AnimationTool       m_AnimationTool = AnimationTool(m_Services.projectManager->GetAnimationsPath());
+        AnimationTool       m_AnimationTool = AnimationTool(m_Services.projectManager->GetCurrentProjectPaths().Animations());
         TileMapTool         m_TileMapTool;
 
         UUID m_SelectedEntity = -1;
@@ -140,9 +139,6 @@ namespace Spoon
         bool m_ShowCreateProjectError = false;      // flag for showing the create project error
 		bool m_ShowLoadProject = false;             // flag for loading a project
         bool m_ShowLoadProjectError = false;        // flag for showing the load project error
-        bool m_ShowDeleteProject = false;             // flag for deleting a project
-        std::filesystem::path m_ProjectToDelete;
-        std::string m_DeleteProjectError;
         bool m_ShowConfigProject = false;           // flag for configuring a project
 		bool m_ShowOverwriteProjectPrompt = false;  // flag for showing the overwrite project prompt
 		bool m_ShowSaveProjectError = false;        // flag for showing the save project error

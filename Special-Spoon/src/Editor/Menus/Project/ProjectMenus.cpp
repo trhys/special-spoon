@@ -104,15 +104,8 @@ namespace Spoon
         switch (option) {
             case DialogOption::Open :
                 ImGuiFileDialog::Instance()->OpenDialog(
-                    "LoadProject", "Choose Project File", ".json");
+                    "LoadProject", "Choose Project File", ".sproj");
                 m_ShowLoadProject = true;
-                break;
-            case DialogOption::Delete :
-                ImGuiFileDialog::Instance()->OpenDialog(
-                    "DeleteProject", "Choose Project to Delete", ".json");
-                m_ProjectToDelete.clear();
-                m_DeleteProjectError.clear();
-                m_ShowDeleteProject = true;
                 break;
         }
     }
@@ -138,69 +131,6 @@ namespace Spoon
         }
         dialog->Close();
         m_ShowLoadProject = false;
-    }
-
-    void Editor::DrawDeleteProject()
-    {
-        if (m_ShowDeleteProject)
-        {
-            auto* dialog = ImGuiFileDialog::Instance();
-            if (!dialog->Display("DeleteProject"))
-                return;
-
-            if (dialog->IsOk())
-                m_ProjectToDelete = dialog->GetFilePathName();
-            dialog->Close();
-            m_ShowDeleteProject = false;
-        }
-
-        if (m_ProjectToDelete.empty())
-            return;
-
-        if (!ImGui::IsPopupOpen("Delete Project Permanently"))
-            ImGui::OpenPopup("Delete Project Permanently");
-
-        CenterNext();
-        if (ImGui::BeginPopupModal("Delete Project Permanently", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            const auto directory = m_ProjectToDelete.parent_path() / m_ProjectToDelete.stem();
-            ImGui::TextUnformatted("Permanently delete this project and all files in its directory?");
-            ImGui::TextWrapped("Project file: %s", m_ProjectToDelete.string().c_str());
-            ImGui::TextWrapped("Directory: %s", directory.string().c_str());
-            ImGui::TextUnformatted("This cannot be undone.");
-            if (!m_DeleteProjectError.empty())
-                ErrorMessage(m_DeleteProjectError);
-            ImGui::Separator();
-
-            if (ImGui::Button("Delete Permanently"))
-            {
-                try
-                {
-                    m_Services.projectManager->DeleteProject(m_ProjectToDelete);
-                    m_ProjectToDelete.clear();
-                    m_DeleteProjectError.clear();
-                    ImGui::CloseCurrentPopup();
-                }
-                catch (const nlohmann::json::exception& error)
-                {
-                    m_DeleteProjectError = std::string("Invalid project JSON: ") + error.what();
-                    SS_DEBUG_LOG(m_DeleteProjectError)
-                }
-                catch (const std::runtime_error& error)
-                {
-                    m_DeleteProjectError = error.what();
-                    SS_DEBUG_LOG(m_DeleteProjectError)
-                }
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
-                m_ProjectToDelete.clear();
-                m_DeleteProjectError.clear();
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
     }
 
     void Editor::DrawLoadProjectError()
@@ -232,30 +162,27 @@ namespace Spoon
         {
             char projectName[128];
             char version[32];
-            char dataPath[512];
-            char assetsPath[512];
 
             std::snprintf(projectName, sizeof(projectName), "%s", m_CurrentProject->name.c_str());
             std::snprintf(version, sizeof(version), "%s", m_CurrentProject->version.c_str());
-            std::snprintf(dataPath, sizeof(dataPath), "%s", m_CurrentProject->dataPath.string().c_str());
-            std::snprintf(assetsPath, sizeof(assetsPath), "%s", m_CurrentProject->assetsPath.string().c_str());
 
+            const ProjectPaths& paths = m_CurrentProject->paths;
             ImGui::TextDisabled("Project file");
-            ImGui::TextWrapped("%s", m_CurrentProject->filePath.string().c_str());
+            ImGui::TextWrapped("%s", (paths.m_ProjectRoot / (m_CurrentProject->name + ".sproj")).string().c_str());
+            ImGui::TextDisabled("Data directory");
+            ImGui::TextWrapped("%s", paths.Data().string().c_str());
+            ImGui::TextDisabled("Assets directory");
+            ImGui::TextWrapped("%s", paths.Assets().string().c_str());
             ImGui::Separator();
         
 			bool changed = false;
             changed |= ImGui::InputText("Project Name", projectName, IM_ARRAYSIZE(projectName));
             changed |= ImGui::InputText("Version", version, IM_ARRAYSIZE(version));
-            changed |= ImGui::InputText("Data Path", dataPath, IM_ARRAYSIZE(dataPath));
-            changed |= ImGui::InputText("Assets Path", assetsPath, IM_ARRAYSIZE(assetsPath));
 
             if (changed)
             {
                 m_CurrentProject->name = projectName;
                 m_CurrentProject->version = version;
-                m_CurrentProject->dataPath = dataPath;
-                m_CurrentProject->assetsPath = assetsPath;
 			}
 
             ImGui::TextDisabled("Settings");
@@ -355,7 +282,8 @@ namespace Spoon
         ImGui::OpenPopup("Error Saving Project File");
         if (ImGui::BeginPopupModal("Error Saving Project File", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            ImGui::Text("Failed to save project file at path: %s", m_CurrentProject->filePath.string().c_str());
+            ImGui::Text("Failed to save project file at path: %s",
+                (m_CurrentProject->paths.m_ProjectRoot / (m_CurrentProject->name + ".sproj")).string().c_str());
             if (ImGui::Button("OK"))
             {
 				m_ShowSaveProjectError = false;

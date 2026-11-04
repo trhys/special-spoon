@@ -29,7 +29,7 @@ namespace Spoon
         {
             // here we'll iterate the project's assets/animations directory
             // for available animation data, and lazy load it once confirmed
-            auto animationsPath = Application::Get().GetProjectManager().GetAnimationsPath();
+            auto animationsPath = Application::Get().GetProjectManager().GetCurrentProjectPaths().Animations();
             if (std::filesystem::exists(animationsPath))
             {
                 for (const auto& file : std::filesystem::directory_iterator(animationsPath))
