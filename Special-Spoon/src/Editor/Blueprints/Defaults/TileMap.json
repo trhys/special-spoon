@@ -1,0 +1,35 @@
+{
+    "m_Name": "TileMap",
+    "m_Components": [
+        {
+            "m_Name": "TileMap",
+            "m_Data": {
+                "m_MapSize": { "X": 16, "Y": 16 },
+                "m_Atlas": {
+                    "textureId": "empty",
+                    "grid": {
+                        "cell": { "X": 32, "Y": 32 },
+                        "size": { "X": 1, "Y": 1 },
+                        "margin": 0,
+                        "spacing": 0
+                    },
+                    "tileFootprintX": 0,
+                    "tileFootprintY": 0
+                },
+                "m_Layers": [
+                    {
+                        "name": "Background",
+                        "visible": true,
+                        "collidable": false,
+                        "opacity": 1.0,
+                        "tiles": []
+                    }
+                ]
+            }
+        },
+        {
+            "m_Name": "RenderLayer",
+            "m_Data": { "m_Layer": 0 }
+        }
+    ]
+}

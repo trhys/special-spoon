@@ -1,0 +1,39 @@
+{
+    "m_Name": "ParticleEffect",
+    "m_Components": [
+        {
+            "m_Name": "Transform",
+            "m_Data": {
+                "iPos": { "X": 0.0, "Y": 0.0 },
+                "iScale": { "X": 1.0, "Y": 1.0 },
+                "iRot": 0.0
+            }
+        },
+        {
+            "m_Name": "ParticleEmitter",
+            "m_Data": {
+                "emissionRate": 1000.0,
+                "emissionSpread": 6.28,
+                "velocityRange": { "X": 0.0, "Y": 100.0 },
+                "particleVelocityDamping": 0.98,
+                "particleLifetime": 1.0,
+                "particleSizeRange": { "X": 0.0, "Y": 2.0 },
+                "particleSpawnOffset": { "X": 0.0, "Y": 0.0 },
+                "textureID": "empty",
+                "textureRect": { "left": 0, "top": 0, "width": 0, "height": 0 },
+                "isActive": true,
+                "looping": true,
+                "totalLifetime": 1.0,
+                "particleStartColor": { "R": 255, "G": 255, "B": 255, "A": 255 },
+                "particleEndColor": { "R": 255, "G": 255, "B": 255, "A": 255 },
+                "particleStartSize": 1.0,
+                "particleEndSize": 1.0,
+                "maxParticles": 1000
+            }
+        },
+        {
+            "m_Name": "RenderLayer",
+            "m_Data": { "m_Layer": 2 }
+        }
+    ]
+}

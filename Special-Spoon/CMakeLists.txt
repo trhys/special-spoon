@@ -1,5 +1,36 @@
 add_library(Special-Spoon SHARED)
 
+# generate system assets
+set(system_assets_dir
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Core/ResourceManager/system"
+)
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+file(MAKE_DIRECTORY "${generated_dir}")
+
+foreach(asset IN ITEMS special-spoon.png folder.png)
+    set(asset_path "${system_assets_dir}/${asset}")
+
+    # Regenerate when the source image changes.
+    set_property(DIRECTORY APPEND PROPERTY
+        CMAKE_CONFIGURE_DEPENDS "${asset_path}"
+    )
+
+    string(MAKE_C_IDENTIFIER "${asset}" symbol)
+    file(READ "${asset_path}" hex HEX)
+    string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1,\n" bytes "${hex}")
+
+    file(WRITE "${generated_dir}/${symbol}.h"
+        "#pragma once\n"
+        "namespace Spoon::SystemAssets {\n"
+        "inline constexpr unsigned char ${symbol}[] = {\n"
+        "${bytes}"
+        "};\n"
+        "}\n"
+    )
+endforeach()
+
+target_include_directories(Special-Spoon PRIVATE "${generated_dir}")
+
 # require explicit symbol exports regardless of platform
 # otherwise unix will hide issues that will come up on windows
 # see issue #92

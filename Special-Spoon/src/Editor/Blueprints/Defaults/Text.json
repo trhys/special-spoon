@@ -1,0 +1,29 @@
+{
+    "m_Name": "Text",
+    "m_Components": [
+        {
+            "m_Name": "Transform",
+            "m_Data": {
+                "iPos": { "X": 0.0, "Y": 0.0 },
+                "iScale": { "X": 1.0, "Y": 1.0 },
+                "iRot": 0.0
+            }
+        },
+        {
+            "m_Name": "Text",
+            "m_Data": {
+                "iFontID": "Default",
+                "isCentered": true,
+                "iCharSize": 30,
+                "iColor": { "R": 255, "G": 255, "B": 255, "A": 255 },
+                "iText": "New Text",
+                "iolThickness": 0,
+                "iOutColor": { "R": 255, "G": 255, "B": 255, "A": 255 }
+            }
+        },
+        {
+            "m_Name": "RenderLayer",
+            "m_Data": { "m_Layer": 0 }
+        }
+    ]
+}

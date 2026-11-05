@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 #include "SystemFont/Jersey_10/SystemFont.h"
+#include "special_spoon_png.h"
+#include "folder_png.h"
 
 using json = nlohmann::json;
 
@@ -221,8 +223,9 @@ namespace Spoon
     {
         m_Textures["empty"] = sf::Texture();
         sf::Texture texture;
-        std::filesystem::path defaultTexturePath = std::filesystem::path("assets")  / "system" / "special-spoon.png";
-        if (!texture.loadFromFile(defaultTexturePath))
+        if (!texture.loadFromMemory(
+            SystemAssets::special_spoon_png, 
+            sizeof(SystemAssets::special_spoon_png)))
         {
             throw std::runtime_error("Failed to load default texture!");
         }
@@ -230,7 +233,9 @@ namespace Spoon
 
         // load folder icon for editor
         std::filesystem::path folderIconPath = std::filesystem::path("assets")  / "system" / "folder.png";
-        if (!texture.loadFromFile(folderIconPath))
+        if (!texture.loadFromMemory(
+            SystemAssets::folder_png, 
+            sizeof(SystemAssets::folder_png)))
         {
             throw std::runtime_error("Failed to load folder icon!");
         }

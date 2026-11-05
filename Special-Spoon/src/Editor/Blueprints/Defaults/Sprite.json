@@ -1,0 +1,25 @@
+{
+    "m_Name": "Sprite",
+    "m_Components": [
+        {
+            "m_Name": "Transform",
+            "m_Data": {
+                "iPos": { "X": 0.0, "Y": 0.0 },
+                "iScale": { "X": 1.0, "Y": 1.0 },
+                "iRot": 0.0
+            }
+        },
+        {
+            "m_Name": "Sprite",
+            "m_Data": {
+                "m_TextureID": "empty",
+                "isCentered": false,
+                "m_TextureRect": { "left": 0, "top": 0, "width": 0, "height": 0 }
+            }
+        },
+        {
+            "m_Name": "RenderLayer",
+            "m_Data": { "m_Layer": 0 }
+        }
+    ]
+}
