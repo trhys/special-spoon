@@ -7,10 +7,10 @@ set(system_assets_dir
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 file(MAKE_DIRECTORY "${generated_dir}")
 
-foreach(asset IN ITEMS special-spoon.png folder.png)
+foreach(asset IN ITEMS special-spoon.png folder.png Jersey10-Regular.ttf)
     set(asset_path "${system_assets_dir}/${asset}")
 
-    # Regenerate when the source image changes.
+    # Regenerate when the source asset changes.
     set_property(DIRECTORY APPEND PROPERTY
         CMAKE_CONFIGURE_DEPENDS "${asset_path}"
     )
@@ -30,6 +30,36 @@ foreach(asset IN ITEMS special-spoon.png folder.png)
 endforeach()
 
 target_include_directories(Special-Spoon PRIVATE "${generated_dir}")
+
+# embed the default blueprint JSON files so built-in blueprints are
+# available in development and installed builds without working-directory
+# or source-tree dependencies
+set(blueprint_defaults_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/Editor/Blueprints/Defaults")
+file(GLOB blueprint_defaults CONFIGURE_DEPENDS "${blueprint_defaults_dir}/*.json")
+list(SORT blueprint_defaults)
+
+set(blueprint_entries "")
+foreach(blueprint IN LISTS blueprint_defaults)
+    # Regenerate when a blueprint changes.
+    set_property(DIRECTORY APPEND PROPERTY
+        CMAKE_CONFIGURE_DEPENDS "${blueprint}"
+    )
+
+    get_filename_component(blueprint_name "${blueprint}" NAME_WE)
+    file(READ "${blueprint}" blueprint_json)
+    string(APPEND blueprint_entries
+        "    { \"${blueprint_name}\", R\"SpoonBP(${blueprint_json})SpoonBP\" },\n")
+endforeach()
+
+file(WRITE "${generated_dir}/default_blueprints.h"
+    "#pragma once\n"
+    "namespace Spoon::EmbeddedBlueprints {\n"
+    "struct Entry { const char* name; const char* data; };\n"
+    "inline constexpr Entry entries[] = {\n"
+    "${blueprint_entries}"
+    "};\n"
+    "}\n"
+)
 
 # require explicit symbol exports regardless of platform
 # otherwise unix will hide issues that will come up on windows

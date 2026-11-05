@@ -1,5 +1,13 @@
 #include "Editor/Editor.h"
+#include "Editor/Blueprints/Blueprint.h"
 #include "Editor/Utils/Windows.h"
+
+#include "Core/Registers/Component/ComponentRegistry.h"
+
+#include <algorithm>
+#include <fstream>
+#include <stdexcept>
+#include <vector>
 
 namespace Spoon
 {
@@ -46,9 +54,13 @@ namespace Spoon
             return;
 
         static char newEntityBuf[64];
+        static std::filesystem::path selectedBlueprint; // empty = create an empty entity
+        static std::string blueprintError;
         auto clear = [&]()
         {
             newEntityBuf[0] = '\0';
+            selectedBlueprint.clear();
+            blueprintError.clear();
             m_ShowCreateEntity = false;
             ImGui::CloseCurrentPopup();
         };
@@ -59,6 +71,12 @@ namespace Spoon
             ImGui::OpenPopup(popupName);
         if (ImGui::BeginPopupModal(popupName))
         {
+            if (ImGui::IsWindowAppearing())
+            {
+                selectedBlueprint.clear();
+                blueprintError.clear();
+            }
+
             ImGui::InputText("Entity Name", newEntityBuf, IM_ARRAYSIZE(newEntityBuf));
             ImGui::SameLine(); HelpMarker("It's recommended to give your entity some kind of name here. It's not required but"
                                           "will make life easier when you've got many entities in the scene. Entites will be"
@@ -66,16 +84,97 @@ namespace Spoon
             
             if (ImGui::BeginChild("Blueprint Selector", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                // wip: the blueprint system is being refactored; the selector will
-                // return once the new EntityBlueprint format is in place.
-                ImGui::TextDisabled("Blueprints are being refactored and are temporarily unavailable.");
+                if (ImGui::Selectable("<Empty Entity>", selectedBlueprint.empty()))
+                    selectedBlueprint.clear();
+
+                if (!m_CurrentProject)
+                    ImGui::TextDisabled("Load a project to create entities from blueprints");
+                else
+                {
+                    const auto blueprintsDir = m_Services.projectManager->GetCurrentProjectPaths().Blueprints();
+                    try
+                    {
+                        std::vector<std::filesystem::path> blueprints;
+                        if (std::filesystem::is_directory(blueprintsDir))
+                        {
+                            for (const auto& entry : std::filesystem::recursive_directory_iterator(blueprintsDir))
+                            {
+                                if (entry.is_regular_file() && entry.path().extension() == ".json")
+                                    blueprints.push_back(entry.path());
+                            }
+                        }
+                        std::sort(blueprints.begin(), blueprints.end());
+
+                        for (const auto& blueprint : blueprints)
+                        {
+                            const std::string label = std::filesystem::relative(blueprint, blueprintsDir).generic_string();
+                            if (ImGui::Selectable(label.c_str(), selectedBlueprint == blueprint))
+                                selectedBlueprint = blueprint;
+                        }
+                    }
+                    catch (const std::filesystem::filesystem_error& e)
+                    {
+                        SS_DEBUG_LOG("[BLUEPRINTS] Failed to list blueprints: " + std::string(e.what()))
+                        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to list blueprints. Check logs");
+                    }
+                }
             }
             ImGui::EndChild();
+
+            if (!blueprintError.empty())
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", blueprintError.c_str());
+
             ImGui::Separator();
             if (ImGui::Button("Submit"))
             {
-                m_Services.entityManager->CreateEntity(newEntityBuf);
-                clear();
+                blueprintError.clear();
+                if (selectedBlueprint.empty())
+                {
+                    m_Services.entityManager->CreateEntity(newEntityBuf);
+                    clear();
+                }
+                else
+                {
+                    // parse the blueprint before creating anything so parse
+                    // failures never leave a partial entity behind
+                    try
+                    {
+                        std::ifstream file(selectedBlueprint);
+                        if (!file.is_open())
+                            throw std::runtime_error("failed to open blueprint file");
+
+                        json blueprintJson;
+                        file >> blueprintJson;
+                        const EntityBlueprint blueprint = blueprintJson.get<EntityBlueprint>();
+
+                        const std::string name = newEntityBuf[0] != '\0' ? newEntityBuf : blueprint.m_Name;
+                        const UUID id = m_Services.entityManager->CreateEntity(name);
+                        try
+                        {
+                            const auto& loaders = ComponentRegistry::Get().GetLoaders();
+                            for (const auto& comp : blueprint.m_Components)
+                            {
+                                const auto loader = loaders.find(comp.m_Name);
+                                if (loader == loaders.end())
+                                    throw std::runtime_error("no loader registered for component type: " + comp.m_Name);
+                                loader->second(*m_Services.entityManager, id, comp.m_Data);
+                            }
+                            clear();
+                        }
+                        catch (...)
+                        {
+                            // clean up the partially created entity before surfacing the failure
+                            m_Services.entityManager->KillEntity(id);
+                            throw;
+                        }
+                    }
+                    catch (const std::exception& e) // json, filesystem and loader failures
+                    {
+                        SS_DEBUG_LOG("[BLUEPRINTS] Failed to instantiate blueprint '" + selectedBlueprint.string()
+                                     + "': " + std::string(e.what()))
+                        blueprintError = "Failed to instantiate blueprint: " + std::string(e.what());
+                    }
+                }
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel"))

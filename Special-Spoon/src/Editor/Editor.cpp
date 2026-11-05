@@ -1,5 +1,6 @@
 #include "Editor.h"
 
+#include "Blueprints/DefaultBlueprints.h"
 #include "ECS/Components/World/TileMapComp.h"
 
 #include "Utils/EditorSettings.h"
@@ -277,6 +278,14 @@ namespace Spoon
         }
         SetWorkingDir(ResourceManager::Get().GetAssetsDir());
         m_Services.sceneManager->LoadManifest(project->paths.Data());
+        // make the built-in blueprints available to the project without
+        // overwriting any existing (customized) blueprint files
+        try {
+            SeedDefaultBlueprints(project->paths.Blueprints());
+        } catch (const std::filesystem::filesystem_error& e)
+        {
+            SS_DEBUG_LOG("[EDITOR] Failed to seed default blueprints: " + std::string(e.what()))
+        }
         m_Services.renderer->UpdateRenderConfig();
         m_AnimationTool = AnimationTool(m_Services.projectManager->GetCurrentProjectPaths().Animations());
         m_CurrentProject = project;

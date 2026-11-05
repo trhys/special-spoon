@@ -1,7 +1,7 @@
 #include "ResourceManager.h"
-#include "SystemFont/Jersey_10/SystemFont.h"
 #include "special_spoon_png.h"
 #include "folder_png.h"
+#include "Jersey10_Regular_ttf.h"
 
 using json = nlohmann::json;
 
@@ -242,7 +242,9 @@ namespace Spoon
         m_Textures.emplace("special-spoon-folder-icon", std::move(texture));
 
         sf::Font& font = m_Fonts["Default"];
-        if (!font.openFromMemory(Jersey10_Regular_ttf, Jersey10_Regular_ttf_len))
+        if (!font.openFromMemory(
+            SystemAssets::Jersey10_Regular_ttf,
+            sizeof(SystemAssets::Jersey10_Regular_ttf)))
         {
             throw std::runtime_error("Failed to load system font!");
         }

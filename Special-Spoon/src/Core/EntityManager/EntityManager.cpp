@@ -74,7 +74,9 @@ namespace Spoon
         {
             // recursively kill child components
             comp->OnKill(this);
-            KillComponent(comp->GetType(), id);
+            // component arrays are keyed by display name, not the RTTI
+            // name returned by GetType()
+            KillComponent(comp->GetDisplayName(), id);
         }
     }
 

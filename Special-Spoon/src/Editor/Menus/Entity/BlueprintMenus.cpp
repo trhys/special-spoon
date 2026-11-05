@@ -153,12 +153,21 @@ namespace Spoon
                 return data;
 
             const UUID probe = manager.CreateEntity("blueprint-defaults-probe");
-            found->second(probe);
-            for (Component* comp : manager.GetAllComponentsOfEntity(probe))
+            try
             {
-                if (comp->GetDisplayName() == type)
-                    data = comp->Serialize();
+                found->second(probe);
+                for (Component* comp : manager.GetAllComponentsOfEntity(probe))
+                {
+                    if (comp->GetDisplayName() == type)
+                        data = comp->Serialize();
+                }
             }
+            catch (const std::exception& e)
+            {
+                SS_DEBUG_LOG("[BLUEPRINTS] Failed to generate defaults for '" + type + "': " + std::string(e.what()))
+                data = json::object();
+            }
+            // always reap the probe so it never leaks into the live scene
             manager.KillEntity(probe);
             return data;
         }
@@ -265,8 +274,24 @@ namespace Spoon
             static std::filesystem::path selectedBlueprint;
             static std::filesystem::path pendingSelection;
             static BlueprintEditState edit;
+            static std::filesystem::path stateScope; // blueprints dir the static state belongs to
 
             const auto blueprintsDir = m_Services.projectManager->GetCurrentProjectPaths().Blueprints();
+
+            // reset all selection/edit state when the active project changes so
+            // state from one project can never leak into another
+            if (stateScope != blueprintsDir)
+            {
+                if (edit.m_Loaded && edit.m_Dirty)
+                {
+                    SS_DEBUG_LOG("[BLUEPRINTS] Discarding unsaved edits to '" + edit.m_Path.string()
+                                 + "' because the active project changed")
+                }
+                selectedBlueprint.clear();
+                pendingSelection.clear();
+                edit = BlueprintEditState{};
+                stateScope = blueprintsDir;
+            }
 
             try
             {
