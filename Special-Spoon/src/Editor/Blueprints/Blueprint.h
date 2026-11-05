@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Core.h"
-#include "ECS/ECS.h"
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 
 namespace Spoon
 {
@@ -9,8 +9,8 @@ namespace Spoon
 
     struct ComponentBlueprint
     {
-        std::string Name;
-        std::vector<std::string> Dependencies;
+        std::string m_Name;
+        json m_Data;
     };
 
     struct EntityBlueprint
@@ -19,57 +19,33 @@ namespace Spoon
         std::vector<ComponentBlueprint> m_Components;
     };
 
-    /*class Blueprint
-    {
-    public:
-        Blueprint() = default;
-        Blueprint(std::string displayName, std::vector<std::string> comps) : m_Name(displayName), m_Components(comps) {}
-        const std::vector<std::string>& GetComps() const { return m_Components; }
-        const std::string& GetDisplayName() const { return m_Name; }
-
-        void SetName(const std::string& name) { m_Name = name; }
-        void SetComponents(std::vector<std::string> comps) { m_Components = comps; }
-
-        friend bool operator==(const Blueprint& lhs, const Blueprint& rhs) { return lhs.m_Name == rhs.m_Name; }
-    private:
-        std::string m_Name;
-        std::vector<std::string> m_Components;
-    };
-
-    inline void to_json(json& j, const Blueprint& blueprint)
+    inline void to_json(json& j, const ComponentBlueprint& comp)
     {
         j = json{
-            {"m_Name", blueprint.GetDisplayName()},
-            {"m_Components", blueprint.GetComps()}
+            {"m_Name", comp.m_Name},
+            {"m_Data", comp.m_Data}
         };
     }
 
-    inline void from_json(const json& j, Blueprint& blueprint)
+    inline void from_json(const json& j, ComponentBlueprint& comp)
     {
-        blueprint = Blueprint(
+        comp.m_Name = j.at("m_Name").get<std::string>();
+        comp.m_Data = j.at("m_Data");
+    }
+
+    inline void from_json(const json& j, EntityBlueprint& entity)
+    {
+        entity = EntityBlueprint{
             j.at("m_Name").get<std::string>(),
-            j.at("m_Components").get<std::vector<std::string>>()
-        );
-    }
-
-    static inline Blueprint None("None", {});
-    static inline Blueprint SpriteBlueprint("Sprite", std::vector<std::string>{"Transform", "Sprite", "RenderLayer", "Status"});
-    static inline Blueprint TextBlueprint("Text", std::vector<std::string>{"Transform", "Text", "RenderLayer", "Status"});
-    static inline Blueprint Player(
-        "Player",
-        std::vector<std::string>{
-            "Transform", "Status", "Input", "Sprite", "RenderLayer", "Movement", "Collider"
-        }
-    );
-
-    static inline std::vector<Blueprint> GetDefaultBlueprints()
-    {
-        return {
-            None,
-            SpriteBlueprint,
-            TextBlueprint,
-            Player
+            j.at("m_Components").get<std::vector<ComponentBlueprint>>()
         };
     }
-    */
+    
+    inline void to_json(json& j, const EntityBlueprint& entity)
+    {
+        j = json{
+            {"m_Name", entity.m_Name},
+            {"m_Components", entity.m_Components}
+        };
+    }
 }
