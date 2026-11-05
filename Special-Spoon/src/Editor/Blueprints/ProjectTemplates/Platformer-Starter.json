@@ -1,0 +1,9 @@
+{
+    "schemaVersion": 1,
+    "name": "Platformer Starter",
+    "profile": "platformer",
+    "scene": "Scenes/Platformer-Main.scene.json",
+    "configOverrides": {
+        "PhysicsEnabled": true
+    }
+}

@@ -7,6 +7,8 @@ target_sources(Special-Spoon
         Blueprints/Blueprint.h
         Blueprints/DefaultBlueprints.h
         Blueprints/DefaultBlueprints.cpp
+        Blueprints/ProjectBlueprint.h
+        Blueprints/ProjectBlueprint.cpp
 
         Tools/Animation/AnimationTool.h
         Tools/Animation/AnimationTool.cpp

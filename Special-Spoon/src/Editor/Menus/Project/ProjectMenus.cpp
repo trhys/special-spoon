@@ -1,4 +1,5 @@
 #include "Editor/Editor.h"
+#include "Editor/Blueprints/ProjectBlueprint.h"
 #include "Editor/Utils/EditorSettings.h"
 #include "Editor/Utils/Windows.h"
 #include "Editor/Utils/Tooltips.h"
@@ -54,7 +55,26 @@ namespace Spoon
             if (createNewError) ErrorMessage("Project name cannot be empty.");
 
             static char newProjectBuf[64] = "";
+            static int selectedTemplate = -1; // -1 = empty project
             if (ImGui::InputText("Project Name", newProjectBuf, IM_ARRAYSIZE(newProjectBuf))) {}
+
+            // built-in project blueprints to start from
+            const auto& templates = GetBuiltInProjectTemplates();
+            ImGui::SeparatorText("Template");
+            if (ImGui::BeginListBox("##ProjectTemplates", ImVec2(320, ImGui::GetTextLineHeightWithSpacing() * 5)))
+            {
+                if (ImGui::Selectable("Empty Project", selectedTemplate == -1))
+                    selectedTemplate = -1;
+
+                for (int i = 0; i < static_cast<int>(templates.size()); i++)
+                {
+                    const auto& blueprint = templates[i].m_Blueprint;
+                    const std::string label = blueprint.m_Name + " (" + blueprint.m_Profile + ")";
+                    if (ImGui::Selectable(label.c_str(), selectedTemplate == i))
+                        selectedTemplate = i;
+                }
+                ImGui::EndListBox();
+            }
             if (ImGui::Button("Confirm"))
             {
                 if (strlen(newProjectBuf) == 0)
@@ -63,8 +83,28 @@ namespace Spoon
                     ImGui::End();
                     return;
                 }
-                    
+
+                const ProjectBlueprint* projectBlueprint =
+                    (selectedTemplate >= 0 && selectedTemplate < static_cast<int>(templates.size()))
+                    ? &templates[selectedTemplate].m_Blueprint : nullptr;
+
                 Project* newProject = m_Services.projectManager->CreateNew(std::string(newProjectBuf));
+                if (newProject && projectBlueprint)
+                {
+                    // compose the project config before the editor applies it:
+                    // explicit overrides > profile defaults > engine fallback
+                    try {
+                        newProject->config = ComposeProjectConfig(
+                            projectBlueprint->m_Profile, projectBlueprint->m_ConfigOverrides);
+                    }
+                    catch (const json::exception& e)
+                    {
+                        SS_DEBUG_LOG("[PROJECT] Invalid config overrides in template '"
+                                     + projectBlueprint->m_Name + "': " + std::string(e.what()))
+                    }
+                    m_Services.projectManager->SaveProject(newProject);
+                }
+
                 if (!SetCurrentProject(newProject))
                 {
                     m_ShowCreateProjectError = true;
@@ -72,7 +112,25 @@ namespace Spoon
                     return; // return early
                 }
 
+                // scaffold and load the template's starter scene
+                if (projectBlueprint && !projectBlueprint->m_Scene.empty())
+                {
+                    try
+                    {
+                        SceneData* scene = ScaffoldStarterScene(
+                            *projectBlueprint, *m_Services.sceneManager, newProject->paths);
+                        m_Services.sceneManager->LoadScene(
+                            scene->ID, *m_Services.entityManager, *m_Services.systemManager);
+                        SetActiveScene(scene);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        SS_DEBUG_LOG("[PROJECT] Failed to scaffold starter scene: " + std::string(e.what()))
+                    }
+                }
+
                 createNewError = false;     // clear the error flag
+                selectedTemplate = -1;      // reset for the next prompt
                 m_ShowCreateProjectPrompt = false;    // reset the create project flag
             }
         }

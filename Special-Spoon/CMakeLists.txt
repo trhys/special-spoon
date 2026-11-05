@@ -61,6 +61,35 @@ file(WRITE "${generated_dir}/default_blueprints.h"
     "}\n"
 )
 
+# embed the built-in project templates (project blueprints plus the scene
+# templates they reference), keyed by path relative to the template root
+set(project_templates_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/Editor/Blueprints/ProjectTemplates")
+file(GLOB_RECURSE project_templates CONFIGURE_DEPENDS "${project_templates_dir}/*.json")
+list(SORT project_templates)
+
+set(project_template_entries "")
+foreach(template IN LISTS project_templates)
+    # Regenerate when a template changes.
+    set_property(DIRECTORY APPEND PROPERTY
+        CMAKE_CONFIGURE_DEPENDS "${template}"
+    )
+
+    file(RELATIVE_PATH template_key "${project_templates_dir}" "${template}")
+    file(READ "${template}" template_json)
+    string(APPEND project_template_entries
+        "    { \"${template_key}\", R\"SpoonPT(${template_json})SpoonPT\" },\n")
+endforeach()
+
+file(WRITE "${generated_dir}/project_templates.h"
+    "#pragma once\n"
+    "namespace Spoon::EmbeddedProjectTemplates {\n"
+    "struct Entry { const char* path; const char* data; };\n"
+    "inline constexpr Entry entries[] = {\n"
+    "${project_template_entries}"
+    "};\n"
+    "}\n"
+)
+
 # require explicit symbol exports regardless of platform
 # otherwise unix will hide issues that will come up on windows
 # see issue #92
