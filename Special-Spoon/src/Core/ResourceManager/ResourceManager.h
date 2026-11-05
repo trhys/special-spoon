@@ -92,6 +92,7 @@ namespace Spoon
         sf::Texture& GetFontPreview(std::string id);
         
         AssetNode* GetAssetsDir() { return fileRoot.get(); }
+        void ResetAssetsDirectory(const std::filesystem::path& newRoot);
 
         void PopulateLib(AssetNode* node, std::vector<AssetNode*>& library, const std::string& type);
         const std::vector<AssetNode*> GetAssetLibrary(const std::string& type);

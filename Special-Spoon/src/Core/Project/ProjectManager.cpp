@@ -90,7 +90,13 @@ namespace Spoon
             newProject.paths.m_ProjectRoot = filepath.parent_path();
 
             Application::Get().GetSceneManager().LoadManifest(newProject.paths.Data().string());
-            ResourceManager::Get().ScanAssets(newProject.paths.Assets());
+            try {
+                ResourceManager::Get().ScanAssets(newProject.paths.Assets());
+            } catch (const std::filesystem::filesystem_error& e)
+            {
+                SS_DEBUG_LOG("[PROJECT] Failed to scan assets on project load: " + std::string(e.what()))
+                ResourceManager::Get().ResetAssetsDirectory(newProject.paths.Assets());
+            }
             m_CurrentProject = std::make_unique<Project>(newProject);
         }
         catch (const json::exception& e)

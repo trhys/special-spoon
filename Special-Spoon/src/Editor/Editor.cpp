@@ -267,7 +267,14 @@ namespace Spoon
         if (!project)
             return false;
         SetActiveScene(nullptr);
-        ResourceManager::Get().ScanAssets(project->paths.Assets());
+        try {
+            ResourceManager::Get().ScanAssets(project->paths.Assets());
+        } catch (const std::filesystem::filesystem_error& e)
+        {
+            SS_DEBUG_LOG("[EDITOR] Failed to scan assets on project set: " + std::string(e.what()))
+            SS_DEBUG_LOG("[EDITOR] Resetting assets directory due to scan failure.")
+            ResourceManager::Get().ResetAssetsDirectory(project->paths.Assets());
+        }
         SetWorkingDir(ResourceManager::Get().GetAssetsDir());
         m_Services.sceneManager->LoadManifest(project->paths.Data());
         m_Services.renderer->UpdateRenderConfig();

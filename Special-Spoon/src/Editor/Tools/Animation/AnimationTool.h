@@ -28,7 +28,7 @@ namespace Spoon
             AssetNode* selectedNode, 
             const std::filesystem::path& filePath
         );
-        void SaveAnimationData(const AnimationData& data, const std::filesystem::path& animationsDir);
+        bool SaveAnimationData(const AnimationData& data, const std::filesystem::path& animationsDir);
 
         void DrawCreateNew();
         void DrawLoadModal();

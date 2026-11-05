@@ -55,6 +55,10 @@ namespace Spoon
 
     void ResourceManager::ScanAssets(const std::filesystem::path& rootDir)
     {
+        if (std::filesystem::create_directories(rootDir))
+        {
+            SS_DEBUG_LOG("[RESOURCE MANAGER] Created assets directory: " + rootDir.string())
+        }
         auto normalRoot = Normalize(rootDir);
         auto newRoot = std::make_unique<AssetNode>("Assets", normalRoot, "Root", true);
         
@@ -99,10 +103,29 @@ namespace Spoon
 
     void ResourceManager::RefreshAssets(const std::filesystem::path& rootDir)
     {
-        // clear thumbnails
+        // save thumbnails temporarily in case scanassets throws
+        auto savedFontPreviews = std::move(m_FontPreviews);
+        auto savedThumbnails = std::move(m_Thumbnails);
         m_FontPreviews.clear();
         m_Thumbnails.clear();
-        ScanAssets(rootDir);
+        try {
+            ScanAssets(rootDir);
+        } catch (...)
+        {
+            m_FontPreviews = std::move(savedFontPreviews);
+            m_Thumbnails = std::move(savedThumbnails);
+            throw;
+        }
+        InitDefaultFontPreview();
+    }
+
+    void ResourceManager::ResetAssetsDirectory(const std::filesystem::path& newRoot)
+    {
+        fileRoot = std::make_unique<AssetNode>(
+            "assets", newRoot, "Root", true);
+
+        m_Thumbnails.clear();
+        m_FontPreviews.clear();
         InitDefaultFontPreview();
     }
 

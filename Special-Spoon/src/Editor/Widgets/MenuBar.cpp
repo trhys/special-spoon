@@ -41,7 +41,9 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Tools"))
             {
+                ImGui::BeginDisabled(m_CurrentProject == nullptr);
                 if (ImGui::MenuItem("Animation Tool")) { m_AnimationTool.Open(nullptr); } 
+                ImGui::EndDisabled();
                 ImGui::EndMenu();
             }
 

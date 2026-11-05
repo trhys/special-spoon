@@ -10,6 +10,9 @@ namespace Spoon
 {
     void AnimationTool::Update(sf::Time tick)
     {
+        static bool showSaveError = false;
+        const char* saveErrorMsg = "Failed to save animation. Check logs";
+
         CenterNext();
         if (ImGui::Begin("Animation Tool", &m_isOpen, ImGuiWindowFlags_MenuBar))
         {
@@ -21,7 +24,14 @@ namespace Spoon
                     if (ImGui::MenuItem("New Animation")) showCreate = !showCreate;
                     if (ImGui::MenuItem("Import Animation")) showImport = !showImport;
                     if (ImGui::MenuItem("Save Animation", nullptr, false, currentData != nullptr))
-                        SaveAnimationData(*currentData, m_AnimationsDir);
+                    {
+                        if (SaveAnimationData(*currentData, m_AnimationsDir))
+                        {
+                            showSaveError = false;
+                        } else {
+                            showSaveError = true;
+                        }
+                    }
                     ImGui::EndMenu();
                 }
 
@@ -57,6 +67,13 @@ namespace Spoon
                     m_Playback = false;
                 }
                 ImGui::EndMenuBar();
+            }
+
+            if (showSaveError)
+            {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), saveErrorMsg);
+                if (ImGui::Button("Dismiss"))
+                    showSaveError = false;
             }
 
             DrawCreateNew();
@@ -483,20 +500,14 @@ namespace Spoon
         const std::filesystem::path& jsonPath
     )
     {
-        if (!selectedNode || jsonPath.empty()) 
-        {
-            SS_DEBUG_LOG("[ANIMATION TOOL] Invalid selected node or JSON path.")
-            return;
-        }
-
         try {
+            if (!selectedNode || jsonPath.empty()) 
+                throw std::runtime_error("Invalid selected node or JSON path.");
+
             // load file path into json
             std::ifstream file(jsonPath, std::ios::in);
             if (!file.is_open()) 
-            {
-                SS_DEBUG_LOG("[ANIMATION TOOL] Failed to open JSON file: " + jsonPath.string())
-                return;
-            }
+                throw std::runtime_error("Failed to open JSON file: " + jsonPath.string());
 
             nlohmann::json j;
             file >> j;
@@ -516,11 +527,13 @@ namespace Spoon
                 if (animData.frameRate <= 0.0f)
                     animData.frameRate = 0.1f;
 
-                SaveAnimationData(animData, m_AnimationsDir);
+                if (!SaveAnimationData(animData, m_AnimationsDir))
+                    throw std::runtime_error("Failed to save animation: " + animData.ID);
             }
         } catch (const std::exception& e) {
             // handle any exceptions that occur during import
             SS_DEBUG_LOG("[ANIMATION TOOL] Failed to import animation JSON: " + std::string(e.what()))
+            throw;
         }
     }
 }
