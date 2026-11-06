@@ -231,6 +231,29 @@ namespace Spoon
 
     SceneData* SceneManager::CreateScene(const std::string& id)
     {
+        auto entities = nlohmann::json::array();
+
+        // get configured systems from the project settings and initialize default systems
+        const auto& enabledSystems = Application::Get().GetProjectManager().GetConfig().DefaultEnabledSystems;
+        
+        return CreateScene(id, 
+            {{"Entities", entities}, 
+            {"Systems", enabledSystems}}
+        );
+    }
+
+    SceneData* SceneManager::CreateScene(const std::string& id, const nlohmann::json& sceneData)
+    {
+        // validate json
+        if(!sceneData.contains("Entities") || 
+           !sceneData.contains("Systems") ||
+           !sceneData["Entities"].is_array() ||
+           !sceneData["Systems"].is_array())
+        {
+            throw std::runtime_error("Invalid scene data: missing 'Entities' or 'Systems' fields");
+        }
+
+        // open scene manifest
         std::ifstream inFile(m_ManifestPath);
         if(!inFile.is_open())
         {
@@ -245,7 +268,7 @@ namespace Spoon
         std::filesystem::path sceneDir = m_ManifestPath.parent_path() / "scenes" / newID;
         std::filesystem::create_directories(sceneDir);
         
-
+        // create resource and data files for the new scene
         SceneData newScene;
         newScene.ID = newID;
         newScene.ResourceFiles = sceneDir / (newID + "_resources.json");
@@ -270,9 +293,7 @@ namespace Spoon
         resources.close();
 
         std::ofstream data(newScene.DataFiles);
-        json newData;
-        newData["Entities"] = json::array();
-        newData["Systems"] = json::array();
+        json newData = sceneData;
         data << newData.dump(4);
         data.close();
 

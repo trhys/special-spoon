@@ -118,7 +118,11 @@ namespace Spoon
                     try
                     {
                         SceneData* scene = ScaffoldStarterScene(
-                            *projectBlueprint, *m_Services.sceneManager, newProject->paths);
+                            *projectBlueprint, 
+                            *m_Services.sceneManager, 
+                            newProject->paths,
+                            newProject->config
+                        );
                         m_Services.sceneManager->LoadScene(
                             scene->ID, *m_Services.entityManager, *m_Services.systemManager);
                         SetActiveScene(scene);
@@ -245,9 +249,6 @@ namespace Spoon
 
             ImGui::TextDisabled("Settings");
             ImGui::Separator();
-
-            ImGui::Checkbox("Physics Enabled", &m_CurrentProject->config.PhysicsEnabled);
-            ImGui::SameLine(); HelpMarker("TODO: not implemented");
 
             static constexpr ActiveSortPolicy policies[] = {
                 ActiveSortPolicy::Isometric,

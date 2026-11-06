@@ -26,6 +26,7 @@ namespace Spoon
         Project* OpenFromFile(const std::filesystem::path& filepath);
 		Project* SaveProject(Project* project);
         Project* GetCurrentProject() { return m_CurrentProject.get(); }
+        ProjectConfig GetConfig() { return m_CurrentProject ? m_CurrentProject->config : ProjectConfig{}; }
         ProjectPaths GetCurrentProjectPaths() { return m_CurrentProject ? m_CurrentProject->paths : ProjectPaths{}; }
         
     private:

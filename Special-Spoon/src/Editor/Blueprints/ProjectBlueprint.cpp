@@ -85,17 +85,34 @@ namespace Spoon
         if (profile == "isometric")
         {
             config.SortPolicy = ActiveSortPolicy::Isometric;
-            config.PhysicsEnabled = false;
+            config.DefaultEnabledSystems = { 
+                {{"Type", "Movement"}}, 
+                {{"Type", "Physics"}}, 
+                {{"Type", "Collision"}}, 
+                {{"Type", "Animation"}}, 
+                {{"Type", "TileMapCollision"}}
+            };
         }
         else if (profile == "platformer")
         {
             config.SortPolicy = ActiveSortPolicy::TopDown;
-            config.PhysicsEnabled = true;
+            config.DefaultEnabledSystems = { 
+                {{"Type", "Movement"}}, 
+                {{"Type", "Collision"}}, 
+                {{"Type", "Animation"}}, 
+                {{"Type", "Physics"}}
+            };
         }
         else if (profile == "topdown")
         {
             config.SortPolicy = ActiveSortPolicy::TopDown;
-            config.PhysicsEnabled = false;
+            config.DefaultEnabledSystems = { 
+                {{"Type", "Movement"}}, 
+                {{"Type", "Collision"}}, 
+                {{"Type", "Animation"}}, 
+                {{"Type", "TileMapCollision"}},
+                {{"Type", "Physics"}}
+            };
         }
         // "custom" and unknown profiles keep the engine fallback defaults
         return config;
@@ -130,17 +147,13 @@ namespace Spoon
     }
 
     SceneData* ScaffoldStarterScene(const ProjectBlueprint& blueprint, SceneManager& sceneManager,
-                                    const ProjectPaths& paths)
+                                    const ProjectPaths& paths, const ProjectConfig& config)
     {
         const char* sceneText = FindProjectTemplateFile(blueprint.m_Scene);
         if (!sceneText)
             throw std::runtime_error("scene template not found: " + blueprint.m_Scene);
 
         const SceneTemplate sceneTemplate = json::parse(sceneText).get<SceneTemplate>();
-
-        SceneData* scene = sceneManager.CreateScene(sceneTemplate.m_Name.empty() ? "Main" : sceneTemplate.m_Name);
-        if (!scene)
-            throw std::runtime_error("failed to create starter scene: " + sceneTemplate.m_Name);
 
         // expand each entity-blueprint instance into a serialized scene entity
         json entities = json::array();
@@ -191,19 +204,12 @@ namespace Spoon
             entities.push_back(entity);
         }
 
-        // write the expanded entities into the scene data file created above
-        std::ifstream dataIn(scene->DataFiles);
-        if (!dataIn.is_open())
-            throw std::runtime_error("failed to open starter scene data: " + scene->DataFiles.string());
-        json sceneData = json::parse(dataIn);
-        dataIn.close();
-
+        // create scene using the scene manager's create scene overload that takes json
+        json sceneData;
         sceneData["Entities"] = entities;
-
-        std::ofstream dataOut(scene->DataFiles, std::ios::out | std::ios::trunc);
-        if (!dataOut.is_open())
-            throw std::runtime_error("failed to write starter scene data: " + scene->DataFiles.string());
-        dataOut << sceneData.dump(4);
+        sceneData["Systems"] = config.DefaultEnabledSystems;
+    
+        auto* scene = sceneManager.CreateScene(sceneTemplate.m_Name.empty() ? "Main" : sceneTemplate.m_Name, sceneData);
 
         return scene;
     }

@@ -71,6 +71,10 @@ namespace Spoon
     // scaffold the blueprint's starter scene into the current project:
     // creates the scene files and expands the entity-blueprint instances
     // into serialized scene entities; throws on unrecoverable failures
-    SceneData* ScaffoldStarterScene(const ProjectBlueprint& blueprint, SceneManager& sceneManager,
-                                    const ProjectPaths& paths);
+    SceneData* ScaffoldStarterScene(
+        const ProjectBlueprint& blueprint, 
+        SceneManager& sceneManager,
+        const ProjectPaths& paths,
+        const ProjectConfig& config
+    );
 }
