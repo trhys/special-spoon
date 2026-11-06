@@ -134,37 +134,19 @@ namespace Spoon
                 }
                 else
                 {
-                    // parse the blueprint before creating anything so parse
-                    // failures never leave a partial entity behind
                     try
                     {
                         const EntityBlueprint blueprint = ResolveBlueprint(selectedBlueprint);
+                        const std::string name =
+                            newEntityBuf[0] != '\0' ? newEntityBuf : blueprint.m_Name;
 
-                        const std::string name = newEntityBuf[0] != '\0' ? newEntityBuf : blueprint.m_Name;
-                        const UUID id = m_Services.entityManager->CreateEntity(name);
-                        try
-                        {
-                            const auto& loaders = ComponentRegistry::Get().GetLoaders();
-                            for (const auto& comp : blueprint.m_Components)
-                            {
-                                const auto loader = loaders.find(comp.m_Name);
-                                if (loader == loaders.end())
-                                    throw std::runtime_error("no loader registered for component type: " + comp.m_Name);
-                                loader->second(*m_Services.entityManager, id, comp.m_Data);
-                            }
-                            clear();
-                        }
-                        catch (...)
-                        {
-                            // clean up the partially created entity before surfacing the failure
-                            m_Services.entityManager->KillEntity(id);
-                            throw;
-                        }
+                        m_Services.entityManager->SpawnPrefab(blueprint, name);
+                        clear();
                     }
-                    catch (const std::exception& e) // json, filesystem and loader failures
+                    catch (const std::exception& e)
                     {
-                        SS_DEBUG_LOG("[BLUEPRINTS] Failed to instantiate blueprint '" + selectedBlueprint.string()
-                                     + "': " + std::string(e.what()))
+                        SS_DEBUG_LOG("[BLUEPRINTS] Failed to instantiate blueprint '"
+                                    + selectedBlueprint.string() + "': " + e.what())
                         blueprintError = "Failed to instantiate blueprint: " + std::string(e.what());
                     }
                 }

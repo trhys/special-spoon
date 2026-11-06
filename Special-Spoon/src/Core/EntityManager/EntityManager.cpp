@@ -47,7 +47,10 @@ namespace Spoon
             }
         }
 
-        UUID id = CreateEntity(displayName.empty() ? blueprint.m_Name : displayName);
+        UUID id = CreateEntity(
+            displayName.empty() ? blueprint.m_Name : displayName,
+            blueprint.m_IsRuntimeOnly
+        );
 
         // Apply blueprint components to the entity here
         // Optionally set the position if provided
@@ -77,21 +80,27 @@ namespace Spoon
     }
     UUID EntityManager::CreateEntity(std::string displayName)
     {
-        UUID id = GenerateID();
+        return CreateEntity(displayName, false);
+    }
+
+    UUID EntityManager::CreateEntity(std::string displayName, bool isRuntimeOnly)
+    {
+        UUID id = GenerateID(isRuntimeOnly);
         Entity entity = Entity(id, this);
         m_Entities[id] = displayName;
         return id;
     }
 
-    UUID EntityManager::GenerateID()
+    UUID EntityManager::GenerateID(bool isRuntimeOnly)
     {
         if(!m_RecycledIds.empty() && m_CanRecycle)
         {
             UUID id = m_RecycledIds.back();
             m_RecycledIds.pop_back();
+            id.isRuntimeOnly = isRuntimeOnly;
             return id;
         }
-        else { return UUID(m_IdCounter++); }
+        else { return UUID(m_IdCounter++, isRuntimeOnly); }
     }
 
     void EntityManager::LoadEntity(UUID id, std::string name)
@@ -102,7 +111,7 @@ namespace Spoon
             m_Entities[id] = name;
             m_IdCounter++;
         }
-        else CreateEntity(name);
+        else CreateEntity(name, false);
     }
 
     void EntityManager::KillEntity(UUID id)

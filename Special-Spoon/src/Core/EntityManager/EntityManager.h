@@ -14,7 +14,7 @@
 namespace Spoon
 {
     struct EntityBlueprint;
-    
+
     class SPOON_API EntityManager
     {
     public:
@@ -37,7 +37,8 @@ namespace Spoon
             std::optional<sf::Vector2f> position = std::nullopt
         );                                                  // Spawns an entity from a blueprint, optionally setting its display name and position
         UUID CreateEntity(std::string displayName = "");    // Creates a new entity and returns its UUID (optional display name for editor)
-        UUID GenerateID();                                  // Generates a new unique UUID
+        UUID CreateEntity(std::string displayName, bool isRuntimeOnly);    // Creates a new entity and returns its UUID (optional display name for editor)
+        UUID GenerateID(bool isRuntimeOnly = false);                                  // Generates a new unique UUID
         void LoadEntity(UUID id, std::string name);         // Loads an entity with a specific UUID (for deserialization)
         void KillEntity(UUID id);                           // Removes an entity and recycles its UUID
         void ClearEntities();                               // Removes all entities

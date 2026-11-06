@@ -1,4 +1,5 @@
 {
+    "m_IsRuntimeOnly" : false,
     "m_Name": "TileMap",
     "m_Components": [
         {

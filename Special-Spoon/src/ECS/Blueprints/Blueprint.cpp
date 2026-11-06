@@ -1,7 +1,6 @@
 #include "Blueprint.h"
 
 #include <fstream>
-#include <filesystem>
 #include <stdexcept>
 
 namespace Spoon
