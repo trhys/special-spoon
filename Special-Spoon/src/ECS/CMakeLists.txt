@@ -1,7 +1,10 @@
 target_sources(Special-Spoon
     PRIVATE
+        Blueprints/Blueprint.h
+        Blueprints/DefaultBlueprints.h
+        Blueprints/DefaultBlueprints.cpp
+
         Components/Component.h
-        
         Components/Core/InputComp.h
         Components/Core/InputComp.cpp
         Components/Core/StatusComp.h

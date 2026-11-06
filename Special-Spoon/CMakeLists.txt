@@ -19,13 +19,17 @@ foreach(asset IN ITEMS special-spoon.png folder.png Jersey10-Regular.ttf)
     file(READ "${asset_path}" hex HEX)
     string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1,\n" bytes "${hex}")
 
-    file(WRITE "${generated_dir}/${symbol}.h"
+    string(CONCAT header_content
         "#pragma once\n"
         "namespace Spoon::SystemAssets {\n"
         "inline constexpr unsigned char ${symbol}[] = {\n"
         "${bytes}"
         "};\n"
         "}\n"
+    )
+    file(GENERATE 
+        OUTPUT "${generated_dir}/${symbol}.h"
+        CONTENT "${header_content}"
     )
 endforeach()
 
@@ -34,7 +38,7 @@ target_include_directories(Special-Spoon PRIVATE "${generated_dir}")
 # embed the default blueprint JSON files so built-in blueprints are
 # available in development and installed builds without working-directory
 # or source-tree dependencies
-set(blueprint_defaults_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/Editor/Blueprints/Defaults")
+set(blueprint_defaults_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/ECS/Blueprints/Defaults")
 file(GLOB blueprint_defaults CONFIGURE_DEPENDS "${blueprint_defaults_dir}/*.json")
 list(SORT blueprint_defaults)
 
@@ -51,7 +55,7 @@ foreach(blueprint IN LISTS blueprint_defaults)
         "    { \"${blueprint_name}\", R\"SpoonBP(${blueprint_json})SpoonBP\" },\n")
 endforeach()
 
-file(WRITE "${generated_dir}/default_blueprints.h"
+string(CONCAT blueprint_header_content
     "#pragma once\n"
     "namespace Spoon::EmbeddedBlueprints {\n"
     "struct Entry { const char* name; const char* data; };\n"
@@ -59,11 +63,16 @@ file(WRITE "${generated_dir}/default_blueprints.h"
     "${blueprint_entries}"
     "};\n"
     "}\n"
+) 
+file(GENERATE 
+    OUTPUT "${generated_dir}/default_blueprints.h"
+    CONTENT
+        "${blueprint_header_content}"
 )
 
 # embed the built-in project templates (project blueprints plus the scene
 # templates they reference), keyed by path relative to the template root
-set(project_templates_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/Editor/Blueprints/ProjectTemplates")
+set(project_templates_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Project/ProjectTemplates")
 file(GLOB_RECURSE project_templates CONFIGURE_DEPENDS "${project_templates_dir}/*.json")
 list(SORT project_templates)
 
@@ -80,7 +89,7 @@ foreach(template IN LISTS project_templates)
         "    { \"${template_key}\", R\"SpoonPT(${template_json})SpoonPT\" },\n")
 endforeach()
 
-file(WRITE "${generated_dir}/project_templates.h"
+string(CONCAT project_template_header_content
     "#pragma once\n"
     "namespace Spoon::EmbeddedProjectTemplates {\n"
     "struct Entry { const char* path; const char* data; };\n"
@@ -88,6 +97,11 @@ file(WRITE "${generated_dir}/project_templates.h"
     "${project_template_entries}"
     "};\n"
     "}\n"
+)   
+file(GENERATE 
+    OUTPUT "${generated_dir}/project_templates.h"
+    CONTENT
+        "${project_template_header_content}"
 )
 
 # require explicit symbol exports regardless of platform

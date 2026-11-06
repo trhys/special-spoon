@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Project/Config.h"
-#include "Core/Project/Paths.h"
+#include "Config.h"
+#include "Paths.h"
 #include "Core/SceneManager.h"
 
 #include "nlohmann/json.hpp"

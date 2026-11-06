@@ -1,7 +1,6 @@
 #include "Editor/Editor.h"
-#include "Editor/Blueprints/Blueprint.h"
 #include "Editor/Utils/Windows.h"
-
+#include "ECS/Blueprints/Blueprint.h"
 #include "Core/Registers/Component/ComponentRegistry.h"
 
 #include <algorithm>

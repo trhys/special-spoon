@@ -1,6 +1,5 @@
 #include "ProjectBlueprint.h"
-#include "Blueprint.h"
-
+#include "ECS/Blueprints/Blueprint.h"
 #include "Core/Serialization/JsonTypeDefs.h"
 #include "ECS/Components/Core/TransformComp.h"
 #include "Utils/Macros.h"

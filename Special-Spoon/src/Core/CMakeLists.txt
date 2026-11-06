@@ -13,13 +13,6 @@ target_sources(Special-Spoon
         EntityManager/EntityManager.inl
         EntityManager/EntityManager.cpp
 
-        Project/Config.h
-        Project/Paths.h
-        Project/Policies.h
-        Project/Policies.cpp
-        Project/ProjectManager.h
-        Project/ProjectManager.cpp
-
         Registers/ActionRegistry.h
         Registers/StateRegistry.h
         Registers/Component/ComponentRegistry.h
@@ -40,3 +33,5 @@ target_sources(Special-Spoon
         Serialization/Serializer.cpp
         Serialization/JsonTypeDefs.h
 )
+
+add_subdirectory(Project)

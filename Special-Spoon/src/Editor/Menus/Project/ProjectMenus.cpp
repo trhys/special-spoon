@@ -1,10 +1,10 @@
 #include "Editor/Editor.h"
-#include "Editor/Blueprints/ProjectBlueprint.h"
 #include "Editor/Utils/EditorSettings.h"
 #include "Editor/Utils/Windows.h"
 #include "Editor/Utils/Tooltips.h"
 
 #include "Core/Project/ProjectManager.h"
+#include "Core/Project/ProjectBlueprint.h"
 #include "Core/Renderer/Renderer.h"
 
 #include "ImGuiFileDialog/ImGuiFileDialog.h"

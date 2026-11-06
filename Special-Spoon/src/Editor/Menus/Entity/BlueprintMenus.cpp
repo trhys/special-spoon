@@ -1,7 +1,7 @@
 #include "Editor/Editor.h"
-#include "Editor/Blueprints/Blueprint.h"
 #include "Editor/Utils/Windows.h"
 #include "Editor/Utils/Helpmarker.h"
+#include "ECS/Blueprints/Blueprint.h"
 
 #include "Imgui/misc/cpp/imgui_stdlib.h"
 

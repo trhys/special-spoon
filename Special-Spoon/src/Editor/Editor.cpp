@@ -1,6 +1,6 @@
 #include "Editor.h"
 
-#include "Blueprints/DefaultBlueprints.h"
+#include "ECS/Blueprints/DefaultBlueprints.h"
 #include "ECS/Components/World/TileMapComp.h"
 
 #include "Utils/EditorSettings.h"
