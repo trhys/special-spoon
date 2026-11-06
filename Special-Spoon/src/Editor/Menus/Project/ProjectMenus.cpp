@@ -90,6 +90,13 @@ namespace Spoon
                     ? &templates[selectedTemplate].m_Blueprint : nullptr;
 
                 Project* newProject = m_Services.projectManager->CreateNew(std::string(newProjectBuf));
+                if (!newProject)
+                {
+                    m_ShowCreateProjectError = true; // set error flag
+                    ImGui::End();
+                    return;
+                }
+                
                 if (newProject && projectBlueprint)
                 {
                     // compose the project config before the editor applies it:
@@ -99,7 +106,7 @@ namespace Spoon
                             projectBlueprint->m_Profile, projectBlueprint->m_ConfigOverrides);
                         SetCurrentProject(newProject);
                     }
-                    catch (const json::exception& e)
+                    catch (const std::exception& e)
                     {
                         SS_DEBUG_LOG("[PROJECT] Invalid config overrides in template '"
                                      + projectBlueprint->m_Name + "': " + std::string(e.what()))
@@ -110,6 +117,10 @@ namespace Spoon
                         ImGui::End();
                         return; // return early to prevent further processing
                     }
+                } else if (newProject && !projectBlueprint)
+                {
+                    // no template selected, but project was created
+                    SetCurrentProject(newProject);
                 }
                 
                 // scaffold and load the template's starter scene
