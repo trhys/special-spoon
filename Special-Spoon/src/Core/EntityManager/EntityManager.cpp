@@ -1,4 +1,6 @@
 #include "EntityManager.h"
+#include "ECS/Blueprints/Blueprint.h"
+#include "Core/Registers/Component/ComponentRegistry.h"
 
 namespace Spoon
 {
@@ -28,6 +30,51 @@ namespace Spoon
     // ===========================================
     // Entity Creation/Management Methods
     // ===========================================
+    UUID EntityManager::SpawnPrefab(
+        const EntityBlueprint& blueprint,
+        const std::string& displayName,
+        std::optional<sf::Vector2f> position
+    )
+    {
+        const auto& loaders = ComponentRegistry::Get().GetLoaders();
+
+        // validate component support
+        for (const auto& comp : blueprint.m_Components)
+        {
+            if (loaders.find(comp.m_Name) == loaders.end())
+            {
+                throw std::runtime_error("Unsupported component: " + comp.m_Name);
+            }
+        }
+
+        UUID id = CreateEntity(displayName.empty() ? blueprint.m_Name : displayName);
+
+        // Apply blueprint components to the entity here
+        // Optionally set the position if provided
+        try {
+            for (const auto& comp : blueprint.m_Components)
+            {
+                loaders.at(comp.m_Name)(*this, id, comp.m_Data);
+            }
+
+            if (position.has_value())
+            {
+                if (HasComponent<TransformComp>(id, TransformComp::Name))
+                    GetComponent<TransformComp>(id, TransformComp::Name).SetPosition(position.value());
+                else
+                {
+                    MakeComponent<TransformComp>(id, TransformComp::Name);
+                    GetComponent<TransformComp>(id, TransformComp::Name).SetPosition(position.value());
+                }
+            }
+
+            return id;
+
+        } catch (const std::exception& e) {
+            KillEntity(id);
+            throw;
+        }
+    }
     UUID EntityManager::CreateEntity(std::string displayName)
     {
         UUID id = GenerateID();
@@ -93,7 +140,9 @@ namespace Spoon
         auto found = m_Entities.find(id);
         if (found != m_Entities.end())
         {
-            id.isRuntimeOnly = true;
+            auto entity = m_Entities.extract(found);
+            entity.key().isRuntimeOnly = true;
+            m_Entities.insert(std::move(entity));
         }
     }
 

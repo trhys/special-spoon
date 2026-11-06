@@ -5,8 +5,6 @@ using json = nlohmann::json;
 
 namespace Spoon
 {
-    // wip: refactoring
-
     struct ComponentBlueprint
     {
         std::string m_Name;
@@ -18,6 +16,8 @@ namespace Spoon
         std::string m_Name;
         std::vector<ComponentBlueprint> m_Components;
     };
+
+    EntityBlueprint ResolveBlueprint(const std::filesystem::path& path);
 
     inline void to_json(json& j, const ComponentBlueprint& comp)
     {

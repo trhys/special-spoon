@@ -138,13 +138,7 @@ namespace Spoon
                     // failures never leave a partial entity behind
                     try
                     {
-                        std::ifstream file(selectedBlueprint);
-                        if (!file.is_open())
-                            throw std::runtime_error("failed to open blueprint file");
-
-                        json blueprintJson;
-                        file >> blueprintJson;
-                        const EntityBlueprint blueprint = blueprintJson.get<EntityBlueprint>();
+                        const EntityBlueprint blueprint = ResolveBlueprint(selectedBlueprint);
 
                         const std::string name = newEntityBuf[0] != '\0' ? newEntityBuf : blueprint.m_Name;
                         const UUID id = m_Services.entityManager->CreateEntity(name);

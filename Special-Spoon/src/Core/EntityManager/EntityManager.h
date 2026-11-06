@@ -13,6 +13,8 @@
 
 namespace Spoon
 {
+    struct EntityBlueprint;
+    
     class SPOON_API EntityManager
     {
     public:
@@ -29,6 +31,11 @@ namespace Spoon
         // Entity management methods
         // ===========================================
 
+        UUID SpawnPrefab(
+            const EntityBlueprint& blueprint,
+            const std::string& displayName = "",
+            std::optional<sf::Vector2f> position = std::nullopt
+        );                                                  // Spawns an entity from a blueprint, optionally setting its display name and position
         UUID CreateEntity(std::string displayName = "");    // Creates a new entity and returns its UUID (optional display name for editor)
         UUID GenerateID();                                  // Generates a new unique UUID
         void LoadEntity(UUID id, std::string name);         // Loads an entity with a specific UUID (for deserialization)

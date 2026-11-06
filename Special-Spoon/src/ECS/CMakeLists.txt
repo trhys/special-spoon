@@ -1,6 +1,7 @@
 target_sources(Special-Spoon
     PRIVATE
         Blueprints/Blueprint.h
+        Blueprints/Blueprint.cpp
         Blueprints/DefaultBlueprints.h
         Blueprints/DefaultBlueprints.cpp
 
