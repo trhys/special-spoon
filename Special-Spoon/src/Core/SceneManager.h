@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Core.h"
+
+#include "nlohmann/json.hpp"
 #include "SFML/Graphics/Rect.hpp"
+
 #include <cstdint>
 #include <unordered_map>
 #include <string>
@@ -35,10 +38,13 @@ namespace Spoon
         // The scene data pointer returned is for the editor to keep track of the active scene
         // =====================================================================================
         // CreateScene creates a new scene with the given ID and adds it to the manifest
+        // The overload is for loading project templates with scene data
         // DeleteScene removes the scene from the manifest and deletes associated files from disk
+        // 
         // =====================================================================================
         SceneData* LoadScene(std::string id, EntityManager& entityManager, SystemManager& systemManager);
         SceneData* CreateScene(const std::string& ID);
+        SceneData* CreateScene(const std::string& ID, const nlohmann::json& sceneData);
         void DeleteScene(const std::string& ID);
 
         // UnloadScene is called when switching scenes to clear out the EntityManager and SystemManager

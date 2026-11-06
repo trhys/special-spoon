@@ -1,0 +1,7 @@
+{
+    "schemaVersion": 1,
+    "name": "Isometric Starter",
+    "profile": "isometric",
+    "scene": "Scenes/Isometric-Main.scene.json",
+    "configOverrides": {}
+}

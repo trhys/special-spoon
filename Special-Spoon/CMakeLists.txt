@@ -1,5 +1,109 @@
 add_library(Special-Spoon SHARED)
 
+# generate system assets
+set(system_assets_dir
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Core/ResourceManager/system"
+)
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+file(MAKE_DIRECTORY "${generated_dir}")
+
+foreach(asset IN ITEMS special-spoon.png folder.png Jersey10-Regular.ttf)
+    set(asset_path "${system_assets_dir}/${asset}")
+
+    # Regenerate when the source asset changes.
+    set_property(DIRECTORY APPEND PROPERTY
+        CMAKE_CONFIGURE_DEPENDS "${asset_path}"
+    )
+
+    string(MAKE_C_IDENTIFIER "${asset}" symbol)
+    file(READ "${asset_path}" hex HEX)
+    string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1,\n" bytes "${hex}")
+
+    string(CONCAT header_content
+        "#pragma once\n"
+        "namespace Spoon::SystemAssets {\n"
+        "inline constexpr unsigned char ${symbol}[] = {\n"
+        "${bytes}"
+        "};\n"
+        "}\n"
+    )
+    file(GENERATE 
+        OUTPUT "${generated_dir}/${symbol}.h"
+        CONTENT "${header_content}"
+    )
+endforeach()
+
+target_include_directories(Special-Spoon PRIVATE "${generated_dir}")
+
+# embed the default blueprint JSON files so built-in blueprints are
+# available in development and installed builds without working-directory
+# or source-tree dependencies
+set(blueprint_defaults_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/ECS/Blueprints/Defaults")
+file(GLOB blueprint_defaults CONFIGURE_DEPENDS "${blueprint_defaults_dir}/*.json")
+list(SORT blueprint_defaults)
+
+set(blueprint_entries "")
+foreach(blueprint IN LISTS blueprint_defaults)
+    # Regenerate when a blueprint changes.
+    set_property(DIRECTORY APPEND PROPERTY
+        CMAKE_CONFIGURE_DEPENDS "${blueprint}"
+    )
+
+    get_filename_component(blueprint_name "${blueprint}" NAME_WE)
+    file(READ "${blueprint}" blueprint_json)
+    string(APPEND blueprint_entries
+        "    { \"${blueprint_name}\", R\"SpoonBP(${blueprint_json})SpoonBP\" },\n")
+endforeach()
+
+string(CONCAT blueprint_header_content
+    "#pragma once\n"
+    "namespace Spoon::EmbeddedBlueprints {\n"
+    "struct Entry { const char* name; const char* data; };\n"
+    "inline constexpr Entry entries[] = {\n"
+    "${blueprint_entries}"
+    "};\n"
+    "}\n"
+) 
+file(GENERATE 
+    OUTPUT "${generated_dir}/default_blueprints.h"
+    CONTENT
+        "${blueprint_header_content}"
+)
+
+# embed the built-in project templates (project blueprints plus the scene
+# templates they reference), keyed by path relative to the template root
+set(project_templates_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Project/ProjectTemplates")
+file(GLOB_RECURSE project_templates CONFIGURE_DEPENDS "${project_templates_dir}/*.json")
+list(SORT project_templates)
+
+set(project_template_entries "")
+foreach(template IN LISTS project_templates)
+    # Regenerate when a template changes.
+    set_property(DIRECTORY APPEND PROPERTY
+        CMAKE_CONFIGURE_DEPENDS "${template}"
+    )
+
+    file(RELATIVE_PATH template_key "${project_templates_dir}" "${template}")
+    file(READ "${template}" template_json)
+    string(APPEND project_template_entries
+        "    { \"${template_key}\", R\"SpoonPT(${template_json})SpoonPT\" },\n")
+endforeach()
+
+string(CONCAT project_template_header_content
+    "#pragma once\n"
+    "namespace Spoon::EmbeddedProjectTemplates {\n"
+    "struct Entry { const char* path; const char* data; };\n"
+    "inline constexpr Entry entries[] = {\n"
+    "${project_template_entries}"
+    "};\n"
+    "}\n"
+)   
+file(GENERATE 
+    OUTPUT "${generated_dir}/project_templates.h"
+    CONTENT
+        "${project_template_header_content}"
+)
+
 # require explicit symbol exports regardless of platform
 # otherwise unix will hide issues that will come up on windows
 # see issue #92

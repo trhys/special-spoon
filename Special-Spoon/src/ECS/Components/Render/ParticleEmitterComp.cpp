@@ -52,13 +52,21 @@ namespace Spoon
         {
             if (ImGui::BeginListBox("Available Presets"))
             {
-                const auto& presets = Application::Get().GetProjectManager().GetAvailablePresets("particles");
-                for (auto preset : presets)
+                // enumerate JSON presets in the project's presets/particles directory
+                const auto presetsDir = Application::Get().GetProjectManager().GetCurrentProjectPaths().Presets() / "particles";
+                if (std::filesystem::exists(presetsDir) && std::filesystem::is_directory(presetsDir))
                 {
-                    if (ImGui::Selectable(preset.c_str()))
+                    for (const auto& entry : std::filesystem::directory_iterator(presetsDir))
                     {
-                        LoadPreset(preset.c_str());
-                        ImGui::CloseCurrentPopup();
+                        if (!entry.is_regular_file() || entry.path().extension() != ".json")
+                            continue;
+
+                        const std::string preset = entry.path().stem().string();
+                        if (ImGui::Selectable(preset.c_str()))
+                        {
+                            LoadPreset(preset.c_str());
+                            ImGui::CloseCurrentPopup();
+                        }
                     }
                 }
                 ImGui::EndListBox();
@@ -79,7 +87,7 @@ namespace Spoon
                 {
                     displaySaveError = true;
                 }
-                auto path = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath / "particles" / (std::string(presetSaveInputBuffer) + ".json");
+                auto path = Application::Get().GetProjectManager().GetCurrentProjectPaths().Presets() / "particles" / (std::string(presetSaveInputBuffer) + ".json");
                 if (std::filesystem::exists(path))
                 {
                     displaySaveError = false;
@@ -245,7 +253,7 @@ namespace Spoon
 
     void ParticleEmitterComp::SavePreset(const std::string& presetName)
     {
-        std::filesystem::path presetsPath = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath;
+        std::filesystem::path presetsPath = Application::Get().GetProjectManager().GetCurrentProjectPaths().Presets();
         std::filesystem::create_directories(presetsPath / "particles");
         const std::filesystem::path presetFile = presetsPath / "particles" / (presetName + ".json");
         
@@ -260,7 +268,7 @@ namespace Spoon
 
     void ParticleEmitterComp::LoadPreset(const std::string& presetName)
     {
-        const std::filesystem::path presetFile = Application::Get().GetProjectManager().GetCurrentProject()->presetsPath / "particles" / (presetName + ".json");
+        const std::filesystem::path presetFile = Application::Get().GetProjectManager().GetCurrentProjectPaths().Presets() / "particles" / (presetName + ".json");
         if (std::filesystem::exists(presetFile))
         {
             std::ifstream fileStream(presetFile, std::ios::in);

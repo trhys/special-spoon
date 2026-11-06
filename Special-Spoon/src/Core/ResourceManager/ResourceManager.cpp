@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
-#include "SystemFont/Jersey_10/SystemFont.h"
+#include "special_spoon_png.h"
+#include "folder_png.h"
+#include "Jersey10_Regular_ttf.h"
 
 using json = nlohmann::json;
 
@@ -55,6 +57,10 @@ namespace Spoon
 
     void ResourceManager::ScanAssets(const std::filesystem::path& rootDir)
     {
+        if (std::filesystem::create_directories(rootDir))
+        {
+            SS_DEBUG_LOG("[RESOURCE MANAGER] Created assets directory: " + rootDir.string())
+        }
         auto normalRoot = Normalize(rootDir);
         auto newRoot = std::make_unique<AssetNode>("Assets", normalRoot, "Root", true);
         
@@ -99,10 +105,29 @@ namespace Spoon
 
     void ResourceManager::RefreshAssets(const std::filesystem::path& rootDir)
     {
-        // clear thumbnails
+        // save thumbnails temporarily in case scanassets throws
+        auto savedFontPreviews = std::move(m_FontPreviews);
+        auto savedThumbnails = std::move(m_Thumbnails);
         m_FontPreviews.clear();
         m_Thumbnails.clear();
-        ScanAssets(rootDir);
+        try {
+            ScanAssets(rootDir);
+        } catch (...)
+        {
+            m_FontPreviews = std::move(savedFontPreviews);
+            m_Thumbnails = std::move(savedThumbnails);
+            throw;
+        }
+        InitDefaultFontPreview();
+    }
+
+    void ResourceManager::ResetAssetsDirectory(const std::filesystem::path& newRoot)
+    {
+        fileRoot = std::make_unique<AssetNode>(
+            "assets", newRoot, "Root", true);
+
+        m_Thumbnails.clear();
+        m_FontPreviews.clear();
         InitDefaultFontPreview();
     }
 
@@ -198,8 +223,9 @@ namespace Spoon
     {
         m_Textures["empty"] = sf::Texture();
         sf::Texture texture;
-        std::filesystem::path defaultTexturePath = std::filesystem::path("assets")  / "system" / "special-spoon.png";
-        if (!texture.loadFromFile(defaultTexturePath))
+        if (!texture.loadFromMemory(
+            SystemAssets::special_spoon_png, 
+            sizeof(SystemAssets::special_spoon_png)))
         {
             throw std::runtime_error("Failed to load default texture!");
         }
@@ -207,14 +233,18 @@ namespace Spoon
 
         // load folder icon for editor
         std::filesystem::path folderIconPath = std::filesystem::path("assets")  / "system" / "folder.png";
-        if (!texture.loadFromFile(folderIconPath))
+        if (!texture.loadFromMemory(
+            SystemAssets::folder_png, 
+            sizeof(SystemAssets::folder_png)))
         {
             throw std::runtime_error("Failed to load folder icon!");
         }
         m_Textures.emplace("special-spoon-folder-icon", std::move(texture));
 
         sf::Font& font = m_Fonts["Default"];
-        if (!font.openFromMemory(Jersey10_Regular_ttf, Jersey10_Regular_ttf_len))
+        if (!font.openFromMemory(
+            SystemAssets::Jersey10_Regular_ttf,
+            sizeof(SystemAssets::Jersey10_Regular_ttf)))
         {
             throw std::runtime_error("Failed to load system font!");
         }

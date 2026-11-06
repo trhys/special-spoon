@@ -1,5 +1,6 @@
 #include "Editor.h"
 
+#include "ECS/Blueprints/DefaultBlueprints.h"
 #include "ECS/Components/World/TileMapComp.h"
 
 #include "Utils/EditorSettings.h"
@@ -184,7 +185,6 @@ namespace Spoon
         DrawCreateProjectError();
         DrawLoadProject();
         DrawLoadProjectError();
-        DrawDeleteProject();
         DrawConfigProject();
 		DrawOverwriteProjectPrompt();
         DrawSaveProjectError();
@@ -268,11 +268,26 @@ namespace Spoon
         if (!project)
             return false;
         SetActiveScene(nullptr);
-        ResourceManager::Get().ScanAssets(project->assetsPath);
+        try {
+            ResourceManager::Get().ScanAssets(project->paths.Assets());
+        } catch (const std::filesystem::filesystem_error& e)
+        {
+            SS_DEBUG_LOG("[EDITOR] Failed to scan assets on project set: " + std::string(e.what()))
+            SS_DEBUG_LOG("[EDITOR] Resetting assets directory due to scan failure.")
+            ResourceManager::Get().ResetAssetsDirectory(project->paths.Assets());
+        }
         SetWorkingDir(ResourceManager::Get().GetAssetsDir());
-        m_Services.sceneManager->LoadManifest(project->dataPath);
+        m_Services.sceneManager->LoadManifest(project->paths.Data());
+        // make the built-in blueprints available to the project without
+        // overwriting any existing (customized) blueprint files
+        try {
+            SeedDefaultBlueprints(project->paths.Blueprints());
+        } catch (const std::filesystem::filesystem_error& e)
+        {
+            SS_DEBUG_LOG("[EDITOR] Failed to seed default blueprints: " + std::string(e.what()))
+        }
         m_Services.renderer->UpdateRenderConfig();
-        m_AnimationTool = AnimationTool(m_Services.projectManager->GetAnimationsPath());
+        m_AnimationTool = AnimationTool(m_Services.projectManager->GetCurrentProjectPaths().Animations());
         m_CurrentProject = project;
         m_ShowCreateProjectPrompt = false;
         return true;

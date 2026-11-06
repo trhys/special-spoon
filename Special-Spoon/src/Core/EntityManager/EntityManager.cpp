@@ -1,4 +1,6 @@
 #include "EntityManager.h"
+#include "ECS/Blueprints/Blueprint.h"
+#include "Core/Registers/Component/ComponentRegistry.h"
 
 namespace Spoon
 {
@@ -28,23 +30,77 @@ namespace Spoon
     // ===========================================
     // Entity Creation/Management Methods
     // ===========================================
+    UUID EntityManager::SpawnPrefab(
+        const EntityBlueprint& blueprint,
+        const std::string& displayName,
+        std::optional<sf::Vector2f> position
+    )
+    {
+        const auto& loaders = ComponentRegistry::Get().GetLoaders();
+
+        // validate component support
+        for (const auto& comp : blueprint.m_Components)
+        {
+            if (loaders.find(comp.m_Name) == loaders.end())
+            {
+                throw std::runtime_error("Unsupported component: " + comp.m_Name);
+            }
+        }
+
+        UUID id = CreateEntity(
+            displayName.empty() ? blueprint.m_Name : displayName,
+            blueprint.m_IsRuntimeOnly
+        );
+
+        // Apply blueprint components to the entity here
+        // Optionally set the position if provided
+        try {
+            for (const auto& comp : blueprint.m_Components)
+            {
+                loaders.at(comp.m_Name)(*this, id, comp.m_Data);
+            }
+
+            if (position.has_value())
+            {
+                if (HasComponent<TransformComp>(id, TransformComp::Name))
+                    GetComponent<TransformComp>(id, TransformComp::Name).SetPosition(position.value());
+                else
+                {
+                    MakeComponent<TransformComp>(id, TransformComp::Name);
+                    GetComponent<TransformComp>(id, TransformComp::Name).SetPosition(position.value());
+                }
+            }
+
+            return id;
+
+        } catch (const std::exception& e) {
+            KillEntity(id);
+            throw;
+        }
+    }
     UUID EntityManager::CreateEntity(std::string displayName)
     {
-        UUID id = GenerateID();
+        return CreateEntity(displayName, false);
+    }
+
+    UUID EntityManager::CreateEntity(std::string displayName, bool isRuntimeOnly)
+    {
+        UUID id = GenerateID(isRuntimeOnly);
         Entity entity = Entity(id, this);
         m_Entities[id] = displayName;
         return id;
     }
 
-    UUID EntityManager::GenerateID()
+    UUID EntityManager::GenerateID(bool isRuntimeOnly)
     {
         if(!m_RecycledIds.empty() && m_CanRecycle)
         {
             UUID id = m_RecycledIds.back();
             m_RecycledIds.pop_back();
+            id.isRuntimeOnly = isRuntimeOnly;
             return id;
         }
-        else { return UUID(m_IdCounter++); }
+        else { return UUID(m_IdCounter++, isRuntimeOnly); }
     }
 
     void EntityManager::LoadEntity(UUID id, std::string name)
@@ -55,7 +111,7 @@ namespace Spoon
             m_Entities[id] = name;
             m_IdCounter++;
         }
-        else CreateEntity(name);
+        else CreateEntity(name, false);
     }
 
     void EntityManager::KillEntity(UUID id)
@@ -74,7 +130,9 @@ namespace Spoon
         {
             // recursively kill child components
             comp->OnKill(this);
-            KillComponent(comp->GetType(), id);
+            // component arrays are keyed by display name, not the RTTI
+            // name returned by GetType()
+            KillComponent(comp->GetDisplayName(), id);
         }
     }
 
@@ -91,7 +149,9 @@ namespace Spoon
         auto found = m_Entities.find(id);
         if (found != m_Entities.end())
         {
-            id.isRuntimeOnly = true;
+            auto entity = m_Entities.extract(found);
+            entity.key().isRuntimeOnly = true;
+            m_Entities.insert(std::move(entity));
         }
     }
 
