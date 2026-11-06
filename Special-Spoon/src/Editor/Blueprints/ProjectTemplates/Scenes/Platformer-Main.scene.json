@@ -3,7 +3,7 @@
     "name": "Main",
     "entities": [
         {
-            "blueprint": "Blueprints/Player.json",
+            "blueprint": "Blueprints/Player-dynamic.json",
             "name": "Player",
             "position": { "x": 100, "y": 100 }
         },

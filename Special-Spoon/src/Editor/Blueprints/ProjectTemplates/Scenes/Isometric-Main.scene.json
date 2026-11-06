@@ -7,7 +7,7 @@
             "name": "World"
         },
         {
-            "blueprint": "Blueprints/Player.json",
+            "blueprint": "Blueprints/Player-kinematic.json",
             "name": "Player",
             "position": { "x": 256, "y": 128 }
         },

@@ -42,12 +42,13 @@ namespace Spoon
 
     void Editor::DrawCreateProjectPrompt()
     {
+        if (m_ShowCreateProjectError)
+            DrawCreateProjectError();
+
         if (!m_ShowCreateProjectPrompt)
 			return;
 
         static bool createNewError = false; // error flag
-        if (m_ShowCreateProjectError)
-            DrawCreateProjectError();
 
         CenterNext(); // center the window
         if (ImGui::Begin("Create New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
@@ -96,22 +97,21 @@ namespace Spoon
                     try {
                         newProject->config = ComposeProjectConfig(
                             projectBlueprint->m_Profile, projectBlueprint->m_ConfigOverrides);
+                        SetCurrentProject(newProject);
                     }
                     catch (const json::exception& e)
                     {
                         SS_DEBUG_LOG("[PROJECT] Invalid config overrides in template '"
                                      + projectBlueprint->m_Name + "': " + std::string(e.what()))
+                        SS_DEBUG_LOG("[PROJECT] Aborting project creation due to invalid config overrides")
+                        
+                        // display error message on ui
+                        m_ShowCreateProjectError = true;
+                        ImGui::End();
+                        return; // return early to prevent further processing
                     }
-                    m_Services.projectManager->SaveProject(newProject);
                 }
-
-                if (!SetCurrentProject(newProject))
-                {
-                    m_ShowCreateProjectError = true;
-                    ImGui::End();
-                    return; // return early
-                }
-
+                
                 // scaffold and load the template's starter scene
                 if (projectBlueprint && !projectBlueprint->m_Scene.empty())
                 {
@@ -130,7 +130,20 @@ namespace Spoon
                     catch (const std::exception& e)
                     {
                         SS_DEBUG_LOG("[PROJECT] Failed to scaffold starter scene: " + std::string(e.what()))
+                        // abort the scene scaffolding process and skip saving the project
+                        m_ShowCreateProjectError = true;
+                        ImGui::End();
+                        return; // return early to prevent further processing
                     }
+                }
+
+                // everything passes - save project
+                if (!m_Services.projectManager->SaveProject(newProject))
+                {
+                    // failed to save project, show error
+                    m_ShowCreateProjectError = true;
+                    ImGui::End();
+                    return; // return early to prevent further processing
                 }
 
                 createNewError = false;     // clear the error flag

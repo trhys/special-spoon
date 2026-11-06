@@ -260,14 +260,23 @@ namespace Spoon
             throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
         }
 
-        json manifest = json::parse(inFile);
-        inFile.close();
+        json manifest;
+        try {
+            manifest = json::parse(inFile);
+            inFile.close();
+        } catch (const json::exception& e) {
+            throw std::runtime_error("Failed to parse scene manifest: " + std::string(e.what()));
+        }
 
         std::string newID = id;
         std::replace(newID.begin(), newID.end(), ' ', '_');
         std::filesystem::path sceneDir = m_ManifestPath.parent_path() / "scenes" / newID;
-        std::filesystem::create_directories(sceneDir);
-        
+        try {
+            std::filesystem::create_directories(sceneDir);
+        } catch (const std::filesystem::filesystem_error& e) {
+            throw std::runtime_error("Failed to create scene directory: " + std::string(e.what()));
+        }
+
         // create resource and data files for the new scene
         SceneData newScene;
         newScene.ID = newID;
@@ -284,6 +293,8 @@ namespace Spoon
         manifest["Scenes"].push_back(newSceneJSON);
 
         std::ofstream resources(newScene.ResourceFiles);
+        if (!resources)
+            throw std::runtime_error("Failed to open scene resource file at path: " + newScene.ResourceFiles.string());
         json newRes;
         newRes["Textures"] = json::array();
         newRes["Fonts"] = json::array();
@@ -291,13 +302,17 @@ namespace Spoon
         newRes["Animations"] = json::array();
         resources << newRes.dump(4);
         resources.close();
+        if (!resources)
+            throw std::runtime_error("Failed to write to scene resource file at path: " + newScene.ResourceFiles.string());
 
         std::ofstream data(newScene.DataFiles);
+        if (!data)
+            throw std::runtime_error("Failed to open scene data file at path: " + newScene.DataFiles.string());
         json newData = sceneData;
         data << newData.dump(4);
         data.close();
-
-        m_SceneManifest[newID] = newScene;
+        if (!data)
+            throw std::runtime_error("Failed to write to scene data file at path: " + newScene.DataFiles.string());
 
         std::ofstream outFile(m_ManifestPath);
         if(!outFile.is_open())
@@ -306,8 +321,11 @@ namespace Spoon
         }
         outFile << manifest.dump(4);
         outFile.close();
+        if (!outFile)
+            throw std::runtime_error("Failed to write to scene manifest at path: " + m_ManifestPath.string());
 
-        SS_DEBUG_LOG("Registered new scene --- ID: " + id)
+        m_SceneManifest[newID] = newScene;
+        SS_DEBUG_LOG("Registered new scene --- ID: " + newID)
 
         Application::Get().OnSceneLoad();
         return &m_SceneManifest[newID];

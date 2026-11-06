@@ -49,7 +49,7 @@
                 "bodyType": "Dynamic",
                 "velocity": { "X": 0.0, "Y": 0.0 },
                 "mass": 1.0,
-                "gravityScale": -1.0,
+                "gravityScale": 1.0,
                 "restitution": -1.0,
                 "friction": -1.0,
                 "linearDamping": -1.0
