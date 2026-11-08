@@ -15,6 +15,7 @@ target_sources(Special-Spoon
 
         Registers/ActionRegistry.h
         Registers/StateRegistry.h
+        Registers/StateRegistry.cpp
         Registers/Component/ComponentRegistry.h
         Registers/Component/ComponentRegistry.cpp
         Registers/System/SystemRegistry.h

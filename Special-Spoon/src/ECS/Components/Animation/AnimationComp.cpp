@@ -10,7 +10,7 @@ namespace Spoon
     {
         if (ImGui::BeginCombo("State ID", buffer[0] ? buffer : "Select State"))
         {
-            for (const auto& [name, id] : StateRegistry::Get().m_NameToID)
+            for (const auto& name : StateRegistry::Get().GetSortedNames())
             {
                 if (ImGui::Selectable(name.c_str()))
                 {
