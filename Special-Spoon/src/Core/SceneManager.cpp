@@ -96,7 +96,7 @@ namespace Spoon
             std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
             
             // Resolve path relative to project assets directory
-            auto fullPath = project ? project->assetsPath / filePath : filePath;
+            auto fullPath = project ? project->paths.Assets() / filePath : filePath;
             ResourceManager::Get().LoadResource<sf::Texture>(resID, fullPath);
             SS_DEBUG_LOG("Loaded texture resource with ID: " +  resID)
         }
@@ -109,7 +109,7 @@ namespace Spoon
                 std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
 
                 // Resolve path relative to project assets directory
-                auto fullPath = project ? project->assetsPath / filePath : filePath;
+                auto fullPath = project ? project->paths.Assets() / filePath : filePath;
                 ResourceManager::Get().LoadResource<sf::Font>(resID, fullPath);
                 SS_DEBUG_LOG("Loaded font resource with ID: " +  resID)
             }
@@ -141,7 +141,7 @@ namespace Spoon
                 std::filesystem::path filePath = resource["FilePath"].get<std::filesystem::path>();
 
                 // Resolve path relative to project assets directory
-                auto fullPath = project ? project->assetsPath / filePath : filePath;
+                auto fullPath = project ? project->paths.Assets() / filePath : filePath;
                 ResourceManager::Get().LoadResource<sf::SoundBuffer>(resID, fullPath);
                 SS_DEBUG_LOG("Loaded sound resource with ID: " +  resID)
             }
@@ -231,21 +231,53 @@ namespace Spoon
 
     SceneData* SceneManager::CreateScene(const std::string& id)
     {
+        auto entities = nlohmann::json::array();
+
+        // get configured systems from the project settings and initialize default systems
+        const auto& enabledSystems = Application::Get().GetProjectManager().GetConfig().DefaultEnabledSystems;
+        
+        return CreateScene(id, 
+            {{"Entities", entities}, 
+            {"Systems", enabledSystems}}
+        );
+    }
+
+    SceneData* SceneManager::CreateScene(const std::string& id, const nlohmann::json& sceneData)
+    {
+        // validate json
+        if(!sceneData.contains("Entities") || 
+           !sceneData.contains("Systems") ||
+           !sceneData["Entities"].is_array() ||
+           !sceneData["Systems"].is_array())
+        {
+            throw std::runtime_error("Invalid scene data: missing 'Entities' or 'Systems' fields");
+        }
+
+        // open scene manifest
         std::ifstream inFile(m_ManifestPath);
         if(!inFile.is_open())
         {
             throw std::runtime_error("Failed to open scene manifest at path: " + m_ManifestPath.string());
         }
 
-        json manifest = json::parse(inFile);
-        inFile.close();
+        json manifest;
+        try {
+            manifest = json::parse(inFile);
+            inFile.close();
+        } catch (const json::exception& e) {
+            throw std::runtime_error("Failed to parse scene manifest: " + std::string(e.what()));
+        }
 
         std::string newID = id;
         std::replace(newID.begin(), newID.end(), ' ', '_');
         std::filesystem::path sceneDir = m_ManifestPath.parent_path() / "scenes" / newID;
-        std::filesystem::create_directories(sceneDir);
-        
+        try {
+            std::filesystem::create_directories(sceneDir);
+        } catch (const std::filesystem::filesystem_error& e) {
+            throw std::runtime_error("Failed to create scene directory: " + std::string(e.what()));
+        }
 
+        // create resource and data files for the new scene
         SceneData newScene;
         newScene.ID = newID;
         newScene.ResourceFiles = sceneDir / (newID + "_resources.json");
@@ -261,6 +293,8 @@ namespace Spoon
         manifest["Scenes"].push_back(newSceneJSON);
 
         std::ofstream resources(newScene.ResourceFiles);
+        if (!resources)
+            throw std::runtime_error("Failed to open scene resource file at path: " + newScene.ResourceFiles.string());
         json newRes;
         newRes["Textures"] = json::array();
         newRes["Fonts"] = json::array();
@@ -268,15 +302,17 @@ namespace Spoon
         newRes["Animations"] = json::array();
         resources << newRes.dump(4);
         resources.close();
+        if (!resources)
+            throw std::runtime_error("Failed to write to scene resource file at path: " + newScene.ResourceFiles.string());
 
         std::ofstream data(newScene.DataFiles);
-        json newData;
-        newData["Entities"] = json::array();
-        newData["Systems"] = json::array();
+        if (!data)
+            throw std::runtime_error("Failed to open scene data file at path: " + newScene.DataFiles.string());
+        json newData = sceneData;
         data << newData.dump(4);
         data.close();
-
-        m_SceneManifest[newID] = newScene;
+        if (!data)
+            throw std::runtime_error("Failed to write to scene data file at path: " + newScene.DataFiles.string());
 
         std::ofstream outFile(m_ManifestPath);
         if(!outFile.is_open())
@@ -285,8 +321,11 @@ namespace Spoon
         }
         outFile << manifest.dump(4);
         outFile.close();
+        if (!outFile)
+            throw std::runtime_error("Failed to write to scene manifest at path: " + m_ManifestPath.string());
 
-        SS_DEBUG_LOG("Registered new scene --- ID: " + id)
+        m_SceneManifest[newID] = newScene;
+        SS_DEBUG_LOG("Registered new scene --- ID: " + newID)
 
         Application::Get().OnSceneLoad();
         return &m_SceneManifest[newID];

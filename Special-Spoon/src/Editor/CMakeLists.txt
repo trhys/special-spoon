@@ -4,8 +4,6 @@ target_sources(Special-Spoon
         Editor.cpp
         Services.h
 
-        Blueprints/Blueprint.h
-
         Tools/Animation/AnimationTool.h
         Tools/Animation/AnimationTool.cpp
         Tools/Animation/File.cpp

@@ -1,0 +1,48 @@
+{
+    "m_IsRuntimeOnly" : false,
+    "m_Name": "Obstacle",
+    "m_Components": [
+        {
+            "m_Name": "Transform",
+            "m_Data": {
+                "iPos": { "X": 0.0, "Y": 0.0 },
+                "iScale": { "X": 1.0, "Y": 1.0 },
+                "iRot": 0.0
+            }
+        },
+        {
+            "m_Name": "Sprite",
+            "m_Data": {
+                "m_TextureID": "empty",
+                "isCentered": false,
+                "m_TextureRect": { "left": 0, "top": 0, "width": 0, "height": 0 }
+            }
+        },
+        {
+            "m_Name": "Physics",
+            "m_Data": {
+                "bodyType": "Static",
+                "velocity": { "X": 0.0, "Y": 0.0 },
+                "mass": 1.0,
+                "gravityScale": 0.0,
+                "restitution": -1.0,
+                "friction": -1.0,
+                "linearDamping": -1.0
+            }
+        },
+        {
+            "m_Name": "Collider",
+            "m_Data": {
+                "offset": { "X": 0.0, "Y": 0.0 },
+                "collider": {
+                    "type": "AABB",
+                    "size": { "X": 32.0, "Y": 32.0 }
+                }
+            }
+        },
+        {
+            "m_Name": "RenderLayer",
+            "m_Data": { "m_Layer": 1 }
+        }
+    ]
+}

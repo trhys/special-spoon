@@ -10,6 +10,7 @@ namespace Spoon
     {
         UUID() :ID(0) {}
         UUID(std::uint64_t id) : ID(id) {}
+        UUID(std::uint64_t id, bool isRuntimeOnly) : ID(id), isRuntimeOnly(isRuntimeOnly) {}
         std::uint64_t ID;
 
         bool operator==(const UUID& other) const { return ID == other.ID; }

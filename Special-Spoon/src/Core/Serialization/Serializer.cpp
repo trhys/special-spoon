@@ -70,9 +70,9 @@ namespace Spoon
         {
             json asset;
             asset["ID"] = id;
-            if (project && !project->assetsPath.empty())
+            if (project && !project->paths.m_ProjectRoot.empty())
             {
-                asset["FilePath"] = std::filesystem::relative(path, project->assetsPath);
+                asset["FilePath"] = std::filesystem::relative(path, project->paths.Assets());
             }
             else
             {
@@ -85,9 +85,9 @@ namespace Spoon
         {
             json asset;
             asset["ID"] = id;
-            if (project && !project->assetsPath.empty())
+            if (project && !project->paths.m_ProjectRoot.empty())
             {
-                asset["FilePath"] = std::filesystem::relative(path, project->assetsPath);
+                asset["FilePath"] = std::filesystem::relative(path, project->paths.Assets());
             }
             else
             {
@@ -100,9 +100,9 @@ namespace Spoon
         {
             json asset;
             asset["ID"] = id;
-            if (project && !project->assetsPath.empty())
+            if (project && !project->paths.m_ProjectRoot.empty())
             {
-                asset["FilePath"] = std::filesystem::relative(path, project->assetsPath);
+                asset["FilePath"] = std::filesystem::relative(path, project->paths.Assets());
             }
             else
             {

@@ -1,5 +1,12 @@
 #include "Editor/Editor.h"
 #include "Editor/Utils/Windows.h"
+#include "ECS/Blueprints/Blueprint.h"
+#include "Core/Registers/Component/ComponentRegistry.h"
+
+#include <algorithm>
+#include <fstream>
+#include <stdexcept>
+#include <vector>
 
 namespace Spoon
 {
@@ -45,12 +52,14 @@ namespace Spoon
         if (!m_ShowCreateEntity)
             return;
 
-        static Blueprint selectedBP = Blueprint{"None", {}};
         static char newEntityBuf[64];
+        static std::filesystem::path selectedBlueprint; // empty = create an empty entity
+        static std::string blueprintError;
         auto clear = [&]()
         {
             newEntityBuf[0] = '\0';
-            selectedBP = Blueprint{"None", {}};
+            selectedBlueprint.clear();
+            blueprintError.clear();
             m_ShowCreateEntity = false;
             ImGui::CloseCurrentPopup();
         };
@@ -61,6 +70,12 @@ namespace Spoon
             ImGui::OpenPopup(popupName);
         if (ImGui::BeginPopupModal(popupName))
         {
+            if (ImGui::IsWindowAppearing())
+            {
+                selectedBlueprint.clear();
+                blueprintError.clear();
+            }
+
             ImGui::InputText("Entity Name", newEntityBuf, IM_ARRAYSIZE(newEntityBuf));
             ImGui::SameLine(); HelpMarker("It's recommended to give your entity some kind of name here. It's not required but"
                                           "will make life easier when you've got many entities in the scene. Entites will be"
@@ -68,36 +83,73 @@ namespace Spoon
             
             if (ImGui::BeginChild("Blueprint Selector", ImVec2(0, 200), ImGuiChildFlags_Borders))
             {
-                if (ImGui::BeginCombo("##Blueprints", selectedBP.GetDisplayName().c_str()))
+                if (ImGui::Selectable("<Empty Entity>", selectedBlueprint.empty()))
+                    selectedBlueprint.clear();
+
+                if (!m_CurrentProject)
+                    ImGui::TextDisabled("Load a project to create entities from blueprints");
+                else
                 {
-                    const auto& blueprints = m_Services.projectManager->GetBlueprints();
-                    for (std::size_t index = 0; index < blueprints.size(); ++index)
+                    const auto blueprintsDir = m_Services.projectManager->GetCurrentProjectPaths().Blueprints();
+                    try
                     {
-                        const Blueprint& blueprint = blueprints[index];
-                        const std::string& name = blueprint.GetDisplayName();
-                        ImGui::PushID(static_cast<int>(index));
-                        if (ImGui::Selectable(name.empty() ? "<Unnamed Blueprint>" : name.c_str(), selectedBP == blueprint))
+                        std::vector<std::filesystem::path> blueprints;
+                        if (std::filesystem::is_directory(blueprintsDir))
                         {
-                            selectedBP = blueprint;
+                            for (const auto& entry : std::filesystem::recursive_directory_iterator(blueprintsDir))
+                            {
+                                if (entry.is_regular_file() && entry.path().extension() == ".json")
+                                    blueprints.push_back(entry.path());
+                            }
                         }
-                        ImGui::PopID();
+                        std::sort(blueprints.begin(), blueprints.end());
+
+                        for (const auto& blueprint : blueprints)
+                        {
+                            const std::string label = std::filesystem::relative(blueprint, blueprintsDir).generic_string();
+                            if (ImGui::Selectable(label.c_str(), selectedBlueprint == blueprint))
+                                selectedBlueprint = blueprint;
+                        }
                     }
-                    ImGui::EndCombo();
+                    catch (const std::filesystem::filesystem_error& e)
+                    {
+                        SS_DEBUG_LOG("[BLUEPRINTS] Failed to list blueprints: " + std::string(e.what()))
+                        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to list blueprints. Check logs");
+                    }
                 }
-                ImGui::SameLine(); HelpMarker("Optionally, select a blueprint to use for this entity. The selected blueprint will"
-                                              "create the components automatically for that blueprint. See the tooltip for default"
-                                              "blueprints for more info.");
             }
             ImGui::EndChild();
+
+            if (!blueprintError.empty())
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", blueprintError.c_str());
+
             ImGui::Separator();
             if (ImGui::Button("Submit"))
             {
-                UUID id = m_Services.entityManager->CreateEntity(newEntityBuf);
-                for (const auto& compID : selectedBP.GetComps())
+                blueprintError.clear();
+                if (selectedBlueprint.empty())
                 {
-                    m_Services.entityManager->GetCreators().at(compID)(id);
+                    m_Services.entityManager->CreateEntity(newEntityBuf);
+                    clear();
                 }
-                clear();
+                else
+                {
+                    try
+                    {
+                        const EntityBlueprint blueprint = ResolveBlueprint(selectedBlueprint);
+                        const std::string name =
+                            newEntityBuf[0] != '\0' ? newEntityBuf : blueprint.m_Name;
+
+                        m_Services.entityManager->SpawnPrefab(blueprint, name);
+                        clear();
+                    }
+                    catch (const std::exception& e)
+                    {
+                        SS_DEBUG_LOG("[BLUEPRINTS] Failed to instantiate blueprint '"
+                                    + selectedBlueprint.string() + "': " + e.what())
+                        blueprintError = "Failed to instantiate blueprint: " + std::string(e.what());
+                    }
+                }
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel"))

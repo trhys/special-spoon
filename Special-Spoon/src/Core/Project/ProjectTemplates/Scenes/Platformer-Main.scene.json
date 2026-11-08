@@ -1,0 +1,16 @@
+{
+    "schemaVersion": 1,
+    "name": "Main",
+    "entities": [
+        {
+            "blueprint": "Blueprints/Player-dynamic.json",
+            "name": "Player",
+            "position": { "x": 100, "y": 100 }
+        },
+        {
+            "blueprint": "Blueprints/Obstacle.json",
+            "name": "Ground",
+            "position": { "x": 100, "y": 300 }
+        }
+    ]
+}

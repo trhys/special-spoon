@@ -235,3 +235,30 @@ note: Previous changes will not be in this log. This record will keep all change
 
 ---
 
+## 11/8/26:
+
+### Core / Project
+- New projects apply their configured systems to newly created scenes and save starter-scene data.
+- Isometric projects start with a kinematic Player; platformer projects start with a dynamic Player that responds to gravity. Both use WASD controls.
+
+### Core / Entity Manager
+- Added `SpawnPrefab` to create entities from blueprints, load their components, and optionally set their display name and position.
+- Added support for runtime-only entities and preserved the runtime-only flag when reusing recycled IDs.
+- Fixed entity cleanup to remove components by display name, matching the component storage key.
+
+### ECS / Blueprints and Animation
+- Added separate kinematic and dynamic Player blueprints, plus defaults for obstacles, particle effects, sprites, text, and tile maps.
+- Added eight-direction idle animation states and sorted states during animation selection.
+
+### Editor
+- Added project-template selection when creating a project, including Empty, Isometric, and Platformer starters.
+- Expanded the blueprint editor for managing project blueprints and selecting components.
+- Improved project and scene creation error handling, and added feedback for animation save/import failures.
+
+### Build / CMake
+- CMake now embeds built-in system assets, default blueprints, and project templates into generated headers, so they’re available without relying on the source tree or working directory.
+- CMake tracks changes to these source assets and JSON files to regenerate the embedded headers.
+- Moved project and blueprint source registration into their respective CMake files; removed the Sandbox asset/data copy targets.
+
+---
+

@@ -10,7 +10,7 @@ namespace Spoon
     {
         if (ImGui::BeginCombo("State ID", buffer[0] ? buffer : "Select State"))
         {
-            for (const auto& [name, id] : StateRegistry::Get().m_NameToID)
+            for (const auto& name : StateRegistry::Get().GetSortedNames())
             {
                 if (ImGui::Selectable(name.c_str()))
                 {
@@ -29,22 +29,33 @@ namespace Spoon
         {
             // here we'll iterate the project's assets/animations directory
             // for available animation data, and lazy load it once confirmed
-            auto animationsPath = Application::Get().GetProjectManager().GetAnimationsPath();
-            if (std::filesystem::exists(animationsPath))
-            {
-                for (const auto& file : std::filesystem::directory_iterator(animationsPath))
+            auto animationsPath = Application::Get().GetProjectManager().GetCurrentProjectPaths().Animations();
+            try {
+                if (std::filesystem::create_directories(animationsPath))
                 {
-                    if (!file.is_regular_file() || file.path().extension() != ".json")
-                        continue;
-
-                    const auto& name = file.path().stem().string();
-                    if (ImGui::Selectable(name.c_str()))
+                    SS_DEBUG_LOG("[ANIMATION COMP] Created animations directory: " + animationsPath.string())
+                }
+            
+                if (std::filesystem::exists(animationsPath))
+                {
+                    for (const auto& file : std::filesystem::directory_iterator(animationsPath))
                     {
-                        path = file.path();
-                        strncpy(buffer, name.c_str(), N - 1);
-                        buffer[N - 1] = '\0';
+                        if (!file.is_regular_file() || file.path().extension() != ".json")
+                            continue;
+
+                        const auto& name = file.path().stem().string();
+                        if (ImGui::Selectable(name.c_str()))
+                        {
+                            path = file.path();
+                            strncpy(buffer, name.c_str(), N - 1);
+                            buffer[N - 1] = '\0';
+                        }
                     }
                 }
+            }
+            catch (const std::filesystem::filesystem_error& e)
+            {
+                SS_DEBUG_LOG("[ANIMATION COMP] File system error: " + std::string(e.what()))
             }
             ImGui::EndCombo();
         }

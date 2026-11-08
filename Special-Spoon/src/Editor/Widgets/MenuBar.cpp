@@ -11,7 +11,6 @@ namespace Spoon
                 if (ImGui::MenuItem("New Project")) m_ShowCreateProjectPrompt = !m_ShowCreateProjectPrompt;
                 if (ImGui::MenuItem("Open Project")) OpenFileDialog(DialogOption::Open);
                 if (ImGui::MenuItem("Save Project", nullptr, false, m_CurrentProject != nullptr)) m_ShowOverwriteProjectPrompt = true;
-                if (ImGui::MenuItem("Delete Project")) OpenFileDialog(DialogOption::Delete);
                 ImGui::Separator();
                 if (ImGui::MenuItem("Project Properties", nullptr, false, m_CurrentProject != nullptr)) m_ShowConfigProject = !m_ShowConfigProject;
                 if (ImGui::MenuItem("Exit")) RequestQuit();
@@ -42,7 +41,9 @@ namespace Spoon
 
             if (ImGui::BeginMenu("Tools"))
             {
+                ImGui::BeginDisabled(m_CurrentProject == nullptr);
                 if (ImGui::MenuItem("Animation Tool")) { m_AnimationTool.Open(nullptr); } 
+                ImGui::EndDisabled();
                 ImGui::EndMenu();
             }
 

@@ -32,8 +32,13 @@ namespace Spoon
             ImGui::BeginDisabled(!m_CurrentProject);
             if (ImGui::Button("Refresh"))
             {
-                ResourceManager::Get().RefreshAssets(m_CurrentProject->assetsPath);
-                workingDir = ResourceManager::Get().GetAssetsDir();
+                try {
+                    ResourceManager::Get().RefreshAssets(m_CurrentProject->paths.Assets());
+                    workingDir = ResourceManager::Get().GetAssetsDir();
+                } catch (const std::filesystem::filesystem_error& e)
+                {
+                    SS_DEBUG_LOG("[EDITOR] Failed to refresh assets: " + std::string(e.what()))
+                }
             }
             ImGui::EndDisabled();
 

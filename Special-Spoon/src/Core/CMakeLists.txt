@@ -13,14 +13,9 @@ target_sources(Special-Spoon
         EntityManager/EntityManager.inl
         EntityManager/EntityManager.cpp
 
-        Project/Config.h
-        Project/Policies.h
-        Project/Policies.cpp
-        Project/ProjectManager.h
-        Project/ProjectManager.cpp
-
         Registers/ActionRegistry.h
         Registers/StateRegistry.h
+        Registers/StateRegistry.cpp
         Registers/Component/ComponentRegistry.h
         Registers/Component/ComponentRegistry.cpp
         Registers/System/SystemRegistry.h
@@ -34,9 +29,10 @@ target_sources(Special-Spoon
         ResourceManager/ResourceManager.h
         ResourceManager/ResourceManager.cpp
         ResourceManager/ResourceManager.inl
-        ResourceManager/SystemFont/Jersey_10/SystemFont.h
 
         Serialization/Serializer.h
         Serialization/Serializer.cpp
         Serialization/JsonTypeDefs.h
 )
+
+add_subdirectory(Project)
