@@ -17,9 +17,9 @@ namespace Spoon
 
     struct EntityBlueprint
     {
-        bool m_IsRuntimeOnly = false;
         std::string m_Name;
         std::vector<ComponentBlueprint> m_Components;
+        bool m_IsRuntimeOnly = false;
     };
 
     SPOON_API EntityBlueprint ResolveBlueprint(const std::filesystem::path& path);
@@ -41,9 +41,9 @@ namespace Spoon
     inline void from_json(const json& j, EntityBlueprint& entity)
     {
         entity = EntityBlueprint{
-            j.at("m_IsRuntimeOnly").get<bool>(),
             j.at("m_Name").get<std::string>(),
-            j.at("m_Components").get<std::vector<ComponentBlueprint>>()
+            j.at("m_Components").get<std::vector<ComponentBlueprint>>(),
+            j.at("m_IsRuntimeOnly").get<bool>()
         };
     }
     
