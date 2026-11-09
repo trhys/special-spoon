@@ -7,6 +7,14 @@ namespace Spoon
 {
     class EntityManager;
 
+    struct ScriptRuntime
+    {
+        sol::environment env;
+        sol::table blackboard;
+        sol::table api;
+        sol::protected_function onUpdate;
+    };
+
     class AISystem : public ISystem
     {
     public:
@@ -16,8 +24,9 @@ namespace Spoon
         static constexpr const char* Name = "AI";
 
         void Update(sf::Time tick, EntityManager& manager) override;
-
+        sol::table CreateInterface(UUID id);
     private:
         sol::state m_Lua;
+        std::unordered_map<UUID, ScriptRuntime> m_ScriptRuntimes;
     };
 }
