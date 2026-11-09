@@ -1,5 +1,18 @@
 add_library(Special-Spoon SHARED)
 
+# pch
+target_precompile_headers(Special-Spoon PRIVATE
+    <algorithm>
+    <memory>
+    <string>
+    <unordered_map>
+    <vector>
+    <cstdint>
+    <SFML/Graphics.hpp>
+    <nlohmann/json.hpp>
+    <imgui.h>
+)
+
 # generate system assets
 set(system_assets_dir
     "${CMAKE_CURRENT_SOURCE_DIR}/src/Core/ResourceManager/system"
@@ -192,6 +205,61 @@ target_link_libraries(Special-Spoon PRIVATE OpenGL::GL)
 if(WIN32 AND MINGW)
     target_link_libraries(Special-Spoon PRIVATE imm32)
 endif()
+
+# Lua 5.4: static runtime embedded in the engine
+set(lua_dir "${CMAKE_CURRENT_SOURCE_DIR}/vendor/Lua")
+
+file(GLOB lua_sources CONFIGURE_DEPENDS "${lua_dir}/*.c")
+list(REMOVE_ITEM lua_sources
+    "${lua_dir}/lua.c"
+    "${lua_dir}/luac.c"
+    "${lua_dir}/ltests.c"
+    "${lua_dir}/onelua.c"
+)
+
+add_library(spoon_lua STATIC ${lua_sources})
+
+set_target_properties(spoon_lua PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+    POSITION_INDEPENDENT_CODE ON
+    C_VISIBILITY_PRESET hidden
+)
+
+target_include_directories(spoon_lua PUBLIC "${lua_dir}")
+
+if(UNIX)
+    target_compile_definitions(spoon_lua PRIVATE
+        LUA_USE_POSIX
+        LUA_USE_DLOPEN
+    )
+endif()
+
+if(UNIX)
+    target_link_libraries(spoon_lua PRIVATE m ${CMAKE_DL_LIBS})
+endif()
+
+# sol2 is header-only; use the vendored headers directly.
+target_include_directories(Special-Spoon SYSTEM PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/sol2/include"
+)
+
+target_compile_definitions(Special-Spoon PRIVATE
+    SOL_ALL_SAFETIES_ON=1
+)
+
+target_link_libraries(Special-Spoon PRIVATE spoon_lua)
+
+# make sources skip pchs for vendor files
+get_target_property(spoon_sources Special-Spoon SOURCES)
+
+foreach(source IN LISTS spoon_sources)
+    if(source MATCHES "^vendor/")
+        set_source_files_properties("${source}" PROPERTIES
+            SKIP_PRECOMPILE_HEADERS ON
+        )
+    endif()
+endforeach()
 
 # END LIBS SETUP
 

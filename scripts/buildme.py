@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os
 import argparse
+import time
 
 parser = argparse.ArgumentParser(description='CMake preset flag')
 parser.add_argument('--preset', metavar='p', type=str, default="None",
@@ -121,4 +122,7 @@ if __name__ == "__main__":
     
     get(required_packages)
     getsubmodules()
+    start = time.perf_counter()
     buildme()
+    end = time.perf_counter()
+    print(f"\nBuild completed in {end - start:.2f} seconds.")

@@ -9,6 +9,8 @@
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
 
+#include "sol/sol.hpp"
+
 namespace Spoon 
 {        
     Application* Application::s_Instance = nullptr;
@@ -125,6 +127,10 @@ namespace Spoon
         bool play = true;      
         
         m_SystemManager.InitializeStateSystem();
+
+        // initialize lua context
+        sol::state lua;
+        lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
         
         while (m_IsRunning)
         {

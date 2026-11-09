@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Core/Core.h"
+
 #include <unordered_map>
 #include <vector>
 #include <stdexcept>
+#include <cstdint>
 
 namespace Spoon
 {
