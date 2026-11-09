@@ -25,6 +25,7 @@ namespace Spoon
 
         void Update(sf::Time tick, EntityManager& manager) override;
         sol::table CreateInterface(UUID id);
+        void ResetRuntimes();
     private:
         sol::state m_Lua;
         std::unordered_map<UUID, ScriptRuntime> m_ScriptRuntimes;

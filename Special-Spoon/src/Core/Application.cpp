@@ -155,7 +155,10 @@ namespace Spoon
                 aiSystem.Update(tick, m_EntityManager);
                 Application::Update(tick);
             }
-            else m_InputSystem.ResetRuntimeState(m_EntityManager);
+            else {
+                m_InputSystem.ResetRuntimeState(m_EntityManager);
+                aiSystem.ResetRuntimes();
+            }
 
             // Rendering
             m_Window.clear();

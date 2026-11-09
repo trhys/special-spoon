@@ -1,6 +1,7 @@
 #include "AISystem.h"
 #include "Core/Application.h"
 #include "Core/EntityManager/EntityManager.h"
+#include "Utils/Macros.h"
 
 namespace Spoon
 {
@@ -22,15 +23,25 @@ namespace Spoon
 
                 // load the script file into the runtime's onUpdate function
                 AIComponent& aiComp = aiArray.m_Components[index]; 
-                auto loaded = m_Lua.safe_script_file(aiComp.m_ActiveScript.string(), runtime.env);
+                auto loaded = m_Lua.safe_script_file(
+                    aiComp.m_ActiveScript.string(), 
+                    runtime.env,
+                    sol::script_pass_on_error
+                );
                 if (loaded.valid())
                 {
-                    runtime.onUpdate = runtime.env["on_update"];
+                    // verify on_update function exists
+                    if (runtime.env["on_update"].valid())
+                        runtime.onUpdate = runtime.env["on_update"];
+                    else
+                        SS_DEBUG_LOG("[AI SYSTEM] ID:" + id.ToString() + " Missing on_update function in script: " + aiComp.m_ActiveScript.string());
                 }
                 m_ScriptRuntimes[id] = runtime;
             }
             // execute the onUpdate function if it exists
             auto& runtime = m_ScriptRuntimes[id];
+            if (!runtime.onUpdate.valid())
+                continue;
             auto result = runtime.onUpdate(
                 tick.asSeconds(),
                 runtime.blackboard,
@@ -52,5 +63,10 @@ namespace Spoon
         });
 
         return api;
+    }
+
+    void AISystem::ResetRuntimes()
+    {
+        m_ScriptRuntimes.clear();
     }
 }
