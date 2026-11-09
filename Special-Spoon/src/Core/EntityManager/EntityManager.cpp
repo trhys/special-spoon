@@ -25,6 +25,7 @@ namespace Spoon
         LoadArray<AudioComp>(AudioComp::Name);
         LoadArray<ParticleEmitterComp>(ParticleEmitterComp::Name);
         LoadArray<UIComp>(UIComp::Name);
+        LoadArray<AIComponent>(AIComponent::Name);
     }
 
     // ===========================================

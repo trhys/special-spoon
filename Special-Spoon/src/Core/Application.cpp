@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "ResourceManager/ResourceManager.h"
 #include "Serialization/Serializer.h"
+#include "System/Core/AISystem.h"
 
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
@@ -8,8 +9,6 @@
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
-
-#include "sol/sol.hpp"
 
 namespace Spoon 
 {        
@@ -127,11 +126,10 @@ namespace Spoon
         bool play = true;      
         
         m_SystemManager.InitializeStateSystem();
+   
+        // initialize AI system
+        AISystem aiSystem;
 
-        // initialize lua context
-        sol::state lua;
-        lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
-        
         while (m_IsRunning)
         {
             // Clear action queue
@@ -140,7 +138,7 @@ namespace Spoon
             // reap component cache
             m_EntityManager.ProcessReaper();
             
-            // poll events and dispatch
+            // poll events and dispatch actions
             HandleInput();
 
             // Update systems
@@ -153,7 +151,10 @@ namespace Spoon
                 play = m_Editor.Play();
             }
 
-            if (play) Application::Update(tick);
+            if (play) {
+                aiSystem.Update(tick, m_EntityManager);
+                Application::Update(tick);
+            }
             else m_InputSystem.ResetRuntimeState(m_EntityManager);
 
             // Rendering

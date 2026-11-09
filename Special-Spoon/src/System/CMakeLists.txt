@@ -4,6 +4,8 @@ target_sources(Special-Spoon
         System.h
         SystemManager.h 
 
+        Core/AISystem.h
+        Core/AISystem.cpp
         Core/InputSystem.h
         Core/InputSystem.cpp
         Core/StateSystem.h
