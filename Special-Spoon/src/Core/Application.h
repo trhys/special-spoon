@@ -8,6 +8,7 @@
 #include "Renderer/Renderer.h"
 
 #include "System/Core/InputSystem.h"
+#include "System/Core/AI/ScriptAPI.h"
 #include "System/SystemManager.h"
 
 #include "Editor/Editor.h"
@@ -41,6 +42,7 @@ namespace Spoon
 		// client side hooks
 		virtual void OnProjectLoad() {}
 		virtual void OnSceneLoad() {}
+		virtual void RegisterClientQueries(ScriptAPI& scriptAPI) {}
 		
 		static Application& Get() { return *s_Instance; }
 

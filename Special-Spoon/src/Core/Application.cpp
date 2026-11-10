@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "ResourceManager/ResourceManager.h"
 #include "Serialization/Serializer.h"
-#include "System/Core/AISystem.h"
+#include "System/Core/AI/AISystem.h"
 
 #include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
@@ -18,6 +18,7 @@ namespace Spoon
     // Forward declarations for registration functions
     void RegisterDefaultLoaders();
     void RegisterDefaultSystems();
+    void RegisterCoreQueries(ScriptAPI& scriptAPI);
 
     Application::Application(const AppSpecifications& specs)
         : m_Specs(specs), 
@@ -127,8 +128,11 @@ namespace Spoon
         
         m_SystemManager.InitializeStateSystem();
    
-        // initialize AI system
-        AISystem aiSystem;
+        // initialize AI system + scripting api
+        ScriptAPI scriptAPI;
+        RegisterCoreQueries(scriptAPI);
+        RegisterClientQueries(scriptAPI);
+        AISystem aiSystem(scriptAPI);
 
         while (m_IsRunning)
         {
