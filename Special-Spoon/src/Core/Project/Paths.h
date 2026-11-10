@@ -32,5 +32,10 @@ namespace Spoon
         {
             return Assets() / "blueprints";
         }
+
+        std::filesystem::path Scripts() const
+        {
+            return Assets() / "scripts";
+		}
     };
 }

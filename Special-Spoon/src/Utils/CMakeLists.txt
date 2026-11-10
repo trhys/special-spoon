@@ -4,6 +4,7 @@ target_sources(Special-Spoon
         Logger.h
         Macros.h
         MemoryUtils.h
+        StateHelpers.h
         UserConfig.h
         UserConfig.cpp
 
