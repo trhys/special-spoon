@@ -25,7 +25,7 @@ namespace Spoon
         static constexpr const char* Name = "AI";
 
         void Update(sf::Time tick, EntityManager& manager) override;
-        sol::table CreateInterface(UUID id);
+        sol::table CreateInterface(EntityManager& manager, UUID id);
         void ResetRuntimes();
     private:
         sol::state m_Lua;

@@ -3,6 +3,8 @@
 #include "Core/EntityManager/EntityManager.h"
 #include "Utils/Macros.h"
 
+#include <type_traits>
+
 namespace Spoon
 {
     void AISystem::Update(sf::Time tick, EntityManager& manager)
@@ -19,7 +21,7 @@ namespace Spoon
                 ScriptRuntime runtime;
                 runtime.env = sol::environment(m_Lua, sol::create, m_Lua.globals());
                 runtime.blackboard = m_Lua.create_table();
-                runtime.api = CreateInterface(id);
+                runtime.api = CreateInterface(manager, id);
 
                 // load the script file into the runtime's onUpdate function
                 AIComponent& aiComp = aiArray.m_Components[index]; 
@@ -47,10 +49,15 @@ namespace Spoon
                 runtime.blackboard,
                 runtime.api
             );
+            if (!result.valid())
+            {
+                const sol::error err = result;
+                SS_DEBUG_LOG("[AI SYSTEM] ID:" + id.ToString() + " Error executing on_update function -> " + err.what())
+            }
         }
     }
 
-    sol::table AISystem::CreateInterface(UUID id)
+    sol::table AISystem::CreateInterface(EntityManager& manager, UUID id)
     {
         sol::table api = m_Lua.create_table();
 
@@ -61,6 +68,30 @@ namespace Spoon
                 throw std::runtime_error("AI Request Error: Invalid action name: " + name);
             Application::Get().GetActionQueue().CreateAndPush(id, action, 0);
         });
+
+        // register all queries from the script API as functions in the Lua interface
+        for (const auto& [name, query] : m_ScriptAPI.GetQueries())
+        {
+            // register a Lua function for the query that converts its result to a Lua object
+            api.set_function(name, 
+                [this, id, &manager, query]() -> sol::object {
+                    return std::visit(
+                        [this](const auto& value) -> sol::object {
+                            using T = std::decay_t<decltype(value)>;
+                            if constexpr (std::is_same_v<T, sf::Vector2f>)
+                            {
+                                sol::table vecTable = m_Lua.create_table();
+                                vecTable["x"] = value.x;
+                                vecTable["y"] = value.y;
+                                return sol::make_object(m_Lua, vecTable);
+                            } else{
+                                return sol::make_object(m_Lua, value);
+                            }
+                        },
+                        query(manager, id)
+                    );
+                });
+        }
 
         return api;
     }
