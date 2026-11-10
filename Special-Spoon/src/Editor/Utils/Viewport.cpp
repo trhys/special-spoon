@@ -65,4 +65,10 @@ namespace Spoon
         }
         return ImVec2(displayWidth, displayHeight);
     }
+
+    void SnapToPosition(Viewport& viewport, const sf::Vector2f& position)
+    {
+        viewport.camera.setCenter(position);
+        viewport.target.setView(viewport.camera);
+    }
 }

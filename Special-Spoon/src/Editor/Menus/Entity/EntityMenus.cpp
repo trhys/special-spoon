@@ -1,7 +1,9 @@
 #include "Editor/Editor.h"
 #include "Editor/Utils/Windows.h"
+#include "Editor/Utils/Viewport.h"
 #include "ECS/Blueprints/Blueprint.h"
 #include "Core/Registers/Component/ComponentRegistry.h"
+#include "Core/Application.h"
 
 #include <algorithm>
 #include <fstream>
@@ -34,6 +36,24 @@ namespace Spoon
 
                 if (ImGui::Selectable(displayID.c_str(), is_selected))
                     m_SelectedEntity = uuid;
+                // context menu for select/delete entity
+                if (ImGui::BeginPopupContextItem())
+                {
+                    bool hasTransform = m_Services.entityManager->HasComponent<TransformComp>(uuid, TransformComp::Name);
+                    ImGui::BeginDisabled(!hasTransform);
+                    if (ImGui::MenuItem("Go to"))
+                    {
+                        auto& transform = m_Services.entityManager->GetComponent<TransformComp>(uuid, TransformComp::Name);
+                        SnapToPosition(Application::Get().GetViewport(), transform.GetPosition());
+                    }
+                    ImGui::EndDisabled();
+                    if (ImGui::MenuItem("Delete Entity"))
+                    {
+                        m_SelectedEntity = uuid;
+                        m_ShowDeleteEntity = true;
+                    }
+                    ImGui::EndPopup();
+                }
                 
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
@@ -45,6 +65,37 @@ namespace Spoon
         }
         if (ImGui::Button("Add Entity"))
             m_ShowCreateEntity = true;
+    }
+
+    void Editor::DrawDeleteEntity()
+    {
+        if (!m_ShowDeleteEntity)
+            return;
+
+        const char* popupName = "Delete Entity?";
+        CenterNext();
+        if (!ImGui::IsPopupOpen(popupName))
+            ImGui::OpenPopup(popupName);
+        if (ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Are you sure you want to delete this entity?");
+            if (ImGui::Button("Yes"))
+            {
+                UUID uuid = m_SelectedEntity;
+                m_SelectedEntity = -1;
+                m_SelectedComponent = nullptr;
+                m_Services.entityManager->KillEntity(uuid);
+                m_ShowDeleteEntity = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No"))
+            {
+                m_ShowDeleteEntity = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
     }
 
     void Editor::DrawCreateEntity()

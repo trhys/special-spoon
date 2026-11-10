@@ -23,4 +23,5 @@ namespace Spoon
 
     void RenderViewport(Viewport& viewport);
     ImVec2 GetAspectRatio(sf::Texture& texture);
+    void SnapToPosition(Viewport& viewport, const sf::Vector2f& position);
 }
