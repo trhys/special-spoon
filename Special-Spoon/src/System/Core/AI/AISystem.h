@@ -11,6 +11,7 @@ namespace Spoon
 
     struct ScriptRuntime
     {
+        bool active = true;
         sol::environment env;
         sol::table blackboard;
         sol::table api;

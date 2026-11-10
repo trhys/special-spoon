@@ -40,12 +40,16 @@ namespace Spoon
                         runtime.onUpdate = runtime.env["on_update"];
                     else
                         SS_DEBUG_LOG("[AI SYSTEM] ID:" + id.ToString() + " Missing on_update function in script: " + aiComp.m_ActiveScript.string());
+                } else {
+                    runtime.active = false;
+                    const sol::error err = loaded;
+                    SS_DEBUG_LOG("[AI SYSTEM] ID:" + id.ToString() + " Failed to load script: " + aiComp.m_ActiveScript.string() + " Error: " + err.what());
                 }
                 m_ScriptRuntimes[id] = runtime;
             }
             // execute the onUpdate function if it exists
             auto& runtime = m_ScriptRuntimes[id];
-            if (!runtime.onUpdate.valid())
+            if (!runtime.onUpdate.valid() || !runtime.active)
                 continue;
             auto result = runtime.onUpdate(
                 tick.asSeconds(),
@@ -54,8 +58,10 @@ namespace Spoon
             );
             if (!result.valid())
             {
+                runtime.active = false;
                 const sol::error err = result;
-                SS_DEBUG_LOG("[AI SYSTEM] ID:" + id.ToString() + " Error executing on_update function -> " + err.what())
+                SS_DEBUG_LOG("[AI SYSTEM] ID:" + id.ToString() + " Error executing on_update function -> " + err.what());
+                SS_DEBUG_LOG("[AI SYSTEM] ID:" + id.ToString() + " Marking runtime as inactive due to error.");
             }
         }
     }
