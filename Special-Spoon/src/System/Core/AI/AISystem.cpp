@@ -13,6 +13,9 @@ namespace Spoon
         auto& actionQueue = Application::Get().GetActionQueue();
         auto& aiArray = manager.GetArray<AIComponent>(AIComponent::Name);
 
+        // remove inactive runtimes
+        CullRuntimes(aiArray);
+
         for (auto& [id, index] : aiArray.m_IdToIndex)
         {
             // check and create script runtime if it doesn't exist
@@ -99,5 +102,17 @@ namespace Spoon
     void AISystem::ResetRuntimes()
     {
         m_ScriptRuntimes.clear();
+    }
+
+    void AISystem::CullRuntimes(const ComponentArray<AIComponent>& aiArray)
+    {
+        // remove runtimes for entities that no longer exist in the AI array
+        for (auto it = m_ScriptRuntimes.begin(); it != m_ScriptRuntimes.end(); )
+        {
+            if (aiArray.m_IdToIndex.find(it->first) == aiArray.m_IdToIndex.end())
+                it = m_ScriptRuntimes.erase(it);
+            else
+                ++it;
+        }
     }
 }

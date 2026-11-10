@@ -2,6 +2,7 @@
 
 #include "System/System.h"
 #include "System/Core/AI/ScriptAPI.h"
+#include "Core/ComponentArray.h"
 #include "sol/sol.hpp"
 
 namespace Spoon
@@ -24,9 +25,13 @@ namespace Spoon
         }
         static constexpr const char* Name = "AI";
 
-        void Update(sf::Time tick, EntityManager& manager) override;
-        sol::table CreateInterface(EntityManager& manager, UUID id);
+        void Update(sf::Time tick, EntityManager& manager) override;        
         void ResetRuntimes();
+    
+    private:
+        sol::table CreateInterface(EntityManager& manager, UUID id);
+        void CullRuntimes(const ComponentArray<AIComponent>& aiArray);
+    
     private:
         sol::state m_Lua;
         std::unordered_map<UUID, ScriptRuntime> m_ScriptRuntimes;

@@ -1,4 +1,5 @@
 #include "ScriptAPI.h"
+#include "Core/EntityManager/EntityManager.h"
 #include "Utils/Macros.h"
 
 #include <algorithm>
@@ -38,10 +39,20 @@ namespace Spoon
     // register core queries with the script API -- called from Application
     void RegisterCoreQueries(ScriptAPI& scriptAPI)
     {
-        // Example core query registration
-        scriptAPI.RegisterQuery("CoreQuery", [](EntityManager& manager, UUID id) {
-            // query logic here
-            return true;
+        // transform based queries
+        scriptAPI.RegisterQuery("get_position", [](EntityManager& manager, UUID id) {
+            auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+            return transform.GetPosition();
+        });
+        scriptAPI.RegisterQuery("get_facing", [](EntityManager& manager, UUID id) {
+            auto& transform = manager.GetComponent<TransformComp>(id, TransformComp::Name);
+            return std::string(transform.GetFacingDirection());
+        });
+
+        // movement
+        scriptAPI.RegisterQuery("get_velocity", [](EntityManager& manager, UUID id) {
+            auto& movement = manager.GetComponent<MovementComp>(id, MovementComp::Name);
+            return movement.m_Velocity;
         });
     }
 }

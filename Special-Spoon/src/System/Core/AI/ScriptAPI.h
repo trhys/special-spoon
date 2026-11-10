@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "Core/Core.h"
 #include "ECS/UUID.h"
 #include "SFML/Graphics.hpp"
 
@@ -18,7 +19,7 @@ namespace Spoon
     >;
 
     class EntityManager;
-    class ScriptAPI
+    class SPOON_API ScriptAPI
     {
     public:
         ScriptAPI() = default;
