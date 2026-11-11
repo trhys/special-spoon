@@ -19,7 +19,8 @@ namespace Spoon
 
         ImGui::SeparatorText("System Metrics"); ImGui::SameLine();
         HelpMarker("Time spent in each system's Update function.");
-        for (const auto& systems : m_Services.systemManager->GetSystems())
+        const SystemManager& systemManager = *m_Services.systemManager;
+        for (const auto& systems : systemManager.GetSystems())
         {
             std::string timeID = systems->GetDisplayName() + "_Update";
             ImGui::Text("%s: %.2f ms", timeID.c_str(), m_Services.metrics->Get(timeID).Value<float>());
