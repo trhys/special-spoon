@@ -3,7 +3,6 @@
 #include "Serialization/Serializer.h"
 #include "System/Core/AI/AISystem.h"
 
-#include "Utils/MemoryUtils.h"
 #include "Utils/Macros.h"
 #include "Utils/UserConfig.h"
 
@@ -23,7 +22,15 @@ namespace Spoon
     Application::Application(const AppSpecifications& specs)
         : m_Specs(specs), 
         m_Editor(
-            Services{ &m_Renderer, &m_EntityManager, &m_SystemManager, &m_SceneManager, &m_ProjectManager, &m_InputSystem }
+            Services{ 
+                &m_Renderer, 
+                &m_EntityManager, 
+                &m_SystemManager, 
+                &m_SceneManager, 
+                &m_ProjectManager, 
+                &m_InputSystem,
+                &m_Metrics
+            }
         )
     {
         // Make sure only one instance of Application exists
@@ -59,7 +66,11 @@ namespace Spoon
     void Application::Update(sf::Time tick)
     {
         m_InputSystem.Update(tick, m_EntityManager);
-        m_SystemManager.UpdateSystems(tick, m_EntityManager);
+        m_SystemManager.UpdateSystems(
+            tick, 
+            m_EntityManager, 
+            m_Metrics
+        );
         m_SystemManager.UpdateState(tick, m_EntityManager);
 
         StateSystem* stateSystem = m_SystemManager.GetStateSystem();

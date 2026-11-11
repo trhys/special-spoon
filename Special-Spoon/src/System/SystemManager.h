@@ -6,6 +6,8 @@
 
 #include "Core/Registers/System/SystemRegistry.h"
 
+#include "Utils/Metrics/Metrics.h"
+
 #include <array>
 #include <memory>
 #include <queue>
@@ -67,7 +69,7 @@ namespace Spoon
             m_SystemOrderDirty = true;
         }
 
-        void UpdateSystems(sf::Time tick, EntityManager& manager)
+        void UpdateSystems(sf::Time tick, EntityManager& manager, Metrics& metrics)
         {
             if (m_SystemOrderDirty)
             {
@@ -76,7 +78,10 @@ namespace Spoon
             }
             for(auto& system : m_Systems)
             {
+                std::string timeID = system->GetDisplayName() + "_Update";
+                sf::Clock clock;
                 system->Update(tick, manager);
+                metrics.Monitor(timeID, static_cast<float>(clock.getElapsedTime().asMilliseconds()));
             }
         }
 

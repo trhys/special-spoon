@@ -16,5 +16,13 @@ namespace Spoon
                                         "External draws (e.g. ImGui) are not counted.");
         ImGui::Text("Draw Time: %.2f ms", m_Services.renderer->GetDrawTime());
         ImGui::SameLine(); HelpMarker("Time spent in the Renderer drawing all renderables this frame.");
+
+        ImGui::SeparatorText("System Metrics"); ImGui::SameLine();
+        HelpMarker("Time spent in each system's Update function.");
+        for (const auto& systems : m_Services.systemManager->GetSystems())
+        {
+            std::string timeID = systems->GetDisplayName() + "_Update";
+            ImGui::Text("%s: %.2f ms", timeID.c_str(), m_Services.metrics->Get(timeID).Value<float>());
+        }
     }
 }

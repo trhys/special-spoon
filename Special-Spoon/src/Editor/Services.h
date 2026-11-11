@@ -6,6 +6,7 @@
 #include "Core/SceneManager.h"
 #include "Core/Project/ProjectManager.h"
 #include "System/Core/InputSystem.h"
+#include "Utils/Metrics/Metrics.h"
 
 namespace Spoon
 {
@@ -17,5 +18,6 @@ namespace Spoon
         SceneManager* sceneManager = nullptr;
         ProjectManager* projectManager = nullptr;
         InputSystem* inputSystem = nullptr;
+        Metrics* metrics = nullptr;
     };
 }
