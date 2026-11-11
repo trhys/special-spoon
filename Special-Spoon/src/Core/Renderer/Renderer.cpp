@@ -9,8 +9,6 @@ namespace Spoon {
     {
         // Renderer metrics
         m_DrawCalls = 0;
-        m_DrawTime = 0.f;
-        sf::Clock drawClock;
 
         UpdateProjection(manager);
         BuildRenderables(manager);	
@@ -45,7 +43,6 @@ namespace Spoon {
 
         // Return metrics
 		m_DrawCalls += overlayDrawCalls;
-        m_DrawTime = static_cast<float>(drawClock.getElapsedTime().asMilliseconds());
     }
 
 	void Renderer::DepthSort()

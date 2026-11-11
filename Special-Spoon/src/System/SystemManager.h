@@ -81,7 +81,7 @@ namespace Spoon
                 std::string timeID = system->GetDisplayName() + "_Update";
                 sf::Clock clock;
                 system->Update(tick, manager);
-                metrics.Monitor(timeID, static_cast<float>(clock.getElapsedTime().asMilliseconds()));
+                metrics.Monitor(timeID, static_cast<float>(clock.getElapsedTime().asSeconds() * 1000));
             }
         }
 

@@ -167,8 +167,13 @@ namespace Spoon
             }
 
             if (play) {
+                sf::Clock aiClock;
                 aiSystem.Update(tick, m_EntityManager);
+                m_Metrics.Monitor("AI_Update", static_cast<float>(aiClock.getElapsedTime().asSeconds() * 1000));
+
+                sf::Clock updateClock;
                 Application::Update(tick);
+                m_Metrics.Monitor("Total_Update", static_cast<float>(updateClock.getElapsedTime().asSeconds() * 1000));
             }
             else {
                 m_InputSystem.ResetRuntimeState(m_EntityManager);
@@ -187,11 +192,17 @@ namespace Spoon
                 m_Editor.Run(tick);
 
                 // draw
+                sf::Clock renderClock;
                 ImGui::SFML::Render(m_Window);
+                m_Metrics.Monitor("Editor_Drawtime", static_cast<float>(renderClock.getElapsedTime().asSeconds() * 1000));
             }
-            else // draw straight to window
+            else 
+            {
+                // draw straight to window
+                sf::Clock renderClock;
                 m_Renderer.Render(m_Window, states, m_EntityManager, m_SystemManager);
-
+                m_Metrics.Monitor("Window_Drawtime", static_cast<float>(renderClock.getElapsedTime().asSeconds() * 1000));
+            }
             m_Window.display();
         }
         Shutdown();
