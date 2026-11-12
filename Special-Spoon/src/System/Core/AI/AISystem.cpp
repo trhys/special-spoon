@@ -93,6 +93,14 @@ namespace Spoon
                                 vecTable["x"] = value.x;
                                 vecTable["y"] = value.y;
                                 return sol::make_object(m_Lua, vecTable);
+                            } else if constexpr (std::is_same_v<T, std::vector<UUID>>){
+                                sol::table vecTable = m_Lua.create_table();
+                                int index = 1;
+                                for (const auto& uuid : value)
+                                {
+                                    vecTable[index++] = uuid.ToString();
+                                }
+                                return sol::make_object(m_Lua, vecTable);
                             } else{
                                 return sol::make_object(m_Lua, value);
                             }
