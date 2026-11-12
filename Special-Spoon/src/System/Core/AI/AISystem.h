@@ -23,6 +23,11 @@ namespace Spoon
     public:
         AISystem(ScriptAPI scriptAPI = ScriptAPI()) : ISystem::ISystem(Name), m_ScriptAPI(std::move(scriptAPI)) {
             m_Lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
+            m_Lua.new_usertype<UUID>(
+                "UUID",
+                sol::no_constructor,
+                "id", &UUID::ID
+            );
         }
         static constexpr const char* Name = "AI";
 

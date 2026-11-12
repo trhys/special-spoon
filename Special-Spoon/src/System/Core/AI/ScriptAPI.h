@@ -27,11 +27,17 @@ namespace Spoon
         ~ScriptAPI() = default;
 
         using Query = std::function<QueryResult(EntityManager&, UUID)>;
+        using QueryTarget = std::function<QueryResult(EntityManager&, UUID, UUID)>;
+        using RegisteredQuery = std::variant<
+            Query,
+            QueryTarget
+        >;
 
         void RegisterQuery(const std::string& name, Query query);
-        const std::unordered_map<std::string, Query>& GetQueries() const;
+        void RegisterQuery(const std::string& name, QueryTarget query);
+        const std::unordered_map<std::string, RegisteredQuery>& GetQueries() const;
 
     private:
-        std::unordered_map<std::string, Query> m_Queries;
+        std::unordered_map<std::string, RegisteredQuery> m_Queries;
     };
 }

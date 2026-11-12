@@ -66,6 +66,31 @@ namespace Spoon
         }
     }
 
+    // helper function for visitation of query result
+    sol::object VisitQueryResult(const QueryResult& result, sol::state& lua)
+    {
+        return std::visit([&](const auto& value) -> sol::object {
+            using T = std::decay_t<decltype(value)>;
+            if constexpr (std::is_same_v<T, sf::Vector2f>)
+            {
+                sol::table vecTable = lua.create_table();
+                vecTable["x"] = value.x;
+                vecTable["y"] = value.y;
+                return sol::make_object(lua, vecTable);
+            } else if constexpr (std::is_same_v<T, std::vector<UUID>>){
+                sol::table vecTable = lua.create_table();
+                int index = 1;
+                for (const auto& uuid : value)
+                {
+                    vecTable[index++] = uuid;
+                }
+                return sol::make_object(lua, vecTable);
+            } else{
+                return sol::make_object(lua, value);
+            }
+        }, result);
+    }
+
     sol::table AISystem::CreateInterface(EntityManager& manager, UUID id)
     {
         sol::table api = m_Lua.create_table();
@@ -79,35 +104,23 @@ namespace Spoon
         });
 
         // register all queries from the script API as functions in the Lua interface
-        for (const auto& [name, query] : m_ScriptAPI.GetQueries())
+        for (const auto& [name, registered] : m_ScriptAPI.GetQueries())
         {
-            // register a Lua function for the query that converts its result to a Lua object
-            api.set_function(name, 
-                [this, id, &manager, query]() -> sol::object {
-                    return std::visit(
-                        [this](const auto& value) -> sol::object {
-                            using T = std::decay_t<decltype(value)>;
-                            if constexpr (std::is_same_v<T, sf::Vector2f>)
-                            {
-                                sol::table vecTable = m_Lua.create_table();
-                                vecTable["x"] = value.x;
-                                vecTable["y"] = value.y;
-                                return sol::make_object(m_Lua, vecTable);
-                            } else if constexpr (std::is_same_v<T, std::vector<UUID>>){
-                                sol::table vecTable = m_Lua.create_table();
-                                int index = 1;
-                                for (const auto& uuid : value)
-                                {
-                                    vecTable[index++] = uuid.ToString();
-                                }
-                                return sol::make_object(m_Lua, vecTable);
-                            } else{
-                                return sol::make_object(m_Lua, value);
-                            }
-                        },
-                        query(manager, id)
-                    );
-                });
+            std::visit([&](const auto& query) {
+                using T = std::decay_t<decltype(query)>;
+
+                if constexpr (std::is_same_v<T, ScriptAPI::Query>)
+                {
+                    api.set_function(name, [this, id, &manager, query]() -> sol::object {
+                        return VisitQueryResult(query(manager, id), m_Lua);
+                    });
+                } else if constexpr (std::is_same_v<T, ScriptAPI::QueryTarget>)
+                {
+                    api.set_function(name, [this, &manager, id, query](UUID target) -> sol::object {
+                        return VisitQueryResult(query(manager, id, target), m_Lua);
+                    });
+                }
+            }, registered);
         }
 
         return api;
