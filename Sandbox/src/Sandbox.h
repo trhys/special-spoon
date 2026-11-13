@@ -10,6 +10,7 @@ public:
 	// hooks customizable in the client module
 	void OnProjectLoad() override;
 	void OnSceneLoad() override;
+	void RegisterClientQueries(Spoon::ScriptAPI& scriptAPI) override;
 };
 
 // custom registration hooks

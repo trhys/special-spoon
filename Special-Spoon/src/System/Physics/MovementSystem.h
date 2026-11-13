@@ -7,7 +7,6 @@ namespace Spoon
 {
     namespace MovementSystemUtil
     {
-        uint32_t DirectionToStateID(const char* direction);
         bool IsMovementAction(const ActionType& action);
         bool IsMoving(const MovementComp& moveComp);
     }

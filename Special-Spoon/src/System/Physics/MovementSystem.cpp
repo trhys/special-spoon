@@ -1,30 +1,15 @@
 #include "MovementSystem.h"
 #include "Core/Application.h"
+#include "Core/ActionQueue.h"
+#include "Utils/StateHelpers.h"
 
 #include <cmath>
-#include <Core/ActionQueue.h>
+
 
 namespace Spoon
 {
 	namespace MovementSystemUtil
     {
-        // Maps the 8-way facing direction computed by MovementSystem onto the
-        // matching built-in movement state so StatusComp::m_CurrentState can
-        // drive animation selection (see AnimationSystem).
-        uint32_t DirectionToStateID(const char* direction)
-        {
-            if (std::strcmp(direction, "Up") == 0)        return BuiltInStates::MoveUp;
-            if (std::strcmp(direction, "Down") == 0)      return BuiltInStates::MoveDown;
-            if (std::strcmp(direction, "Left") == 0)      return BuiltInStates::MoveLeft;
-            if (std::strcmp(direction, "Right") == 0)     return BuiltInStates::MoveRight;
-            if (std::strcmp(direction, "UpRight") == 0)   return BuiltInStates::MoveUR;
-            if (std::strcmp(direction, "UpLeft") == 0)    return BuiltInStates::MoveUL;
-            if (std::strcmp(direction, "DownRight") == 0) return BuiltInStates::MoveDR;
-            if (std::strcmp(direction, "DownLeft") == 0)  return BuiltInStates::MoveDL;
-
-            return BuiltInStates::Idle;
-        }
-
         bool IsMovementAction(const ActionType& action)
         {
             return action.m_ID == BuiltInActions::MoveLeft ||
@@ -200,7 +185,7 @@ namespace Spoon
                         auto& statusComp = manager.GetComponent<StatusComp>(ID, StatusComp::Name);
                         // set status from orientation
                         statusComp.ApplyState(StateType{
-                            MovementSystemUtil::DirectionToStateID(transComp.m_Facing.m_Direction)
+                            DirectionHandler::GetMovementStateID(transComp.m_Facing.m_Direction)
                         });
                     }
                 }

@@ -70,6 +70,7 @@ namespace Spoon
 
         // entity menus/widgets
         void DrawEntityList(); // called from inspector
+        void DrawDeleteEntity();
         void DrawCreateEntity();
         void DrawComponentList(); // called from inspector
         void DrawAddComponent();
@@ -145,6 +146,7 @@ namespace Spoon
 
         // entity menu flags
         bool m_ShowEntityList = true;
+        bool m_ShowDeleteEntity = false;
         bool m_ShowCreateEntity = false;
         bool m_ShowComponentList = true;
         bool m_ShowAddComponent = false;

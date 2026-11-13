@@ -14,3 +14,9 @@
 [submodule "Special-Spoon/vendor/ImGuiFileDialog"]
 	path = Special-Spoon/vendor/ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
+[submodule "Special-Spoon/vendor/sol2"]
+	path = Special-Spoon/vendor/sol2
+	url = https://github.com/ThePhD/sol2.git
+[submodule "Special-Spoon/vendor/Lua"]
+	path = Special-Spoon/vendor/Lua
+	url = https://github.com/lua/lua.git

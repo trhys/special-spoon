@@ -8,14 +8,19 @@
 #include "Renderer/Renderer.h"
 
 #include "System/Core/InputSystem.h"
+#include "System/Core/AI/ScriptAPI.h"
 #include "System/SystemManager.h"
 
 #include "Editor/Editor.h"
+
+#include "Utils/Metrics/Metrics.h"
 
 #include "SFML/Graphics.hpp"
 
 namespace Spoon 
 { 
+	class AISystem;
+
 	struct AppSpecifications
 	{
 		sf::VideoMode mode = sf::VideoMode::getDesktopMode();
@@ -32,6 +37,7 @@ namespace Spoon
 		void Run();
 		void Update(sf::Time tick);
 		void HandleInput();
+		void UpdateLuaPath(const std::string& path);
 		
 		// lifecycle handlers
 		void HandleQuit();
@@ -41,6 +47,7 @@ namespace Spoon
 		// client side hooks
 		virtual void OnProjectLoad() {}
 		virtual void OnSceneLoad() {}
+		virtual void RegisterClientQueries(ScriptAPI& scriptAPI) {}
 		
 		static Application& Get() { return *s_Instance; }
 
@@ -54,6 +61,7 @@ namespace Spoon
 		Viewport& GetViewport()		  	  	{ return m_Viewport; }
 		sf::RenderWindow& GetWindow()     	{ return m_Window; }
 		ActionQueue& GetActionQueue()     	{ return m_ActionQueue; }
+		Metrics& GetMetrics()				{ return m_Metrics; }
 
 	private:
 		static Application* s_Instance;
@@ -62,6 +70,7 @@ namespace Spoon
 		sf::RenderWindow  m_Window;
 		Viewport		  m_Viewport;	
 		
+		AISystem*		  m_AISystem = nullptr;
         ProjectManager	  m_ProjectManager;
 		SceneManager	  m_SceneManager;
 		EntityManager	  m_EntityManager;
@@ -70,6 +79,7 @@ namespace Spoon
 		Renderer		  m_Renderer;
 		Editor 			  m_Editor;
 		ActionQueue	  	  m_ActionQueue;
+		Metrics			  m_Metrics;
 
 		AppSpecifications m_Specs;
 	};

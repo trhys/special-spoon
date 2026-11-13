@@ -15,6 +15,11 @@ void Sandbox::OnSceneLoad()
     // your custom scene load logic
 }
 
+void Sandbox::RegisterClientQueries(Spoon::ScriptAPI& scriptAPI)
+{
+    // register custom queries with the script API
+}
+
 void LoadCustomArrays(Spoon::EntityManager& manager)
 {
     // load custom component arrays into the entity manage

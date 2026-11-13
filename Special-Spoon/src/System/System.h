@@ -18,7 +18,7 @@ namespace Spoon
         std::vector<std::string> writes;
     };
 
-    class ISystem
+    class SPOON_API ISystem
     {
     public:
         ISystem(std::string name) : m_DisplayName(name) {}

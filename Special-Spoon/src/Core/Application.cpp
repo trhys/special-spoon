@@ -2,7 +2,8 @@
 #include "ResourceManager/ResourceManager.h"
 #include "Serialization/Serializer.h"
 
-#include "Utils/MemoryUtils.h"
+#include "System/Core/AI/AISystem.h"
+
 #include "Utils/Macros.h"
 #include "Utils/UserConfig.h"
 
@@ -17,11 +18,20 @@ namespace Spoon
     // Forward declarations for registration functions
     void RegisterDefaultLoaders();
     void RegisterDefaultSystems();
+    void RegisterCoreQueries(ScriptAPI& scriptAPI);
 
     Application::Application(const AppSpecifications& specs)
         : m_Specs(specs), 
         m_Editor(
-            Services{ &m_Renderer, &m_EntityManager, &m_SystemManager, &m_SceneManager, &m_ProjectManager, &m_InputSystem }
+            Services{ 
+                &m_Renderer, 
+                &m_EntityManager, 
+                &m_SystemManager, 
+                &m_SceneManager, 
+                &m_ProjectManager, 
+                &m_InputSystem,
+                &m_Metrics
+            }
         )
     {
         // Make sure only one instance of Application exists
@@ -54,10 +64,23 @@ namespace Spoon
         RegisterDefaultSystems();
     }
 
+    void Application::UpdateLuaPath(const std::string& path)
+    {
+        // Update the Lua package path to include the new scripts directory
+        if (m_AISystem)
+        {
+            m_AISystem->SetLuaPath(path);
+        }
+	}
+
     void Application::Update(sf::Time tick)
     {
         m_InputSystem.Update(tick, m_EntityManager);
-        m_SystemManager.UpdateSystems(tick, m_EntityManager);
+        m_SystemManager.UpdateSystems(
+            tick, 
+            m_EntityManager, 
+            m_Metrics
+        );
         m_SystemManager.UpdateState(tick, m_EntityManager);
 
         StateSystem* stateSystem = m_SystemManager.GetStateSystem();
@@ -125,7 +148,13 @@ namespace Spoon
         bool play = true;      
         
         m_SystemManager.InitializeStateSystem();
-        
+   
+        // initialize AI system + scripting api
+        ScriptAPI scriptAPI;
+        RegisterCoreQueries(scriptAPI);
+        RegisterClientQueries(scriptAPI);
+        m_AISystem = new AISystem(scriptAPI);
+
         while (m_IsRunning)
         {
             // Clear action queue
@@ -134,7 +163,7 @@ namespace Spoon
             // reap component cache
             m_EntityManager.ProcessReaper();
             
-            // poll events and dispatch
+            // poll events and dispatch actions
             HandleInput();
 
             // Update systems
@@ -147,8 +176,19 @@ namespace Spoon
                 play = m_Editor.Play();
             }
 
-            if (play) Application::Update(tick);
-            else m_InputSystem.ResetRuntimeState(m_EntityManager);
+            if (play) {
+                sf::Clock aiClock;
+                m_AISystem->Update(tick, m_EntityManager);
+                m_Metrics.Monitor("AI_Update", static_cast<float>(aiClock.getElapsedTime().asSeconds() * 1000));
+
+                sf::Clock updateClock;
+                Application::Update(tick);
+                m_Metrics.Monitor("Total_Update", static_cast<float>(updateClock.getElapsedTime().asSeconds() * 1000));
+            }
+            else {
+                m_InputSystem.ResetRuntimeState(m_EntityManager);
+                m_AISystem->ResetRuntimes();
+            }
 
             // Rendering
             m_Window.clear();
@@ -162,11 +202,17 @@ namespace Spoon
                 m_Editor.Run(tick);
 
                 // draw
+                sf::Clock renderClock;
                 ImGui::SFML::Render(m_Window);
+                m_Metrics.Monitor("Editor_Drawtime", static_cast<float>(renderClock.getElapsedTime().asSeconds() * 1000));
             }
-            else // draw straight to window
+            else 
+            {
+                // draw straight to window
+                sf::Clock renderClock;
                 m_Renderer.Render(m_Window, states, m_EntityManager, m_SystemManager);
-
+                m_Metrics.Monitor("Window_Drawtime", static_cast<float>(renderClock.getElapsedTime().asSeconds() * 1000));
+            }
             m_Window.display();
         }
         Shutdown();

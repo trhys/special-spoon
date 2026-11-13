@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Components/Physics/ColliderComp.h"
-#include "Components/Physics/PhysicsComp.h"
+#include "Components/Core/AIComp.h"
 #include "Components/Core/TransformComp.h"
 #include "Components/Core/InputComp.h"
 #include "Components/Core/StatusComp.h"
+
+#include "Components/Physics/ColliderComp.h"
+#include "Components/Physics/PhysicsComp.h"
 #include "Components/Physics/MovementComp.h"
 
 #include "Components/Render/TextComp.h"

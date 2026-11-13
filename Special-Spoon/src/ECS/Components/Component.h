@@ -50,7 +50,7 @@ namespace Spoon
         json Serialize() override
         {
             json j;
-            nlohmann::to_json(j, *static_cast<COMP*>(this));
+            to_json(j, *static_cast<COMP*>(this));
             return j;
         }
 

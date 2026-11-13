@@ -190,6 +190,7 @@ namespace Spoon
         DrawSaveProjectError();
 
         // entity menus (some called in inspector)
+        DrawDeleteEntity();
         DrawCreateEntity();
         DrawAddComponent();
         DrawDeleteComponent();

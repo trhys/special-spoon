@@ -33,7 +33,6 @@ namespace Spoon
 
         // Metrics
         int GetDrawCalls() const { return m_DrawCalls; }
-        float GetDrawTime() const { return m_DrawTime; }
 
     private:
         // iterable renderables for the current frame
@@ -48,6 +47,5 @@ namespace Spoon
 
         // metrics
         int m_DrawCalls = 0;
-        float m_DrawTime = 0.f;
     };
 }

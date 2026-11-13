@@ -6,6 +6,8 @@ target_sources(Special-Spoon
         Blueprints/DefaultBlueprints.cpp
 
         Components/Component.h
+        Components/Core/AIComp.h
+        Components/Core/AIComp.cpp
         Components/Core/InputComp.h
         Components/Core/InputComp.cpp
         Components/Core/StatusComp.h
