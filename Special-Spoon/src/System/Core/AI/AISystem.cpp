@@ -7,6 +7,13 @@
 
 namespace Spoon
 {
+    void AISystem::SetLuaPath(const std::string& path)
+    {
+        // Update the Lua package path to include the new scripts directory
+        std::string luaPath = path + "/?.lua;" + path + "/?/init.lua;";
+        m_Lua["package"]["path"] = luaPath;
+	}
+
     void AISystem::Update(sf::Time tick, EntityManager& manager)
     {
         // prefetch action queue and arrays

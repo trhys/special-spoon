@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "ResourceManager/ResourceManager.h"
 #include "Serialization/Serializer.h"
+
 #include "System/Core/AI/AISystem.h"
 
 #include "Utils/Macros.h"
@@ -62,6 +63,15 @@ namespace Spoon
         RegisterDefaultLoaders();
         RegisterDefaultSystems();
     }
+
+    void Application::UpdateLuaPath(const std::string& path)
+    {
+        // Update the Lua package path to include the new scripts directory
+        if (m_AISystem)
+        {
+            m_AISystem->SetLuaPath(path);
+        }
+	}
 
     void Application::Update(sf::Time tick)
     {
@@ -143,7 +153,7 @@ namespace Spoon
         ScriptAPI scriptAPI;
         RegisterCoreQueries(scriptAPI);
         RegisterClientQueries(scriptAPI);
-        AISystem aiSystem(scriptAPI);
+        m_AISystem = new AISystem(scriptAPI);
 
         while (m_IsRunning)
         {
@@ -168,7 +178,7 @@ namespace Spoon
 
             if (play) {
                 sf::Clock aiClock;
-                aiSystem.Update(tick, m_EntityManager);
+                m_AISystem->Update(tick, m_EntityManager);
                 m_Metrics.Monitor("AI_Update", static_cast<float>(aiClock.getElapsedTime().asSeconds() * 1000));
 
                 sf::Clock updateClock;
@@ -177,7 +187,7 @@ namespace Spoon
             }
             else {
                 m_InputSystem.ResetRuntimeState(m_EntityManager);
-                aiSystem.ResetRuntimes();
+                m_AISystem->ResetRuntimes();
             }
 
             // Rendering

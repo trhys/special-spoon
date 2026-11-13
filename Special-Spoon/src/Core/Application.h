@@ -9,7 +9,6 @@
 
 #include "System/Core/InputSystem.h"
 #include "System/Core/AI/ScriptAPI.h"
-
 #include "System/SystemManager.h"
 
 #include "Editor/Editor.h"
@@ -20,6 +19,8 @@
 
 namespace Spoon 
 { 
+	class AISystem;
+
 	struct AppSpecifications
 	{
 		sf::VideoMode mode = sf::VideoMode::getDesktopMode();
@@ -36,6 +37,7 @@ namespace Spoon
 		void Run();
 		void Update(sf::Time tick);
 		void HandleInput();
+		void UpdateLuaPath(const std::string& path);
 		
 		// lifecycle handlers
 		void HandleQuit();
@@ -68,6 +70,7 @@ namespace Spoon
 		sf::RenderWindow  m_Window;
 		Viewport		  m_Viewport;	
 		
+		AISystem*		  m_AISystem = nullptr;
         ProjectManager	  m_ProjectManager;
 		SceneManager	  m_SceneManager;
 		EntityManager	  m_EntityManager;

@@ -55,6 +55,8 @@ namespace Spoon
 
         m_CurrentProject = std::make_unique<Project>(newProject);
         Application::Get().OnProjectLoad();
+		std::filesystem::create_directories(m_CurrentProject->paths.Scripts());
+		Application::Get().UpdateLuaPath(m_CurrentProject->paths.Scripts().string());
         return m_CurrentProject.get();
     }
 
@@ -106,6 +108,7 @@ namespace Spoon
             return nullptr;
         }
         Application::Get().OnProjectLoad();
+		Application::Get().UpdateLuaPath(m_CurrentProject->paths.Scripts().string());
         return m_CurrentProject.get();
     }
 

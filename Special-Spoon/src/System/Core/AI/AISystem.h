@@ -31,6 +31,7 @@ namespace Spoon
         }
         static constexpr const char* Name = "AI";
 
+        void SetLuaPath(const std::string& path);
         void Update(sf::Time tick, EntityManager& manager) override;        
         void ResetRuntimes();
     
