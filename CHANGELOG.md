@@ -262,3 +262,21 @@ note: Previous changes will not be in this log. This record will keep all change
 
 ---
 
+## 11/13/26:
+
+### Modules
+- Added Lua and sol2 submodules for lua scripting integration
+
+### AI System
+- Added AI System instantiated with ScriptAPI in Application::Run(). Application holds a pointer to it for setting lua package path
+- Added AI Component that points to a script in paths. Binds api queries per component in AI system update loop.
+
+### Editor
+- Added context menu to entity list for snap to and delete functions.
+- Added metrics with timers in the main loop, and pulled those metrics into the editor panel.
+
+### Misc
+- Added more 8 directional helpers and support for directional idle state.
+
+---
+
