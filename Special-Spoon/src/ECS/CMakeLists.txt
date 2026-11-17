@@ -48,4 +48,8 @@ target_sources(Special-Spoon
         Entity.h
         Entity.inl
         UUID.h
+
+
+        Utils/EntityValidation.h
+        Utils/EntityValidation.cpp
 )

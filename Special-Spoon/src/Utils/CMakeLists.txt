@@ -4,8 +4,6 @@ target_sources(Special-Spoon
         Logger.h
         Macros.h
         StateHelpers.h
-        UserConfig.h
-        UserConfig.cpp
 
         Graphics/GridSlicer.cpp
         Graphics/GridSlicer.h

@@ -5,7 +5,7 @@
 #include "System/Core/AI/AISystem.h"
 
 #include "Utils/Macros.h"
-#include "Utils/UserConfig.h"
+//#include "Utils/UserConfig.h"
 
 #include "Imgui/imgui.h"
 #include "Imgui-sfml/imgui-SFML.h"
@@ -13,7 +13,7 @@
 namespace Spoon 
 {        
     Application* Application::s_Instance = nullptr;
-    UserConfig config = LoadUserConfig();
+    //UserConfig config = LoadUserConfig();
 
     // Forward declarations for registration functions
     void RegisterDefaultLoaders();

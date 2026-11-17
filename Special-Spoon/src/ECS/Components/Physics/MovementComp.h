@@ -21,6 +21,10 @@ namespace Spoon
       sf::Vector2f m_ProposedDelta;
       bool m_WasCorrectedByPhysics = false;
 
+      bool HasMotion() {
+          return m_Velocity != sf::Vector2f() || m_ProposedDelta != sf::Vector2f();
+      }
+
       void OnReflect() override
       {
           if (ImGui::SliderFloat("Speed", &m_Speed, 0.0, 100)) {}

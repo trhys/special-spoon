@@ -9,6 +9,7 @@
 
 // Entity Component System
 #include "ECS/ECS.h"
+#include "ECS/Utils/EntityValidation.h"
 
 // Interface system class
 #include "System/System.h"

@@ -3,6 +3,8 @@ target_sources(Special-Spoon
         Editor.h
         Editor.cpp
         Services.h
+        UserConfig.h
+        UserConfig.cpp
 
         Tools/Animation/AnimationTool.h
         Tools/Animation/AnimationTool.cpp
