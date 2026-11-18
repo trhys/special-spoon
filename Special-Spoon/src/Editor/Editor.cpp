@@ -17,7 +17,11 @@
 namespace Spoon
 {
     Editor::Editor(Services services)
-        : m_Services(services) {}
+        : m_Services(services) 
+        {
+            m_UserConfig = UserConfigIO::Load();
+            UserConfigIO::Save(m_UserConfig);
+        }
 
     void Editor::HandleViewport(
         Viewport& viewport, 
@@ -320,7 +324,7 @@ namespace Spoon
                 {
                     SerializeScene(*GetActiveScene(), *m_Services.entityManager, *m_Services.systemManager);
                     SerializeManifest(*m_Services.sceneManager);
-                    //SaveUserConfig(config);
+                    UserConfigIO::Save(m_UserConfig);
                     m_ShowQuitPrompt = false;
                     Application::Get().FinalizeQuit();
                     ImGui::CloseCurrentPopup();
@@ -341,7 +345,7 @@ namespace Spoon
             if (ImGui::Button("Exit Without Saving")) 
             { 
                 m_ShowQuitPrompt = false;
-                //SaveUserConfig(config);
+                UserConfigIO::Save(m_UserConfig);
                 Application::Get().FinalizeQuit();
                 ImGui::CloseCurrentPopup();
             }

@@ -18,9 +18,6 @@ namespace Spoon
 		std::unordered_map<std::filesystem::path, std::vector<std::string>> RecentScenes; // Map of recent files for each project
     };
 
-    UserConfig& LoadUserConfig();
-    void SaveUserConfig(const UserConfig& config);
-
     inline void to_json(json& j, const UserConfig& config)
     {
         j = json{
@@ -38,4 +35,9 @@ namespace Spoon
         j.at("RecentProjects").get_to(config.RecentProjects);
         j.at("RecentScenes").get_to(config.RecentScenes);
 	}
+
+    namespace UserConfigIO {
+        UserConfig Load(); // searches working dir for user config file and loads it
+        void Save(const UserConfig& config); // saves the user config to the working dir
+    }
 }

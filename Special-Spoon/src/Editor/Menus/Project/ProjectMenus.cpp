@@ -22,6 +22,32 @@ namespace Spoon
         CenterNext();
         if (ImGui::BeginPopupModal("No Project Loaded", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
+            static bool showLoadRecentError = false; // error flag for loading recent projects
+            const char* loadRecentErrorMsg = "Failed to load recent project.";
+            if (showLoadRecentError)
+            {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", loadRecentErrorMsg);
+                showLoadRecentError = false;
+            }
+            // show recent projects from user config
+            ImGui::BeginListBox("##RecentProjects", ImVec2(320, ImGui::GetTextLineHeightWithSpacing() * 5));
+            const auto& recentProjects = m_UserConfig.RecentProjects;
+            for (const auto& project : recentProjects)
+            {
+                if (ImGui::Selectable(project.c_str()))
+                {
+                    Project* openedProject = m_Services.projectManager->OpenFromFile(project);
+                    if (openedProject)
+                    {
+                        m_CurrentProject = openedProject;
+                        m_ShowNoProjectLoaded = false;
+                        ImGui::CloseCurrentPopup();
+                    } else 
+                        showLoadRecentError = true;
+                }
+            }
+            ImGui::EndListBox();
+            ImGui::Separator();
             ImGui::Text("No project is currently loaded. Please create or open a project to continue.");
             if (ImGui::Button("Create"))
             {

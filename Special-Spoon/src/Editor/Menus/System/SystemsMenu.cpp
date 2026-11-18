@@ -8,7 +8,7 @@ namespace Spoon
 
     void Editor::DrawSystemsMenu()
     {
-        if (!m_ShowSystemsMenu)
+        if (!m_ShowSystemsMenu || !m_ActiveScene)
             return;
 
         static std::unordered_map<std::string, bool> addedSystems;

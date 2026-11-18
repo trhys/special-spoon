@@ -23,8 +23,24 @@ namespace Spoon
                 if (ImGui::MenuItem("Open Scene")) m_ShowLoadScene = !m_ShowLoadScene;
                 if (ImGui::MenuItem("Save Scene", nullptr, false, m_ActiveScene != nullptr)) m_ShowSaveScene = !m_ShowSaveScene;
                 if (ImGui::MenuItem("Delete Scenes")) m_ShowDeleteScene = !m_ShowDeleteScene;
-                ImGui::EndMenu();
-            }
+                if (ImGui::BeginMenu("Recent"))
+                {
+                    // load from recent scenes in user config
+                    auto& recentScenes = m_UserConfig.RecentScenes;
+                    for (auto& scene : recentScenes[m_CurrentProject->paths.m_ProjectRoot])
+                    {
+                        if (ImGui::MenuItem(scene.c_str()))
+                        {
+                            SetActiveScene(m_Services.sceneManager->LoadScene(
+                                scene,
+                                *m_Services.entityManager,
+                                *m_Services.systemManager
+                            ));
+                        }
+                    }
+                }
+                ImGui::EndMenu(); // End Recent menu
+            } // End Scene Manager menu
 
             if (ImGui::BeginMenu("View"))
             {

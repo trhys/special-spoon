@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Services.h"
+#include "UserConfig.h"
 
 #include "Tools/Animation/AnimationTool.h"
 #include "Tools/TileMapTool.h"
@@ -117,6 +118,7 @@ namespace Spoon
 
     private:
         Services m_Services;
+        UserConfig m_UserConfig;
         Project* m_CurrentProject = nullptr;
         AssetNode* workingDir = nullptr;
         SceneData* m_ActiveScene = nullptr;
@@ -160,13 +162,13 @@ namespace Spoon
         bool m_ShowDeleteScene = false;
 
         // system menu flags
-        bool m_ShowSystemsMenu = false;
+        bool m_ShowSystemsMenu = true;
 
         // resource menu flags
         bool m_ShowResourcesMenu = false;
 
         // utility widget flags
-        bool m_ShowMetrics = false;
+        bool m_ShowMetrics = true;
         bool m_ShowLogger = false;
 
     private:
